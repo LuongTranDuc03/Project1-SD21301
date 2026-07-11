@@ -122,36 +122,28 @@ public class HoaDonServlet extends HttpServlet {
 
         try {
             int id = Integer.parseInt(idParam);
-            hoaDonService.getChiTiet(id).ifPresentOrElse(
-                hoaDon -> {
-                    try {
-                        req.setAttribute("hoaDon", hoaDon);
-                        req.setAttribute("chiTietList", hoaDonService.getChiTietSanPhams(id));
-                        req.setAttribute("lichSuList", hoaDonService.getLichSuTrangThai(id));
-                        req.setAttribute("pageTitle", "Chi tiết Hóa đơn #" + id);
+            HoaDon hoaDon = hoaDonService.getChiTiet(id);
 
-                        Map<Integer, String> trangThaiLabels = new HashMap<>();
-                        trangThaiLabels.put(0, "Chờ xác nhận");
-                        trangThaiLabels.put(1, "Đã xác nhận");
-                        trangThaiLabels.put(2, "Đang giao hàng");
-                        trangThaiLabels.put(3, "Thành công");
-                        trangThaiLabels.put(4, "Đã huỷ");
-                        req.setAttribute("trangThaiLabels", trangThaiLabels);
+            if (hoaDon == null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/orders?error=notfound");
+                return;
+            }
 
-                        req.getRequestDispatcher("/WEB-INF/views/admin/invoice-detail.jsp")
-                           .forward(req, resp);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                () -> {
-                    try {
-                        resp.sendRedirect(req.getContextPath() + "/admin/orders?error=notfound");
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            );
+            req.setAttribute("hoaDon", hoaDon);
+            req.setAttribute("chiTietList", hoaDonService.getChiTietSanPhams(id));
+            req.setAttribute("lichSuList", hoaDonService.getLichSuTrangThai(id));
+            req.setAttribute("pageTitle", "Chi tiết Hóa đơn #" + id);
+
+            Map<Integer, String> trangThaiLabels = new HashMap<>();
+            trangThaiLabels.put(0, "Chờ xác nhận");
+            trangThaiLabels.put(1, "Đã xác nhận");
+            trangThaiLabels.put(2, "Đang giao hàng");
+            trangThaiLabels.put(3, "Thành công");
+            trangThaiLabels.put(4, "Đã huỷ");
+            req.setAttribute("trangThaiLabels", trangThaiLabels);
+
+            req.getRequestDispatcher("/WEB-INF/views/admin/invoice-detail.jsp").forward(req, resp);
+
         } catch (NumberFormatException e) {
             resp.sendRedirect(req.getContextPath() + "/admin/orders");
         }
@@ -195,27 +187,24 @@ public class HoaDonServlet extends HttpServlet {
 
         try {
             int id = Integer.parseInt(idParam);
-            hoaDonService.getChiTiet(id).ifPresentOrElse(
-                hoaDon -> {
-                    try {
-                        req.setAttribute("hoaDon", hoaDon);
-                        req.setAttribute("chiTietList", hoaDonService.getChiTietSanPhams(id));
+            HoaDon hoaDon = hoaDonService.getChiTiet(id);
 
-                        java.util.Map<Integer, String> labels = new java.util.HashMap<>();
-                        labels.put(0, "Chờ xác nhận"); labels.put(1, "Đã xác nhận");
-                        labels.put(2, "Đang giao hàng"); labels.put(3, "Thành công");
-                        labels.put(4, "Đã huỷ");
-                        req.setAttribute("trangThaiLabels", labels);
+            if (hoaDon == null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/orders");
+                return;
+            }
 
-                        req.getRequestDispatcher("/WEB-INF/views/admin/invoice-print.jsp")
-                           .forward(req, resp);
-                    } catch (Exception e) { throw new RuntimeException(e); }
-                },
-                () -> {
-                    try { resp.sendRedirect(req.getContextPath() + "/admin/orders"); }
-                    catch (IOException e) { throw new RuntimeException(e); }
-                }
-            );
+            req.setAttribute("hoaDon", hoaDon);
+            req.setAttribute("chiTietList", hoaDonService.getChiTietSanPhams(id));
+
+            java.util.Map<Integer, String> labels = new java.util.HashMap<>();
+            labels.put(0, "Chờ xác nhận"); labels.put(1, "Đã xác nhận");
+            labels.put(2, "Đang giao hàng");   labels.put(3, "Thành công");
+            labels.put(4, "Đã huỷ");
+            req.setAttribute("trangThaiLabels", labels);
+
+            req.getRequestDispatcher("/WEB-INF/views/admin/invoice-print.jsp").forward(req, resp);
+
         } catch (NumberFormatException e) {
             resp.sendRedirect(req.getContextPath() + "/admin/orders");
         }

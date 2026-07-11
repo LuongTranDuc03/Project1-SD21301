@@ -51,6 +51,13 @@
             background: transparent;
         }
         .search-box input::placeholder { color: #9ca3af; }
+        .search-box .clear-btn {
+            border: none; background: none; cursor: pointer;
+            color: #9ca3af; padding: 0; line-height: 1;
+            display: none; /* ẩn khi chưa gõ */
+        }
+        .search-box .clear-btn:hover { color: #374151; }
+        .search-box.has-value .clear-btn { display: block; }
 
         .filter-tabs {
             display: flex; gap: 6px; flex-wrap: wrap;
@@ -200,12 +207,17 @@
 
             <!-- Search + Filter -->
             <div class="search-filter-row">
-                <form method="get" action="${pageContext.request.contextPath}/admin/orders" style="display:flex;flex:1;min-width:260px;">
+                <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/orders" style="display:flex;flex:1;min-width:260px;">
                     <% if (currentTrangThai != null) { %><input type="hidden" name="trangThai" value="<%= currentTrangThai %>"><% } %>
-                    <div class="search-box" style="flex:1;">
+                    <div class="search-box" id="searchBox" style="flex:1;">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" name="q" placeholder="Tìm theo mã đơn, khách hàng, sản phẩm..."
-                               value="<%= keyword != null ? keyword : "" %>">
+                        <input type="text" id="searchInput" name="q"
+                               placeholder="Nhập tên khách hàng..."
+                               value="<%= keyword != null ? keyword : "" %>"
+                               autocomplete="off">
+                        <button type="button" class="clear-btn" id="clearBtn" title="Xóa">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
                     </div>
                 </form>
                 <div class="filter-tabs">
@@ -304,8 +316,64 @@
                     </div>
                 </div>
             </div>
-        </div><!-- /content-wrapper -->
-    </main>
-</div>
+        </div>
 </body>
+<script>
+(function () {
+    var input    = document.getElementById('searchInput');
+    var form     = document.getElementById('searchForm');
+    var box      = document.getElementById('searchBox');
+    var clearBtn = document.getElementById('clearBtn');
+    var timer    = null;
+
+    // --- Tự động focus + đặt con trỏ cuối text sau mỗi lần trang load ---
+    // Người dùng có thể xóa bằng Backspace và gõ tiếp ngay, không cần click lại
+    input.focus();
+    var len = input.value.length;
+    input.setSelectionRange(len, len);
+
+    // Hiển thị nút X khi ô có giá trị
+    function updateClearBtn() {
+        if (input.value.trim().length > 0) {
+            box.classList.add('has-value');
+        } else {
+            box.classList.remove('has-value');
+        }
+    }
+
+    updateClearBtn();
+
+    // Live search: mỗi lần thay đổi (gõ hoặc xóa), chờ 400ms rồi submit
+    input.addEventListener('input', function () {
+        updateClearBtn();
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            form.submit();
+        }, 400);
+    });
+
+    // Nút X: xóa và submit ngay
+    clearBtn.addEventListener('click', function () {
+        input.value = '';
+        updateClearBtn();
+        clearTimeout(timer);
+        form.submit();
+    });
+
+    // Phím Escape: xóa nhanh và submit (tiện lợi hơn bấm X)
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            input.value = '';
+            updateClearBtn();
+            clearTimeout(timer);
+            form.submit();
+        }
+        if (e.key === 'Enter') {
+            clearTimeout(timer);
+            form.submit();
+        }
+    });
+})();
+</script>
 </html>
+

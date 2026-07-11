@@ -3,11 +3,10 @@ package project.duan1_sd21301.repository;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-import project.duan1_sd21301.model.HoaDon;
+import project.duan1_sd21301.model.*;
 import project.duan1_sd21301.util.HibernateUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Repository thao tác CRUD và tìm kiếm cho entity HoaDon.
@@ -19,7 +18,7 @@ public class HoaDonRepository {
     // ===========================
 
     /**
-     * Lưu mới hoặc merge (update) một hóa đơn.
+     * Lưu mới một hóa đơn.
      */
     public HoaDon save(HoaDon hoaDon) {
         Transaction tx = null;
@@ -51,7 +50,7 @@ public class HoaDonRepository {
     }
 
     /**
-     * Xóa (soft-delete) hóa đơn theo id bằng cách set trang_thai = 0.
+     * Xóa mềm hóa đơn theo id bằng cách set trang_thai = 0.
      */
     public void softDelete(Integer id) {
         Transaction tx = null;
@@ -69,33 +68,79 @@ public class HoaDonRepository {
         }
     }
 
+    /**
+     * Cập nhật trạng thái hóa đơn, xử lý tồn kho và ghi lịch sử — trong một transaction duy nhất.
+     *
+     * @param hoaDon     entity hóa đơn đã được set trạng thái mới
+     * @param chiTietList danh sách chi tiết (dùng xử lý tồn kho)
+     * @param lichSu     bản ghi lịch sử cần lưu
+     * @param tangTonKho true = hoàn kho (hủy đơn), false = trừ kho (phục hồi từ hủy)
+     * @param xuLyKho    true = cần xử lý tồn kho
+     */
+    public void capNhatTrangThaiVaGhiLichSu(HoaDon hoaDon,
+                                             List<ChiTietHoaDon> chiTietList,
+                                             LichSuHoaDon lichSu,
+                                             boolean xuLyKho,
+                                             boolean tangTonKho) {
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+
+            // 1. Xử lý tồn kho nếu cần
+            if (xuLyKho && chiTietList != null) {
+                for (ChiTietHoaDon ct : chiTietList) {
+                    if (ct.getChiTietSanPham() != null && ct.getSoLuong() != null) {
+                        ChiTietSanPham sp = session.get(ChiTietSanPham.class, ct.getChiTietSanPham().getId());
+                        if (sp != null) {
+                            int delta = tangTonKho ? ct.getSoLuong() : -ct.getSoLuong();
+                            sp.setSoLuongTon(sp.getSoLuongTon() + delta);
+                            session.merge(sp);
+                        }
+                    }
+                }
+            }
+
+            // 2. Cập nhật hóa đơn
+            session.merge(hoaDon);
+
+            // 3. Ghi lịch sử
+            session.persist(lichSu);
+
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw new RuntimeException("Lỗi khi cập nhật trạng thái hóa đơn: " + e.getMessage(), e);
+        }
+    }
+
     // ===========================
     // READ
     // ===========================
 
     /**
-     * Tìm hóa đơn theo ID.
+     * Tìm hóa đơn theo ID (có fetch các quan hệ thường dùng).
      */
-    public Optional<HoaDon> findById(Integer id) {
+    // Tìm hóa đơn theo ID, trả về null nếu không tìm thấy
+    public HoaDon findById(int id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM HoaDon hd LEFT JOIN FETCH hd.khachHang " +
-                         "LEFT JOIN FETCH hd.nhanVien " +
-                         "LEFT JOIN FETCH hd.phuongThucThanhToan " +
-                         "LEFT JOIN FETCH hd.diaChi " +
-                         "WHERE hd.id = :id";
-            HoaDon hoaDon = session.createQuery(hql, HoaDon.class)
-                                   .setParameter("id", id)
-                                   .uniqueResult();
-            return Optional.ofNullable(hoaDon);
+            String hql = "FROM HoaDon hd "
+                       + "LEFT JOIN FETCH hd.khachHang "
+                       + "LEFT JOIN FETCH hd.nhanVien "
+                       + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                       + "LEFT JOIN FETCH hd.diaChi "
+                       + "WHERE hd.id = :id";
+            return session.createQuery(hql, HoaDon.class)
+                          .setParameter("id", id)
+                          .uniqueResult();
         }
     }
 
     /**
-     * Lấy danh sách tất cả hóa đơn có phân trang và lọc theo trạng thái đơn hàng.
+     * Lấy danh sách hóa đơn có phân trang và lọc theo trạng thái đơn hàng.
      *
-     * @param trangThaiDonHang null = tất cả, 0/1/2/3 = lọc theo trạng thái
-     * @param page  số trang (bắt đầu từ 0)
-     * @param size  số lượng mỗi trang
+     * @param trangThaiDonHang null = tất cả; 0/1/2/3/4 = lọc theo trạng thái
+     * @param page             số trang (bắt đầu từ 0)
+     * @param size             số lượng mỗi trang
      */
     public List<HoaDon> findAll(Integer trangThaiDonHang, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -103,14 +148,20 @@ public class HoaDonRepository {
             Query<HoaDon> query;
 
             if (trangThaiDonHang != null) {
-                hql = "FROM HoaDon hd LEFT JOIN FETCH hd.khachHang LEFT JOIN FETCH hd.nhanVien LEFT JOIN FETCH hd.phuongThucThanhToan " +
-                      "WHERE hd.trangThaiDonHang = :trangThai " +
-                      "ORDER BY hd.ngayDatHang DESC";
+                hql = "FROM HoaDon hd "
+                    + "LEFT JOIN FETCH hd.khachHang "
+                    + "LEFT JOIN FETCH hd.nhanVien "
+                    + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                    + "WHERE hd.trangThaiDonHang = :trangThai "
+                    + "ORDER BY hd.ngayDatHang DESC";
                 query = session.createQuery(hql, HoaDon.class);
                 query.setParameter("trangThai", trangThaiDonHang);
             } else {
-                hql = "FROM HoaDon hd LEFT JOIN FETCH hd.khachHang LEFT JOIN FETCH hd.nhanVien LEFT JOIN FETCH hd.phuongThucThanhToan " +
-                      "ORDER BY hd.ngayDatHang DESC";
+                hql = "FROM HoaDon hd "
+                    + "LEFT JOIN FETCH hd.khachHang "
+                    + "LEFT JOIN FETCH hd.nhanVien "
+                    + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                    + "ORDER BY hd.ngayDatHang DESC";
                 query = session.createQuery(hql, HoaDon.class);
             }
 
@@ -146,7 +197,11 @@ public class HoaDonRepository {
      */
     public List<HoaDon> findByKhachHang(Integer khachHangId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM HoaDon hd LEFT JOIN FETCH hd.khachHang LEFT JOIN FETCH hd.phuongThucThanhToan WHERE hd.khachHang.id = :khId ORDER BY hd.ngayDatHang DESC";
+            String hql = "FROM HoaDon hd "
+                       + "LEFT JOIN FETCH hd.khachHang "
+                       + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                       + "WHERE hd.khachHang.id = :khId "
+                       + "ORDER BY hd.ngayDatHang DESC";
             return session.createQuery(hql, HoaDon.class)
                           .setParameter("khId", khachHangId)
                           .getResultList();
@@ -154,21 +209,34 @@ public class HoaDonRepository {
     }
 
     /**
-     * Tìm kiếm hóa đơn theo từ khóa (tên KH, SĐT, email KH).
+     * Tìm kiếm hóa đơn theo từ khóa (tên KH, SĐT, email KH) có phân trang.
      */
+    // Tìm kiếm theo tên khách hàng, có phân trang
     public List<HoaDon> search(String keyword, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String like = "%" + keyword.trim().toLowerCase() + "%";
-            String hql = "FROM HoaDon hd LEFT JOIN FETCH hd.khachHang LEFT JOIN FETCH hd.phuongThucThanhToan " +
-                         "WHERE LOWER(hd.tenKhachHang) LIKE :kw " +
-                         "   OR LOWER(hd.sdtKhachHang) LIKE :kw " +
-                         "   OR LOWER(hd.emailKhachHang) LIKE :kw " +
-                         "ORDER BY hd.ngayDatHang DESC";
+            String hql = "FROM HoaDon hd "
+                       + "LEFT JOIN FETCH hd.khachHang "
+                       + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                       + "WHERE LOWER(hd.tenKhachHang) LIKE :kw "
+                       + "ORDER BY hd.ngayDatHang DESC";
             return session.createQuery(hql, HoaDon.class)
                           .setParameter("kw", like)
                           .setFirstResult(page * size)
                           .setMaxResults(size)
                           .getResultList();
+        }
+    }
+
+    // Đếm số hóa đơn khớp với tên khách hàng
+    public long countSearch(String keyword) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String like = "%" + keyword.trim().toLowerCase() + "%";
+            String hql = "SELECT COUNT(hd) FROM HoaDon hd "
+                       + "WHERE LOWER(hd.tenKhachHang) LIKE :kw";
+            return session.createQuery(hql, Long.class)
+                          .setParameter("kw", like)
+                          .uniqueResult();
         }
     }
 }
