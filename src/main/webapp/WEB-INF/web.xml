@@ -3,4 +3,40 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
+
+    <!-- ===== Trang mặc định ===== -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- ===== Cấu hình mã hóa UTF-8 ===== -->
+    <filter>
+        <filter-name>EncodingFilter</filter-name>
+        <filter-class>project.duan1_sd21301.filter.EncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>EncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Các Servlet đã được map bằng Annotation @WebServlet trong Java file -->
+
+
+    <!-- ===== Trang lỗi ===== -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/views/admin/under-construction.jsp</location>
+    </error-page>
+    <!-- TẠMTHỜI: hiển thị lỗi thật để debug -->
+    <!--
+    <error-page>
+        <error-code>500</error-code>
+        <location>/WEB-INF/views/admin/under-construction.jsp</location>
+    </error-page>
+    -->
+
 </web-app>

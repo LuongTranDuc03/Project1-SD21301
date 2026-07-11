@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="project.duan1_sd21301.model.Product" %>
+<%@ page import="project.duan1_sd21301.entity.Product" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="vi">

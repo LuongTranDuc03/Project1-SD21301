@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+        <!-- ===== Khai báo tất cả các Entity class ===== -->
+        <!-- Nhóm: Nhân viên & Khách hàng -->
+        <mapping class="project.duan1_sd21301.model.NhanVien"/>
+        <mapping class="project.duan1_sd21301.model.KhachHang"/>
+
+        <!-- Nhóm: Địa chỉ -->
+        <mapping class="project.duan1_sd21301.model.DiaChi"/>
+
+        <!-- Nhóm: Sản phẩm -->
+        <mapping class="project.duan1_sd21301.model.ChiTietSanPham"/>
+
+        <!-- Nhóm: Phiếu giảm giá -->
+        <mapping class="project.duan1_sd21301.model.PhieuGiamGia"/>
+
+        <!-- Nhóm: Phương thức thanh toán -->
+        <mapping class="project.duan1_sd21301.model.PhuongThucThanhToan"/>
+
+        <!-- Nhóm: Hóa đơn -->
+        <mapping class="project.duan1_sd21301.model.HoaDon"/>
+        <mapping class="project.duan1_sd21301.model.ChiTietHoaDon"/>
+        <mapping class="project.duan1_sd21301.model.LichSuHoaDon"/>
+        <mapping class="project.duan1_sd21301.model.LichSuThanhToan"/>
+
+    </session-factory>
+</hibernate-configuration>

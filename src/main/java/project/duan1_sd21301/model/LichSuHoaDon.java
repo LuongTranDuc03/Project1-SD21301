@@ -1,0 +1,55 @@
+package project.duan1_sd21301.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "lich_su_hoa_don")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class LichSuHoaDon {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Integer id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_hoa_don", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    HoaDon hoaDon;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_nguoi_thuc_hien")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    NhanVien nguoiThucHien;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_khach_hang")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    KhachHang khachHang;
+
+    @Column(name = "trang_thai_cu")
+    Integer trangThaiCu;
+
+    @Column(name = "trang_thai_moi")
+    Integer trangThaiMoi;
+
+    @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
+    String ghiChu;
+
+    @Column(name = "thoi_gian_cap_nhat")
+    LocalDateTime thoiGianCapNhat;
+
+    @Column(name = "trang_thai")
+    Integer trangThai; // 1: Active, 0: Inactive
+}
