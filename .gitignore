@@ -9,6 +9,10 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/workspace.xml
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/dataSources/
 *.iws
 *.iml
 *.ipr
@@ -38,5 +42,11 @@ build/
 ### Mac OS ###
 .DS_Store
 
+### Windows ###
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
 ### Sensitive Config - Không commit thông tin nhạy cảm lên Git ###
-src/main/resources/db.properties
+src/main/resources/db.properties
+src/main/resources/hibernate.cfg.xml
