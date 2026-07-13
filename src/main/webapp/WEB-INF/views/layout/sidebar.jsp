@@ -45,6 +45,15 @@
                         <span class="menu-text">Thống kê</span>
                     </a>
                 </li>
+                <!-- Bán hàng tại quầy -->
+                <li class="<%= uri.endsWith("/admin/pos") ? "active" : "" %>">
+                    <a href="<%= contextPath %>/admin/pos">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="8" rx="2" ry="2"></rect><rect x="6" y="20" width="12" height="4" rx="1" ry="1"></rect><path d="M12 12v8"></path></svg>
+                        </span>
+                        <span class="menu-text">Bán hàng tại quầy</span>
+                    </a>
+                </li>
                 <!-- Quản lý hoá đơn -->
                 <li class="<%= uri.endsWith("/admin/invoices") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/invoices">
