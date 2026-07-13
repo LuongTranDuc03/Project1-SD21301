@@ -26,9 +26,9 @@
     <style>
         .form-container {
             display: grid;
-            grid-template-columns: 260px 1fr;
-            gap: 24px;
-            margin-top: 20px;
+            grid-template-columns: 280px 1fr;
+            gap: 28px;
+            margin-top: 24px;
         }
         @media(max-width: 900px) {
             .form-container {
@@ -39,35 +39,44 @@
             background-color: #ffffff;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
-            padding: 30px 20px;
+            padding: 36px 20px;
             text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: fit-content;
+            transition: all 0.3s ease;
+        }
+        .avatar-preview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
         .preview-avatar {
-            width: 120px;
-            height: 120px;
+            width: 124px;
+            height: 124px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid #f1f5f9;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 16px;
-            transition: all 0.3s;
+            border: 4px solid #ffffff;
+            outline: 2px solid #cbd5e1;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            margin-bottom: 18px;
         }
         .form-card {
             background-color: #ffffff;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
-            padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            padding: 28px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+        .form-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
         .address-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
             width: 100%;
         }
@@ -151,23 +160,23 @@
                         <div class="form-card">
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label for="customerId">Mã khách hàng <span style="color: #64748b;">*</span></label>
+                                    <label for="customerId">Mã khách hàng <span class="required">*</span></label>
                                     <input type="text" name="id" id="customerId" placeholder="Ví dụ: KH005" required value="<%= (isEdit && c != null) ? c.getId() : "" %>" <%= isEdit ? "readonly" : "" %>>
                                 </div>
                                 <div class="form-group">
-                                    <label for="customerName">Họ và tên <span style="color: #64748b;">*</span></label>
+                                    <label for="customerName">Họ và tên <span class="required">*</span></label>
                                     <input type="text" name="hoTen" id="customerName" placeholder="Nhập đầy đủ họ tên" required value="<%= (isEdit && c != null) ? c.getHoTen() : "" %>">
                                 </div>
                                 <div class="form-group">
-                                    <label for="customerEmail">Email liên hệ <span style="color: #64748b;">*</span></label>
+                                    <label for="customerEmail">Email liên hệ <span class="required">*</span></label>
                                     <input type="email" name="email" id="customerEmail" placeholder="example@gmail.com" required value="<%= (isEdit && c != null) ? c.getEmail() : "" %>">
                                 </div>
                                 <div class="form-group">
-                                    <label for="customerPassword">Mật khẩu <span style="color: #64748b;">*</span></label>
+                                    <label for="customerPassword">Mật khẩu <span class="required">*</span></label>
                                     <input type="password" name="matKhau" id="customerPassword" placeholder="Mật khẩu tài khoản" required value="<%= (isEdit && c != null) ? c.getMatKhau() : "" %>">
                                 </div>
                                 <div class="form-group">
-                                    <label for="customerPhone">Số điện thoại <span style="color: #64748b;">*</span></label>
+                                    <label for="customerPhone">Số điện thoại <span class="required">*</span></label>
                                     <input type="tel" name="soDienThoai" id="customerPhone" placeholder="Ví dụ: 0987654321" required value="<%= (isEdit && c != null) ? c.getSoDienThoai() : "" %>">
                                 </div>
                                 <div class="form-group">
@@ -208,16 +217,16 @@
                                     <span style="font-size: 13px; font-weight: 600; color: #0f172a; display: block; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">Địa chỉ mặc định</span>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                         <div class="form-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 11px; margin-bottom: 4px;">Tên người nhận <span style="color: #64748b;">*</span></label>
+                                            <label style="font-size: 11px; margin-bottom: 4px;">Tên người nhận <span class="required">*</span></label>
                                             <input type="text" name="diaChiMacDinhTen" id="defaultAddressTen" placeholder="Tên người nhận" required value="<%= (isEdit && c != null && c.getDiaChiMacDinh() != null) ? c.getDiaChiMacDinh().getTenNguoiNhan() : "" %>" style="height: 36px;">
                                         </div>
                                         <div class="form-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 11px; margin-bottom: 4px;">SĐT người nhận <span style="color: #64748b;">*</span></label>
+                                            <label style="font-size: 11px; margin-bottom: 4px;">SĐT người nhận <span class="required">*</span></label>
                                             <input type="text" name="diaChiMacDinhSdt" id="defaultAddressSdt" placeholder="Số điện thoại" required value="<%= (isEdit && c != null && c.getDiaChiMacDinh() != null) ? c.getDiaChiMacDinh().getSdtNguoiNhan() : "" %>" style="height: 36px;">
                                         </div>
                                     </div>
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <label style="font-size: 11px; margin-bottom: 4px;">Địa chỉ chi tiết <span style="color: #64748b;">*</span></label>
+                                        <label style="font-size: 11px; margin-bottom: 4px;">Địa chỉ chi tiết <span class="required">*</span></label>
                                         <input type="text" name="diaChiMacDinh" id="customerDefaultAddress" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." required value="<%= (isEdit && c != null && c.getDiaChiMacDinh() != null) ? c.getDiaChiMacDinh().getChiTietDiaChi() : "" %>" style="height: 36px;">
                                     </div>
                                 </div>

@@ -25,9 +25,9 @@
     <style>
         .profile-container {
             display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 24px;
-            margin-top: 20px;
+            grid-template-columns: 300px 1fr;
+            gap: 28px;
+            margin-top: 24px;
         }
         @media(max-width: 900px) {
             .profile-container {
@@ -38,73 +38,91 @@
             background-color: #ffffff;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
-            padding: 30px 20px;
+            padding: 36px 24px;
             text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .profile-card-left:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
         }
         .profile-avatar-large {
-            width: 120px;
-            height: 120px;
+            width: 124px;
+            height: 124px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid #F1F5F9;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 16px;
+            border: 4px solid #ffffff;
+            outline: 2px solid #cbd5e1;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            margin-bottom: 18px;
         }
         .profile-name {
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 700;
             color: #0f172a;
             margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
         .profile-email-sub {
-            font-size: 12px;
+            font-size: 13px;
             color: #64748b;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
+            word-break: break-all;
         }
         .profile-stat-box {
-            background-color: #f8fafc;
-            border-radius: 12px;
-            padding: 14px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 14px;
+            padding: 16px;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 24px;
             display: flex;
             justify-content: space-around;
-            border: 1px solid #f1f5f9;
+            border: 1px solid #e2e8f0;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03);
         }
         .stat-item {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 4px;
         }
         .stat-val {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: #0f172a;
         }
         .stat-lbl {
-            font-size: 11px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
             color: #64748b;
-            margin-top: 2px;
         }
         .profile-card-right {
             background-color: #ffffff;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
-            padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+            padding: 28px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+        .profile-card-right:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
         .info-section-title {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
-            color: #0f172a;
-            border-left: 4px solid #475569; /* Đổi màu xanh Indigo thành màu xám đen trung tính */
+            color: #475569;
+            letter-spacing: 0.1em;
+            border-left: 3px solid #0f172a;
             padding-left: 10px;
             margin-bottom: 20px;
-            margin-top: 24px;
+            margin-top: 32px;
+            text-transform: uppercase;
         }
         .info-section-title:first-of-type {
             margin-top: 0;
@@ -130,13 +148,19 @@
             color: #64748b;
         }
         .info-value {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             color: #1e293b;
-            padding: 10px 14px;
+            padding: 11px 15px;
             background-color: #f8fafc;
             border-radius: 8px;
             border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+        .info-value:hover {
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+            color: #0f172a;
         }
     </style>
 </head>

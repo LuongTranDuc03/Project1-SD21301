@@ -1170,62 +1170,75 @@ body.sidebar-collapsed .user-card {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
     font-size: 11px;
     font-weight: 600;
     line-height: 1;
+    transition: all 0.2s ease;
+}
+.rank-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .rank-gold {
-    background-color: #FEF3C7;
-    color: #D97706;
+    background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+    color: #B45309;
     border: 1px solid #FDE68A;
 }
 .rank-silver {
-    background-color: #F3F4F6;
+    background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
     color: #4B5563;
     border: 1px solid #E5E7EB;
 }
 .rank-bronze {
-    background-color: #FFEDD5;
+    background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
     color: #C2410C;
     border: 1px solid #FED7AA;
 }
 .rank-diamond {
-    background-color: #E0F2FE;
+    background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
     color: #0369A1;
     border: 1px solid #BAE6FD;
 }
 
 /* Status Badges */
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
 .status-pill.active {
-    background-color: #D1FAE5;
-    color: #065F46;
+    background-color: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
 }
 .status-pill.inactive {
-    background-color: #FEE2E2;
-    color: #991B1B;
+    background-color: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FCA5A5;
 }
 
 /* Customer Avatar Circle */
 .customer-avatar-img {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #E2E8F0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* Modal UI Premium Elements */
-/* Modal Overlay & Container */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(15, 23, 42, 0.5);
+    background-color: rgba(15, 23, 42, 0.4);
     backdrop-filter: blur(4px);
     display: none;
     align-items: center;
@@ -1381,20 +1394,22 @@ body.sidebar-collapsed .user-card {
 
 .form-group-full {
     grid-column: span 2;
+}
+
 /* Modern Form Layout */
-.form-grid {
+.form-group-full .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
-.form-group {
+.form-group-full .form-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.form-group.full-width {
+.form-group-full .form-group.full-width {
     grid-column: span 2;
 }
 
@@ -1405,8 +1420,9 @@ body.sidebar-collapsed .user-card {
     text-align: left;
 }
 
-.form-group input, 
+.form-group input,
 .form-group select {
+    width: 100%;
     padding: 10px 14px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
@@ -1417,7 +1433,7 @@ body.sidebar-collapsed .user-card {
     background-color: #ffffff;
 }
 
-.form-group input:focus, 
+.form-group input:focus,
 .form-group select:focus {
     outline: none;
     border-color: #0f172a;
@@ -1425,6 +1441,9 @@ body.sidebar-collapsed .user-card {
 }
 
 .form-group input[readonly] {
+    background-color: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
 }
 
 .form-group label .required {
@@ -1481,6 +1500,8 @@ body.sidebar-collapsed .user-card {
     background: #0f172a;
     transform: translateY(-1px);
     box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15);
+}
+
 .input-group {
     position: relative;
     display: flex;
@@ -1501,6 +1522,7 @@ body.sidebar-collapsed .user-card {
 }
 
 /* Coupon Progress Bar */
+
 .coupon-usage-wrapper {
     display: flex;
     flex-direction: column;
@@ -1533,6 +1555,7 @@ body.sidebar-collapsed .user-card {
 }
 
 /* Alerts and Notifications */
+
 .alert-banner {
     display: flex;
     align-items: center;
