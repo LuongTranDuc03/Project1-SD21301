@@ -211,32 +211,64 @@ public class HoaDonRepository {
     /**
      * Tìm kiếm hóa đơn theo từ khóa (tên KH, SĐT, email KH) có phân trang.
      */
-    // Tìm kiếm theo tên khách hàng, có phân trang
+    // Tìm kiếm theo tên khách hàng hoặc mã hóa đơn, có phân trang
     public List<HoaDon> search(String keyword, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String like = "%" + keyword.trim().toLowerCase() + "%";
-            String hql = "FROM HoaDon hd "
-                       + "LEFT JOIN FETCH hd.khachHang "
-                       + "LEFT JOIN FETCH hd.phuongThucThanhToan "
-                       + "WHERE LOWER(hd.tenKhachHang) LIKE :kw "
-                       + "ORDER BY hd.ngayDatHang DESC";
-            return session.createQuery(hql, HoaDon.class)
-                          .setParameter("kw", like)
-                          .setFirstResult(page * size)
-                          .setMaxResults(size)
-                          .getResultList();
+
+            // Nếu keyword là số nguyên → tìm thêm theo mã hóa đơn
+            Integer idSearch = null;
+            try { idSearch = Integer.parseInt(keyword.trim()); } catch (NumberFormatException ignored) {}
+
+            String hql;
+            Query<HoaDon> query;
+            if (idSearch != null) {
+                hql = "FROM HoaDon hd "
+                    + "LEFT JOIN FETCH hd.khachHang "
+                    + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                    + "WHERE hd.id = :id OR LOWER(hd.tenKhachHang) LIKE :kw "
+                    + "ORDER BY hd.ngayDatHang DESC";
+                query = session.createQuery(hql, HoaDon.class);
+                query.setParameter("id", idSearch);
+                query.setParameter("kw", like);
+            } else {
+                hql = "FROM HoaDon hd "
+                    + "LEFT JOIN FETCH hd.khachHang "
+                    + "LEFT JOIN FETCH hd.phuongThucThanhToan "
+                    + "WHERE LOWER(hd.tenKhachHang) LIKE :kw "
+                    + "ORDER BY hd.ngayDatHang DESC";
+                query = session.createQuery(hql, HoaDon.class);
+                query.setParameter("kw", like);
+            }
+            query.setFirstResult(page * size);
+            query.setMaxResults(size);
+            return query.getResultList();
         }
     }
 
-    // Đếm số hóa đơn khớp với tên khách hàng
+    // Đếm số hóa đơn khớp với tên khách hàng hoặc mã hóa đơn
     public long countSearch(String keyword) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String like = "%" + keyword.trim().toLowerCase() + "%";
-            String hql = "SELECT COUNT(hd) FROM HoaDon hd "
-                       + "WHERE LOWER(hd.tenKhachHang) LIKE :kw";
-            return session.createQuery(hql, Long.class)
-                          .setParameter("kw", like)
-                          .uniqueResult();
+
+            Integer idSearch = null;
+            try { idSearch = Integer.parseInt(keyword.trim()); } catch (NumberFormatException ignored) {}
+
+            String hql;
+            Query<Long> query;
+            if (idSearch != null) {
+                hql = "SELECT COUNT(hd) FROM HoaDon hd "
+                    + "WHERE hd.id = :id OR LOWER(hd.tenKhachHang) LIKE :kw";
+                query = session.createQuery(hql, Long.class);
+                query.setParameter("id", idSearch);
+                query.setParameter("kw", like);
+            } else {
+                hql = "SELECT COUNT(hd) FROM HoaDon hd "
+                    + "WHERE LOWER(hd.tenKhachHang) LIKE :kw";
+                query = session.createQuery(hql, Long.class);
+                query.setParameter("kw", like);
+            }
+            return query.uniqueResult();
         }
     }
 }

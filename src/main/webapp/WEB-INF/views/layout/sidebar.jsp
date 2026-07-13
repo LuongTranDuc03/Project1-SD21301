@@ -34,7 +34,6 @@
     <!-- 2. Menu Navigation -->
     <nav class="sidebar-menu">
         <div class="menu-section">
-            <span class="menu-title">MENU CHÍNH</span>
             <ul>
                 <!-- Thống kê -->
                 <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">

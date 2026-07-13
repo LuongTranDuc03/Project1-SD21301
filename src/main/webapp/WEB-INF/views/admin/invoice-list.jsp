@@ -199,10 +199,16 @@
                     <h1>Quản lý hoá đơn</h1>
                     <p>Tổng <%= total %> hoá đơn</p>
                 </div>
-                <button class="btn-excel" onclick="alert('Chức năng xuất Excel đang phát triển')">
+<%
+    // Tạo URL xuất Excel với bộ lọc hiện tại
+    StringBuilder exportUrl = new StringBuilder(request.getContextPath() + "/admin/orders/export-excel?_=1");
+    if (currentTrangThai != null) exportUrl.append("&trangThai=").append(currentTrangThai);
+    if (keyword != null && !keyword.isEmpty()) exportUrl.append("&q=").append(java.net.URLEncoder.encode(keyword, "UTF-8"));
+%>
+                <a href="<%= exportUrl %>" class="btn-excel" id="btnExportExcel">
                     <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     Xuất Excel
-                </button>
+                </a>
             </div>
 
             <!-- Search + Filter -->
@@ -212,7 +218,7 @@
                     <div class="search-box" id="searchBox" style="flex:1;">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         <input type="text" id="searchInput" name="q"
-                               placeholder="Nhập tên khách hàng..."
+                               placeholder="Tên khách hàng hoặc mã HD (VD: 123)..."
                                value="<%= keyword != null ? keyword : "" %>"
                                autocomplete="off">
                         <button type="button" class="clear-btn" id="clearBtn" title="Xóa">
