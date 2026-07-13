@@ -195,7 +195,7 @@ public class ProductController extends HttpServlet {
                         products.add(Product.builder()
                                         .id("SP008").category("Áo len").name("Áo khoác len nữ thu đông")
                                         .englishName("Wool Coat")
-                                        .price(990000.0).oldPrice(1200000.0).discountPercent(-18).stock(28).sold(167)
+                                        .price(990000.0).oldPrice(1200000.0).discountPercent(-18).stock(35).sold(167)
                                         .rating(4.8)
                                         .brand("Cardina").origin("Việt Nam").warranty("3 tháng")
                                         .careInstructions(
@@ -203,6 +203,162 @@ public class ProductController extends HttpServlet {
                                         .description("Chất liệu len dệt sợi cao cấp mềm mại, co giãn tốt, không xù lông. Giữ ấm cơ thể hiệu quả trong thời tiết se lạnh đầu đông.")
                                         .status("AVAILABLE").bgColor("#6D28D9")
                                         .colorCircles(Arrays.asList("#D2691E", "#808080", "#FFFDD0", "#FFB6C1"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP009
+                        products.add(Product.builder()
+                                        .id("SP009").category("Áo kaki").name("Áo khoác kaki unisex 2 lớp")
+                                        .englishName("Double Layer Khaki Jacket")
+                                        .price(950000.0).oldPrice(0.0).discountPercent(0).stock(45).sold(98)
+                                        .rating(4.5)
+                                        .brand("FamiCoats").origin("Việt Nam").warranty("6 tháng")
+                                        .careInstructions("Giặt máy chế độ thường. Phơi nơi thoáng mát tránh ánh nắng gắt.")
+                                        .description("Áo khoác kaki 2 lớp dày dặn, thiết kế unisex hiện đại, phù hợp cả nam và nữ. Màu kaki cổ điển dễ phối đồ.")
+                                        .status("AVAILABLE").bgColor("#92400E")
+                                        .colorCircles(Arrays.asList("#C8B89A", "#4A5568", "#2D6A4F"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP010
+                        products.add(Product.builder()
+                                        .id("SP010").category("Áo phao").name("Áo phao vest không tay nữ")
+                                        .englishName("Sleeveless Vest Puffer")
+                                        .price(850000.0).oldPrice(1000000.0).discountPercent(-15).stock(42).sold(211)
+                                        .rating(4.6)
+                                        .brand("Nike").origin("Nhập khẩu").warranty("6 tháng")
+                                        .careInstructions("Giặt máy ở nhiệt độ thấp. Sấy khô ở nhiệt độ thấp.")
+                                        .description("Áo gile phao không tay giữ ấm, chất liệu nhẹ thoáng. Phong cách thể thao năng động phù hợp mùa đông.")
+                                        .status("AVAILABLE").bgColor("#0EA5E9")
+                                        .colorCircles(Arrays.asList("#000000", "#DC2626", "#2563EB"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP011
+                        products.add(Product.builder()
+                                        .id("SP011").category("Áo dạ").name("Áo khoác dạ nữ oversize sang trọng")
+                                        .englishName("Oversized Wool Blend Coat")
+                                        .price(2200000.0).oldPrice(2800000.0).discountPercent(-21).stock(18).sold(134)
+                                        .rating(4.9)
+                                        .brand("ELLE").origin("Nhập khẩu").warranty("6 tháng")
+                                        .careInstructions("Chỉ giặt khô hoặc giặt tay cẩn thận. Ủi ở nhiệt độ vừa.")
+                                        .description("Áo khoác dạ dáng dài oversize sang trọng. Chất liệu hỗn hợp len và polyester cao cấp, giữ form tốt.")
+                                        .status("AVAILABLE").bgColor("#BE185D")
+                                        .colorCircles(Arrays.asList("#F5F5DC", "#000000", "#D4AF37"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP012
+                        products.add(Product.builder()
+                                        .id("SP012").category("Áo hoodie").name("Áo hoodie khoác ngoài nam")
+                                        .englishName("Men's Hoodie Jacket")
+                                        .price(750000.0).oldPrice(900000.0).discountPercent(-17).stock(60).sold(342)
+                                        .rating(4.7)
+                                        .brand("Adidas").origin("Nhập khẩu").warranty("6 tháng")
+                                        .careInstructions("Giặt máy lộn trái. Không dùng máy sấy.")
+                                        .description("Áo hoodie khoác ngoài chất liệu cotton fleece dày dặn. Có mũ trùm đầu tiện lợi, túi kangaroo rộng rãi.")
+                                        .status("AVAILABLE").bgColor("#374151")
+                                        .colorCircles(Arrays.asList("#808080", "#000000", "#FFFFFF"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP013
+                        products.add(Product.builder()
+                                        .id("SP013").category("Áo thể thao").name("Áo khoác thể thao nữ 3 lớp")
+                                        .englishName("Women 3-in-1 Jacket")
+                                        .price(2500000.0).oldPrice(3200000.0).discountPercent(-22).stock(18).sold(87)
+                                        .rating(4.8)
+                                        .brand("Columbia").origin("Nhập khẩu").warranty("12 tháng")
+                                        .careInstructions("Giặt máy chế độ nhẹ. Tháo lớp fleece trước khi giặt.")
+                                        .description("Áo khoác 3 lớp đa năng: lớp ngoài chống nước, lớp trong fleece giữ ấm, có thể tháo rời sử dụng độc lập.")
+                                        .status("AVAILABLE").bgColor("#1D4ED8")
+                                        .colorCircles(Arrays.asList("#1E3A8A", "#000000", "#DC2626"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP014
+                        products.add(Product.builder()
+                                        .id("SP014").category("Áo denim").name("Áo khoác jean đen skinny nam")
+                                        .englishName("Men Black Skinny Denim Jacket")
+                                        .price(790000.0).oldPrice(950000.0).discountPercent(-17).stock(42).sold(178)
+                                        .rating(4.4)
+                                        .brand("Levis").origin("Việt Nam").warranty("3 tháng")
+                                        .careInstructions("Giặt lộn trái bằng nước lạnh. Không tẩy.")
+                                        .description("Áo khoác jean đen phong cách skinny hiện đại dành cho nam. Chất denim cứng cáp, phai màu tự nhiên theo thời gian.")
+                                        .status("AVAILABLE").bgColor("#1F2937")
+                                        .colorCircles(Arrays.asList("#111827", "#374151"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP015
+                        products.add(Product.builder()
+                                        .id("SP015").category("Áo gió").name("Áo gió thể thao nữ nhẹ")
+                                        .englishName("Women Lightweight Windbreaker")
+                                        .price(690000.0).oldPrice(850000.0).discountPercent(-19).stock(35).sold(256)
+                                        .rating(4.6)
+                                        .brand("Adidas").origin("Nhập khẩu").warranty("6 tháng")
+                                        .careInstructions("Giặt máy nhiệt độ thấp. Không sấy khô.")
+                                        .description("Áo gió nhẹ siêu mỏng dành cho nữ, có thể gấp gọn vào túi đựng riêng. Chống nước và cản gió hiệu quả.")
+                                        .status("AVAILABLE").bgColor("#DB2777")
+                                        .colorCircles(Arrays.asList("#EC4899", "#7C3AED", "#10B981"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP016
+                        products.add(Product.builder()
+                                        .id("SP016").category("Áo khoác dù").name("Áo khoác dù lót nỉ unisex")
+                                        .englishName("Fleece-lined Parka")
+                                        .price(990000.0).oldPrice(1200000.0).discountPercent(-18).stock(50).sold(189)
+                                        .rating(4.5)
+                                        .brand("FamiCoats").origin("Việt Nam").warranty("6 tháng")
+                                        .careInstructions("Giặt máy chế độ nhẹ. Phơi nơi thoáng mát.")
+                                        .description("Áo khoác dù lót nỉ 2 lớp ấm áp, chống gió tốt. Thiết kế unisex phù hợp mọi lứa tuổi.")
+                                        .status("AVAILABLE").bgColor("#059669")
+                                        .colorCircles(Arrays.asList("#000000", "#1E40AF", "#6B7280"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP017
+                        products.add(Product.builder()
+                                        .id("SP017").category("Áo blazer").name("Áo blazer khoác ngoài nữ")
+                                        .englishName("Women Blazer Jacket")
+                                        .price(1590000.0).oldPrice(2000000.0).discountPercent(-20).stock(19).sold(145)
+                                        .rating(4.8)
+                                        .brand("MANGO").origin("Nhập khẩu").warranty("3 tháng")
+                                        .careInstructions("Chỉ giặt khô. Ủi mặt trái ở nhiệt độ vừa.")
+                                        .description("Áo blazer phối khoác ngoài phong cách công sở kết hợp casual thời thượng. Chất liệu tweed cao cấp.")
+                                        .status("AVAILABLE").bgColor("#7C3AED")
+                                        .colorCircles(Arrays.asList("#F5F5DC", "#000000", "#1E3A8A"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP018
+                        products.add(Product.builder()
+                                        .id("SP018").category("Áo thể thao").name("Áo khoác thể thao track jacket nam")
+                                        .englishName("Men Track Jacket")
+                                        .price(950000.0).oldPrice(1100000.0).discountPercent(-14).stock(45).sold(267)
+                                        .rating(4.6)
+                                        .brand("Nike").origin("Nhập khẩu").warranty("6 tháng")
+                                        .careInstructions("Giặt máy nhiệt độ thấp. Phơi nơi thoáng mát.")
+                                        .description("Áo track jacket thể thao cổ điển phong cách retro. Chất liệu polyester nhẹ thoáng, khô nhanh.")
+                                        .status("AVAILABLE").bgColor("#DC2626")
+                                        .colorCircles(Arrays.asList("#000000", "#DC2626", "#2563EB"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP019
+                        products.add(Product.builder()
+                                        .id("SP019").category("Áo sherpa").name("Áo khoác lông cừu sherpa nữ")
+                                        .englishName("Women Sherpa Fleece Jacket")
+                                        .price(2800000.0).oldPrice(3500000.0).discountPercent(-20).stock(18).sold(78)
+                                        .rating(4.9)
+                                        .brand("Patagonia").origin("Nhập khẩu").warranty("12 tháng")
+                                        .careInstructions("Giặt tay nhẹ hoặc máy chế độ đặc biệt. Không sấy.")
+                                        .description("Áo khoác lông cừu sherpa mềm mại, siêu ấm, phong cách Boho chic độc đáo. Chất liệu thân thiện môi trường.")
+                                        .status("AVAILABLE").bgColor("#78350F")
+                                        .colorCircles(Arrays.asList("#FFFBEB", "#92400E", "#D1D5DB"))
+                                        .details(new ArrayList<>()).build());
+
+                        // SP020
+                        products.add(Product.builder()
+                                        .id("SP020").category("Áo khoác da").name("Áo khoác da lộn (suede) unisex")
+                                        .englishName("Suede Leather Jacket")
+                                        .price(2000000.0).oldPrice(2500000.0).discountPercent(-20).stock(24).sold(112)
+                                        .rating(4.7)
+                                        .brand("FamiCoats").origin("Việt Nam").warranty("12 tháng")
+                                        .careInstructions("Chỉ vệ sinh bằng bàn chải chuyên dụng cho suede. Không để ướt.")
+                                        .description("Áo khoác da lộn (suede) thiết kế unisex thanh lịch. Bề mặt da nhung mịn đặc trưng, tạo điểm nhấn phong cách.")
+                                        .status("AVAILABLE").bgColor("#B45309")
+                                        .colorCircles(Arrays.asList("#C8A96E", "#6B3A2A", "#1C1C1C"))
                                         .details(new ArrayList<>()).build());
 
                         session.setAttribute("products", products);

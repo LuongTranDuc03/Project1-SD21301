@@ -20,18 +20,21 @@ public class ChiTietSanPham {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
 
-    // FK tới san_pham - dùng column thô để tránh phụ thuộc entity chưa có
-    @Column(name = "id_san_pham")
-    Integer idSanPham;
+    // ===== Quan hệ N-1 với SanPham =====
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_san_pham")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    SanPham sanPham;
 
-    @Column(name = "id_kich_thuoc")
-    Integer idKichThuoc;
+    @Column(name = "mau_sac", length = 100, columnDefinition = "NVARCHAR(100)")
+    String mauSac;
 
-    @Column(name = "id_mau_sac")
-    Integer idMauSac;
+    @Column(name = "kich_thuoc", length = 20)
+    String kichThuoc; // S, M, L, XL, XXL
 
-    @Column(name = "id_kieu_dang")
-    Integer idKieuDang;
+    @Column(name = "kieu_dang", length = 100, columnDefinition = "NVARCHAR(100)")
+    String kieuDang; // Slim-fit, Oversize, Classic, ...
 
     @Column(name = "gia_nhap")
     Double giaNhap;
@@ -60,7 +63,7 @@ public class ChiTietSanPham {
     @Column(name = "trang_thai")
     Integer trangThai; // 1: Đang bán, 0: Ngừng bán
 
-    // ===== Quan hệ 1-N =====
+    // ===== Quan hệ 1-N với ChiTietHoaDon =====
     @OneToMany(mappedBy = "chiTietSanPham", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.HoaDon" %>
 <%@ page import="project.duan1_sd21301.model.ChiTietHoaDon" %>
+<%@ page import="project.duan1_sd21301.model.ChiTietSanPham" %>
 <%@ page import="project.duan1_sd21301.model.LichSuHoaDon" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -345,22 +346,20 @@
                             </thead>
                             <tbody>
                             <%
-                                // Map tên sản phẩm mock vì database thiếu bảng san_pham
-                                Map<Integer, String> mockNames = new java.util.HashMap<>();
-                                mockNames.put(1, "Áo khoác da nam Premium");
-                                mockNames.put(2, "Bomber jacket oversize");
-                                mockNames.put(3, "Áo denim wash nữ");
-                                mockNames.put(4, "Áo phao siêu nhẹ");
-                                mockNames.put(5, "Khoác gió windbreaker");
-
                                 if (chiTietList != null && !chiTietList.isEmpty()) {
                                     for (ChiTietHoaDon ct : chiTietList) {
                                         String donGia   = ct.getDonGia()   != null ? String.format("%,.0fđ", ct.getDonGia()).replace(",", ".")   : "—";
                                         String thanhTien= ct.getThanhTien()!= null ? String.format("%,.0fđ", ct.getThanhTien()).replace(",", ".") : "—";
-                                        
-                                        String spName = "Sản phẩm không xác định";
-                                        if (ct.getChiTietSanPham() != null && ct.getChiTietSanPham().getIdSanPham() != null) {
-                                            spName = mockNames.getOrDefault(ct.getChiTietSanPham().getIdSanPham(), "Chi tiết SP #" + ct.getChiTietSanPham().getId());
+
+                                        // Lấy tên sản phẩm từ entity SanPham
+                                        String spName = "—";
+                                        ChiTietSanPham ctsp = ct.getChiTietSanPham();
+                                        if (ctsp != null && ctsp.getSanPham() != null) {
+                                            spName = ctsp.getSanPham().getTenSanPham();
+                                            if (ctsp.getMauSac() != null) spName += " - " + ctsp.getMauSac();
+                                            if (ctsp.getKichThuoc() != null) spName += " (" + ctsp.getKichThuoc() + ")";
+                                        } else if (ctsp != null) {
+                                            spName = "CTSP #" + ctsp.getId();
                                         }
                             %>
                                 <tr>

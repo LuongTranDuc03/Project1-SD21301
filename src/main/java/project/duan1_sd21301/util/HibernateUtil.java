@@ -38,6 +38,7 @@ public class HibernateUtil {
             sources.addAnnotatedClass(NhanVien.class);
             sources.addAnnotatedClass(KhachHang.class);
             sources.addAnnotatedClass(DiaChi.class);
+            sources.addAnnotatedClass(SanPham.class);
             sources.addAnnotatedClass(ChiTietSanPham.class);
             sources.addAnnotatedClass(PhieuGiamGia.class);
             sources.addAnnotatedClass(PhuongThucThanhToan.class);
