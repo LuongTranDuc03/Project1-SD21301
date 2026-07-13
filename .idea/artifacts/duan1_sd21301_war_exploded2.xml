@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="duan1_sd21301:war exploded2">
+    <output-path>$PROJECT_DIR$/out/artifacts/duan1_sd21301_war_exploded2</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="duan1_sd21301" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="duan1_sd21301/web/Web" />
+    </root>
+  </artifact>
+</component>
