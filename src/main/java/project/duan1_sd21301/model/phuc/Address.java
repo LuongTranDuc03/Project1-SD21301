@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Address {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
@@ -26,33 +27,32 @@ public class Address {
 //    KhachHang khachHang;
 
     @Column(name = "nguoi_nhan", length = 150)
-    String nguoiNhan;
+    String recipientName;
 
     @Column(name = "so_dien_thoai", length = 20)
-    String soDienThoai;
+    String phone;
 
     @Column(name = "tinh", length = 100)
-    String tinh;
+    String province;
 
     @Column(name = "huyen", length = 100)
-    String huyen;
+    String district;
 
     @Column(name = "xa", length = 100)
-    String xa;
+    String ward;
 
     @Column(name = "dia_chi_chi_tiet", columnDefinition = "NVARCHAR(500)")
-    String diaChiChiTiet;
+    String addressDetail;
 
     @Column(name = "mac_dinh")
-    Boolean macDinh;
+    Boolean isDefault;
 
     @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
-    String ghiChu;
+    String note;
 
-    // Quan hệ 1-N với HoaDon
-    // mappedBy phải khớp với tên field trong Invoice → "address"
+    // Quan hệ 1-N với HoaDon — mappedBy khớp với field "address" trong Invoice
     @OneToMany(mappedBy = "address", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<Invoice> invoiceList;
+    List<Invoice> invoiceList;
 }

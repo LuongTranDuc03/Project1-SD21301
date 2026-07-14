@@ -18,28 +18,27 @@
 </head>
 <body>
 <%
-    List<Invoice> hoaDons = (List<Invoice>) request.getAttribute("hoaDons");
-    Map<Integer, String> trangThaiLabels = (Map<Integer, String>) request.getAttribute("trangThaiLabels");
-    long total      = request.getAttribute("total")      != null ? (long) request.getAttribute("total")          : 0;
-    int  pageNo     = request.getAttribute("page")       != null ? (int)  request.getAttribute("page")           : 0;
-    int  size       = request.getAttribute("size")       != null ? (int)  request.getAttribute("size")           : 10;
-    int  totalPages = request.getAttribute("totalPages") != null ? (int)  request.getAttribute("totalPages")     : 1;
-    Integer currentTrangThai = (Integer) request.getAttribute("currentTrangThai");
-    String keyword           = (String)  request.getAttribute("keyword");
+    List<Invoice> invoices           = (List<Invoice>) request.getAttribute("invoices");
+    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    long total          = request.getAttribute("total")              != null ? (long) request.getAttribute("total")              : 0;
+    int  pageNo         = request.getAttribute("page")               != null ? (int)  request.getAttribute("page")               : 0;
+    int  size           = request.getAttribute("size")               != null ? (int)  request.getAttribute("size")               : 10;
+    int  totalPages     = request.getAttribute("totalPages")         != null ? (int)  request.getAttribute("totalPages")         : 1;
+    Integer currentStatus = (Integer) request.getAttribute("currentOrderStatus");
+    String keyword        = (String)  request.getAttribute("keyword");
 
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     String baseUrl = request.getContextPath() + "/admin/invoices?"
-            + (currentTrangThai != null ? "trangThai=" + currentTrangThai + "&" : "")
+            + (currentStatus != null ? "trangThai=" + currentStatus + "&" : "")
             + (keyword != null && !keyword.isEmpty() ? "q=" + java.net.URLEncoder.encode(keyword, "UTF-8") + "&" : "");
 
-    // Helper: badge class
-    java.util.function.Function<Integer, String> badgeClass = (tt) -> {
-        if (tt == null)  return "cho-xu-ly";
-        if (tt == 4)     return "da-huy";
-        if (tt == 3)     return "hoan-thanh";
-        if (tt == 2)     return "dang-giao";
-        if (tt == 1)     return "da-xac-nhan";
+    java.util.function.Function<Integer, String> badgeClass = (s) -> {
+        if (s == null)  return "cho-xu-ly";
+        if (s == 4)     return "da-huy";
+        if (s == 3)     return "hoan-thanh";
+        if (s == 2)     return "dang-giao";
+        if (s == 1)     return "da-xac-nhan";
         return "cho-xu-ly";
     };
 %>
@@ -47,11 +46,10 @@
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
 
     <main class="main-content">
-        <!-- Navbar -->
         <header class="navbar">
             <div class="breadcrumb">
                 <span>FamiCoats Admin</span>
-                <span style="margin: 0 6px; color:#d1d5db">/</span>
+                <span style="margin:0 6px;color:#d1d5db">/</span>
                 <span class="active-crumb">Quản lý hoá đơn</span>
             </div>
             <div class="navbar-right">
@@ -68,7 +66,6 @@
         </header>
 
         <div class="content-wrapper">
-            <!-- Page header -->
             <div class="il-header">
                 <div class="il-title">
                     <h1>Quản lý hoá đơn</h1>
@@ -79,7 +76,7 @@
             <!-- Search + Filter -->
             <div class="search-filter-row">
                 <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/invoices" style="display:flex;flex:1;min-width:260px;">
-                    <% if (currentTrangThai != null) { %><input type="hidden" name="trangThai" value="<%= currentTrangThai %>"><% } %>
+                    <% if (currentStatus != null) { %><input type="hidden" name="trangThai" value="<%= currentStatus %>"><% } %>
                     <div class="search-box" id="searchBox" style="flex:1;">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         <input type="text" id="searchInput" name="q"
@@ -92,12 +89,12 @@
                     </div>
                 </form>
                 <div class="filter-tabs">
-                    <a href="${pageContext.request.contextPath}/admin/invoices" class="filter-tab <%= currentTrangThai == null ? "active" : "" %>">Tất cả</a>
-                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=0" class="filter-tab <%= Integer.valueOf(0).equals(currentTrangThai) ? "active" : "" %>">Chờ xác nhận</a>
-                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=1" class="filter-tab <%= Integer.valueOf(1).equals(currentTrangThai) ? "active" : "" %>">Đã xác nhận</a>
-                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=2" class="filter-tab <%= Integer.valueOf(2).equals(currentTrangThai) ? "active" : "" %>">Đang giao</a>
-                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=3" class="filter-tab <%= Integer.valueOf(3).equals(currentTrangThai) ? "active" : "" %>">Hoàn thành</a>
-                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=4" class="filter-tab <%= Integer.valueOf(4).equals(currentTrangThai) ? "active" : "" %>">Đã huỷ</a>
+                    <a href="${pageContext.request.contextPath}/admin/invoices"               class="filter-tab <%= currentStatus == null          ? "active" : "" %>">Tất cả</a>
+                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=0"   class="filter-tab <%= Integer.valueOf(0).equals(currentStatus) ? "active" : "" %>">Chờ xác nhận</a>
+                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=1"   class="filter-tab <%= Integer.valueOf(1).equals(currentStatus) ? "active" : "" %>">Đã xác nhận</a>
+                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=2"   class="filter-tab <%= Integer.valueOf(2).equals(currentStatus) ? "active" : "" %>">Đang giao</a>
+                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=3"   class="filter-tab <%= Integer.valueOf(3).equals(currentStatus) ? "active" : "" %>">Hoàn thành</a>
+                    <a href="${pageContext.request.contextPath}/admin/invoices?trangThai=4"   class="filter-tab <%= Integer.valueOf(4).equals(currentStatus) ? "active" : "" %>">Đã huỷ</a>
                 </div>
             </div>
 
@@ -119,31 +116,31 @@
                     </thead>
                     <tbody>
                     <%
-                        if (hoaDons != null && !hoaDons.isEmpty()) {
-                            int sttIndex = 1;
-                            for (Invoice hd : hoaDons) {
-                                int tt      = hd.getTrangThaiDonHang() != null ? hd.getTrangThaiDonHang() : 0;
-                                String bCls = badgeClass.apply(tt);
-                                String bLbl = trangThaiLabels != null ? trangThaiLabels.getOrDefault(tt, "?") : "?";
-                                String tongTien  = hd.getTongThanhToan() != null
-                                        ? String.format("%,.0fđ", hd.getTongThanhToan()).replace(",", ".") : "—";
-                                String ngayDat   = hd.getNgayDatHang() != null ? hd.getNgayDatHang().format(dtf) : "—";
-                                String tenKH     = hd.getTenKhachHang()  != null ? hd.getTenKhachHang()  : "";
-                                String sdtKH     = hd.getSdtKhachHang()  != null ? hd.getSdtKhachHang()  : "";
-                                String pttt      = (hd.getPaymentMethod() != null) ? hd.getPaymentMethod().getTenPhuongThuc() : "—";
+                        if (invoices != null && !invoices.isEmpty()) {
+                            int stt = 1;
+                            for (Invoice inv : invoices) {
+                                int s        = inv.getOrderStatus();
+                                String bCls  = badgeClass.apply(s);
+                                String bLbl  = statusLabels != null ? statusLabels.getOrDefault(s, "?") : "?";
+                                String total2  = inv.getTotalAmount() != null
+                                        ? String.format("%,.0fđ", inv.getTotalAmount()).replace(",", ".") : "—";
+                                String orderDate = inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—";
+                                String custName  = inv.getCustomerName()  != null ? inv.getCustomerName()  : "";
+                                String custPhone = inv.getCustomerPhone() != null ? inv.getCustomerPhone() : "";
+                                String payMethod = inv.getPaymentMethod() != null ? inv.getPaymentMethod().getName() : "—";
                     %>
                     <tr>
-                        <td><%= pageNo * size + (sttIndex++) %></td>
-                        <td><span class="hd-id">HD<%= hd.getId() %></span></td>
-                        <td><div class="customer-name"><%= tenKH %></div></td>
-                        <td><div class="customer-phone" style="margin-top:0;color:#374151;"><%= sdtKH %></div></td>
-                        <td style="font-weight:700;color:#111827;"><%= tongTien %></td>
-                        <td style="color:#6b7280;"><%= ngayDat %></td>
-                        <td style="color:#374151;"><%= pttt %></td>
+                        <td><%= pageNo * size + (stt++) %></td>
+                        <td><span class="hd-id">HD<%= inv.getId() %></span></td>
+                        <td><div class="customer-name"><%= custName %></div></td>
+                        <td><div class="customer-phone" style="margin-top:0;color:#374151;"><%= custPhone %></div></td>
+                        <td style="font-weight:700;color:#111827;"><%= total2 %></td>
+                        <td style="color:#6b7280;"><%= orderDate %></td>
+                        <td style="color:#374151;"><%= payMethod %></td>
                         <td><span class="badge <%= bCls %>"><%= bLbl %></span></td>
                         <td style="text-align:center;">
                             <div style="display:flex;gap:6px;justify-content:center;">
-                                <a href="${pageContext.request.contextPath}/admin/invoices/detail?id=<%= hd.getId() %>"
+                                <a href="${pageContext.request.contextPath}/admin/invoices/detail?id=<%= inv.getId() %>"
                                    class="act-btn view" title="Xem chi tiết">
                                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
@@ -158,10 +155,11 @@
                     </tbody>
                 </table>
 
-                <!-- Pagination footer -->
+                <!-- Pagination -->
                 <div class="il-pagination">
                     <span class="info">
-                        Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong> trong tổng <strong><%= String.format("%,d", total) %></strong> đơn hàng
+                        Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
+                        trong tổng <strong><%= String.format("%,d", total) %></strong> đơn hàng
                     </span>
                     <div class="paging-btns">
                         <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="pg-btn <%= pageNo == 0 ? "disabled" : "" %>">‹</a>
@@ -188,7 +186,6 @@
 </div>
 
 <script>
-    // Hiển thị ngày hiện tại
     (function() {
         var d = new Date();
         var days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
@@ -210,41 +207,24 @@
         input.setSelectionRange(len, len);
 
         function updateClearBtn() {
-            if (input.value.trim().length > 0) {
-                box.classList.add('has-value');
-            } else {
-                box.classList.remove('has-value');
-            }
+            box.classList.toggle('has-value', input.value.trim().length > 0);
         }
         updateClearBtn();
 
-        // Live search debounce 400ms
         input.addEventListener('input', function () {
             updateClearBtn();
             clearTimeout(timer);
             timer = setTimeout(function () { form.submit(); }, 400);
         });
-
-        // Nút X
         clearBtn.addEventListener('click', function () {
             input.value = '';
             updateClearBtn();
             clearTimeout(timer);
             form.submit();
         });
-
-        // Phím Escape / Enter
         input.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                input.value = '';
-                updateClearBtn();
-                clearTimeout(timer);
-                form.submit();
-            }
-            if (e.key === 'Enter') {
-                clearTimeout(timer);
-                form.submit();
-            }
+            if (e.key === 'Escape') { input.value = ''; updateClearBtn(); clearTimeout(timer); form.submit(); }
+            if (e.key === 'Enter')  { clearTimeout(timer); form.submit(); }
         });
     })();
 </script>

@@ -54,69 +54,66 @@ public class Invoice {
 
     // ===== Thông tin đơn hàng =====
     @Column(name = "ngay_dat_hang")
-    LocalDateTime ngayDatHang;
+    LocalDateTime orderDate;
 
     @Column(name = "ngay_xac_nhan")
-    LocalDateTime ngayXacNhan;
+    LocalDateTime confirmDate;
 
     @Column(name = "ten_khach_hang", length = 150)
-    String tenKhachHang;
+    String customerName;
 
     @Column(name = "sdt_khach_hang", length = 20)
-    String sdtKhachHang;
+    String customerPhone;
 
     @Column(name = "email_khach_hang", length = 200)
-    String emailKhachHang;
+    String customerEmail;
 
     @Column(name = "dia_chi_khach_hang", columnDefinition = "NVARCHAR(500)")
-    String diaChiKhachHang;
+    String customerAddress;
 
     // ===== Thông tin tiền =====
     @Column(name = "tong_so_luong")
-    Integer tongSoLuong;
+    int totalQuantity;
 
     @Column(name = "tam_tinh")
-    Double tamTinh;
+    Double subtotal;
 
     @Column(name = "tien_giam_hoa_don")
-    Double tienGiamHoaDon;
+    Double discountAmount;
 
     @Column(name = "tong_thanh_toan")
-    Double tongThanhToan;
+    Double totalAmount;
 
     @Column(name = "da_thanh_toan")
-    Double daThanhToan;
+    Double paidAmount;
 
     @Column(name = "lien_hoan")
-    Double lienHoan;
+    Double refundAmount;
 
     // ===== Trạng thái =====
     @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
-    String ghiChu;
+    String note;
 
     @Column(name = "trang_thai_thanh_toan")
-    Integer trangThaiThanhToan; // 0: Chưa thanh toán, 1: Đã thanh toán
+    int paymentStatus; // 0: Chưa thanh toán, 1: Đã thanh toán
 
     @Column(name = "trang_thai_don_hang")
-    Integer trangThaiDonHang; // 0: Chờ xử lý, 1: Đang giao, 2: Đã giao, 3: Huỷ
+    int orderStatus; // 0: Chờ xử lý, 1: Đã xác nhận, 2: Đang giao, 3: Hoàn thành, 4: Huỷ
 
     @Column(name = "trang_thai")
-    Integer trangThai; // 1: Active, 0: Inactive
+    int status; // 1: Active, 0: Inactive
 
     // ===== Quan hệ 1-N =====
-    // mappedBy phải khớp với tên field trong InvoiceDetail → "invoice"
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<InvoiceDetail> invoiceDetailList;
 
-    // mappedBy phải khớp với tên field trong PaymentHistory → "invoice"
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<PaymentHistory> paymentHistoryList;
 
-    // mappedBy phải khớp với tên field trong InvoiceHistory → "invoice"
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

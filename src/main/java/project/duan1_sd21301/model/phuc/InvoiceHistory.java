@@ -1,4 +1,5 @@
 package project.duan1_sd21301.model.phuc;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -38,18 +39,17 @@ public class InvoiceHistory {
 //    KhachHang khachHang;
 
     @Column(name = "trang_thai_cu")
-    Integer trangThaiCu;
+    int oldStatus;
 
     @Column(name = "trang_thai_moi")
-    Integer trangThaiMoi;
+    int newStatus;
 
     @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
-    String ghiChu;
+    String note;
 
     @Column(name = "thoi_gian_cap_nhat")
-    LocalDateTime thoiGianCapNhat;
+    LocalDateTime updatedAt;
 
     @Column(name = "trang_thai")
-    Integer trangThai; // 1: Active, 0: Inactive
+    int status; // 1: Active, 0: Inactive
 }
-

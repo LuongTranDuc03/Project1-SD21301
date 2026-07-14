@@ -20,13 +20,13 @@ public class InvoiceRepository {
     /**
      * Lưu mới hóa đơn.
      */
-    public Invoice save(Invoice hoaDon) {
+    public Invoice save(Invoice invoice) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            session.persist(hoaDon);
+            session.persist(invoice);
             tx.commit();
-            return hoaDon;
+            return invoice;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             throw new RuntimeException("Lỗi khi lưu hóa đơn", e);
@@ -36,11 +36,11 @@ public class InvoiceRepository {
     /**
      * Cập nhật hóa đơn đã tồn tại.
      */
-    public Invoice update(Invoice hoaDon) {
+    public Invoice update(Invoice invoice) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            Invoice merged = session.merge(hoaDon);
+            Invoice merged = session.merge(invoice);
             tx.commit();
             return merged;
         } catch (Exception e) {
@@ -50,16 +50,16 @@ public class InvoiceRepository {
     }
 
     /**
-     * Xóa mềm hóa đơn theo id bằng cách set trang_thai = 0.
+     * Xóa mềm hóa đơn theo id bằng cách set status = 0.
      */
-    public void softDelete(Integer id) {
+    public void softDelete(int id) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
-            Invoice hoaDon = session.get(Invoice.class, id);
-            if (hoaDon != null) {
-                hoaDon.setTrangThai(0);
-                session.merge(hoaDon);
+            Invoice invoice = session.get(Invoice.class, id);
+            if (invoice != null) {
+                invoice.setStatus(0);
+                session.merge(invoice);
             }
             tx.commit();
         } catch (Exception e) {
@@ -71,40 +71,40 @@ public class InvoiceRepository {
     /**
      * Cập nhật trạng thái hóa đơn, xử lý tồn kho và ghi lịch sử — trong một transaction duy nhất.
      *
-     * @param hoaDon            entity hóa đơn đã được set trạng thái mới
-     * @param hoadonchitietList danh sách chi tiết (dùng xử lý tồn kho)
-     * @param lichSu            bản ghi lịch sử cần lưu
-     * @param xuLyKho           true = cần xử lý tồn kho
-     * @param tangTonKho        true = hoàn kho (hủy đơn), false = trừ kho (phục hồi từ hủy)
+     * @param invoice      entity hóa đơn đã được set trạng thái mới
+     * @param detailList   danh sách chi tiết (dùng xử lý tồn kho)
+     * @param history      bản ghi lịch sử cần lưu
+     * @param updateStock  true = cần xử lý tồn kho
+     * @param increaseStock true = hoàn kho (hủy đơn), false = trừ kho (phục hồi từ hủy)
      */
-    public void capNhatTrangThaiVaGhiLichSu(Invoice hoaDon,
-                                            List<InvoiceDetail> hoadonchitietList,
-                                            InvoiceHistory lichSu,
-                                            boolean xuLyKho,
-                                            boolean tangTonKho) {
+    public void updateStatusAndSaveHistory(Invoice invoice,
+                                           List<InvoiceDetail> detailList,
+                                           InvoiceHistory history,
+                                           boolean updateStock,
+                                           boolean increaseStock) {
         Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             tx = session.beginTransaction();
 
             // 1. Xử lý tồn kho nếu cần
-            if (xuLyKho && hoadonchitietList != null) {
-                for (InvoiceDetail ct : hoadonchitietList) {
-                    if (ct.getProductDetail() != null && ct.getSoLuong() != null) {
-                        ProductDetail sp = session.get(ProductDetail.class, ct.getProductDetail().getId());
-                        if (sp != null) {
-                            int delta = tangTonKho ? ct.getSoLuong() : -ct.getSoLuong();
-                            sp.setStock(sp.getStock() + delta);
-                            session.merge(sp);
+            if (updateStock && detailList != null) {
+                for (InvoiceDetail detail : detailList) {
+                    if (detail.getProductDetail() != null) {
+                        ProductDetail product = session.get(ProductDetail.class, detail.getProductDetail().getId());
+                        if (product != null) {
+                            int delta = increaseStock ? detail.getQuantity() : -detail.getQuantity();
+                            product.setStock(product.getStock() + delta);
+                            session.merge(product);
                         }
                     }
                 }
             }
 
             // 2. Cập nhật hóa đơn
-            session.merge(hoaDon);
+            session.merge(invoice);
 
             // 3. Ghi lịch sử
-            session.persist(lichSu);
+            session.persist(history);
 
             tx.commit();
         } catch (Exception e) {
@@ -118,7 +118,7 @@ public class InvoiceRepository {
     // ===========================
 
     /**
-     * Tìm hóa đơn theo ID (có fetch các quan hệ thường dùng).
+     * Tìm hóa đơn theo ID (có fetch address và paymentMethod).
      */
     public Invoice findById(int id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -151,9 +151,9 @@ public class InvoiceRepository {
      */
     public List<InvoiceHistory> findHistoryByInvoiceId(int invoiceId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM InvoiceHistory ls "
-                    + "WHERE ls.invoice.id = :invId "
-                    + "ORDER BY ls.thoiGianCapNhat DESC";
+            String hql = "FROM InvoiceHistory h "
+                    + "WHERE h.invoice.id = :invId "
+                    + "ORDER BY h.updatedAt DESC";
             return session.createQuery(hql, InvoiceHistory.class)
                     .setParameter("invId", invoiceId)
                     .getResultList();
@@ -161,50 +161,43 @@ public class InvoiceRepository {
     }
 
     /**
-     * Lấy danh sách hóa đơn có phân trang và lọc theo trạng thái đơn hàng.
+     * Lấy danh sách hóa đơn có phân trang, lọc theo orderStatus và keyword.
      *
-     * @param trangThaiDonHang null = tất cả; 0/1/2/3/4 = lọc theo trạng thái
-     * @param keyword          từ khóa tìm kiếm (tên KH, sdt, mã HD số); null hoặc rỗng = bỏ qua
-     * @param page             số trang (bắt đầu từ 0)
-     * @param size             số lượng mỗi trang
+     * @param orderStatus null = tất cả; 0/1/2/3/4 = lọc theo trạng thái
+     * @param keyword     từ khóa tìm kiếm (tên KH, sdt, mã HD số); null hoặc rỗng = bỏ qua
+     * @param page        số trang (bắt đầu từ 0)
+     * @param size        số lượng mỗi trang
      */
-    public List<Invoice> findAll(Integer trangThaiDonHang, String keyword, int page, int size) {
+    public List<Invoice> findAll(Integer orderStatus, String keyword, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            StringBuilder hql = new StringBuilder("FROM Invoice hd "
-                    + "LEFT JOIN FETCH hd.paymentMethod "
-                    + "WHERE 1=1 ");
+            StringBuilder hql = new StringBuilder(
+                    "FROM Invoice hd LEFT JOIN FETCH hd.paymentMethod WHERE 1=1 ");
 
-            if (trangThaiDonHang != null) {
-                hql.append("AND hd.trangThaiDonHang = :trangThai ");
+            if (orderStatus != null) {
+                hql.append("AND hd.orderStatus = :orderStatus ");
             }
 
             boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
             Integer idSearch = null;
             if (hasKeyword) {
-                try {
-                    idSearch = Integer.parseInt(keyword.trim());
-                } catch (NumberFormatException ignored) { }
+                try { idSearch = Integer.parseInt(keyword.trim()); }
+                catch (NumberFormatException ignored) { }
 
                 if (idSearch != null) {
-                    hql.append("AND (hd.id = :idSearch OR LOWER(hd.tenKhachHang) LIKE :kw OR hd.sdtKhachHang LIKE :kw) ");
+                    hql.append("AND (hd.id = :idSearch OR LOWER(hd.customerName) LIKE :kw OR hd.customerPhone LIKE :kw) ");
                 } else {
-                    hql.append("AND (LOWER(hd.tenKhachHang) LIKE :kw OR hd.sdtKhachHang LIKE :kw) ");
+                    hql.append("AND (LOWER(hd.customerName) LIKE :kw OR hd.customerPhone LIKE :kw) ");
                 }
             }
 
-            hql.append("ORDER BY hd.ngayDatHang DESC");
+            hql.append("ORDER BY hd.orderDate DESC");
 
             Query<Invoice> query = session.createQuery(hql.toString(), Invoice.class);
 
-            if (trangThaiDonHang != null) {
-                query.setParameter("trangThai", trangThaiDonHang);
-            }
+            if (orderStatus != null)    query.setParameter("orderStatus", orderStatus);
             if (hasKeyword) {
-                String like = "%" + keyword.trim().toLowerCase() + "%";
-                query.setParameter("kw", like);
-                if (idSearch != null) {
-                    query.setParameter("idSearch", idSearch);
-                }
+                query.setParameter("kw", "%" + keyword.trim().toLowerCase() + "%");
+                if (idSearch != null)   query.setParameter("idSearch", idSearch);
             }
 
             query.setFirstResult(page * size);
@@ -214,41 +207,36 @@ public class InvoiceRepository {
     }
 
     /**
-     * Đếm tổng số hóa đơn theo trạng thái và keyword (dùng cho phân trang).
+     * Đếm tổng số hóa đơn theo orderStatus và keyword (dùng cho phân trang).
      */
-    public long countAll(Integer trangThaiDonHang, String keyword) {
+    public long countAll(Integer orderStatus, String keyword) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            StringBuilder hql = new StringBuilder("SELECT COUNT(hd) FROM Invoice hd WHERE 1=1 ");
+            StringBuilder hql = new StringBuilder(
+                    "SELECT COUNT(hd) FROM Invoice hd WHERE 1=1 ");
 
-            if (trangThaiDonHang != null) {
-                hql.append("AND hd.trangThaiDonHang = :trangThai ");
+            if (orderStatus != null) {
+                hql.append("AND hd.orderStatus = :orderStatus ");
             }
 
             boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
             Integer idSearch = null;
             if (hasKeyword) {
-                try {
-                    idSearch = Integer.parseInt(keyword.trim());
-                } catch (NumberFormatException ignored) { }
+                try { idSearch = Integer.parseInt(keyword.trim()); }
+                catch (NumberFormatException ignored) { }
 
                 if (idSearch != null) {
-                    hql.append("AND (hd.id = :idSearch OR LOWER(hd.tenKhachHang) LIKE :kw OR hd.sdtKhachHang LIKE :kw) ");
+                    hql.append("AND (hd.id = :idSearch OR LOWER(hd.customerName) LIKE :kw OR hd.customerPhone LIKE :kw) ");
                 } else {
-                    hql.append("AND (LOWER(hd.tenKhachHang) LIKE :kw OR hd.sdtKhachHang LIKE :kw) ");
+                    hql.append("AND (LOWER(hd.customerName) LIKE :kw OR hd.customerPhone LIKE :kw) ");
                 }
             }
 
             Query<Long> query = session.createQuery(hql.toString(), Long.class);
 
-            if (trangThaiDonHang != null) {
-                query.setParameter("trangThai", trangThaiDonHang);
-            }
+            if (orderStatus != null)    query.setParameter("orderStatus", orderStatus);
             if (hasKeyword) {
-                String like = "%" + keyword.trim().toLowerCase() + "%";
-                query.setParameter("kw", like);
-                if (idSearch != null) {
-                    query.setParameter("idSearch", idSearch);
-                }
+                query.setParameter("kw", "%" + keyword.trim().toLowerCase() + "%");
+                if (idSearch != null)   query.setParameter("idSearch", idSearch);
             }
 
             return query.uniqueResult();

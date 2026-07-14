@@ -14,6 +14,7 @@ import project.duan1_sd21301.model.luong.ProductDetail;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InvoiceDetail {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
@@ -31,17 +32,17 @@ public class InvoiceDetail {
     ProductDetail productDetail;
 
     @Column(name = "don_gia")
-    Double donGia;
+    Double unitPrice;
 
     @Column(name = "gia_giam")
-    Double giaGiam;
+    Double discountPrice;
 
     @Column(name = "so_luong")
-    Integer soLuong;
+    int quantity;
 
     @Column(name = "thanh_tien")
-    Double thanhTien;
+    Double totalPrice;
 
     @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
-    String ghiChu;
+    String note;
 }

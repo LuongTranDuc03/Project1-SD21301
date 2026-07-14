@@ -18,9 +18,9 @@ import java.util.Map;
 
 /**
  * Servlet quản lý hóa đơn.
- *  GET  /admin/invoices           → danh sách (phân trang, tìm kiếm, lọc trạng thái)
- *  GET  /admin/invoices/detail    → chi tiết hóa đơn (?id=...)
- *  GET  /admin/invoices/print     → trang in hóa đơn (?id=...)
+ *  GET  /admin/invoices               → danh sách (phân trang, tìm kiếm, lọc trạng thái)
+ *  GET  /admin/invoices/detail        → chi tiết hóa đơn (?id=...)
+ *  GET  /admin/invoices/print         → trang in hóa đơn (?id=...)
  *  POST /admin/invoices/update-status → cập nhật trạng thái đơn hàng
  */
 @WebServlet(name = "InvoiceController", urlPatterns = {
@@ -34,14 +34,14 @@ public class InvoiceController extends HttpServlet {
     private static final int PAGE_SIZE = 10;
 
     /** Nhãn trạng thái đơn hàng */
-    private static final Map<Integer, String> TRANG_THAI_LABELS;
+    private static final Map<Integer, String> ORDER_STATUS_LABELS;
     static {
-        TRANG_THAI_LABELS = new LinkedHashMap<>();
-        TRANG_THAI_LABELS.put(0, "Chờ xác nhận");
-        TRANG_THAI_LABELS.put(1, "Đã xác nhận");
-        TRANG_THAI_LABELS.put(2, "Đang giao hàng");
-        TRANG_THAI_LABELS.put(3, "Hoàn thành");
-        TRANG_THAI_LABELS.put(4, "Đã huỷ");
+        ORDER_STATUS_LABELS = new LinkedHashMap<>();
+        ORDER_STATUS_LABELS.put(0, "Chờ xác nhận");
+        ORDER_STATUS_LABELS.put(1, "Đã xác nhận");
+        ORDER_STATUS_LABELS.put(2, "Đang giao hàng");
+        ORDER_STATUS_LABELS.put(3, "Hoàn thành");
+        ORDER_STATUS_LABELS.put(4, "Đã huỷ");
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -89,40 +89,39 @@ public class InvoiceController extends HttpServlet {
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // --- Đọc params ---
         String keyword = request.getParameter("q");
         if (keyword != null && keyword.trim().isEmpty()) keyword = null;
 
-        Integer trangThai = null;
+        Integer orderStatus = null;
         String ttParam = request.getParameter("trangThai");
         if (ttParam != null && !ttParam.isEmpty()) {
-            try { trangThai = Integer.parseInt(ttParam); } catch (NumberFormatException ignored) { }
+            try { orderStatus = Integer.parseInt(ttParam); }
+            catch (NumberFormatException ignored) { }
         }
 
         int page = 0;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
-            try { page = Math.max(0, Integer.parseInt(pageParam)); } catch (NumberFormatException ignored) { }
+            try { page = Math.max(0, Integer.parseInt(pageParam)); }
+            catch (NumberFormatException ignored) { }
         }
 
-        // --- Truy vấn ---
-        long total = invoiceRepo.countAll(trangThai, keyword);
-        int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
+        long total      = invoiceRepo.countAll(orderStatus, keyword);
+        int totalPages  = (int) Math.ceil((double) total / PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         page = Math.min(page, totalPages - 1);
 
-        List<Invoice> invoices = invoiceRepo.findAll(trangThai, keyword, page, PAGE_SIZE);
+        List<Invoice> invoices = invoiceRepo.findAll(orderStatus, keyword, page, PAGE_SIZE);
 
-        // --- Set attributes ---
-        request.setAttribute("hoaDons", invoices);
-        request.setAttribute("trangThaiLabels", TRANG_THAI_LABELS);
-        request.setAttribute("total", total);
-        request.setAttribute("page", page);
-        request.setAttribute("size", PAGE_SIZE);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("currentTrangThai", trangThai);
-        request.setAttribute("keyword", keyword);
-        request.setAttribute("pageTitle", "Quản lý hóa đơn");
+        request.setAttribute("invoices",           invoices);
+        request.setAttribute("orderStatusLabels",  ORDER_STATUS_LABELS);
+        request.setAttribute("total",              total);
+        request.setAttribute("page",               page);
+        request.setAttribute("size",               PAGE_SIZE);
+        request.setAttribute("totalPages",         totalPages);
+        request.setAttribute("currentOrderStatus", orderStatus);
+        request.setAttribute("keyword",            keyword);
+        request.setAttribute("pageTitle",          "Quản lý hóa đơn");
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-list.jsp")
                 .forward(request, response);
@@ -132,33 +131,20 @@ public class InvoiceController extends HttpServlet {
     private void handleDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String idParam = request.getParameter("id");
-        if (idParam == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        int id = parseIdParam(request);
+        if (id < 0) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
-        int id;
-        try { id = Integer.parseInt(idParam); }
-        catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        Invoice invoice = invoiceRepo.findById(id);
+        if (invoice == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
-        Invoice hd = invoiceRepo.findById(id);
-        if (hd == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        List<InvoiceDetail>  detailList  = invoiceRepo.findDetailsByInvoiceId(id);
+        List<InvoiceHistory> historyList = invoiceRepo.findHistoryByInvoiceId(id);
 
-        List<InvoiceDetail> chiTietList   = invoiceRepo.findDetailsByInvoiceId(id);
-        List<InvoiceHistory> lichSuList   = invoiceRepo.findHistoryByInvoiceId(id);
-
-        request.setAttribute("hoaDon", hd);
-        request.setAttribute("chiTietList", chiTietList);
-        request.setAttribute("lichSuList", lichSuList);
-        request.setAttribute("trangThaiLabels", TRANG_THAI_LABELS);
-        request.setAttribute("pageTitle", "Chi tiết hóa đơn #HD-" + id);
+        request.setAttribute("invoice",           invoice);
+        request.setAttribute("detailList",        detailList);
+        request.setAttribute("historyList",       historyList);
+        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
+        request.setAttribute("pageTitle",         "Chi tiết hóa đơn #HD-" + id);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-detail.jsp")
                 .forward(request, response);
@@ -168,30 +154,17 @@ public class InvoiceController extends HttpServlet {
     private void handlePrint(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String idParam = request.getParameter("id");
-        if (idParam == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        int id = parseIdParam(request);
+        if (id < 0) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
-        int id;
-        try { id = Integer.parseInt(idParam); }
-        catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        Invoice invoice = invoiceRepo.findById(id);
+        if (invoice == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
-        Invoice hd = invoiceRepo.findById(id);
-        if (hd == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        List<InvoiceDetail> detailList = invoiceRepo.findDetailsByInvoiceId(id);
 
-        List<InvoiceDetail> chiTietList = invoiceRepo.findDetailsByInvoiceId(id);
-
-        request.setAttribute("hoaDon", hd);
-        request.setAttribute("chiTietList", chiTietList);
-        request.setAttribute("trangThaiLabels", TRANG_THAI_LABELS);
+        request.setAttribute("invoice",           invoice);
+        request.setAttribute("detailList",        detailList);
+        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-print.jsp")
                 .forward(request, response);
@@ -201,54 +174,61 @@ public class InvoiceController extends HttpServlet {
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
-        String idParam      = request.getParameter("hoaDonId");
-        String ttMoiParam   = request.getParameter("trangThaiMoi");
-        String ghiChu       = request.getParameter("ghiChu");
+        String idParam         = request.getParameter("invoiceId");
+        String newStatusParam  = request.getParameter("newStatus");
+        String note            = request.getParameter("note");
 
-        if (idParam == null || ttMoiParam == null) {
+        if (idParam == null || newStatusParam == null) {
             response.sendRedirect(request.getContextPath() + "/admin/invoices");
             return;
         }
 
-        int id, trangThaiMoi;
+        int id, newStatus;
         try {
-            id           = Integer.parseInt(idParam);
-            trangThaiMoi = Integer.parseInt(ttMoiParam);
+            id        = Integer.parseInt(idParam);
+            newStatus = Integer.parseInt(newStatusParam);
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/admin/invoices");
             return;
         }
 
-        Invoice hd = invoiceRepo.findById(id);
-        if (hd == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices");
-            return;
-        }
+        Invoice invoice = invoiceRepo.findById(id);
+        if (invoice == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
-        int trangThaiCu = hd.getTrangThaiDonHang() != null ? hd.getTrangThaiDonHang() : 0;
+        int oldStatus = invoice.getOrderStatus();
 
         // Ghi lịch sử
-        InvoiceHistory lichSu = InvoiceHistory.builder()
-                .invoice(hd)
-                .trangThaiCu(trangThaiCu)
-                .trangThaiMoi(trangThaiMoi)
-                .ghiChu(ghiChu != null ? ghiChu.trim() : "")
-                .thoiGianCapNhat(LocalDateTime.now())
-                .trangThai(1)
+        InvoiceHistory history = InvoiceHistory.builder()
+                .invoice(invoice)
+                .oldStatus(oldStatus)
+                .newStatus(newStatus)
+                .note(note != null ? note.trim() : "")
+                .updatedAt(LocalDateTime.now())
+                .status(1)
                 .build();
 
-        // Xác định có cần xử lý kho không
-        // Khi huỷ đơn (→ 4): hoàn kho; Khi khôi phục từ huỷ (4 → khác): trừ kho
-        boolean xuLyKho  = (trangThaiMoi == 4) || (trangThaiCu == 4 && trangThaiMoi != 4);
-        boolean tangKho  = (trangThaiMoi == 4);
+        // Xác định xử lý kho:
+        // Hủy đơn (→ 4): hoàn kho; khôi phục từ hủy (4 → khác): trừ kho
+        boolean updateStock   = (newStatus == 4) || (oldStatus == 4 && newStatus != 4);
+        boolean increaseStock = (newStatus == 4);
 
-        List<InvoiceDetail> chiTietList = invoiceRepo.findDetailsByInvoiceId(id);
-        hd.setTrangThaiDonHang(trangThaiMoi);
+        List<InvoiceDetail> detailList = invoiceRepo.findDetailsByInvoiceId(id);
+        invoice.setOrderStatus(newStatus);
 
-        invoiceRepo.capNhatTrangThaiVaGhiLichSu(hd, chiTietList, lichSu, xuLyKho, tangKho);
+        invoiceRepo.updateStatusAndSaveHistory(invoice, detailList, history, updateStock, increaseStock);
 
-        String msg = (trangThaiMoi == 4) ? "cancelled" : "updated";
+        String msg = (newStatus == 4) ? "cancelled" : "updated";
         response.sendRedirect(request.getContextPath()
                 + "/admin/invoices/detail?id=" + id + "&msg=" + msg);
+    }
+
+    // =====================================================================
+    // Helper
+    // =====================================================================
+    private int parseIdParam(HttpServletRequest request) {
+        String idParam = request.getParameter("id");
+        if (idParam == null) return -1;
+        try { return Integer.parseInt(idParam); }
+        catch (NumberFormatException e) { return -1; }
     }
 }

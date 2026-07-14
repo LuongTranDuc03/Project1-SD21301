@@ -1,4 +1,5 @@
 package project.duan1_sd21301.model.phuc;
+
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PaymentHistory {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
@@ -25,17 +27,17 @@ public class PaymentHistory {
     Invoice invoice;
 
     @Column(name = "ma_giao_dich_cong", length = 200)
-    String maGiaoDichCong;
+    String transactionCode;
 
     @Column(name = "so_tien")
-    Double soTien;
+    Double amount;
 
     @Column(name = "noi_dung", columnDefinition = "NVARCHAR(MAX)")
-    String noiDung;
+    String description;
 
     @Column(name = "trang_thai")
-    Integer trangThai; // 0: Thất bại, 1: Thành công
+    int status; // 0: Thất bại, 1: Thành công
 
     @Column(name = "thoi_gian_giao_dich")
-    LocalDateTime thoiGianGiaoDich;
+    LocalDateTime transactionTime;
 }
