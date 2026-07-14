@@ -104,17 +104,20 @@ public class Invoice {
     Integer trangThai; // 1: Active, 0: Inactive
 
     // ===== Quan hệ 1-N =====
-    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // mappedBy phải khớp với tên field trong InvoiceDetail → "invoice"
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<InvoiceDetail> invoiceDetailList;
 
-    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // mappedBy phải khớp với tên field trong PaymentHistory → "invoice"
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<PaymentHistory> paymentHistoryList;
 
-    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // mappedBy phải khớp với tên field trong InvoiceHistory → "invoice"
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<InvoiceHistory> invoiceHistoryList;

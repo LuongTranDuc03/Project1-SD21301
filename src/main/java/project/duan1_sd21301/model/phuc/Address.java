@@ -50,7 +50,8 @@ public class Address {
     String ghiChu;
 
     // Quan hệ 1-N với HoaDon
-    @OneToMany(mappedBy = "diaChi", fetch = FetchType.LAZY)
+    // mappedBy phải khớp với tên field trong Invoice → "address"
+    @OneToMany(mappedBy = "address", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<Invoice> invoiceList;

@@ -7,7 +7,7 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Environment;
-import project.duan1_sd21301.model.*;
+// (model root package does not exist — entities are in model.phuc and model.luong)
 import project.duan1_sd21301.model.luong.ProductDetail;
 import project.duan1_sd21301.model.phuc.*;
 
