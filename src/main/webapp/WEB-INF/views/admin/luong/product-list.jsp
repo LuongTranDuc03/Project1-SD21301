@@ -420,10 +420,10 @@
                                                 statusClass = "out_of_stock";
                                             }
                                 %>
-                                <tr data-id="<%= prod.getId() %>" data-name="<%= prod.getName().toLowerCase() %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-price="<%= prod.getDetails() != null && !prod.getDetails().isEmpty() ? prod.getDetails().stream().mapToDouble(d -> d.getPrice()).min().orElse(prod.getPrice()) : prod.getPrice() %>" data-stock="<%= prod.getStock() %>">
+                                <tr data-id="<%= prod.getId() %>" data-code="<%= prod.getCode() %>" data-name="<%= prod.getName().toLowerCase() %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-price="<%= prod.getDetails() != null && !prod.getDetails().isEmpty() ? prod.getDetails().stream().mapToDouble(d -> d.getPrice()).min().orElse(prod.getPrice()) : prod.getPrice() %>" data-stock="<%= prod.getStock() %>">
                                     <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                                     <td>
-                                        <span class="product-id-text"><%= prod.getId() %></span>
+                                        <span class="product-id-text"><%= prod.getCode() %></span>
                                     </td>
                                     <td>
                                         <span class="product-name-text"><%= prod.getName() %></span>
@@ -543,7 +543,7 @@
             rows.forEach(row => {
                 const matchSearch = !keyword ||
                     row.dataset.name.includes(keyword) ||
-                    row.dataset.id.toLowerCase().includes(keyword) ||
+                    row.dataset.code.toLowerCase().includes(keyword) ||
                     row.dataset.brand.includes(keyword);
                 const matchCat    = !currentCategory || row.dataset.category === currentCategory;
                 const matchStatus = !status || row.dataset.status === status;

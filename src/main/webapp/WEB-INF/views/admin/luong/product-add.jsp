@@ -4,7 +4,7 @@
 <%
     Product product = (Product) request.getAttribute("product");
     boolean isEdit = (product != null);
-    String pageTitleStr = isEdit ? "Chỉnh sửa sản phẩm " + product.getId() : "Thêm sản phẩm mới";
+    String pageTitleStr = isEdit ? "Chỉnh sửa sản phẩm " + product.getCode() : "Thêm sản phẩm mới";
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -425,6 +425,7 @@
                 <form action="${pageContext.request.contextPath}/admin/products" method="POST" id="productForm">
                     <% if (isEdit) { %>
                         <input type="hidden" name="isEdit" value="true">
+                        <input type="hidden" name="id" value="<%= product.getId() %>">
                     <% } %>
                     <!-- 1. Thông tin chung sản phẩm -->
                     <div class="form-card">
@@ -434,8 +435,8 @@
                         </div>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="id">Mã sản phẩm (Không bắt buộc)</label>
-                                <input type="text" id="id" name="id" class="form-input" placeholder="Ví dụ: SP009 (Tự sinh nếu để trống)" value="<%= isEdit ? product.getId() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %>>
+                                <label class="form-label" for="code">Mã sản phẩm (Không bắt buộc)</label>
+                                <input type="text" id="code" name="code" class="form-input" placeholder="Ví dụ: SP009 (Tự sinh nếu để trống)" value="<%= isEdit ? product.getCode() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %>>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="name">Tên sản phẩm *</label>

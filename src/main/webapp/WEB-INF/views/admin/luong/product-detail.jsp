@@ -58,8 +58,8 @@
     String requestAction = request.getParameter("action");
     if ("edit".equals(requestAction)) {
         Product prodObj = (Product) request.getAttribute("product");
-        request.setAttribute("pageTitle", "Chỉnh sửa sản phẩm " + (prodObj != null ? prodObj.getId() : ""));
-        request.getRequestDispatcher("/WEB-INF/views/admin/product-add.jsp").forward(request, response);
+        request.setAttribute("pageTitle", "Chỉnh sửa sản phẩm " + (prodObj != null ? prodObj.getCode() : ""));
+        request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
         return;
     }
 
@@ -612,7 +612,7 @@
                     <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                         <div>
                             <h1><%= prod.getName() %></h1>
-                            <div class="subtitle" style="margin-top: 4px;">Mã sản phẩm: <span style="font-weight: 600; color: #475569;"><%= prod.getId() %></span></div>
+                            <div class="subtitle" style="margin-top: 4px;">Mã sản phẩm: <span style="font-weight: 600; color: #475569;"><%= prod.getCode() %></span></div>
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <a href="${pageContext.request.contextPath}/admin/products?action=edit&id=<%= prod.getId() %>" class="edit-product-btn">
