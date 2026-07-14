@@ -1,4 +1,4 @@
-package project.duan1_sd21301.model;
+package project.duan1_sd21301.model.luong;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

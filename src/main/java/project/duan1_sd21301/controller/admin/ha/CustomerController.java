@@ -1,4 +1,4 @@
-package project.duan1_sd21301.controller.admin;
+package project.duan1_sd21301.controller.admin.ha;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -7,13 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "InvoiceController", value = "/admin/invoices")
-public class InvoiceController extends HttpServlet {
+@WebServlet(name = "CustomerController", value = "/admin/customers")
+public class CustomerController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("pageTitle", "Quản lý hóa đơn");
+        request.setAttribute("pageTitle", "Quản lý khách hàng");
         request.getRequestDispatcher("/WEB-INF/views/admin/under-construction.jsp").forward(request, response);
     }
 }

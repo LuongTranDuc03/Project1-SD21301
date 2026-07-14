@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="project.duan1_sd21301.model.Product" %>
-<%@ page import="project.duan1_sd21301.model.ProductDetail" %>
+<%@ page import="project.duan1_sd21301.model.luong.Product" %>
+<%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
 <%!
     public String getColorHex(String colorName) {

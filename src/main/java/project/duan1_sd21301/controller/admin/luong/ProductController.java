@@ -1,12 +1,12 @@
-package project.duan1_sd21301.controller.admin;
+package project.duan1_sd21301.controller.admin.luong;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import project.duan1_sd21301.model.Product;
-import project.duan1_sd21301.model.ProductDetail;
+import project.duan1_sd21301.model.luong.Product;
+import project.duan1_sd21301.model.luong.ProductDetail;
 
 import java.io.IOException;
 import java.util.ArrayList;
