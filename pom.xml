@@ -19,18 +19,30 @@
 
     <dependencies>
         <dependency>
+<<<<<<< HEAD
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.32</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
+=======
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <version>6.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
+<<<<<<< HEAD
+=======
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.32</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
@@ -42,6 +54,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+<<<<<<< HEAD
         
         <!-- Thư viện kết nối SQL Server -->
         <dependency>
@@ -68,6 +81,8 @@
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>3.0.1</version>
         </dependency>
+=======
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
     </dependencies>
 
     <build>

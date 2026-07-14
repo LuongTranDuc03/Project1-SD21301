@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
+<<<<<<< HEAD
+=======
+  <component name="KubernetesApiPersistence">{}</component>
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>

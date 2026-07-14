@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+=======
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
 <%
     // Lấy URI hiện tại để so sánh và set active class cho menu
     String uri = (String) request.getAttribute("javax.servlet.forward.request_uri");
@@ -45,7 +49,11 @@
                         <span class="menu-text">Thống kê</span>
                     </a>
                 </li>
+<<<<<<< HEAD
                 <!-- Bán hàng tại quầy (Sửa lại check active theo link /admin/pos) -->
+=======
+                <!-- Bán hàng tại quầy -->
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
                 <li class="<%= uri.endsWith("/admin/pos") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/pos">
                         <span class="menu-icon">
@@ -115,7 +123,11 @@
                 <span>Đăng xuất</span>
             </a>
         </div>
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
         <!-- User Profile Card -->
         <div class="user-card">
             <div class="user-avatar">A</div>
@@ -130,20 +142,32 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const toggleBtn = document.getElementById("sidebar-toggle");
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
         // Kiểm tra xem trạng thái collapsed trước đó có được lưu trong localStorage không
         const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true";
         if (isCollapsed) {
             document.body.classList.add("sidebar-collapsed");
             updateToggleIcon(true);
         }
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
         toggleBtn.addEventListener("click", function() {
             const collapsedNow = document.body.classList.toggle("sidebar-collapsed");
             localStorage.setItem("sidebar-collapsed", collapsedNow);
             updateToggleIcon(collapsedNow);
         });
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
         function updateToggleIcon(collapsed) {
             if (collapsed) {
                 // Đổi icon sang chevron-right (>) khi bị thu nhỏ
@@ -162,4 +186,8 @@
             }
         }
     });
+<<<<<<< HEAD
 </script>
+=======
+</script>
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed

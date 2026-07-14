@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+<<<<<<< HEAD
 import project.duan1_sd21301.model.Employee;
 import project.duan1_sd21301.model.Role;
 import project.duan1_sd21301.util.EmailUtil;
@@ -402,3 +403,17 @@ public class EmployeeController extends HttpServlet {
     }
     // Duplicate sendMailAll method removed
 }
+=======
+import java.io.IOException;
+
+@WebServlet(name = "EmployeeController", value = "/admin/employees")
+public class EmployeeController extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setAttribute("pageTitle", "Quản lý nhân viên");
+        request.getRequestDispatcher("/WEB-INF/views/admin/under-construction.jsp").forward(request, response);
+    }
+}
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed

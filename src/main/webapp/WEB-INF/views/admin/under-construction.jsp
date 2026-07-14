@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+=======
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
 <!DOCTYPE html>
 <html lang="vi">
 <head>

@@ -1,7 +1,20 @@
 package project.duan1_sd21301.model;
 
+<<<<<<< HEAD
 import java.util.Date;
 
+=======
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.Date;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
 public class Invoice {
     private String id;
     private String customerName;
@@ -12,6 +25,7 @@ public class Invoice {
     private double totalAmount;
     private String paymentMethod;
     private String status; // SUCCESS, SHIPPING, PENDING, CANCELLED
+<<<<<<< HEAD
 
     public Invoice() {
     }
@@ -101,4 +115,6 @@ public class Invoice {
     public void setStatus(String status) {
         this.status = status;
     }
+=======
+>>>>>>> 4ab1a6c62386556ffecbcd9edcc3018af0319fed
 }
