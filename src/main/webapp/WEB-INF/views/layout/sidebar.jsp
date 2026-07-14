@@ -36,6 +36,15 @@
         <div class="menu-section">
             <span class="menu-title">MENU CHÍNH</span>
             <ul>
+                <!-- Trang chủ -->
+                <li class="<%= uri.endsWith("/admin/menu") ? "active" : "" %>">
+                    <a href="<%= contextPath %>/admin/menu">
+                        <span class="menu-icon">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        </span>
+                        <span class="menu-text">Trang chủ</span>
+                    </a>
+                </li>
                 <!-- Thống kê -->
                 <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/dashboard">
