@@ -39,12 +39,6 @@ public class KhachHang {
     @Column(name = "gioi_tinh")
     Boolean gioiTinh; // true: Nam, false: Nữ
 
-    @Column(name = "diem_tich_luy")
-    Integer diemTichLuy;
-
-    @Column(name = "hang_thanh_vien", length = 50, columnDefinition = "NVARCHAR(50)")
-    String hangThanhVien; // DONG, BAC, VANG, BACH_KIM
-
     @Column(name = "anh_dai_dien", length = 500)
     String anhDaiDien;
 

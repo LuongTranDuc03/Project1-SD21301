@@ -37,20 +37,11 @@
             <ul>
                 <!-- Thống kê -->
                 <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/dashboard">
+                    <a href="<%= contextPath %>/admin/under-construction">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                         </span>
                         <span class="menu-text">Thống kê</span>
-                    </a>
-                </li>
-                <!-- Bán hàng tại quầy -->
-                <li class="<%= uri.endsWith("/admin/pos") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/pos">
-                        <span class="menu-icon">
-                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="8" rx="2" ry="2"></rect><rect x="6" y="20" width="12" height="4" rx="1" ry="1"></rect><path d="M12 12v8"></path></svg>
-                        </span>
-                        <span class="menu-text">Bán hàng tại quầy</span>
                     </a>
                 </li>
                 <!-- Quản lý hoá đơn -->
@@ -64,7 +55,7 @@
                 </li>
                 <!-- Quản lý sản phẩm -->
                 <li class="<%= uri.endsWith("/admin/products") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/products">
+                    <a href="<%= contextPath %>/admin/under-construction">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         </span>
@@ -73,7 +64,7 @@
                 </li>
                 <!-- Quản lý phiếu giảm giá -->
                 <li class="<%= uri.endsWith("/admin/coupons") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/coupons">
+                    <a href="<%= contextPath %>/admin/under-construction">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
                         </span>
@@ -82,7 +73,7 @@
                 </li>
                 <!-- Quản lý khách hàng -->
                 <li class="<%= uri.endsWith("/admin/customers") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/customers">
+                    <a href="<%= contextPath %>/admin/under-construction">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         </span>
@@ -91,7 +82,7 @@
                 </li>
                 <!-- Quản lý nhân viên -->
                 <li class="<%= uri.endsWith("/admin/employees") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/employees">
+                    <a href="<%= contextPath %>/admin/under-construction">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         </span>

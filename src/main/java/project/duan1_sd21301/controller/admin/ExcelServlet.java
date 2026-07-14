@@ -30,7 +30,7 @@ public class ExcelServlet extends HttpServlet {
     private final HoaDonService hoaDonService = new HoaDonServiceImpl();
 
     private static final String[] HEADERS = {
-        "Mã HD", "Tên khách hàng", "Số điện thoại",
+        "STT", "Mã HD", "Tên khách hàng", "Số điện thoại",
         "Tổng tiền (đ)", "Ngày đặt", "Thanh toán", "Trạng thái"
     };
 
@@ -130,6 +130,7 @@ public class ExcelServlet extends HttpServlet {
             // ===== Dòng 2+: Dữ liệu =====
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             int rowIdx = 2;
+            int sttIndex = 1;
             for (HoaDon hd : hoaDons) {
                 Row row = sheet.createRow(rowIdx);
                 row.setHeightInPoints(18);
@@ -138,23 +139,28 @@ public class ExcelServlet extends HttpServlet {
                 CellStyle cs      = isAlt ? dataAltStyle  : dataStyle;
                 CellStyle csMoney = isAlt ? moneyAltStyle : moneyStyle;
 
+                // STT
+                Cell cStt = row.createCell(0);
+                cStt.setCellValue(sttIndex++);
+                cStt.setCellStyle(cs);
+
                 // Mã HD
-                Cell c0 = row.createCell(0);
+                Cell c0 = row.createCell(1);
                 c0.setCellValue("HD" + hd.getId());
                 c0.setCellStyle(cs);
 
                 // Tên khách hàng
-                Cell c1 = row.createCell(1);
-                c1.setCellValue(hd.getTenKhachHang() != null ? hd.getTenKhachHang() : "Khách vãng lai");
+                Cell c1 = row.createCell(2);
+                c1.setCellValue(hd.getTenKhachHang() != null ? hd.getTenKhachHang() : "");
                 c1.setCellStyle(cs);
 
                 // Số điện thoại
-                Cell c2 = row.createCell(2);
+                Cell c2 = row.createCell(3);
                 c2.setCellValue(hd.getSdtKhachHang() != null ? hd.getSdtKhachHang() : "");
                 c2.setCellStyle(cs);
 
                 // Tổng tiền
-                Cell c3 = row.createCell(3);
+                Cell c3 = row.createCell(4);
                 if (hd.getTongThanhToan() != null) {
                     c3.setCellValue(hd.getTongThanhToan());
                 } else {
@@ -163,18 +169,18 @@ public class ExcelServlet extends HttpServlet {
                 c3.setCellStyle(csMoney);
 
                 // Ngày đặt
-                Cell c4 = row.createCell(4);
+                Cell c4 = row.createCell(5);
                 c4.setCellValue(hd.getNgayDatHang() != null ? hd.getNgayDatHang().format(dtf) : "");
                 c4.setCellStyle(cs);
 
                 // Phương thức thanh toán
-                Cell c5 = row.createCell(5);
+                Cell c5 = row.createCell(6);
                 c5.setCellValue(hd.getPhuongThucThanhToan() != null
                         ? hd.getPhuongThucThanhToan().getTenPhuongThuc() : "—");
                 c5.setCellStyle(cs);
 
                 // Trạng thái
-                Cell c6 = row.createCell(6);
+                Cell c6 = row.createCell(7);
                 int tt = hd.getTrangThaiDonHang() != null ? hd.getTrangThaiDonHang() : 0;
                 c6.setCellValue(tt >= 0 && tt < TRANG_THAI_LABELS.length ? TRANG_THAI_LABELS[tt] : "?");
                 c6.setCellStyle(cs);

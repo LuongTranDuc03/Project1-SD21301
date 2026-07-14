@@ -123,15 +123,11 @@ public class HoaDonRepository {
     // Tìm hóa đơn theo ID, trả về null nếu không tìm thấy
     public HoaDon findById(int id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // Fetch đủ chiTietHoaDonList và sanPham để tránh LazyInitializationException
-            String hql = "SELECT DISTINCT hd FROM HoaDon hd "
+            String hql = "FROM HoaDon hd "
                        + "LEFT JOIN FETCH hd.khachHang "
                        + "LEFT JOIN FETCH hd.nhanVien "
                        + "LEFT JOIN FETCH hd.phuongThucThanhToan "
                        + "LEFT JOIN FETCH hd.diaChi "
-                       + "LEFT JOIN FETCH hd.chiTietHoaDonList ctHD "
-                       + "LEFT JOIN FETCH ctHD.chiTietSanPham ctSP "
-                       + "LEFT JOIN FETCH ctSP.sanPham "
                        + "WHERE hd.id = :id";
             return session.createQuery(hql, HoaDon.class)
                           .setParameter("id", id)

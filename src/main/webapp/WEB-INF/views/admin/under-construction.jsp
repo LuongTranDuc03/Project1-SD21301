@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -11,80 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Nhúng CSS Custom -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
-    <style>
-        .under-construction-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 80px 40px;
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid #f3f4f6;
-            margin-top: 20px;
-        }
-
-        .construction-icon-wrapper {
-            background-color: #fefbeb;
-            color: #d97706;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.1);
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        .under-construction-card h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 12px;
-        }
-
-        .under-construction-card p {
-            font-size: 14px;
-            color: #6b7280;
-            max-width: 400px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .status-badge-progress {
-            background-color: #fef3c7;
-            color: #d97706;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .dot-pulse {
-            width: 6px;
-            height: 6px;
-            background-color: #d97706;
-            border-radius: 50%;
-            animation: bounce 1.2s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: scale(0.6); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 1; }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/under-construction.css">
 </head>
 <body>
     <div class="app-container">
@@ -140,3 +67,4 @@
     </div>
 </body>
 </html>
+

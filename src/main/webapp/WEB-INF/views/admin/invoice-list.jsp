@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.HoaDon" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -14,132 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
-    <style>
-        /* ===== Invoice List Specific Styles ===== */
-        .il-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .il-title h1 { font-size: 22px; font-weight: 700; color: #111827; margin: 0; }
-        .il-title p  { font-size: 13px; color: #9ca3af; margin: 4px 0 0; }
-
-        .btn-excel {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: #E11D48; color: #fff; border: none;
-            padding: 10px 18px; border-radius: 8px; font-size: 13px;
-            font-weight: 600; cursor: pointer; text-decoration: none;
-            transition: background .15s;
-        }
-        .btn-excel:hover { background: #be123c; }
-
-        /* Search + Filter row */
-        .search-filter-row {
-            display: flex; gap: 12px; align-items: center;
-            flex-wrap: wrap; margin-bottom: 16px;
-        }
-        .search-box {
-            display: flex; align-items: center; gap: 10px;
-            background: #fff; border: 1px solid #e5e7eb;
-            border-radius: 8px; padding: 9px 14px; flex: 1; min-width: 260px;
-        }
-        .search-box svg { color: #9ca3af; flex-shrink: 0; }
-        .search-box input {
-            border: none; outline: none; font-size: 13px;
-            color: #374151; width: 100%; font-family: 'Inter', sans-serif;
-            background: transparent;
-        }
-        .search-box input::placeholder { color: #9ca3af; }
-        .search-box .clear-btn {
-            border: none; background: none; cursor: pointer;
-            color: #9ca3af; padding: 0; line-height: 1;
-            display: none; /* ẩn khi chưa gõ */
-        }
-        .search-box .clear-btn:hover { color: #374151; }
-        .search-box.has-value .clear-btn { display: block; }
-
-        .filter-tabs {
-            display: flex; gap: 6px; flex-wrap: wrap;
-        }
-        .filter-tab {
-            padding: 8px 16px; border-radius: 20px; font-size: 13px;
-            font-weight: 500; border: 1px solid #e5e7eb; background: #fff;
-            color: #374151; cursor: pointer; text-decoration: none;
-            transition: all .15s ease; white-space: nowrap;
-        }
-        .filter-tab:hover { border-color: #E11D48; color: #E11D48; }
-        .filter-tab.active { background: #E11D48; border-color: #E11D48; color: #fff; }
-
-        /* Table */
-        .il-table-wrap {
-            background: #fff; border-radius: 12px;
-            border: 1px solid #e5e7eb; overflow: hidden;
-        }
-        .il-table { width: 100%; border-collapse: collapse; }
-        .il-table thead tr { background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
-        .il-table th {
-            padding: 12px 16px; text-align: left; font-size: 11px;
-            font-weight: 700; color: #6b7280; text-transform: uppercase;
-            letter-spacing: .04em; white-space: nowrap;
-        }
-        .il-table tbody tr {
-            border-bottom: 1px solid #f3f4f6;
-            transition: background .12s;
-        }
-        .il-table tbody tr:last-child { border-bottom: none; }
-        .il-table tbody tr:hover { background: #fafafa; }
-        .il-table td {
-            padding: 14px 16px; font-size: 13px; color: #374151; vertical-align: middle;
-        }
-
-        .hd-id { font-weight: 700; color: #111827; font-size: 13px; }
-        .customer-name { font-weight: 600; color: #111827; font-size: 13px; line-height: 1.4; }
-        .customer-phone { color: #9ca3af; font-size: 12px; margin-top: 2px; }
-
-        .badge {
-            display: inline-flex; align-items: center;
-            padding: 4px 10px; border-radius: 20px;
-            font-size: 11px; font-weight: 600; white-space: nowrap;
-        }
-        .badge.hoan-thanh  { background: #dcfce7; color: #166534; }
-        .badge.dang-giao   { background: #fef9c3; color: #854d0e; }
-        .badge.cho-xu-ly   { background: #e0f2fe; color: #0c4a6e; }
-        .badge.da-huy      { background: #fee2e2; color: #991b1b; }
-        .badge.da-xac-nhan { background: #ede9fe; color: #5b21b6; }
-
-        /* Action buttons */
-        .act-btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; border-radius: 8px;
-            border: 1px solid #e5e7eb; background: #fff;
-            cursor: pointer; color: #6b7280; text-decoration: none;
-            transition: all .15s;
-        }
-        .act-btn:hover { border-color: #E11D48; color: #E11D48; }
-        .act-btn.view:hover  { border-color: #3b82f6; color: #3b82f6; background: #eff6ff; }
-        .act-btn.edit:hover  { border-color: #f59e0b; color: #d97706; background: #fffbeb; }
-
-        /* Pagination */
-        .il-pagination {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 20px; border-top: 1px solid #f3f4f6; font-size: 13px;
-        }
-        .il-pagination .info { color: #6b7280; }
-        .paging-btns { display: flex; gap: 4px; align-items: center; }
-        .pg-btn {
-            min-width: 32px; height: 32px; padding: 0 8px;
-            border-radius: 6px; border: 1px solid #e5e7eb; background: #fff;
-            color: #374151; font-size: 13px; font-weight: 500;
-            cursor: pointer; text-decoration: none; display: inline-flex;
-            align-items: center; justify-content: center; transition: all .12s;
-        }
-        .pg-btn:hover { border-color: #E11D48; color: #E11D48; }
-        .pg-btn.active { background: #E11D48; border-color: #E11D48; color: #fff; }
-        .pg-btn.disabled { opacity: .4; pointer-events: none; }
-
-        .empty-row td { text-align: center; padding: 60px !important; color: #9ca3af; }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoice-list.css">
 </head>
 <body>
 <%
@@ -240,6 +115,7 @@
                 <table class="il-table">
                     <thead>
                         <tr>
+                            <th>STT</th>
                             <th>Mã HD</th>
                             <th>Khách hàng</th>
                             <th>Số điện thoại</th>
@@ -253,6 +129,7 @@
                     <tbody>
                     <%
                         if (hoaDons != null && !hoaDons.isEmpty()) {
+                            int sttIndex = 1;
                             for (HoaDon hd : hoaDons) {
                                 int tt = hd.getTrangThaiDonHang() != null ? hd.getTrangThaiDonHang() : 0;
                                 String bClass = badgeClass.apply(tt);
@@ -260,12 +137,13 @@
                                 String tongTien = hd.getTongThanhToan() != null
                                     ? String.format("%,.0fđ", hd.getTongThanhToan()).replace(",", ".") : "—";
                                 String ngayDat = hd.getNgayDatHang() != null ? hd.getNgayDatHang().format(dtf) : "—";
-                                String tenKH = hd.getTenKhachHang() != null ? hd.getTenKhachHang() : "Khách vãng lai";
+                                String tenKH = hd.getTenKhachHang() != null ? hd.getTenKhachHang() : "";
                                 String sdtKH = hd.getSdtKhachHang() != null ? hd.getSdtKhachHang() : "";
                                 String pttt = (hd.getPhuongThucThanhToan() != null) ? hd.getPhuongThucThanhToan().getTenPhuongThuc() : "—";
                                 int soLuong = hd.getTongSoLuong() != null ? hd.getTongSoLuong() : 0;
                     %>
                         <tr>
+                            <td><%= pageNo * size + (sttIndex++) %></td>
                             <td><span class="hd-id">HD<%= hd.getId() %></span></td>
                             <td>
                                 <div class="customer-name"><%= tenKH %></div>
@@ -282,10 +160,6 @@
                                     <a href="${pageContext.request.contextPath}/admin/orders/detail?id=<%= hd.getId() %>"
                                        class="act-btn view" title="Xem chi tiết">
                                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    </a>
-                                    <a href="${pageContext.request.contextPath}/admin/orders/detail?id=<%= hd.getId() %>"
-                                       class="act-btn edit" title="Cập nhật trạng thái">
-                                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                                     </a>
                                 </div>
                             </td>
@@ -332,8 +206,7 @@
     var clearBtn = document.getElementById('clearBtn');
     var timer    = null;
 
-    // --- Tự động focus + đặt con trỏ cuối text sau mỗi lần trang load ---
-    // Người dùng có thể xóa bằng Backspace và gõ tiếp ngay, không cần click lại
+
     input.focus();
     var len = input.value.length;
     input.setSelectionRange(len, len);
@@ -382,4 +255,5 @@
 })();
 </script>
 </html>
+
 
