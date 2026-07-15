@@ -11,12 +11,13 @@
 
 .btn-excel {
     display: inline-flex; align-items: center; gap: 8px;
-    background: #E11D48; color: #fff; border: none;
+    background: #217346; color: #fff; border: none;
     padding: 10px 18px; border-radius: 8px; font-size: 13px;
     font-weight: 600; cursor: pointer; text-decoration: none;
-    transition: background .15s;
+    transition: background .15s, box-shadow .15s;
+    box-shadow: 0 2px 6px rgba(33,115,70,.25);
 }
-.btn-excel:hover { background: #be123c; }
+.btn-excel:hover { background: #185c38; box-shadow: 0 4px 12px rgba(33,115,70,.35); }
 
 /* Search + Filter row */
 .search-filter-row {

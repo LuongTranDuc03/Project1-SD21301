@@ -29,8 +29,8 @@ public class HibernateUtil {
             StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
                     .applySetting(Environment.DRIVER,       dbProps.getProperty("db.driver"))
                     .applySetting(Environment.URL,          dbProps.getProperty("db.url"))
-                    .applySetting(Environment.USER,         dbProps.getProperty("db.username"))
-                    .applySetting(Environment.PASS,         dbProps.getProperty("db.password"))
+                    .applySetting("hibernate.connection.username", dbProps.getProperty("db.username"))
+                    .applySetting("hibernate.connection.password", dbProps.getProperty("db.password"))
                     .applySetting(Environment.DIALECT,      dbProps.getProperty("hibernate.dialect"))
                     .applySetting(Environment.SHOW_SQL,     dbProps.getProperty("hibernate.show_sql"))
                     .applySetting(Environment.FORMAT_SQL,   dbProps.getProperty("hibernate.format_sql"))
@@ -43,7 +43,7 @@ public class HibernateUtil {
 //            sources.addAnnotatedClass(KhachHang.class);
             sources.addAnnotatedClass(Address.class);
             sources.addAnnotatedClass(ProductDetail.class);
-//            sources.addAnnotatedClass(PhieuGiamGia.class);
+            sources.addAnnotatedClass(Coupon.class);
             sources.addAnnotatedClass(PaymentMethod.class);
             sources.addAnnotatedClass(Invoice.class);
             sources.addAnnotatedClass(InvoiceDetail.class);

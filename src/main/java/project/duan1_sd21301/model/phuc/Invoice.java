@@ -46,11 +46,11 @@ public class Invoice {
     @EqualsAndHashCode.Exclude
     PaymentMethod paymentMethod;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "id_ma_giam_gia")
-//    @ToString.Exclude
-//    @EqualsAndHashCode.Exclude
-//    PhieuGiamGia phieuGiamGia;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ma_giam_gia")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Coupon coupon;
 
     // ===== Thông tin đơn hàng =====
     @Column(name = "ngay_dat_hang")
@@ -95,15 +95,15 @@ public class Invoice {
     String note;
 
     @Column(name = "trang_thai_thanh_toan")
-    int paymentStatus; // 0: Chưa thanh toán, 1: Đã thanh toán
+    Integer paymentStatus; // 0: Chưa thanh toán, 1: Đã thanh toán
 
     @Column(name = "trang_thai_don_hang")
-    int orderStatus; // 0: Chờ xử lý, 1: Đã xác nhận, 2: Đang giao, 3: Hoàn thành, 4: Huỷ
+    Integer orderStatus; // 0: Chờ, 1: Xác nhận, 2: Đang giao, 3: Hoàn thành, 4: Huỷ
 
     @Column(name = "trang_thai")
-    int status; // 1: Active, 0: Inactive
+    Integer status;
 
-    // ===== Quan hệ 1-N =====
+    // ===== Quan hệ =====
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
