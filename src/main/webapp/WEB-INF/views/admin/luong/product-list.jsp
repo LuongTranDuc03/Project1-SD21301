@@ -556,12 +556,19 @@
                         </div>
                         <!-- Trạng thái -->
                         <div class="filter-field">
-                            <label for="statusFilter">Trạng thái</label>
-                            <select id="statusFilter" class="filter-control" onchange="applyFilters()">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="AVAILABLE">Còn hàng</option>
-                                <option value="OUT_OF_STOCK">Hết hàng</option>
-                            </select>
+                            <label>Trạng thái</label>
+                            <input type="hidden" id="statusFilter" value="">
+                            <div style="display: flex; gap: 16px; align-items: center; padding: 10px 0; margin-left: 20px;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                    <input type="radio" name="statusRadio" value="" onchange="document.getElementById('statusFilter').value=this.value; applyFilters()" checked> Tất cả
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                    <input type="radio" name="statusRadio" value="AVAILABLE" onchange="document.getElementById('statusFilter').value=this.value; applyFilters()"> Còn hàng
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                    <input type="radio" name="statusRadio" value="OUT_OF_STOCK" onchange="document.getElementById('statusFilter').value=this.value; applyFilters()"> Hết hàng
+                                </label>
+                            </div>
                         </div>
                         <!-- Đặt lại -->
                         <div class="filter-field" style="justify-content: flex-end; align-items: flex-end;">
@@ -966,6 +973,9 @@
         document.getElementById('categoryFilter').value = '';
         document.getElementById('brandFilter').value = '';
         document.getElementById('statusFilter').value = '';
+        
+        const defaultStatusRadio = document.querySelector('input[name="statusRadio"][value=""]');
+        if (defaultStatusRadio) defaultStatusRadio.checked = true;
 
         minPriceInput.value = SLIDER_MIN;
         maxPriceInput.value = SLIDER_MAX;

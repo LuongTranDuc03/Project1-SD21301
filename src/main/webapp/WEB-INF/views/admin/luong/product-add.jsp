@@ -464,14 +464,6 @@
                                 <label class="form-label" for="warranty">Bảo hành</label>
                                 <input type="text" id="warranty" name="warranty" class="form-input" placeholder="Ví dụ: 12 tháng..." value="<%= isEdit && product.getWarranty() != null ? product.getWarranty() : "" %>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="status">Trạng thái *</label>
-                                <select id="status" name="status" class="form-select" required>
-                                    <option value="AVAILABLE" <%= isEdit && "AVAILABLE".equals(product.getStatus()) ? "selected" : "" %>>Còn hàng (AVAILABLE)</option>
-                                    <option value="LOW_STOCK" <%= isEdit && "LOW_STOCK".equals(product.getStatus()) ? "selected" : "" %>>Sắp hết (LOW_STOCK)</option>
-                                    <option value="OUT_OF_STOCK" <%= isEdit && "OUT_OF_STOCK".equals(product.getStatus()) ? "selected" : "" %>>Hết hàng (OUT_OF_STOCK)</option>
-                                </select>
-                            </div>
                             <div class="form-group full-width">
                                 <label class="form-label" for="careInstructions">Hướng dẫn bảo quản</label>
                                 <textarea id="careInstructions" name="careInstructions" class="form-textarea" placeholder="Nhập hướng dẫn bảo quản sản phẩm..."><%= isEdit && product.getCareInstructions() != null ? product.getCareInstructions() : "" %></textarea>
