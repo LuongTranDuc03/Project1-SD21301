@@ -731,7 +731,7 @@
                                     <thead>
                                         <tr>
                                             <th style="width: 70px; text-align: center;">STT</th>
-                                            <th>Ảnh</th>
+                                            <th style="text-align: center;">Ảnh</th>
                                             <th>Màu sắc</th>
                                             <th>Kích cỡ</th>
                                             <th>Kiểu dáng</th>
