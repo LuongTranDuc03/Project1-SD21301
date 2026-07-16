@@ -121,16 +121,34 @@
                         </select>
                         <div style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
                             <span style="font-size: 13px; color: #6b7280; white-space: nowrap;">Từ ngày:</span>
-                            <input type="date" id="fromDateFilter" name="fromDate" class="date-input" title="Từ ngày"
-                                   value="<%= fromDate != null ? fromDate : "" %>"
-                                   onchange="document.getElementById('searchForm').submit()">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <input type="date" id="fromDateFilter" name="fromDate" class="date-input" title="Từ ngày"
+                                       value="<%= fromDate != null ? fromDate : "" %>"
+                                       onchange="document.getElementById('searchForm').submit()">
+                                <% if (fromDate != null && !fromDate.isEmpty()) { %>
+                                <a href="javascript:void(0)" onclick="document.getElementById('fromDateFilter').value=''; document.getElementById('searchForm').submit();" 
+                                   style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;" 
+                                   onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#ef4444';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b';" title="Xoá ngày">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </a>
+                                <% } %>
+                            </div>
                         </div>
                         
                         <div style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
                             <span style="font-size: 13px; color: #6b7280; white-space: nowrap;">Đến ngày:</span>
-                            <input type="date" id="toDateFilter" name="toDate" class="date-input" title="Đến ngày"
-                                   value="<%= toDate != null ? toDate : "" %>"
-                                   onchange="document.getElementById('searchForm').submit()">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <input type="date" id="toDateFilter" name="toDate" class="date-input" title="Đến ngày"
+                                       value="<%= toDate != null ? toDate : "" %>"
+                                       onchange="document.getElementById('searchForm').submit()">
+                                <% if (toDate != null && !toDate.isEmpty()) { %>
+                                <a href="javascript:void(0)" onclick="document.getElementById('toDateFilter').value=''; document.getElementById('searchForm').submit();" 
+                                   style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;" 
+                                   onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#ef4444';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b';" title="Xoá ngày">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </a>
+                                <% } %>
+                            </div>
                         </div>
                         
                         <a href="${pageContext.request.contextPath}/admin/coupons"

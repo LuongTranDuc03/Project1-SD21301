@@ -47,7 +47,7 @@
     background-color: #ecfdf5;
     color: #065f46;
 }
-.badge-status.warning, .badge-status.dang-giao, .badge-status.low_stock {
+.badge-status.warning, .badge-status.dang-giao, .badge-status.low_stock, .badge-status.cho-xu-ly {
     background-color: #fffbeb;
     color: #854d0e;
 }
@@ -55,9 +55,13 @@
     background-color: #fef2f2;
     color: #991b1b;
 }
-.badge-status.info, .badge-status.cho-xu-ly, .badge-status.chua-kich-hoat {
+.badge-status.info, .badge-status.chua-kich-hoat {
     background-color: #f8fafc;
     color: #475569;
+}
+.badge-status.da-hoan-tien {
+    background-color: #f3e8ff;
+    color: #6b21a8;
 }
 .badge-status.primary, .badge-status.da-xac-nhan {
     background-color: #eff6ff;

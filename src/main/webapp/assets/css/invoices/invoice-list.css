@@ -162,11 +162,11 @@
 }
 
 .il-table colgroup col:nth-child(3) {
-    width: 180px;
+    width: 100px;
 }
 
 .il-table colgroup col:nth-child(4) {
-    width: 125px;
+    width: 150px;
 }
 
 .il-table colgroup col:nth-child(5) {
@@ -186,7 +186,7 @@
 }
 
 .il-table colgroup col:nth-child(9) {
-    width: 78px;
+    width: 130px;
 }
 
 .il-table thead tr {
@@ -230,9 +230,6 @@
     font-size: 13px;
     color: #374151;
     vertical-align: middle;
-        overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .hd-id {

@@ -38,15 +38,14 @@ public class InvoiceController extends HttpServlet {
 
     private static final int PAGE_SIZE = 10;
 
-    /** Nhãn trạng thái đơn hàng */
     private static final Map<Integer, String> ORDER_STATUS_LABELS;
     static {
         ORDER_STATUS_LABELS = new LinkedHashMap<>();
         ORDER_STATUS_LABELS.put(0, "Chờ xác nhận");
         ORDER_STATUS_LABELS.put(1, "Đã xác nhận");
-        ORDER_STATUS_LABELS.put(2, "Đang giao hàng");
-        ORDER_STATUS_LABELS.put(3, "Hoàn thành");
-        ORDER_STATUS_LABELS.put(4, "Đã huỷ");
+        ORDER_STATUS_LABELS.put(2, "Hoàn thành");
+        ORDER_STATUS_LABELS.put(3, "Đã huỷ");
+        ORDER_STATUS_LABELS.put(4, "Đã hoàn tiền");
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -223,16 +222,19 @@ public class InvoiceController extends HttpServlet {
                 .build();
 
         // Xác định xử lý kho:
-        // Hủy đơn (→ 4): hoàn kho; khôi phục từ hủy (4 → khác): trừ kho
-        boolean updateStock   = (newStatus == 4) || (oldStatus == 4 && newStatus != 4);
-        boolean increaseStock = (newStatus == 4);
+        // Hủy đơn/Hoàn tiền (→ 3, 4): hoàn kho; khôi phục từ hủy/hoàn tiền (3, 4 → khác): trừ kho
+        boolean isNewCancelOrRefund = (newStatus == 3 || newStatus == 4);
+        boolean isOldCancelOrRefund = (oldStatus == 3 || oldStatus == 4);
+        
+        boolean updateStock   = isNewCancelOrRefund || (isOldCancelOrRefund && !isNewCancelOrRefund);
+        boolean increaseStock = isNewCancelOrRefund;
 
         List<InvoiceDetail> detailList = invoiceRepo.findDetailsByInvoiceId(id);
         invoice.setOrderStatus(newStatus);
 
         invoiceRepo.updateStatusAndSaveHistory(invoice, detailList, history, updateStock, increaseStock);
 
-        String msg = (newStatus == 4) ? "cancelled" : "updated";
+        String msg = (newStatus == 3 || newStatus == 4) ? "cancelled" : "updated";
         response.sendRedirect(request.getContextPath()
                 + "/admin/invoices/detail?id=" + id + "&msg=" + msg);
     }

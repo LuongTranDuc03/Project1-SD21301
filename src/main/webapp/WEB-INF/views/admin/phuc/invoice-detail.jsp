@@ -31,9 +31,9 @@
     int orderStatus = inv.getOrderStatus();
     java.util.function.Function<Integer, String> bClassFn = (s) -> {
         if (s == null)  return "cho-xu-ly";
-        if (s == 4)     return "da-huy";
-        if (s == 3)     return "hoan-thanh";
-        if (s == 2)     return "dang-giao";
+        if (s == 4)     return "da-hoan-tien";
+        if (s == 3)     return "da-huy";
+        if (s == 2)     return "hoan-thanh";
         if (s == 1)     return "da-xac-nhan";
         return "cho-xu-ly";
     };
@@ -266,8 +266,9 @@
                 <select name="newStatus" id="newStatusSelect">
                     <option value="0" <%= orderStatus == 0 ? "selected" : "" %>>Chờ xác nhận</option>
                     <option value="1" <%= orderStatus == 1 ? "selected" : "" %>>Đã xác nhận</option>
-                    <option value="2" <%= orderStatus == 2 ? "selected" : "" %>>Đang giao hàng</option>
-                    <option value="3" <%= orderStatus == 3 ? "selected" : "" %>>Hoàn thành</option>
+                    <option value="2" <%= orderStatus == 2 ? "selected" : "" %>>Hoàn thành</option>
+                    <option value="3" <%= orderStatus == 3 ? "selected" : "" %>>Đã huỷ</option>
+                    <option value="4" <%= orderStatus == 4 ? "selected" : "" %>>Đã hoàn tiền</option>
                 </select>
             </div>
             <div class="modal-field">
@@ -288,7 +289,7 @@
         <p>Thao tác này sẽ hoàn trả tồn kho và không thể hoàn tác.</p>
         <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
             <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
-            <input type="hidden" name="newStatus" value="4">
+            <input type="hidden" name="newStatus" value="3">
             <div class="modal-field">
                 <label>Lý do huỷ đơn *</label>
                 <textarea name="note" rows="3" placeholder="Nhập lý do huỷ..."></textarea>

@@ -98,7 +98,7 @@ public class Invoice {
     Integer paymentStatus; // 0: Chưa thanh toán, 1: Đã thanh toán
 
     @Column(name = "trang_thai_don_hang")
-    Integer orderStatus; // 0: Chờ, 1: Xác nhận, 2: Đang giao, 3: Hoàn thành, 4: Huỷ
+    Integer orderStatus; // 0: Chờ xác nhận, 1: Đã xác nhận, 2: Hoàn thành, 3: Đã huỷ, 4: Đã hoàn tiền
 
     @Column(name = "trang_thai")
     Integer status;
