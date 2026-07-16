@@ -70,9 +70,6 @@
         if ("AVAILABLE".equals(prod.getStatus())) {
             statusLabel = "Còn hàng";
             statusClass = "available";
-        } else if ("LOW_STOCK".equals(prod.getStatus())) {
-            statusLabel = "Sắp hết";
-            statusClass = "low_stock";
         } else {
             statusLabel = "Hết hàng";
             statusClass = "out_of_stock";
