@@ -60,13 +60,13 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public List<Coupon> findAll(Integer discountType, Integer status,
-                                String keyword, int page, int size) {
-        return couponRepository.findAll(discountType, status, keyword, page, size);
+                                String keyword, String fromDate, String toDate, int page, int size) {
+        return couponRepository.findAll(discountType, status, keyword, fromDate, toDate, page, size);
     }
 
     @Override
-    public long countAll(Integer discountType, Integer status, String keyword) {
-        return couponRepository.countAll(discountType, status, keyword);
+    public long countAll(Integer discountType, Integer status, String keyword, String fromDate, String toDate) {
+        return couponRepository.countAll(discountType, status, keyword, fromDate, toDate);
     }
 
     @Override

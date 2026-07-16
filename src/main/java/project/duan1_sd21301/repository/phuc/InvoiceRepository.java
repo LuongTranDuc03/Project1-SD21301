@@ -9,6 +9,9 @@ import project.duan1_sd21301.model.phuc.InvoiceHistory;
 import project.duan1_sd21301.model.luong.ProductDetail;
 import project.duan1_sd21301.util.HibernateUtil;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -199,7 +202,7 @@ public class InvoiceRepository {
      * @param page        số trang (bắt đầu từ 0)
      * @param size        số bản ghi mỗi trang
      */
-    public List<Invoice> findAll(Integer orderStatus, String keyword, int page, int size) {
+    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             StringBuilder hql = new StringBuilder(
                     "FROM Invoice hd LEFT JOIN FETCH hd.paymentMethod WHERE 1=1 ");
@@ -207,6 +210,23 @@ public class InvoiceRepository {
             // Lọc theo trạng thái nếu có chọn
             if (orderStatus != null) {
                 hql.append("AND hd.orderStatus = :orderStatus ");
+            }
+
+            LocalDate fromDate = null;
+            LocalDate toDate = null;
+            
+            if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
+                try { fromDate = LocalDate.parse(fromDateStr); } catch (Exception ignored) {}
+            }
+            if (toDateStr != null && !toDateStr.trim().isEmpty()) {
+                try { toDate = LocalDate.parse(toDateStr); } catch (Exception ignored) {}
+            }
+
+            if (fromDate != null) {
+                hql.append("AND hd.orderDate >= :startOfDay ");
+            }
+            if (toDate != null) {
+                hql.append("AND hd.orderDate <= :endOfDay ");
             }
 
             // Xử lý từ khóa tìm kiếm
@@ -234,6 +254,12 @@ public class InvoiceRepository {
 
             // Gán giá trị cho các tham số
             if (orderStatus != null) query.setParameter("orderStatus", orderStatus);
+            if (fromDate != null) {
+                query.setParameter("startOfDay", fromDate.atStartOfDay());
+            }
+            if (toDate != null) {
+                query.setParameter("endOfDay", toDate.atTime(LocalTime.MAX));
+            }
             if (coTuKhoa) {
                 query.setParameter("kw", "%" + keyword.trim().toLowerCase() + "%");
                 if (maHoaDon != null) query.setParameter("maHoaDon", maHoaDon);
@@ -251,13 +277,30 @@ public class InvoiceRepository {
      * Đếm tổng số hóa đơn theo điều kiện lọc.
      * Dùng để tính tổng số trang cho phân trang.
      */
-    public long countAll(Integer orderStatus, String keyword) {
+    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             StringBuilder hql = new StringBuilder(
                     "SELECT COUNT(hd) FROM Invoice hd WHERE 1=1 ");
 
             if (orderStatus != null) {
                 hql.append("AND hd.orderStatus = :orderStatus ");
+            }
+
+            LocalDate fromDate = null;
+            LocalDate toDate = null;
+            
+            if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
+                try { fromDate = LocalDate.parse(fromDateStr); } catch (Exception ignored) {}
+            }
+            if (toDateStr != null && !toDateStr.trim().isEmpty()) {
+                try { toDate = LocalDate.parse(toDateStr); } catch (Exception ignored) {}
+            }
+
+            if (fromDate != null) {
+                hql.append("AND hd.orderDate >= :startOfDay ");
+            }
+            if (toDate != null) {
+                hql.append("AND hd.orderDate <= :endOfDay ");
             }
 
             boolean coTuKhoa = keyword != null && !keyword.trim().isEmpty();
@@ -277,6 +320,12 @@ public class InvoiceRepository {
             Query<Long> query = session.createQuery(hql.toString(), Long.class);
 
             if (orderStatus != null) query.setParameter("orderStatus", orderStatus);
+            if (fromDate != null) {
+                query.setParameter("startOfDay", fromDate.atStartOfDay());
+            }
+            if (toDate != null) {
+                query.setParameter("endOfDay", toDate.atTime(LocalTime.MAX));
+            }
             if (coTuKhoa) {
                 query.setParameter("kw", "%" + keyword.trim().toLowerCase() + "%");
                 if (maHoaDon != null) query.setParameter("maHoaDon", maHoaDon);

@@ -54,13 +54,13 @@ public interface CouponService {
      * @param size         số bản ghi mỗi trang
      */
     List<Coupon> findAll(Integer discountType, Integer status,
-                         String keyword, int page, int size);
+                         String keyword, String fromDate, String toDate, int page, int size);
 
     /**
      * Đếm tổng số phiếu giảm giá theo điều kiện lọc.
      * Dùng để tính tổng số trang cho phân trang.
      */
-    long countAll(Integer discountType, Integer status, String keyword);
+    long countAll(Integer discountType, Integer status, String keyword, String fromDate, String toDate);
 
     /**
      * Lấy danh sách phiếu giảm giá đang còn hiệu lực:

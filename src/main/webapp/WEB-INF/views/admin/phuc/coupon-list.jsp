@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body>
 <%
@@ -27,6 +27,8 @@
     Integer curType    = (Integer) request.getAttribute("currentDiscountType");
     Integer curStatus      = (Integer) request.getAttribute("currentStatus");
     String keyword     = (String)  request.getAttribute("keyword");
+    String fromDate    = (String)  request.getAttribute("fromDate");
+    String toDate      = (String)  request.getAttribute("toDate");
     String msg         = request.getParameter("msg");
 
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -36,14 +38,15 @@
     if (curStatus    != null) baseUrlSb.append("status=").append(curStatus).append("&");
     if (keyword  != null && !keyword.isEmpty())
         baseUrlSb.append("q=").append(java.net.URLEncoder.encode(keyword, "UTF-8")).append("&");
+    if (fromDate != null && !fromDate.isEmpty()) baseUrlSb.append("fromDate=").append(fromDate).append("&");
+    if (toDate != null && !toDate.isEmpty()) baseUrlSb.append("toDate=").append(toDate).append("&");
     String baseUrl = baseUrlSb.toString();
 %>
 <div class="app-container">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
 
     <main class="main-content">
-        <!-- Navbar -->
-        <header class="navbar">
+                <header class="navbar">
             <div class="breadcrumb">
                 <span>FamiCoats Admin</span>
                 <span style="margin:0 6px;color:#d1d5db">/</span>
@@ -63,22 +66,20 @@
         </header>
 
         <div class="content-wrapper">
-            <!-- Header row -->
-            <div class="cl-header">
-                <div class="cl-title">
-                    <h1>Quản lý phiếu giảm giá</h1>
-                    <p>Tổng <strong><%= total %></strong> phiếu giảm giá</p>
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 class="page-title-text">Quản lý phiếu giảm giá</h1>
+                    <div class="page-subtitle-text">Tổng <strong><%= total %></strong> phiếu giảm giá</div>
                 </div>
                 <div class="cl-actions">
-                    <a href="${pageContext.request.contextPath}/admin/coupons/add" class="btn-primary" id="btnAddCoupon">
+                    <a href="${pageContext.request.contextPath}/admin/coupons/add" class="btn-export" id="btnAddCoupon" style="background-color: #E11D48; border-color: #E11D48; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;">
                         <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Thêm mới
                     </a>
                 </div>
             </div>
 
-            <!-- Toast message -->
-            <% if ("created".equals(msg)) { %>
+                        <% if ("created".equals(msg)) { %>
             <div class="msg-banner success" id="msgBanner">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 Thêm phiếu giảm giá thành công!
@@ -90,48 +91,60 @@
             </div>
             <% } %>
 
-            <!-- Search + Filter -->
-            <div class="search-filter-row">
-                <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons"
-                      style="display:flex;gap:10px;flex:1;flex-wrap:wrap;align-items:center;">
-
-                    <!-- Ô tìm kiếm -->
-                    <div class="search-box" id="searchBox" style="flex:1;min-width:220px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" id="searchInput" name="q"
-                               placeholder="Nhập mã / tên phiếu giảm giá..."
-                               value="<%= keyword != null ? keyword : "" %>"
-                               autocomplete="off">
-                        <button type="button" class="clear-btn" id="clearBtn" title="Xóa">
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        </button>
-                    </div>
-
-                    <!-- Lọc loại giảm -->
-                    <select name="discountType" id="filterType" class="filter-select" onchange="this.form.submit()">
-                        <option value="">Tất cả loại giảm</option>
-                        <% if (typeLabels != null) {
-                            for (Map.Entry<Integer,String> e : typeLabels.entrySet()) { %>
-                        <option value="<%= e.getKey() %>" <%= e.getKey().equals(curType) ? "selected" : "" %>><%= e.getValue() %></option>
-                        <%  }
-                        } %>
-                    </select>
-
-                    <!-- Lọc trạng thái -->
-                    <select name="status" id="filterStatus" class="filter-select" onchange="this.form.submit()">
-                        <option value="">Tất cả trạng thái</option>
-                        <% if (statusLabels != null) {
-                            for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
-                        <option value="<%= e.getKey() %>" <%= e.getKey().equals(curStatus) ? "selected" : "" %>><%= e.getValue() %></option>
-                        <%  }
-                        } %>
-                    </select>
-                </form>
+                        <div class="filter-bar" style="overflow-x: auto;">
+                <div class="filter-row" style="flex-wrap: nowrap;">
+                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" style="display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; width: 100%;">
+                        <div class="search-box" id="searchBox" style="width: 250px; min-width: 250px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="searchInput" name="q"
+                                   placeholder="Nhập mã / tên..."
+                                   value="<%= keyword != null ? keyword : "" %>"
+                                   autocomplete="off">
+                        </div>
+                        
+                        <select name="discountType" id="filterType" class="filter-select" style="min-width: max-content;" onchange="this.form.submit()">
+                            <option value="">Tất cả loại giảm</option>
+                            <% if (typeLabels != null) {
+                                for (Map.Entry<Integer,String> e : typeLabels.entrySet()) { %>
+                            <option value="<%= e.getKey() %>" <%= e.getKey().equals(curType) ? "selected" : "" %>><%= e.getValue() %></option>
+                            <%  }
+                            } %>
+                        </select>
+                        
+                        <select name="status" id="filterStatus" class="filter-select" style="min-width: max-content;" onchange="this.form.submit()">
+                            <option value="">Tất cả trạng thái</option>
+                            <% if (statusLabels != null) {
+                                for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
+                            <option value="<%= e.getKey() %>" <%= e.getKey().equals(curStatus) ? "selected" : "" %>><%= e.getValue() %></option>
+                            <%  }
+                            } %>
+                        </select>
+                        <div style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
+                            <span style="font-size: 13px; color: #6b7280; white-space: nowrap;">Từ ngày:</span>
+                            <input type="date" id="fromDateFilter" name="fromDate" class="date-input" title="Từ ngày"
+                                   value="<%= fromDate != null ? fromDate : "" %>"
+                                   onchange="document.getElementById('searchForm').submit()">
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
+                            <span style="font-size: 13px; color: #6b7280; white-space: nowrap;">Đến ngày:</span>
+                            <input type="date" id="toDateFilter" name="toDate" class="date-input" title="Đến ngày"
+                                   value="<%= toDate != null ? toDate : "" %>"
+                                   onchange="document.getElementById('searchForm').submit()">
+                        </div>
+                        
+                        <a href="${pageContext.request.contextPath}/admin/coupons"
+                           class="btn-reset-filter <%= (keyword != null && !keyword.isEmpty()) || curType != null || curStatus != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty()) ? "" : "hidden" %>"
+                           id="btnReset" title="Đặt lại toàn bộ bộ lọc" style="flex-shrink: 0; min-width: max-content;">
+                            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                            Đặt lại
+                        </a>
+                    </form>
+                </div>
             </div>
 
-            <!-- Table -->
-            <div class="cl-table-wrap">
-                <table class="cl-table">
+                        <div class="cl-table-wrap" style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow-x:auto;">
+                <table class="cl-table admin-table" style="width:100%; border-collapse:collapse; min-width:780px;">
                     <thead>
                     <tr>
                         <th>STT</th>
@@ -144,7 +157,7 @@
                         <th>Ngày bắt đầu</th>
                         <th>Ngày kết thúc</th>
                         <th>Trạng thái</th>
-                        <th style="text-align:center;">Hành động</th>
+                        <th style="width: 100px; text-align:center;">Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -187,12 +200,12 @@
                                 boolean isOn = (tt == 1);
                     %>
                     <tr>
-                        <td><%= stt++ %></td>
-                        <td><span class="coupon-code"><%= c.getCode() != null ? c.getCode() : "" %></span></td>
+                        <td style="color:#64748b; font-size:13px; text-align:center;"><%= stt++ %></td>
+                        <td><span class="product-id-text"><%= c.getCode() != null ? c.getCode() : "" %></span></td>
                         <td style="font-weight:600;color:#111827;max-width:180px;">
                             <%= c.getName() != null ? c.getName() : "" %>
                         </td>
-                        <td><span class="loai-badge <%= typeBadgeCls %>"><%= typeLabel %></span></td>
+                        <td><span class="badge-status <%= typeBadgeCls %>"><%= typeLabel %></span></td>
                         <td style="font-weight:700;color:#E11D48;"><%= valueStr %></td>
                         <td style="color:#6b7280;"><%= minOrder %></td>
                         <td>
@@ -205,12 +218,12 @@
                         </td>
                         <td style="color:#6b7280;"><%= ngayBD %></td>
                         <td style="color:#6b7280;"><%= ngayKT %></td>
-                        <td><span class="tt-badge <%= ttCls %>"><%= ttLbl %></span></td>
+                        <td><span class="badge-status <%= ttCls %>"><%= ttLbl %></span></td>
                         <td style="text-align:center;">
-                            <div style="display:flex;gap:6px;justify-content:center;align-items:center;">
+                            <div style="display:flex;gap:4px;justify-content:center;align-items:center;">
                                 <a href="${pageContext.request.contextPath}/admin/coupons/edit?id=<%= c.getId() %>"
-                                   class="act-btn edit" title="Chỉnh sửa">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                   class="action-icon-btn" title="Chỉnh sửa">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
                                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/toggle-status"
                                       style="display:inline;" id="toggleForm-<%= c.getId() %>">
@@ -234,8 +247,7 @@
                     </tbody>
                 </table>
 
-                <!-- Pagination -->
-                <div class="cl-pagination">
+                                <div class="cl-pagination">
                     <span class="info">
                         Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
                         trong tổng <strong><%= String.format("%,d", total) %></strong> phiếu

@@ -70,12 +70,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<Invoice> findAll(Integer orderStatus, String keyword, int page, int size) {
-        return invoiceRepository.findAll(orderStatus, keyword, page, size);
+    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size) {
+        return invoiceRepository.findAll(orderStatus, keyword, fromDateStr, toDateStr, page, size);
     }
 
     @Override
-    public long countAll(Integer orderStatus, String keyword) {
-        return invoiceRepository.countAll(orderStatus, keyword);
+    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr) {
+        return invoiceRepository.countAll(orderStatus, keyword, fromDateStr, toDateStr);
     }
 }

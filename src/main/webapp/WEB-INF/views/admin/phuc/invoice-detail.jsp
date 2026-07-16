@@ -74,8 +74,7 @@
         </header>
 
         <div class="content-wrapper">
-            <!-- Top actions bar -->
-            <div class="detail-topbar">
+                        <div class="detail-topbar">
                 <a href="${pageContext.request.contextPath}/admin/invoices" class="back-link">
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     Quay lại danh sách
@@ -92,22 +91,13 @@
                 </div>
             </div>
 
-            <!-- Thông báo sau action -->
-            <% String msgParam = request.getParameter("msg");
-                if (msgParam != null) { %>
-            <div style="background:#dcfce7;border:1px solid #86efac;color:#166534;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:500;">
-                ✅ <%= "cancelled".equals(msgParam) ? "Huỷ đơn thành công, tồn kho đã được hoàn trả." : "Cập nhật trạng thái thành công!" %>
-            </div>
-            <% } %>
+            <% String msgParam = request.getParameter("msg"); %>
 
-            <!-- Main 2-column layout -->
-            <div class="detail-layout">
+                        <div class="detail-layout">
 
-                <!-- LEFT -->
-                <div class="detail-main">
+                                <div class="detail-main">
 
-                    <!-- Invoice heading card -->
-                    <div class="detail-card">
+                                        <div class="detail-card">
                         <div class="invoice-heading">
                             <div class="invoice-icon-row">
                                 <div>
@@ -122,8 +112,7 @@
                             </div>
                         </div>
 
-                        <!-- Product table -->
-                        <table class="prod-table">
+                                                <table class="prod-table">
                             <thead>
                             <tr>
                                 <th>Sản phẩm</th>
@@ -163,8 +152,7 @@
                             </tbody>
                         </table>
 
-                        <!-- Financial summary -->
-                        <div style="border-top:1px solid #f3f4f6;margin-top:8px;">
+                                                <div style="border-top:1px solid #f3f4f6;margin-top:8px;">
                             <div class="fin-row">
                                 <span class="fin-label">Tạm tính</span>
                                 <span class="fin-value"><%= inv.getSubtotal() != null ? String.format("%,.0fđ", inv.getSubtotal()).replace(",", ".") : "—" %></span>
@@ -189,8 +177,7 @@
                         </div>
                     </div>
 
-                    <!-- Timeline card -->
-                    <div class="detail-card">
+                                        <div class="detail-card">
                         <div class="timeline-section">
                             <h3>Lịch sử xử lý đơn hàng</h3>
                             <ul class="tl-list">
@@ -215,12 +202,9 @@
                             </ul>
                         </div>
                     </div>
-                </div><!-- /detail-main -->
-
-                <!-- RIGHT: Sidebar info -->
-                <div class="detail-side">
-                    <!-- Customer info -->
-                    <div class="side-card">
+                </div>
+                                <div class="detail-side">
+                                        <div class="side-card">
                         <div class="side-card-title">Thông tin khách hàng</div>
                         <div class="kh-avatar-row">
                             <div class="kh-avatar"><%= avatarChar %></div>
@@ -243,8 +227,7 @@
                         </div>
                     </div>
 
-                    <!-- Payment info -->
-                    <div class="side-card">
+                                        <div class="side-card">
                         <div class="side-card-title">Thanh toán</div>
                         <div class="pay-method-row">
                             <div class="pay-icon">
@@ -265,18 +248,13 @@
                         </div>
                     </div>
 
-                    <!-- Note -->
-                    <div class="side-card">
+                                        <div class="side-card">
                         <div class="side-card-title">Ghi chú đơn hàng</div>
                         <p class="note-text"><%= (inv.getNote() != null && !inv.getNote().isEmpty()) ? inv.getNote() : "Không có ghi chú." %></p>
                     </div>
-                </div><!-- /detail-side -->
-            </div><!-- /detail-layout -->
-        </div><!-- /content-wrapper -->
-    </main>
+                </div>            </div>        </div>    </main>
 </div>
 
-<!-- Modal: Cập nhật trạng thái -->
 <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
         <h3>Cập nhật trạng thái</h3>
@@ -304,7 +282,6 @@
     </div>
 </div>
 
-<!-- Modal: Huỷ đơn -->
 <div class="modal-overlay" id="cancelModal">
     <div class="modal-box">
         <h3 style="color:#ef4444;">⚠️ Xác nhận huỷ đơn hàng</h3>
@@ -325,7 +302,13 @@
 </div>
 
 <% if ("updated".equals(msgParam) || "cancelled".equals(msgParam)) { %>
-<div id="toastSuccess" style="position:fixed;top:24px;right:24px;background:#fff;border:1px solid #d1fae5;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;">
+<style>
+    @keyframes slideDownToast {
+        from { top: -50px; opacity: 0; }
+        to { top: 24px; opacity: 1; }
+    }
+</style>
+<div id="toastSuccess" style="position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #d1fae5;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;">
     <svg viewBox="0 0 24 24" width="24" height="24" stroke="#10B981" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     <div>
         <div style="font-weight:700;font-size:13px;color:#111827;">Thành công!</div>

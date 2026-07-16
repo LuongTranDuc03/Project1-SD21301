@@ -64,11 +64,11 @@ public interface InvoiceService {
      * @param page        số trang (bắt đầu từ 0)
      * @param size        số bản ghi mỗi trang
      */
-    List<Invoice> findAll(Integer orderStatus, String keyword, int page, int size);
+    List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size);
 
     /**
      * Đếm tổng số hóa đơn theo điều kiện lọc.
      * Dùng để tính tổng số trang cho phân trang.
      */
-    long countAll(Integer orderStatus, String keyword);
+    long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr);
 }

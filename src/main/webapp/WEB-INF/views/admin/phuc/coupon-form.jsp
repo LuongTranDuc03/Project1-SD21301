@@ -62,12 +62,12 @@
         </header>
 
         <div class="content-wrapper">
-            <div class="cl-header" style="margin-bottom:24px;">
-                <div class="cl-title">
-                    <h1><%= isEdit ? "Chỉnh sửa phiếu giảm giá" : "Thêm phiếu giảm giá mới" %></h1>
-                    <p><%= isEdit ? "Cập nhật thông tin phiếu giảm giá" : "Tạo chương trình giảm giá công khai mới" %></p>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 class="page-title-text"><%= isEdit ? "Chỉnh sửa phiếu giảm giá" : "Thêm phiếu giảm giá mới" %></h1>
+                    <div class="page-subtitle-text"><%= isEdit ? "Cập nhật thông tin phiếu giảm giá" : "Tạo chương trình giảm giá công khai mới" %></div>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-secondary">
+                <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-reset">
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     Quay lại
                 </a>
@@ -85,42 +85,52 @@
             </div>
             <% } %>
 
-            <div class="cf-card">
+            <div class="cf-card" style="max-width: 960px; width: 100%;">
                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/save" id="couponForm" novalidate>
                     <input type="hidden" name="id" value="<%= couponId %>">
 
-                    <p class="cf-section-title">Thông tin cơ bản</p>
-                    <div class="cf-grid">
+                    <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
+                        <!-- Row 1 -->
                         <div class="cf-group">
-                            <label class="cf-label" for="code">Mã phiếu giảm giá <span class="req">*</span></label>
-                            <input type="text" id="code" name="code" class="cf-input"
-                                   placeholder="VD: SALE15, NEW2026"
-                                   value="<%= code %>"
-                                   maxlength="50" required>
-                            <span class="cf-hint">Mã dùng để nhập khi thanh toán. Chỉ dùng chữ và số.</span>
-                        </div>
-
-                        <div class="cf-group">
-                            <label class="cf-label" for="name">Tên chương trình <span class="req">*</span></label>
+                            <label class="cf-label" for="name">Tên phiếu giảm giá <span class="req">*</span></label>
                             <input type="text" id="name" name="name" class="cf-input"
-                                   placeholder="VD: Giảm 15%, Khách mới 5%"
+                                   placeholder="Tên phiếu giảm giá"
                                    value="<%= name %>"
                                    maxlength="255" required>
                         </div>
-
                         <div class="cf-group">
-                            <label class="cf-label" for="discountType">Loại giảm <span class="req">*</span></label>
-                            <select id="discountType" name="discountType" class="cf-select" required onchange="onTypeChange()">
-                                <option value="0" <%= discountType == 0 ? "selected" : "" %>>Giảm phần trăm (%)</option>
-                                <option value="1" <%= discountType == 1 ? "selected" : "" %>>Giảm tiền (VNĐ)</option>
-                            </select>
+                            <label class="cf-label" for="quantity">Số lượng <span class="req">*</span></label>
+                            <input type="number" id="quantity" name="quantity" class="cf-input"
+                                   placeholder="1"
+                                   value="<%= quantity %>"
+                                   min="1" step="1" required>
                         </div>
 
+                        <!-- Row 2 -->
+                        <div class="cf-group">
+                            <label class="cf-label" for="startDate">Ngày bắt đầu <span class="req">*</span></label>
+                            <input type="date" id="startDate" name="startDate" class="cf-input"
+                                   value="<%= startDate %>" required>
+                        </div>
+                        <div class="cf-group">
+                            <label class="cf-label" for="endDate">Ngày kết thúc <span class="req">*</span></label>
+                            <input type="date" id="endDate" name="endDate" class="cf-input"
+                                   value="<%= endDate %>" required>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="cf-group">
+                            <label class="cf-label" for="discountType">Loại giảm</label>
+                            <select id="discountType" name="discountType" class="cf-select" required onchange="onTypeChange()">
+                                <option value="0" <%= discountType == 0 ? "selected" : "" %>>Giảm %</option>
+                                <option value="1" <%= discountType == 1 ? "selected" : "" %>>Giảm tiền</option>
+                            </select>
+                        </div>
                         <div class="cf-group">
                             <label class="cf-label" for="discountValue">Giá trị giảm <span class="req">*</span></label>
                             <div style="position:relative;">
                                 <input type="number" id="discountValue" name="discountValue" class="cf-input"
-                                       placeholder="VD: 15 (%) hoặc 300000 (VNĐ)"
+                                       placeholder="1"
                                        value="<%= discountValue %>"
                                        min="0" step="1" required style="padding-right:48px;">
                                 <span id="unitLabel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
@@ -129,84 +139,78 @@
                                 </span>
                             </div>
                         </div>
-                    </div>
 
-                    <p class="cf-section-title">Điều kiện áp dụng</p>
-                    <div class="cf-grid">
-                        <div class="cf-group">
-                            <label class="cf-label" for="minOrderValue">Đơn hàng tối thiểu (VNĐ)</label>
-                            <input type="number" id="minOrderValue" name="minOrderValue" class="cf-input"
-                                   placeholder="VD: 500000"
-                                   value="<%= minOrderValue %>"
-                                   min="0" step="1000">
-                            <span class="cf-hint">Để trống nếu không giới hạn.</span>
-                        </div>
-
+                        <!-- Row 4 -->
                         <div class="cf-group" id="maxDiscountGroup" style="<%= discountType == 1 ? "display:none;" : "" %>">
-                            <label class="cf-label" for="maxDiscountAmount">Giảm tối đa (VNĐ)</label>
+                            <label class="cf-label" for="maxDiscountAmount">Giảm tối đa (VNĐ) <span class="req">*</span></label>
                             <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" class="cf-input"
-                                   placeholder="VD: 200000"
+                                   placeholder="0"
                                    value="<%= maxDiscountAmount %>"
                                    min="0" step="1000">
-                            <span class="cf-hint">Áp dụng khi loại giảm là %. Để trống nếu không giới hạn.</span>
+                        </div>
+                        <div class="cf-group" id="minOrderGroup" style="grid-column: <%= discountType == 1 ? "1" : "2" %>;">
+                            <label class="cf-label" for="minOrderValue">Đơn hàng tối thiểu</label>
+                            <div style="position:relative;">
+                                <input type="number" id="minOrderValue" name="minOrderValue" class="cf-input"
+                                       placeholder="0"
+                                       value="<%= minOrderValue %>"
+                                       min="0" step="1000" style="padding-right:48px;">
+                                <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+                                    font-size:12px;color:#9ca3af;font-weight:600;pointer-events:none;">VNĐ</span>
+                            </div>
                         </div>
 
+                        <!-- Row 5 (Extra fields not in image 2 but required) -->
                         <div class="cf-group">
-                            <label class="cf-label" for="quantity">Số lượng phát hành <span class="req">*</span></label>
-                            <input type="number" id="quantity" name="quantity" class="cf-input"
-                                   placeholder="VD: 100"
-                                   value="<%= quantity %>"
-                                   min="1" step="1" required>
+                            <label class="cf-label" for="code">Mã phiếu giảm giá <span class="req">*</span></label>
+                            <input type="text" id="code" name="code" class="cf-input"
+                                   placeholder="VD: SALE15"
+                                   value="<%= code %>"
+                                   maxlength="50" required>
                         </div>
-
                         <% if (isEdit) { %>
                         <div class="cf-group">
                             <label class="cf-label" for="usedQuantity">Đã sử dụng</label>
                             <input type="number" id="usedQuantity" name="usedQuantity" class="cf-input"
                                    value="<%= usedQuantity %>"
-                                   min="0" step="1">
+                                   min="0" step="1" readonly style="background-color: #f9fafb;">
                         </div>
+                        <% } else { %>
+                        <div class="cf-group"></div>
                         <% } %>
-                    </div>
 
-                    <p class="cf-section-title">Thời gian hiệu lực</p>
-                    <div class="cf-grid">
-                        <div class="cf-group">
-                            <label class="cf-label" for="startDate">Ngày bắt đầu</label>
-                            <input type="date" id="startDate" name="startDate" class="cf-input"
-                                   value="<%= startDate %>">
-                        </div>
-                        <div class="cf-group">
-                            <label class="cf-label" for="endDate">Ngày kết thúc</label>
-                            <input type="date" id="endDate" name="endDate" class="cf-input"
-                                   value="<%= endDate %>">
-                        </div>
-                    </div>
-
-                    <p class="cf-section-title">Cấu hình thêm</p>
-                    <div class="cf-grid">
-                        <div class="cf-group">
-                            <label class="cf-label" for="status">Trạng thái</label>
-                            <select id="status" name="status" class="cf-select">
-                                <option value="0" <%= status == 0 ? "selected" : "" %>>Chưa kích hoạt</option>
-                                <option value="1" <%= status == 1 ? "selected" : "" %>>Đang áp dụng</option>
-                                <option value="2" <%= status == 2 ? "selected" : "" %>>Kết thúc</option>
-                                <option value="3" <%= status == 3 ? "selected" : "" %>>Đã huỷ</option>
-                            </select>
-                        </div>
+                        <!-- Row 6 -->
                         <div class="cf-group span2">
                             <label class="cf-label" for="description">Mô tả</label>
                             <textarea id="description" name="description" class="cf-textarea"
-                                      placeholder="Mô tả ngắn về chương trình giảm giá..."><%= description %></textarea>
+                                      placeholder="Nhập mô tả..."><%= description %></textarea>
+                        </div>
+                        
+                        <!-- Row 7 -->
+                        <div class="cf-group span2">
+                            <label class="cf-label">Trạng thái <span class="req">*</span></label>
+                            <div style="display: flex; gap: 24px; align-items: center; margin-top: 6px;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
+                                    <input type="radio" name="status" value="0" <%= status == 0 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Chưa kích hoạt
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
+                                    <input type="radio" name="status" value="1" <%= status == 1 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Đang áp dụng
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
+                                    <input type="radio" name="status" value="2" <%= status == 2 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Kết thúc
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
+                                    <input type="radio" name="status" value="3" <%= status == 3 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Đã huỷ
+                                </label>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="cf-actions">
-                        <button type="submit" class="btn-primary" id="btnSubmit">
-                            <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                            <%= isEdit ? "Lưu thay đổi" : "Thêm phiếu" %>
+                    <div class="cf-actions" style="justify-content: flex-end; padding-top: 16px; margin-top: 8px; border-top: none;">
+                        <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-reset" style="padding: 10px 24px; font-weight: 600;">Hủy</a>
+                        <button type="submit" class="btn-primary" id="btnSubmit" style="padding: 10px 24px; font-weight: 600; background: #0f172a; border: 1px solid #0f172a; color: #fff; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <%= isEdit ? "Lưu thay đổi" : "Lưu phiếu giảm giá" %>
                         </button>
-                        <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-secondary">Huỷ</a>
                     </div>
                 </form>
             </div>

@@ -99,6 +99,12 @@ public class InvoiceController extends HttpServlet {
         String keyword = request.getParameter("q");
         if (keyword != null && keyword.trim().isEmpty()) keyword = null;
 
+        String fromDate = request.getParameter("fromDate");
+        if (fromDate != null && fromDate.trim().isEmpty()) fromDate = null;
+
+        String toDate = request.getParameter("toDate");
+        if (toDate != null && toDate.trim().isEmpty()) toDate = null;
+
         Integer orderStatus = null;
         String ttParam = request.getParameter("trangThai");
         if (ttParam != null && !ttParam.isEmpty()) {
@@ -113,12 +119,12 @@ public class InvoiceController extends HttpServlet {
             catch (NumberFormatException ignored) { }
         }
 
-        long total      = invoiceRepo.countAll(orderStatus, keyword);
+        long total      = invoiceRepo.countAll(orderStatus, keyword, fromDate, toDate);
         int totalPages  = (int) Math.ceil((double) total / PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         page = Math.min(page, totalPages - 1);
 
-        List<Invoice> invoices = invoiceRepo.findAll(orderStatus, keyword, page, PAGE_SIZE);
+        List<Invoice> invoices = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, page, PAGE_SIZE);
 
         request.setAttribute("invoices",           invoices);
         request.setAttribute("orderStatusLabels",  ORDER_STATUS_LABELS);
@@ -128,6 +134,8 @@ public class InvoiceController extends HttpServlet {
         request.setAttribute("totalPages",         totalPages);
         request.setAttribute("currentOrderStatus", orderStatus);
         request.setAttribute("keyword",            keyword);
+        request.setAttribute("fromDate",           fromDate);
+        request.setAttribute("toDate",             toDate);
         request.setAttribute("pageTitle",          "Quản lý hóa đơn");
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-list.jsp")
@@ -240,6 +248,12 @@ public class InvoiceController extends HttpServlet {
         String keyword = request.getParameter("q");
         if (keyword != null && keyword.trim().isEmpty()) keyword = null;
 
+        String fromDate = request.getParameter("fromDate");
+        if (fromDate != null && fromDate.trim().isEmpty()) fromDate = null;
+
+        String toDate = request.getParameter("toDate");
+        if (toDate != null && toDate.trim().isEmpty()) toDate = null;
+
         Integer orderStatus = null;
         String ttParam = request.getParameter("trangThai");
         if (ttParam != null && !ttParam.isEmpty()) {
@@ -248,7 +262,7 @@ public class InvoiceController extends HttpServlet {
         }
 
         // Lấy TẤT CẢ hóa đơn (không phân trang) theo filter
-        List<Invoice> all = invoiceRepo.findAll(orderStatus, keyword, 0, Integer.MAX_VALUE);
+        List<Invoice> all = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, 0, Integer.MAX_VALUE);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 

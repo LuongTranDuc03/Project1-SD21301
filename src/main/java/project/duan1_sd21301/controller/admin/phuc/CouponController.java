@@ -79,6 +79,12 @@ public class CouponController extends HttpServlet {
         String keyword = request.getParameter("q");
         if (keyword != null && keyword.trim().isEmpty()) keyword = null;
 
+        String fromDate = request.getParameter("fromDate");
+        if (fromDate != null && fromDate.trim().isEmpty()) fromDate = null;
+
+        String toDate = request.getParameter("toDate");
+        if (toDate != null && toDate.trim().isEmpty()) toDate = null;
+
         Integer discountType = parseIntParam(request.getParameter("discountType"));
         Integer status       = parseIntParam(request.getParameter("status"));
 
@@ -89,12 +95,12 @@ public class CouponController extends HttpServlet {
             catch (NumberFormatException ignored) {}
         }
 
-        long total     = repo.countAll(discountType, status, keyword);
+        long total     = repo.countAll(discountType, status, keyword, fromDate, toDate);
         int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         page = Math.min(page, totalPages - 1);
 
-        List<Coupon> list = repo.findAll(discountType, status, keyword, page, PAGE_SIZE);
+        List<Coupon> list = repo.findAll(discountType, status, keyword, fromDate, toDate, page, PAGE_SIZE);
 
         request.setAttribute("coupons",            list);
         request.setAttribute("discountTypeLabels", DISCOUNT_TYPE_LABELS);
@@ -106,6 +112,8 @@ public class CouponController extends HttpServlet {
         request.setAttribute("currentDiscountType", discountType);
         request.setAttribute("currentStatus",      status);
         request.setAttribute("keyword",            keyword);
+        request.setAttribute("fromDate",           fromDate);
+        request.setAttribute("toDate",             toDate);
         request.setAttribute("pageTitle",          "Quản lý phiếu giảm giá");
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/coupon-list.jsp")

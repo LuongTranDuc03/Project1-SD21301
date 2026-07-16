@@ -35,7 +35,7 @@ public class PaymentMethod {
     @Column(name = "trang_thai")
     int status; // 1: Hoạt động, 0: Không hoạt động
 
-    // Quan hệ 1-N với HoaDon — mappedBy khớp với field "paymentMethod" trong Invoice
+    // Quan hệ 1-N với HoaDon 
     @OneToMany(mappedBy = "paymentMethod", fetch = FetchType.LAZY)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

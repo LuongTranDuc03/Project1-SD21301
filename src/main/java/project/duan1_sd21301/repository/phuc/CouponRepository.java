@@ -128,7 +128,7 @@ public class CouponRepository {
      * @param size         số bản ghi mỗi trang
      */
     public List<Coupon> findAll(Integer discountType, Integer status,
-                                String keyword, int page, int size) {
+                                String keyword, String fromDateStr, String toDateStr, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             // Xây dựng câu HQL động tùy theo các điều kiện lọc
             StringBuilder hql = new StringBuilder("FROM Coupon c WHERE 1=1 ");
@@ -136,6 +136,23 @@ public class CouponRepository {
             // Thêm điều kiện lọc nếu người dùng có chọn
             if (discountType != null) hql.append("AND c.discountType = :discountType ");
             if (status != null)       hql.append("AND c.status = :status ");
+
+            java.time.LocalDate fromDate = null;
+            java.time.LocalDate toDate = null;
+            
+            if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
+                try { fromDate = java.time.LocalDate.parse(fromDateStr); } catch (Exception ignored) {}
+            }
+            if (toDateStr != null && !toDateStr.trim().isEmpty()) {
+                try { toDate = java.time.LocalDate.parse(toDateStr); } catch (Exception ignored) {}
+            }
+
+            if (fromDate != null) {
+                hql.append("AND c.startDate >= :startOfDay ");
+            }
+            if (toDate != null) {
+                hql.append("AND c.startDate <= :endOfDay ");
+            }
 
             // Kiểm tra có từ khóa tìm kiếm không
             boolean coTuKhoa = keyword != null && !keyword.trim().isEmpty();
@@ -151,6 +168,8 @@ public class CouponRepository {
             if (discountType != null) query.setParameter("discountType", discountType);
             if (status != null)       query.setParameter("status", status);
             if (coTuKhoa)             query.setParameter("kw", "%" + keyword.trim().toLowerCase() + "%");
+            if (fromDate != null)     query.setParameter("startOfDay", fromDate);
+            if (toDate != null)       query.setParameter("endOfDay", toDate);
 
             // Phân trang: bỏ qua (page * size) bản ghi đầu, lấy tiếp (size) bản ghi
             query.setFirstResult(page * size);
@@ -164,13 +183,30 @@ public class CouponRepository {
      * Đếm tổng số phiếu giảm giá theo điều kiện lọc.
      * Dùng để tính tổng số trang cho phân trang.
      */
-    public long countAll(Integer discountType, Integer status, String keyword) {
+    public long countAll(Integer discountType, Integer status, String keyword, String fromDateStr, String toDateStr) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             // SELECT COUNT(c) thay vì SELECT c để chỉ đếm số lượng
             StringBuilder hql = new StringBuilder("SELECT COUNT(c) FROM Coupon c WHERE 1=1 ");
 
             if (discountType != null) hql.append("AND c.discountType = :discountType ");
             if (status != null)       hql.append("AND c.status = :status ");
+
+            java.time.LocalDate fromDate = null;
+            java.time.LocalDate toDate = null;
+            
+            if (fromDateStr != null && !fromDateStr.trim().isEmpty()) {
+                try { fromDate = java.time.LocalDate.parse(fromDateStr); } catch (Exception ignored) {}
+            }
+            if (toDateStr != null && !toDateStr.trim().isEmpty()) {
+                try { toDate = java.time.LocalDate.parse(toDateStr); } catch (Exception ignored) {}
+            }
+
+            if (fromDate != null) {
+                hql.append("AND c.startDate >= :startOfDay ");
+            }
+            if (toDate != null) {
+                hql.append("AND c.startDate <= :endOfDay ");
+            }
 
             boolean coTuKhoa = keyword != null && !keyword.trim().isEmpty();
             if (coTuKhoa) {
@@ -181,6 +217,8 @@ public class CouponRepository {
             if (discountType != null) query.setParameter("discountType", discountType);
             if (status != null)       query.setParameter("status", status);
             if (coTuKhoa)             query.setParameter("kw", "%" + keyword.trim().toLowerCase() + "%");
+            if (fromDate != null)     query.setParameter("startOfDay", fromDate);
+            if (toDate != null)       query.setParameter("endOfDay", toDate);
 
             return query.uniqueResult();
         }
