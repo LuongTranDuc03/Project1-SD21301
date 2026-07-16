@@ -231,6 +231,32 @@ public class ProductController extends HttpServlet {
                 List<Product> products = getProductsList(request);
 
                 String action = request.getParameter("action");
+                if ("exportExcel".equals(action)) {
+                        response.setContentType("text/csv; charset=UTF-8");
+                        response.setHeader("Content-Disposition", "attachment; filename=\"danh_sach_san_pham.csv\"");
+                        try (java.io.PrintWriter writer = response.getWriter()) {
+                                writer.write('\ufeff');
+                                writer.println("STT,Mã sản phẩm,Tên sản phẩm,Danh mục,Thương hiệu,Khoảng giá,Tổng số lượng,Trạng thái");
+                                int stt = 1;
+                                for (Product prod : products) {
+                                        String name = prod.getName() != null ? prod.getName().replace("\"", "\"\"") : "";
+                                        String brand = prod.getBrand() != null ? prod.getBrand().replace("\"", "\"\"") : "N/A";
+                                        String category = prod.getCategory() != null ? prod.getCategory().replace("\"", "\"\"") : "";
+                                        String priceRange = prod.getPriceRangeFormatted().replace("\"", "\"\"");
+                                        
+                                        String statusLabel = "";
+                                        if ("AVAILABLE".equals(prod.getStatus())) statusLabel = "Còn hàng";
+                                        else if ("LOW_STOCK".equals(prod.getStatus())) statusLabel = "Sắp hết";
+                                        else if ("OUT_OF_STOCK".equals(prod.getStatus())) statusLabel = "Hết hàng";
+                                        else statusLabel = prod.getStatus() != null ? prod.getStatus() : "";
+
+                                        writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
+                                                stt++, prod.getId(), name, category, brand, priceRange, prod.getStock(), statusLabel);
+                                }
+                        }
+                        return;
+                }
+
                 if ("add".equals(action)) {
                         request.setAttribute("pageTitle", "Thêm sản phẩm mới");
                         request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
