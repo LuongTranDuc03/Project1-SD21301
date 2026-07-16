@@ -233,7 +233,7 @@ public class ProductController extends HttpServlet {
                 String action = request.getParameter("action");
                 if ("add".equals(action)) {
                         request.setAttribute("pageTitle", "Thêm sản phẩm mới");
-                        request.getRequestDispatcher("/WEB-INF/views/admin/product-add.jsp").forward(request, response);
+                        request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
                         return;
                 } else if ("edit".equals(action)) {
                         String productId = request.getParameter("id");
@@ -248,7 +248,7 @@ public class ProductController extends HttpServlet {
                                 if (targetProduct != null) {
                                         request.setAttribute("pageTitle", "Chỉnh sửa sản phẩm " + productId);
                                         request.setAttribute("product", targetProduct);
-                                        request.getRequestDispatcher("/WEB-INF/views/admin/product-add.jsp").forward(request, response);
+                                        request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
                                         return;
                                 }
                         }
@@ -266,7 +266,7 @@ public class ProductController extends HttpServlet {
                         if (targetProduct != null) {
                                 request.setAttribute("pageTitle", "Chi tiết sản phẩm " + productId);
                                 request.setAttribute("product", targetProduct);
-                                request.getRequestDispatcher("/WEB-INF/views/admin/product-detail.jsp").forward(request,
+                                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request,
                                                 response);
                                 return;
                         }
@@ -275,7 +275,7 @@ public class ProductController extends HttpServlet {
                 request.setAttribute("pageTitle", "Quản lý sản phẩm");
                 request.setAttribute("products", products);
 
-                request.getRequestDispatcher("/WEB-INF/views/admin/product-list.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-list.jsp").forward(request, response);
         }
 
         @Override
@@ -285,6 +285,29 @@ public class ProductController extends HttpServlet {
                 List<Product> products = getProductsList(request);
 
                 String action = request.getParameter("action");
+                if ("toggleStatus".equals(action)) {
+                        String productId = request.getParameter("id");
+                        if (productId != null) {
+                                for (Product p : products) {
+                                        if (p.getId().equals(productId)) {
+                                                if ("OUT_OF_STOCK".equals(p.getStatus())) {
+                                                        p.setStatus("AVAILABLE");
+                                                } else {
+                                                        p.setStatus("OUT_OF_STOCK");
+                                                }
+                                                response.setContentType("application/json");
+                                                response.setCharacterEncoding("UTF-8");
+                                                response.getWriter().write("{\"success\":true, \"newStatus\":\"" + p.getStatus() + "\"}");
+                                                return;
+                                        }
+                                }
+                        }
+                        response.setContentType("application/json");
+                        response.setCharacterEncoding("UTF-8");
+                        response.getWriter().write("{\"success\":false}");
+                        return;
+                }
+
                 if ("updateVariant".equals(action)) {
                         String productId = request.getParameter("productId");
                         String variantIdStr = request.getParameter("variantId");
