@@ -98,8 +98,13 @@
                 </div>
             </div>
 
-            <div class="filter-bar" style="overflow-x: auto;">
-                <div class="filter-row" style="flex-wrap: nowrap;">
+            <!-- Bộ lọc & tìm kiếm -->
+            <div class="custom-card">
+                <div class="card-header-bar">
+                    <span class="card-header-title">&#8226; Bộ lọc tìm kiếm</span>
+                    <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
+                </div>
+                <div class="card-body-content" id="filterCardBody" style="overflow-x: auto;">
                     <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/invoices" style="display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; width: 100%;">
                         <input type="hidden" id="hiddenTrangThai" name="trangThai"
                                value="<%= currentStatus != null ? currentStatus : "" %>"
@@ -152,28 +157,34 @@
                             Đặt lại
                         </a>
                     </form>
-                </div>
-                
-                <div class="filter-row">
-                    <div class="category-pills">
-                        <button type="button" class="cat-pill <%= currentStatus == null ? "active" : "" %>"
-                                onclick="applyFilter(null)">Tất cả</button>
-                        <button type="button" class="cat-pill <%= Integer.valueOf(0).equals(currentStatus) ? "active" : "" %>"
-                                onclick="applyFilter(0)">Chờ xác nhận</button>
-                        <button type="button" class="cat-pill <%= Integer.valueOf(1).equals(currentStatus) ? "active" : "" %>"
-                                onclick="applyFilter(1)">Đã xác nhận</button>
-                        <button type="button" class="cat-pill <%= Integer.valueOf(2).equals(currentStatus) ? "active" : "" %>"
-                                onclick="applyFilter(2)">Hoàn thành</button>
-                        <button type="button" class="cat-pill <%= Integer.valueOf(3).equals(currentStatus) ? "active" : "" %>"
-                                onclick="applyFilter(3)">Đã huỷ</button>
-                        <button type="button" class="cat-pill <%= Integer.valueOf(4).equals(currentStatus) ? "active" : "" %>"
-                                onclick="applyFilter(4)">Đã hoàn tiền</button>
-                    </div>
+                        
+                        <div class="filter-row" style="margin-top: 16px;">
+                            <div class="category-pills">
+                                <button type="button" class="cat-pill <%= currentStatus == null ? "active" : "" %>"
+                                        onclick="applyFilter(null)">Tất cả</button>
+                                <button type="button" class="cat-pill <%= Integer.valueOf(0).equals(currentStatus) ? "active" : "" %>"
+                                        onclick="applyFilter(0)">Chờ xác nhận</button>
+                                <button type="button" class="cat-pill <%= Integer.valueOf(1).equals(currentStatus) ? "active" : "" %>"
+                                        onclick="applyFilter(1)">Đã xác nhận</button>
+                                <button type="button" class="cat-pill <%= Integer.valueOf(2).equals(currentStatus) ? "active" : "" %>"
+                                        onclick="applyFilter(2)">Hoàn thành</button>
+                                <button type="button" class="cat-pill <%= Integer.valueOf(3).equals(currentStatus) ? "active" : "" %>"
+                                        onclick="applyFilter(3)">Đã huỷ</button>
+                                <button type="button" class="cat-pill <%= Integer.valueOf(4).equals(currentStatus) ? "active" : "" %>"
+                                        onclick="applyFilter(4)">Đã hoàn tiền</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-                        <div class="il-table-wrap" style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow-x:auto;">
-                <table class="il-table admin-table" style="width:100%; border-collapse:collapse; min-width:780px;">
+            <!-- Bảng dữ liệu hoá đơn -->
+            <div class="custom-card">
+                <div class="card-header-bar">
+                    <span class="card-header-title">&#8226; Bảng dữ liệu hoá đơn</span>
+                </div>
+                <div class="il-table-wrap" style="background:#fff; overflow-x:auto;">
+                    <table class="il-table admin-table" style="width:100%; border-collapse:collapse; min-width:780px;">
                     <colgroup>
                         <col>                        <col>                        <col>                        <col>                        <col>                        <col>                        <col>                        <col>                        <col>                        <col>                    </colgroup>
                     <thead>
@@ -319,6 +330,18 @@
             }
         });
     })();
+    
+    function toggleFilterCard() {
+        const body = document.getElementById('filterCardBody');
+        const btn = document.getElementById('toggleFilterBtn');
+        if (body.classList.contains('collapsed')) {
+            body.classList.remove('collapsed');
+            btn.textContent = 'Nhấn để thu gọn';
+        } else {
+            body.classList.add('collapsed');
+            btn.textContent = 'Nhấn để mở rộng';
+        }
+    }
 </script>
 </body>
 </html>

@@ -397,7 +397,7 @@
         .invoice-table th {
             white-space: nowrap !important;
             font-size: 11px !important;
-            padding: 12px 10px !important;
+            padding: 12px 20px !important;
         }
 
         /* Action Buttons Styling */
@@ -498,7 +498,7 @@
                     <div class="subtitle">Tổng <%= totalProducts %> sản phẩm</div>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <a href="#" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;" onclick="alert('Chức năng Xuất Excel đang được phát triển!'); return false;">
+                    <a href="${pageContext.request.contextPath}/admin/products?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         <span>Xuất Excel</span>
                     </a>
@@ -579,110 +579,108 @@
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bảng dữ liệu sản phẩm</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="invoice-table" style="table-layout: fixed; width: 100%;">
-                        <thead>
-                        <tr>
-                            <th style="text-align: center; width: 50px;">STT</th>
-                            <th style="text-align: left; width: 120px;">Mã sản phẩm</th>
-                            <th style="text-align: left; width: 240px;">Tên sản phẩm</th>
-                            <th style="text-align: left; width: 130px;">Danh mục</th>
-                            <th style="text-align: left; width: 130px;">Thương hiệu</th>
-                            <th style="text-align: left; width: 150px;">Khoảng giá</th>
-                            <th style="text-align: center; width: 120px;">Tổng số lượng</th>
-                            <th style="text-align: center; width: 120px;">Trạng thái</th>
-                            <th style="text-align: center; width: 140px;">Hành động</th>
-                        </tr>
-                        </thead>
-                        <tbody id="productTbody">
-                        <%
-                            // products is declared at the top of content-wrapper
-                            if (products != null) {
-                                int stt = 1;
-                                for (Product prod : products) {
-                                    String statusLabel = "";
-                                    String statusClass = "";
-                                    if ("AVAILABLE".equals(prod.getStatus())) {
-                                        statusLabel = "Còn hàng";
-                                        statusClass = "available";
-                                    } else if ("LOW_STOCK".equals(prod.getStatus())) {
-                                        statusLabel = "Sắp hết";
-                                        statusClass = "low_stock";
-                                    } else if ("OUT_OF_STOCK".equals(prod.getStatus())) {
-                                        statusLabel = "Hết hàng";
-                                        statusClass = "out_of_stock";
-                                    }
-                                    double minPrice = prod.getPrice(); double maxPrice = prod.getPrice();
-                                    if (prod.getDetails() != null && !prod.getDetails().isEmpty()) {
-                                        minPrice = Double.MAX_VALUE; maxPrice = Double.MIN_VALUE; for (ProductDetail d : prod.getDetails()) {
-                                            if (d.getPrice() < minPrice) {
-                                                minPrice = d.getPrice(); } if (d.getPrice() > maxPrice) { maxPrice = d.getPrice();
-                                            }
+                <table class="invoice-table" style="table-layout: fixed; width: 100%;">
+                    <thead>
+                    <tr>
+                        <th style="text-align: center; width: 50px;">STT</th>
+                        <th style="text-align: left; width: 120px;">Mã sản phẩm</th>
+                        <th style="text-align: left; width: 240px;">Tên sản phẩm</th>
+                        <th style="text-align: left; width: 130px;">Danh mục</th>
+                        <th style="text-align: left; width: 130px;">Thương hiệu</th>
+                        <th style="text-align: left; width: 150px;">Khoảng giá</th>
+                        <th style="text-align: center; width: 120px;">Tổng số lượng</th>
+                        <th style="text-align: center; width: 120px;">Trạng thái</th>
+                        <th style="text-align: center; width: 140px;">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="productTbody">
+                    <%
+                        // products is declared at the top of content-wrapper
+                        if (products != null) {
+                            int stt = 1;
+                            for (Product prod : products) {
+                                String statusLabel = "";
+                                String statusClass = "";
+                                if ("AVAILABLE".equals(prod.getStatus())) {
+                                    statusLabel = "Còn hàng";
+                                    statusClass = "available";
+                                } else if ("LOW_STOCK".equals(prod.getStatus())) {
+                                    statusLabel = "Sắp hết";
+                                    statusClass = "low_stock";
+                                } else if ("OUT_OF_STOCK".equals(prod.getStatus())) {
+                                    statusLabel = "Hết hàng";
+                                    statusClass = "out_of_stock";
+                                }
+                                double minPrice = prod.getPrice(); double maxPrice = prod.getPrice();
+                                if (prod.getDetails() != null && !prod.getDetails().isEmpty()) {
+                                    minPrice = Double.MAX_VALUE; maxPrice = Double.MIN_VALUE; for (ProductDetail d : prod.getDetails()) {
+                                        if (d.getPrice() < minPrice) {
+                                            minPrice = d.getPrice(); } if (d.getPrice() > maxPrice) { maxPrice = d.getPrice();
                                         }
                                     }
-                        %>
-                        <tr data-id="<%= prod.getId() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
-                            <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
-                            <td>
-                                <span class="product-id-text"><%= prod.getId() %></span>
-                            </td>
-                            <td>
-                                <span class="product-name-text"><%= prod.getName() != null ? prod.getName() : "" %></span>
-                            </td>
-                            <td>
-                                <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500;"><%= prod.getCategory() %></span>
-                            </td>
-                            <td>
-                                <span style="color: #475569; font-weight: 500;"><%= prod.getBrand() != null ? prod.getBrand() : "N/A" %></span>
-                            </td>
-                            <td>
-                                <span class="product-price-range"><%= prod.getPriceRangeFormatted() %></span>
-                            </td>
-                            <td style="text-align: center;">
-                                <span style="font-weight: 600; color: #475569;"><%= prod.getStock() %></span>
-                            </td>
-                            <td style="text-align: center;">
-                                <span class="badge-status <%= statusClass %>"><%= statusLabel %></span>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-                                    <!-- Sửa -->
-                                    <a href="${pageContext.request.contextPath}/admin/products?action=edit&id=<%= prod.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    </a>
-                                    <!-- Chi tiết -->
-                                    <a href="${pageContext.request.contextPath}/admin/products?id=<%= prod.getId() %>" class="action-icon-btn details-btn" title="Chi tiết">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                    </a>
-                                    <!-- Toggle status -->
-                                    <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
-                                        <input type="checkbox" <%= !"OUT_OF_STOCK".equals(prod.getStatus()) ? "checked" : "" %>
-                                               onchange="toggleProductStatus('<%= prod.getId() %>', this)">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </td>
-                        </tr>
+                                }
+                    %>
+                    <tr data-id="<%= prod.getId() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
+                        <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
+                        <td>
+                            <span class="product-id-text"><%= prod.getId() %></span>
+                        </td>
+                        <td>
+                            <span class="product-name-text"><%= prod.getName() != null ? prod.getName() : "" %></span>
+                        </td>
+                        <td>
+                            <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500;"><%= prod.getCategory() %></span>
+                        </td>
+                        <td>
+                            <span style="color: #475569; font-weight: 500;"><%= prod.getBrand() != null ? prod.getBrand() : "N/A" %></span>
+                        </td>
+                        <td>
+                            <span class="product-price-range"><%= prod.getPriceRangeFormatted() %></span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span style="font-weight: 600; color: #475569;"><%= prod.getStock() %></span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge-status <%= statusClass %>"><%= statusLabel %></span>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                                <!-- Sửa -->
+                                <a href="${pageContext.request.contextPath}/admin/products?action=edit&id=<%= prod.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </a>
+                                <!-- Chi tiết -->
+                                <a href="${pageContext.request.contextPath}/admin/products?id=<%= prod.getId() %>" class="action-icon-btn details-btn" title="Chi tiết">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </a>
+                                <!-- Toggle status -->
+                                <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
+                                    <input type="checkbox" <%= !"OUT_OF_STOCK".equals(prod.getStatus()) ? "checked" : "" %>
+                                           onchange="toggleProductStatus('<%= prod.getId() %>', this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
 
-                        <%
-                            }
-                        } else {
-                        %>
-                        <tr>
-                            <td colspan="9" style="text-align: center; padding: 40px; color: #9ca3af;">Không có dữ liệu sản phẩm.</td>
-                        </tr>
-                        <%
-                            }
-                        %>
-                        <tr id="noResultsRow" class="no-results-row" style="display:none;">
-                            <td colspan="9" style="text-align: center; padding: 48px; color: #94a3b8;">
-                                <svg viewBox="0 0 24 24" width="32" height="32" stroke="#cbd5e1" stroke-width="1.5" fill="none" style="margin-bottom:10px; display:block; margin-inline:auto;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                Không tìm thấy sản phẩm phù hợp với bộ lọc hiện tại.
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
+                    <%
+                        }
+                    } else {
+                    %>
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #9ca3af;">Không có dữ liệu sản phẩm.</td>
+                    </tr>
+                    <%
+                        }
+                    %>
+                    <tr id="noResultsRow" class="no-results-row" style="display:none;">
+                        <td colspan="9" style="text-align: center; padding: 48px; color: #94a3b8;">
+                            <svg viewBox="0 0 24 24" width="32" height="32" stroke="#cbd5e1" stroke-width="1.5" fill="none" style="margin-bottom:10px; display:block; margin-inline:auto;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            Không tìm thấy sản phẩm phù hợp với bộ lọc hiện tại.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
@@ -1002,8 +1000,7 @@
     });
 </script>
 
-<%-- Toast thông báo dùng chung --%>
-<jsp:include page="/WEB-INF/views/layout/toast.jsp" />
+
 
 </body>
 </html>

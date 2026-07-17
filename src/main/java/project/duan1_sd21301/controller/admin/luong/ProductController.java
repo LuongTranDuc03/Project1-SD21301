@@ -39,7 +39,7 @@ public class ProductController extends HttpServlet {
                                         .images(Arrays.asList("anh3.png")).build());
 
                         products.add(Product.builder()
-                                        .id("SP001").category("Áo khoác da").name("Áo khoác da nam Premium")
+                                        .id(1).code("SP001").category("Áo khoác da").name("Áo khoác da nam Premium")
                                         .englishName("Leather Jacket")
                                         .price(1850000.0).oldPrice(2100000.0).discountPercent(-12).stock(48).sold(324)
                                         .rating(4.8)
@@ -67,7 +67,7 @@ public class ProductController extends HttpServlet {
                                         .images(Arrays.asList("anh5.png")).build());
 
                         products.add(Product.builder()
-                                        .id("SP002").category("Áo bomber").name("Bomber jacket oversize unisex")
+                                        .id(2).code("SP002").category("Áo bomber").name("Bomber jacket oversize unisex")
                                         .englishName("Bomber Jacket")
                                         .price(1290000.0).oldPrice(0.0).discountPercent(0).stock(32).sold(287)
                                         .rating(4.7)
@@ -95,7 +95,7 @@ public class ProductController extends HttpServlet {
                                         .images(Arrays.asList("anh7.png")).build());
 
                         products.add(Product.builder()
-                                        .id("SP003").category("Áo denim").name("Áo denim wash nữ vintage")
+                                        .id(3).code("SP003").category("Áo denim").name("Áo denim wash nữ vintage")
                                         .englishName("Denim Jacket")
                                         .price(890000.0).oldPrice(1100000.0).discountPercent(-19).stock(15).sold(241)
                                         .rating(4.5)
@@ -123,7 +123,7 @@ public class ProductController extends HttpServlet {
                                         .images(Arrays.asList("anh9.png")).build());
 
                         products.add(Product.builder()
-                                        .id("SP004").category("Áo phao").name("Áo phao siêu nhẹ unisex")
+                                        .id(4).code("SP004").category("Áo phao").name("Áo phao siêu nhẹ unisex")
                                         .englishName("Puffer Jacket")
                                         .price(2100000.0).oldPrice(0.0).discountPercent(0).stock(61).sold(198)
                                         .rating(4.9)
@@ -151,7 +151,7 @@ public class ProductController extends HttpServlet {
                                         .images(Arrays.asList("anh10.png")).build());
 
                         products.add(Product.builder()
-                                        .id("SP005").category("Áo gió").name("Khoác gió windbreaker nam")
+                                        .id(5).code("SP005").category("Áo gió").name("Khoác gió windbreaker nam")
                                         .englishName("Windbreaker")
                                         .price(1150000.0).oldPrice(1350000.0).discountPercent(-15).stock(8).sold(156)
                                         .rating(4.6)
@@ -165,7 +165,7 @@ public class ProductController extends HttpServlet {
 
                         // SP006
                         products.add(Product.builder()
-                                        .id("SP006").category("Áo khoác da").name("Áo khoác da nữ Premium")
+                                        .id(6).code("SP006").category("Áo khoác da").name("Áo khoác da nữ Premium")
                                         .englishName("Women Leather")
                                         .price(1750000.0).oldPrice(2200000.0).discountPercent(-20).stock(0).sold(412)
                                         .rating(4.9)
@@ -179,7 +179,7 @@ public class ProductController extends HttpServlet {
 
                         // SP007
                         products.add(Product.builder()
-                                        .id("SP007").category("Áo bomber").name("Bomber jacket slim fit nam")
+                                        .id(7).code("SP007").category("Áo bomber").name("Bomber jacket slim fit nam")
                                         .englishName("Slim Bomber")
                                         .price(1190000.0).oldPrice(0.0).discountPercent(0).stock(45).sold(203)
                                         .rating(4.7)
@@ -193,7 +193,7 @@ public class ProductController extends HttpServlet {
 
                         // SP008
                         products.add(Product.builder()
-                                        .id("SP008").category("Áo len").name("Áo khoác len nữ thu đông")
+                                        .id(8).code("SP008").category("Áo len").name("Áo khoác len nữ thu đông")
                                         .englishName("Wool Coat")
                                         .price(990000.0).oldPrice(1200000.0).discountPercent(-18).stock(28).sold(167)
                                         .rating(4.8)
@@ -224,6 +224,16 @@ public class ProductController extends HttpServlet {
                 return maxId + 1;
         }
 
+        private int getNextProductId(List<Product> products) {
+                int maxId = 0;
+                for (Product p : products) {
+                        if (p.getId() > maxId) {
+                                maxId = p.getId();
+                        }
+                }
+                return maxId + 1;
+        }
+
         @Override
         protected void doGet(HttpServletRequest request, HttpServletResponse response)
                         throws ServletException, IOException {
@@ -236,39 +246,49 @@ public class ProductController extends HttpServlet {
                         request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
                         return;
                 } else if ("edit".equals(action)) {
-                        String productId = request.getParameter("id");
-                        if (productId != null) {
+                        String productIdStr = request.getParameter("id");
+                        if (productIdStr != null) {
+                                try {
+                                        int productId = Integer.parseInt(productIdStr);
+                                        Product targetProduct = null;
+                                        for (Product p : products) {
+                                                if (p.getId() == productId) {
+                                                        targetProduct = p;
+                                                        break;
+                                                }
+                                        }
+                                        if (targetProduct != null) {
+                                                request.setAttribute("pageTitle", "Chỉnh sửa sản phẩm " + targetProduct.getCode());
+                                                request.setAttribute("product", targetProduct);
+                                                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
+                                                return;
+                                        }
+                                } catch (NumberFormatException e) {
+                                        // Ignore or handle invalid id parameter
+                                }
+                        }
+                }
+
+                String productIdStr = request.getParameter("id");
+                if (productIdStr != null) {
+                        try {
+                                int productId = Integer.parseInt(productIdStr);
                                 Product targetProduct = null;
                                 for (Product p : products) {
-                                        if (p.getId().equals(productId)) {
+                                        if (p.getId() == productId) {
                                                 targetProduct = p;
                                                 break;
                                         }
                                 }
                                 if (targetProduct != null) {
-                                        request.setAttribute("pageTitle", "Chỉnh sửa sản phẩm " + productId);
+                                        request.setAttribute("pageTitle", "Chi tiết sản phẩm " + targetProduct.getCode());
                                         request.setAttribute("product", targetProduct);
-                                        request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
+                                        request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request,
+                                                        response);
                                         return;
                                 }
-                        }
-                }
-
-                String productId = request.getParameter("id");
-                if (productId != null) {
-                        Product targetProduct = null;
-                        for (Product p : products) {
-                                if (p.getId().equals(productId)) {
-                                        targetProduct = p;
-                                        break;
-                                }
-                        }
-                        if (targetProduct != null) {
-                                request.setAttribute("pageTitle", "Chi tiết sản phẩm " + productId);
-                                request.setAttribute("product", targetProduct);
-                                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request,
-                                                response);
-                                return;
+                        } catch (NumberFormatException e) {
+                                // Ignore or handle invalid id parameter
                         }
                 }
 
@@ -285,38 +305,73 @@ public class ProductController extends HttpServlet {
                 List<Product> products = getProductsList(request);
 
                 String action = request.getParameter("action");
-                if ("toggleStatus".equals(action)) {
-                        String productId = request.getParameter("id");
-                        if (productId != null) {
-                                for (Product p : products) {
-                                        if (p.getId().equals(productId)) {
-                                                if ("OUT_OF_STOCK".equals(p.getStatus())) {
-                                                        p.setStatus("AVAILABLE");
-                                                } else {
-                                                        p.setStatus("OUT_OF_STOCK");
-                                                }
-                                                response.setContentType("application/json");
-                                                response.setCharacterEncoding("UTF-8");
-                                                response.getWriter().write("{\"success\":true, \"newStatus\":\"" + p.getStatus() + "\"}");
-                                                return;
-                                        }
+                if ("delete".equals(action)) {
+                        String idStr = request.getParameter("id");
+                        if (idStr != null) {
+                                try {
+                                        int productId = Integer.parseInt(idStr);
+                                        products.removeIf(p -> p.getId() == productId);
+                                } catch (Exception e) {
+                                        e.printStackTrace();
                                 }
                         }
-                        response.setContentType("application/json");
-                        response.setCharacterEncoding("UTF-8");
-                        response.getWriter().write("{\"success\":false}");
+                        response.sendRedirect(request.getContextPath() + "/admin/products");
+                        return;
+                }
+
+                if ("deleteVariant".equals(action)) {
+                        String productIdStr = request.getParameter("productId");
+                        String variantIdStr = request.getParameter("variantId");
+                        if (productIdStr != null && variantIdStr != null) {
+                                try {
+                                        int productId = Integer.parseInt(productIdStr);
+                                        int variantId = Integer.parseInt(variantIdStr);
+                                        Product targetProduct = null;
+                                        for (Product p : products) {
+                                                if (p.getId() == productId) {
+                                                        targetProduct = p;
+                                                        break;
+                                                }
+                                        }
+                                        if (targetProduct != null && targetProduct.getDetails() != null) {
+                                                targetProduct.getDetails().removeIf(detail -> detail.getId() == variantId);
+                                                // Recalculate product fields
+                                                double minPrice = Double.MAX_VALUE;
+                                                double maxPrice = 0.0;
+                                                int totalStock = 0;
+                                                for (ProductDetail detail : targetProduct.getDetails()) {
+                                                        double p = detail.getPrice();
+                                                        if (p < minPrice) minPrice = p;
+                                                        if (p > maxPrice) maxPrice = p;
+                                                        totalStock += detail.getStock();
+                                                }
+                                                if (targetProduct.getDetails().isEmpty()) {
+                                                        minPrice = 0.0;
+                                                        maxPrice = 0.0;
+                                                }
+                                                targetProduct.setPrice(minPrice);
+                                                targetProduct.setOldPrice(maxPrice > minPrice ? maxPrice : 0.0);
+                                                targetProduct.setStock(totalStock);
+                                                targetProduct.setColorCircles(buildColorCircles(targetProduct.getDetails()));
+                                        }
+                                } catch (Exception e) {
+                                        e.printStackTrace();
+                                }
+                        }
+                        response.sendRedirect(request.getContextPath() + "/admin/products?id=" + productIdStr);
                         return;
                 }
 
                 if ("updateVariant".equals(action)) {
-                        String productId = request.getParameter("productId");
+                        String productIdStr = request.getParameter("productId");
                         String variantIdStr = request.getParameter("variantId");
-                        if (productId != null && variantIdStr != null) {
+                        if (productIdStr != null && variantIdStr != null) {
                                 try {
+                                        int productId = Integer.parseInt(productIdStr);
                                         int variantId = Integer.parseInt(variantIdStr);
                                         Product targetProduct = null;
                                         for (Product p : products) {
-                                                if (p.getId().equals(productId)) {
+                                                if (p.getId() == productId) {
                                                         targetProduct = p;
                                                         break;
                                                 }
@@ -386,14 +441,27 @@ public class ProductController extends HttpServlet {
                                         e.printStackTrace();
                                 }
                         }
-                        response.sendRedirect(request.getContextPath() + "/admin/products?id=" + productId);
+                        response.sendRedirect(request.getContextPath() + "/admin/products?id=" + productIdStr);
                         return;
                 }
 
-                String id = request.getParameter("id");
-                if (id == null || id.trim().isEmpty()) {
-                        id = "SP" + String.format("%03d", products.size() + 1);
+                boolean isEdit = "true".equals(request.getParameter("isEdit"));
+                int id = 0;
+                if (isEdit) {
+                        try {
+                                id = Integer.parseInt(request.getParameter("id"));
+                        } catch (Exception e) {
+                                e.printStackTrace();
+                        }
+                } else {
+                        id = getNextProductId(products);
                 }
+
+                String code = request.getParameter("code");
+                if (code == null || code.trim().isEmpty()) {
+                        code = "SP" + String.format("%03d", id);
+                }
+
                 String name = request.getParameter("name");
                 String englishName = "";
                 String category = request.getParameter("category");
@@ -495,7 +563,7 @@ public class ProductController extends HttpServlet {
 
                                 ProductDetail detail = ProductDetail.builder()
                                                 .id(nextDetailId++)
-                                                .productId(id)
+                                                .productId(code)
                                                 .size(sizes[i])
                                                 .color(colors[i])
                                                 .style(styles[i])
@@ -521,15 +589,15 @@ public class ProductController extends HttpServlet {
                         maxPrice = 0.0;
                 }
 
-                boolean isEdit = "true".equals(request.getParameter("isEdit"));
                 List<String> computedColors = buildColorCircles(details);
 
                 if (isEdit) {
                         for (int i = 0; i < products.size(); i++) {
-                                if (products.get(i).getId().equals(id)) {
+                                if (products.get(i).getId() == id) {
                                         Product oldProduct = products.get(i);
                                         Product updatedProduct = Product.builder()
                                                         .id(id)
+                                                        .code(oldProduct.getCode() != null ? oldProduct.getCode() : code)
                                                         .category(category)
                                                         .name(name)
                                                         .englishName(oldProduct.getEnglishName() != null ? oldProduct.getEnglishName() : "")
@@ -556,6 +624,7 @@ public class ProductController extends HttpServlet {
                 } else {
                         Product newProduct = Product.builder()
                                         .id(id)
+                                        .code(code)
                                         .category(category)
                                         .name(name)
                                         .englishName(englishName)

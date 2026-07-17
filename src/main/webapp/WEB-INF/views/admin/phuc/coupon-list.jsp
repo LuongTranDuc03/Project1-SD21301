@@ -91,8 +91,13 @@
             </div>
             <% } %>
 
-                        <div class="filter-bar" style="overflow-x: auto;">
-                <div class="filter-row" style="flex-wrap: nowrap;">
+            <!-- Bộ lọc & tìm kiếm -->
+            <div class="custom-card">
+                <div class="card-header-bar">
+                    <span class="card-header-title">&#8226; Bộ lọc tìm kiếm</span>
+                    <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
+                </div>
+                <div class="card-body-content" id="filterCardBody" style="overflow-x: auto;">
                     <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" style="display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; width: 100%;">
                         <div class="search-box" id="searchBox" style="width: 250px; min-width: 250px;">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -161,8 +166,13 @@
                 </div>
             </div>
 
-                        <div class="cl-table-wrap" style="background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow-x:auto;">
-                <table class="cl-table admin-table" style="width:100%; border-collapse:collapse; min-width:780px;">
+            <!-- Bảng dữ liệu phiếu giảm giá -->
+            <div class="custom-card">
+                <div class="card-header-bar">
+                    <span class="card-header-title">&#8226; Bảng dữ liệu phiếu giảm giá</span>
+                </div>
+                <div class="cl-table-wrap" style="background:#fff; overflow-x:auto;">
+                    <table class="cl-table admin-table" style="width:100%; border-collapse:collapse; min-width:780px;">
                     <thead>
                     <tr>
                         <th>STT</th>
@@ -264,6 +274,8 @@
                     <%  } %>
                     </tbody>
                 </table>
+            </div>
+            </div>
 
                                 <div class="cl-pagination">
                     <span class="info">
@@ -336,6 +348,18 @@
             setTimeout(function () { banner.remove(); }, 450);
         }, 3000);
     })();
+    
+    function toggleFilterCard() {
+        const body = document.getElementById('filterCardBody');
+        const btn = document.getElementById('toggleFilterBtn');
+        if (body.classList.contains('collapsed')) {
+            body.classList.remove('collapsed');
+            btn.textContent = 'Nhấn để thu gọn';
+        } else {
+            body.classList.add('collapsed');
+            btn.textContent = 'Nhấn để mở rộng';
+        }
+    }
 </script>
 </body>
 </html>

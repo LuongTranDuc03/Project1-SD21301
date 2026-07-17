@@ -70,6 +70,9 @@
         if ("AVAILABLE".equals(prod.getStatus())) {
             statusLabel = "Còn hàng";
             statusClass = "available";
+        } else if ("LOW_STOCK".equals(prod.getStatus())) {
+            statusLabel = "Sắp hết";
+            statusClass = "low_stock";
         } else {
             statusLabel = "Hết hàng";
             statusClass = "out_of_stock";
@@ -731,7 +734,7 @@
                                     <thead>
                                         <tr>
                                             <th style="width: 70px; text-align: center;">STT</th>
-                                            <th style="text-align: center;">Ảnh</th>
+                                            <th>Ảnh</th>
                                             <th>Màu sắc</th>
                                             <th>Kích cỡ</th>
                                             <th>Kiểu dáng</th>
