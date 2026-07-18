@@ -79,15 +79,20 @@
                 </div>
             </div>
 
-                        <% if ("created".equals(msg)) { %>
-            <div class="msg-banner success" id="msgBanner">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                Thêm phiếu giảm giá thành công!
-            </div>
-            <% } else if ("updated".equals(msg)) { %>
-            <div class="msg-banner success" id="msgBanner">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                Cập nhật phiếu giảm giá thành công!
+                        <% if ("created".equals(msg) || "updated".equals(msg)) { %>
+            <style>
+                @keyframes slideDownToast {
+                    from { top: -50px; opacity: 0; }
+                    to { top: 24px; opacity: 1; }
+                }
+            </style>
+            <div id="toastSuccess" style="position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #d1fae5;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="#10B981" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <div>
+                    <div style="font-weight:700;font-size:13px;color:#111827;">Thành công!</div>
+                    <div style="font-size:12px;color:#6b7280;"><%= "created".equals(msg) ? "Thêm phiếu giảm giá thành công." : "Cập nhật phiếu giảm giá thành công." %></div>
+                </div>
+                <button onclick="document.getElementById('toastSuccess').style.display='none'" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>
             </div>
             <% } %>
 
@@ -253,13 +258,14 @@
                                    class="action-icon-btn" title="Chỉnh sửa">
                                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
+                                <% boolean isExpired = (c.getEndDate() != null && c.getEndDate().isBefore(java.time.LocalDate.now())); %>
                                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/toggle-status"
                                       style="display:inline;" id="toggleForm-<%= c.getId() %>">
                                     <input type="hidden" name="id"        value="<%= c.getId() %>">
                                     <input type="hidden" name="status" value="<%= isOn ? 3 : 1 %>">
                                     <label class="toggle-switch" title="<%= isOn ? "Tắt" : "Bật" %> phiếu">
                                         <input type="checkbox" <%= isOn ? "checked" : "" %>
-                                               onchange="document.getElementById('toggleForm-<%= c.getId() %>').submit()">
+                                               onchange="if (<%= isExpired %> && this.checked) { showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!'); this.checked = false; } else { document.getElementById('toggleForm-<%= c.getId() %>').submit(); }">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </form>
@@ -341,7 +347,7 @@
     })();
 
     (function () {
-        var banner = document.getElementById('msgBanner');
+        var banner = document.getElementById('toastSuccess');
         if (banner) setTimeout(function () {
             banner.style.transition = 'opacity .4s';
             banner.style.opacity = '0';
@@ -359,6 +365,25 @@
             body.classList.add('collapsed');
             btn.textContent = 'Nhấn để mở rộng';
         }
+    }
+
+    function showErrorToast(msg) {
+        var oldToast = document.getElementById('toastError');
+        if (oldToast) oldToast.remove();
+        var toast = document.createElement('div');
+        toast.id = 'toastError';
+        toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #fecaca;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;';
+        toast.innerHTML = '<div style="width:24px;height:24px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="#ef4444" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>' +
+                          '<span style="font-size:14px;font-weight:500;color:#1f2937;">' + msg + '</span>' +
+                          '<button onclick="this.parentElement.remove()" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>';
+        document.body.appendChild(toast);
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.style.transition = 'opacity .4s';
+                toast.style.opacity = '0';
+                setTimeout(function() { if(toast.parentElement) toast.remove(); }, 450);
+            }
+        }, 4000);
     }
 </script>
 </body>

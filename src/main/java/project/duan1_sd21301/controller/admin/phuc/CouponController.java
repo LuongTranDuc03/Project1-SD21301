@@ -102,6 +102,16 @@ public class CouponController extends HttpServlet {
 
         List<Coupon> list = repo.findAll(discountType, status, keyword, fromDate, toDate, page, PAGE_SIZE);
 
+        LocalDate now = LocalDate.now();
+        for (Coupon c : list) {
+            if (c.getEndDate() != null && c.getEndDate().isBefore(now)) {
+                if (c.getStatus() == 1 || c.getStatus() == 0) {
+                    c.setStatus(2);
+                    repo.update(c);
+                }
+            }
+        }
+
         request.setAttribute("coupons",            list);
         request.setAttribute("discountTypeLabels", DISCOUNT_TYPE_LABELS);
         request.setAttribute("statusLabels",       STATUS_LABELS);
@@ -233,11 +243,23 @@ public class CouponController extends HttpServlet {
         int id     = parseIdParam(request);
         Integer st = parseIntParam(request.getParameter("status"));
 
+        String ref = request.getHeader("Referer");
+        String redirectUrl = ref != null ? ref : request.getContextPath() + "/admin/coupons";
+        if (redirectUrl.contains("?")) {
+            redirectUrl = redirectUrl.replaceAll("[&?]err=expired", "");
+        }
+
         if (id >= 0 && st != null) {
+            Coupon c = repo.findById(id);
+            if (c != null && c.getEndDate() != null && c.getEndDate().isBefore(LocalDate.now()) && st == 1) {
+                // Prevent activating an expired coupon
+                response.sendRedirect(redirectUrl + (redirectUrl.contains("?") ? "&" : "?") + "err=expired");
+                return;
+            }
             repo.toggleStatus(id, st);
         }
-        String ref = request.getHeader("Referer");
-        response.sendRedirect(ref != null ? ref : request.getContextPath() + "/admin/coupons");
+        
+        response.sendRedirect(redirectUrl);
     }
 
     private int parseIdParam(HttpServletRequest request) {

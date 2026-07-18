@@ -85,7 +85,7 @@
             </div>
             <% } %>
 
-            <div class="cf-card" style="max-width: 960px; width: 100%;">
+            <div class="cf-card" style="max-width: 1000px; width: 100%; margin: 0 auto;">
                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/save" id="couponForm" novalidate>
                     <input type="hidden" name="id" value="<%= couponId %>">
 
@@ -129,10 +129,10 @@
                         <div class="cf-group">
                             <label class="cf-label" for="discountValue">Giá trị giảm <span class="req">*</span></label>
                             <div style="position:relative;">
-                                <input type="number" id="discountValue" name="discountValue" class="cf-input"
+                                <input type="text" id="discountValue" name="discountValue" class="cf-input"
                                        placeholder="1"
                                        value="<%= discountValue %>"
-                                       min="0" step="1" required style="padding-right:48px;">
+                                       required style="padding-right:48px;">
                                 <span id="unitLabel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
                                     font-size:12px;color:#9ca3af;font-weight:600;pointer-events:none;">
                                     <%= discountType == 0 ? "%" : "VNĐ" %>
@@ -143,18 +143,17 @@
                         <!-- Row 4 -->
                         <div class="cf-group" id="maxDiscountGroup" style="<%= discountType == 1 ? "display:none;" : "" %>">
                             <label class="cf-label" for="maxDiscountAmount">Giảm tối đa (VNĐ) <span class="req">*</span></label>
-                            <input type="number" id="maxDiscountAmount" name="maxDiscountAmount" class="cf-input"
+                            <input type="text" id="maxDiscountAmount" name="maxDiscountAmount" class="cf-input"
                                    placeholder="0"
-                                   value="<%= maxDiscountAmount %>"
-                                   min="0" step="1000">
+                                   value="<%= maxDiscountAmount %>">
                         </div>
                         <div class="cf-group" id="minOrderGroup" style="grid-column: <%= discountType == 1 ? "1" : "2" %>;">
                             <label class="cf-label" for="minOrderValue">Đơn hàng tối thiểu</label>
                             <div style="position:relative;">
-                                <input type="number" id="minOrderValue" name="minOrderValue" class="cf-input"
+                                <input type="text" id="minOrderValue" name="minOrderValue" class="cf-input"
                                        placeholder="0"
                                        value="<%= minOrderValue %>"
-                                       min="0" step="1000" style="padding-right:48px;">
+                                       style="padding-right:48px;">
                                 <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
                                     font-size:12px;color:#9ca3af;font-weight:600;pointer-events:none;">VNĐ</span>
                             </div>
@@ -236,6 +235,9 @@
         unit.textContent  = isPct ? '%' : 'VNĐ';
         grp.style.display = isPct ? '' : 'none';
         if (!isPct) document.getElementById('maxDiscountAmount').value = '';
+        
+        var dVal = document.getElementById('discountValue');
+        if (dVal) dVal.dispatchEvent(new Event('input'));
     }
 
     document.getElementById('code').addEventListener('input', function() {
@@ -250,8 +252,52 @@
         if (bd && kt && bd > kt) {
             e.preventDefault();
             alert('Ngày kết thúc phải sau ngày bắt đầu!');
+            return;
         }
+        
+        // Remove dot formatting before submitting
+        var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
+        fields.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && el.value) {
+                el.value = el.value.replace(/\./g, '');
+            }
+        });
     });
+
+    function formatCurrencyInput(e) {
+        var isPct = document.getElementById('discountType').value === '0';
+        var val = this.value.replace(/\D/g, ''); // keep only digits
+        
+        if (this.id === 'discountValue' && isPct) {
+            this.value = val; // no dots for percentage
+            return;
+        }
+        
+        if (val !== '') {
+            this.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        } else {
+            this.value = '';
+        }
+    }
+
+    (function initCurrencyFields() {
+        var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
+        fields.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', formatCurrencyInput);
+                // format initial value
+                var val = el.value.replace(/\D/g, '');
+                if (val !== '') {
+                    var isPct = document.getElementById('discountType').value === '0';
+                    if (!(id === 'discountValue' && isPct)) {
+                        el.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                    }
+                }
+            }
+        });
+    })();
 </script>
 </body>
 </html>

@@ -21,18 +21,18 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-//    // ===== Quan hệ khóa ngoại =====
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "id_khach_hang")
-//    @ToString.Exclude
-//    @EqualsAndHashCode.Exclude
-//    KhachHang khachHang;
+    // // ===== Quan hệ khóa ngoại =====
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "id_khach_hang")
+    // @ToString.Exclude
+    // @EqualsAndHashCode.Exclude
+    // KhachHang khachHang;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "id_nhan_vien")
-//    @ToString.Exclude
-//    @EqualsAndHashCode.Exclude
-//    NhanVien nhanVien;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "id_nhan_vien")
+    // @ToString.Exclude
+    // @EqualsAndHashCode.Exclude
+    // NhanVien nhanVien;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_dia_chi")

@@ -14,6 +14,7 @@ IF OBJECT_ID('lich_su_thanh_toan',     'U') IS NOT NULL DROP TABLE lich_su_thanh
 IF OBJECT_ID('lich_su_hoa_don',        'U') IS NOT NULL DROP TABLE lich_su_hoa_don;
 IF OBJECT_ID('chi_tiet_hoa_don',       'U') IS NOT NULL DROP TABLE chi_tiet_hoa_don;
 IF OBJECT_ID('hoa_don',                'U') IS NOT NULL DROP TABLE hoa_don;
+IF OBJECT_ID('nhan_vien',              'U') IS NOT NULL DROP TABLE nhan_vien;
 IF OBJECT_ID('phieu_giam_gia',         'U') IS NOT NULL DROP TABLE phieu_giam_gia;
 IF OBJECT_ID('chi_tiet_san_pham',      'U') IS NOT NULL DROP TABLE chi_tiet_san_pham;
 IF OBJECT_ID('san_pham',               'U') IS NOT NULL DROP TABLE san_pham;
@@ -29,14 +30,13 @@ CREATE TABLE phuong_thuc_thanh_toan (
     mo_ta           NVARCHAR(MAX),
     logo            NVARCHAR(500),
     phi_thanh_toan  FLOAT         DEFAULT 0,
-    trang_thai      INT           DEFAULT 1   -- 1: Hoat dong, 0: Khong hoat dong
+    trang_thai      INT           DEFAULT 1
 );
 
 INSERT INTO phuong_thuc_thanh_toan (ten_phuong_thuc, mo_ta, logo, phi_thanh_toan, trang_thai) VALUES
-(N'Tien mat',      N'Thanh toan truc tiep bang tien mat', NULL, 0, 1),
+(N'Tiền mặt',      N'Thanh toan truc tiep bang tien mat', NULL, 0, 1),
 (N'VNPay',         N'Thanh toan qua vi VNPay & QR Code',  'vnpay.png',   0, 1),
 (N'MoMo',          N'Thanh toan qua vi dien tu MoMo',     'momo.png',    0, 1),
-(N'Chuyen khoan',  N'Chuyen khoan ngan hang / Internet Banking', NULL,    0, 1),
 (N'ZaloPay',       N'Thanh toan qua vi ZaloPay',          'zalopay.png', 0, 1);
 
 -- =============================================================================
@@ -92,25 +92,26 @@ CREATE TABLE san_pham (
     warranty        NVARCHAR(100),
     careInstructions NVARCHAR(MAX),
     status          NVARCHAR(50)  DEFAULT 'AVAILABLE',
-    bgColor         NVARCHAR(20)
+    bgColor         NVARCHAR(20),
+    hinh_anh        NVARCHAR(500)
 );
 
-INSERT INTO san_pham (code, category, name, englishName, price, oldPrice, discountPercent, stock, sold, rating, brand, description, origin, warranty, status, bgColor) VALUES
-('SP001', N'Ao khoac', N'Ao khoac da nam cao cap',        'Men Premium Leather Jacket',   1850000, 2200000, 16, 50,  120, 4.8, N'FamiCoats', N'Chat lieu da that cao cap, lot long am',            N'Viet Nam', N'6 thang', 'AVAILABLE',  '#1a1a2e'),
-('SP002', N'Ao khoac', N'Ao khoac denim nu thoi trang',   'Women Fashion Denim Jacket',   750000,  900000,  17, 80,  95,  4.6, N'FamiCoats', N'Denim nhap khau, form rong thoai mai',             N'Viet Nam', N'3 thang', 'AVAILABLE',  '#16213e'),
-('SP003', N'Ao khoac', N'Ao khoac bomber unisex',         'Unisex Bomber Jacket',         1200000, 1400000, 14, 35,  78,  4.7, N'FamiCoats', N'Kieu dang bomber nang dong, chong gio',            N'Viet Nam', N'6 thang', 'AVAILABLE',  '#0f3460'),
-('SP004', N'Ao khoac', N'Ao khoac len nu cong so',        'Women Office Wool Coat',       2100000, 2500000, 16, 25,  45,  4.9, N'FamiCoats', N'Len cao cap, thiet ke thanh lich',                 N'Viet Nam', N'6 thang', 'LOW_STOCK',  '#533483'),
-('SP005', N'Ao khoac', N'Ao khoac gio nam the thao',      'Men Sport Windbreaker',        650000,  750000,  13, 100, 210, 4.5, N'FamiCoats', N'Chong gio, chong mua nhe, trong luong nhe',        N'Viet Nam', N'3 thang', 'AVAILABLE',  '#e94560'),
-('SP006', N'Ao khoac', N'Ao khoac long vu nu giu nhiet',  'Women Down Jacket',            1650000, 2000000, 17, 40,  88,  4.8, N'FamiCoats', N'Long vu thien nhien, giu am toi uu',               N'Viet Nam', N'6 thang', 'AVAILABLE',  '#1a1a2e'),
-('SP007', N'Ao khoac', N'Ao khoac trench coat nu',        'Women Trench Coat',            1900000, 2300000, 17, 20,  55,  4.7, N'FamiCoats', N'Trench coat co dien, thich hop cong so',           N'Viet Nam', N'6 thang', 'LOW_STOCK',  '#16213e'),
-('SP008', N'Ao khoac', N'Ao khoac hoodie nam thuong ngay','Men Daily Hoodie Jacket',      550000,  650000,  15, 150, 320, 4.4, N'FamiCoats', N'Ni bong day dan, non lien kieu dang tre trung',   N'Viet Nam', N'3 thang', 'AVAILABLE',  '#0f3460'),
-('SP009', N'Ao khoac', N'Ao khoac parka nam dong',        'Men Winter Parka Jacket',      2800000, 3200000, 12, 15,  32,  4.9, N'FamiCoats', N'Parka cao cap, chiu lanh cuc tot',                 N'Viet Nam', N'12 thang','LOW_STOCK',  '#533483'),
-('SP010', N'Ao khoac', N'Ao khoac varsity unisex phoi mau','Unisex Varsity Jacket',       980000,  1200000, 18, 60,  140, 4.6, N'FamiCoats', N'Varsity jacket phong cach retro',                  N'Viet Nam', N'3 thang', 'AVAILABLE',  '#e94560'),
-('SP011', N'Ao khoac', N'Ao khoac blazer nu thanh lich',  'Women Elegant Blazer',         1450000, 1750000, 17, 30,  68,  4.7, N'FamiCoats', N'Blazer form slim, phu hop cong so va dao pho',    N'Viet Nam', N'3 thang', 'AVAILABLE',  '#1a1a2e'),
-('SP012', N'Ao khoac', N'Ao khoac jean nam wash cu',      'Men Washed Denim Jacket',      820000,  1000000, 18, 70,  180, 4.5, N'FamiCoats', N'Denim wash cu phong cach vintage',                 N'Viet Nam', N'3 thang', 'AVAILABLE',  '#16213e'),
-('SP013', N'Ao khoac', N'Ao khoac long cuu nu mua dong',  'Women Sherpa Fleece Jacket',   1350000, 1600000, 16, 45,  95,  4.8, N'FamiCoats', N'Long cuu gia mem min, cuc am mua dong',            N'Viet Nam', N'6 thang', 'AVAILABLE',  '#0f3460'),
-('SP014', N'Ao khoac', N'Ao khoac military nam',          'Men Military Jacket',          1100000, 1350000, 19, 55,  75,  4.6, N'FamiCoats', N'Phong cach military ca tinh, nhieu tui tien dung', N'Viet Nam', N'3 thang', 'AVAILABLE',  '#533483'),
-('SP015', N'Ao khoac', N'Ao khoac cape nu sang trong',    'Women Luxury Cape Coat',       2500000, 3000000, 17, 10,  18,  5.0, N'FamiCoats', N'Cape coat da cao cap, dang doc dao',               N'Viet Nam', N'12 thang','LOW_STOCK',  '#e94560');
+INSERT INTO san_pham (code, category, name, englishName, price, oldPrice, discountPercent, stock, sold, rating, brand, description, origin, warranty, status, bgColor, hinh_anh) VALUES
+('SP001', N'Ao khoac', N'Ao khoac da nam cao cap',        'Men Premium Leather Jacket',   1850000, 2200000, 16, 50,  120, 4.8, N'FamiCoats', N'Chat lieu da that cao cap, lot long am',            N'Viet Nam', N'6 thang', 'AVAILABLE',  '#1a1a2e', 'sp001.jpg'),
+('SP002', N'Ao khoac', N'Ao khoac denim nu thoi trang',   'Women Fashion Denim Jacket',   750000,  900000,  17, 80,  95,  4.6, N'FamiCoats', N'Denim nhap khau, form rong thoai mai',             N'Viet Nam', N'3 thang', 'AVAILABLE',  '#16213e', 'sp002.jpg'),
+('SP003', N'Ao khoac', N'Ao khoac bomber unisex',         'Unisex Bomber Jacket',         1200000, 1400000, 14, 35,  78,  4.7, N'FamiCoats', N'Kieu dang bomber nang dong, chong gio',            N'Viet Nam', N'6 thang', 'AVAILABLE',  '#0f3460', 'sp003.jpg'),
+('SP004', N'Ao khoac', N'Ao khoac len nu cong so',        'Women Office Wool Coat',       2100000, 2500000, 16, 25,  45,  4.9, N'FamiCoats', N'Len cao cap, thiet ke thanh lich',                 N'Viet Nam', N'6 thang', 'LOW_STOCK',  '#533483', 'sp004.jpg'),
+('SP005', N'Ao khoac', N'Ao khoac gio nam the thao',      'Men Sport Windbreaker',        650000,  750000,  13, 100, 210, 4.5, N'FamiCoats', N'Chong gio, chong mua nhe, trong luong nhe',        N'Viet Nam', N'3 thang', 'AVAILABLE',  '#e94560', 'sp005.jpg'),
+('SP006', N'Ao khoac', N'Ao khoac long vu nu giu nhiet',  'Women Down Jacket',            1650000, 2000000, 17, 40,  88,  4.8, N'FamiCoats', N'Long vu thien nhien, giu am toi uu',               N'Viet Nam', N'6 thang', 'AVAILABLE',  '#1a1a2e', 'sp006.jpg'),
+('SP007', N'Ao khoac', N'Ao khoac trench coat nu',        'Women Trench Coat',            1900000, 2300000, 17, 20,  55,  4.7, N'FamiCoats', N'Trench coat co dien, thich hop cong so',           N'Viet Nam', N'6 thang', 'LOW_STOCK',  '#16213e', 'sp007.jpg'),
+('SP008', N'Ao khoac', N'Ao khoac hoodie nam thuong ngay','Men Daily Hoodie Jacket',      550000,  650000,  15, 150, 320, 4.4, N'FamiCoats', N'Ni bong day dan, non lien kieu dang tre trung',   N'Viet Nam', N'3 thang', 'AVAILABLE',  '#0f3460', 'sp008.jpg'),
+('SP009', N'Ao khoac', N'Ao khoac parka nam dong',        'Men Winter Parka Jacket',      2800000, 3200000, 12, 15,  32,  4.9, N'FamiCoats', N'Parka cao cap, chiu lanh cuc tot',                 N'Viet Nam', N'12 thang','LOW_STOCK',  '#533483', 'sp009.jpg'),
+('SP010', N'Ao khoac', N'Ao khoac varsity unisex phoi mau','Unisex Varsity Jacket',       980000,  1200000, 18, 60,  140, 4.6, N'FamiCoats', N'Varsity jacket phong cach retro',                  N'Viet Nam', N'3 thang', 'AVAILABLE',  '#e94560', 'sp010.jpg'),
+('SP011', N'Ao khoac', N'Ao khoac blazer nu thanh lich',  'Women Elegant Blazer',         1450000, 1750000, 17, 30,  68,  4.7, N'FamiCoats', N'Blazer form slim, phu hop cong so va dao pho',    N'Viet Nam', N'3 thang', 'AVAILABLE',  '#1a1a2e', 'sp011.jpg'),
+('SP012', N'Ao khoac', N'Ao khoac jean nam wash cu',      'Men Washed Denim Jacket',      820000,  1000000, 18, 70,  180, 4.5, N'FamiCoats', N'Denim wash cu phong cach vintage',                 N'Viet Nam', N'3 thang', 'AVAILABLE',  '#16213e', 'sp012.jpg'),
+('SP013', N'Ao khoac', N'Ao khoac long cuu nu mua dong',  'Women Sherpa Fleece Jacket',   1350000, 1600000, 16, 45,  95,  4.8, N'FamiCoats', N'Long cuu gia mem min, cuc am mua dong',            N'Viet Nam', N'6 thang', 'AVAILABLE',  '#0f3460', 'sp013.jpg'),
+('SP014', N'Ao khoac', N'Ao khoac military nam',          'Men Military Jacket',          1100000, 1350000, 19, 55,  75,  4.6, N'FamiCoats', N'Phong cach military ca tinh, nhieu tui tien dung', N'Viet Nam', N'3 thang', 'AVAILABLE',  '#533483', 'sp014.jpg'),
+('SP015', N'Ao khoac', N'Ao khoac cape nu sang trong',    'Women Luxury Cape Coat',       2500000, 3000000, 17, 10,  18,  5.0, N'FamiCoats', N'Cape coat da cao cap, dang doc dao',               N'Viet Nam', N'12 thang','LOW_STOCK',  '#e94560', 'sp015.jpg');
 
 -- =============================================================================
 -- 4. CHI TIET SAN PHAM  (15 ban ghi)
@@ -150,7 +151,7 @@ INSERT INTO chi_tiet_san_pham (product_id, size, color, style, import_price, pri
 ('SP008', 'XL', N'Xam dam',   N'Oversized',250000,  550000,  490000,  50, 0.55, 72, 58, 0.30, 'AVAILABLE');
 
 -- =============================================================================
--- 5. PHIEU GIAM GIA  (15 ban ghi)
+-- 5. PHIEU GIAM GIA  (5 ban ghi)
 -- =============================================================================
 CREATE TABLE phieu_giam_gia (
     id                         INT IDENTITY(1,1) PRIMARY KEY,
@@ -174,26 +175,34 @@ INSERT INTO phieu_giam_gia (ma_phieu, ten_chuong_trinh, loai_giam, gia_tri_giam,
 ('NEW2026',   N'Khach moi giam 5%',                  0,  5,       800000,  NULL,   120, 58,  '2026-04-01', '2026-12-31', N'Uu dai danh cho khach hang moi dang ky',     1),
 ('MEMBER500', N'Thanh vien giam 500K',               1,  500000,  4000000, NULL,   40,  12,  '2026-04-01', '2026-04-28', N'Uu dai dac biet cho thanh vien than thiet',  2),
 ('WEDDING',   N'Uu dai vest cuoi 20%',               0,  20,      3000000, 500000, 50,  18,  '2026-04-01', '2026-12-31', N'Danh cho cap doi mua vest cuoi',             1),
-('FREESHIP',  N'Ho tro van chuyen 30K',              1,  30000,   500000,  NULL,   200, 87,  '2026-04-01', '2026-12-31', N'Giam phi ship cho don tu 500K',              1),
-('VIP300',    N'VIP giam 300K',                      1,  300000,  2500000, NULL,   60,  22,  '2026-04-01', '2026-12-31', N'Uu dai khach hang VIP',                      1),
-('SALE10',    N'Giam 10% cuoi tuan',                 0,  10,      1000000, 150000, 80,  45,  '2026-05-01', '2026-12-31', N'Chuong trinh khuyen mai cuoi tuan',          1),
-('SUMMER25',  N'He ruc ro giam 25%',                 0,  25,      1500000, 400000, 30,  30,  '2026-05-01', '2026-08-31', N'Khuyen mai mua he',                          2),
-('FLASH100',  N'Flash sale giam 100K',               1,  100000,  300000,  NULL,   500, 498, '2026-07-01', '2026-07-15', N'Giam gia chop nhoang trong 24h',             2),
-('BLACKFRI',  N'Black Friday 30%',                   0,  30,      1000000, 600000, 200, 0,   '2026-11-27', '2026-11-30', N'Sieu sale Black Friday',                     0),
-('BIRTHDAY',  N'Sinh nhat FamiCoats 20%',            0,  20,      500000,  300000, 150, 11,  '2026-07-10', '2026-07-20', N'Chao mung sinh nhat thuong hieu',            1),
-('LOYALTY1K', N'Khach than thiet giam 1 trieu',      1,  1000000, 5000000, NULL,   20,  5,   '2026-06-01', '2026-12-31', N'Danh rieng cho khach chi tieu tren 5 trieu', 1),
-('ECO15',     N'Eco Jacket giam 15%',                0,  15,      1200000, 200000, 70,  28,  '2026-06-15', '2026-09-30', N'Uu dai dong san pham than thien moi truong', 1),
-('STUDENT10', N'Hoc sinh sinh vien 10%',             0,  10,      600000,  NULL,   300, 143, '2026-01-01', '2026-12-31', N'Xuat trinh the SV de duoc uu dai',           1),
-('YEAREND',   N'Tong ket nam giam 35%',              0,  35,      2000000, 700000, 100, 0,   '2026-12-20', '2026-12-31', N'Chuong trinh xa hang cuoi nam',              0);
+('FREESHIP',  N'Ho tro van chuyen 30K',              1,  30000,   500000,  NULL,   200, 87,  '2026-04-01', '2026-12-31', N'Giam phi ship cho don tu 500K',              1);
 
 -- =============================================================================
--- 6. HOA DON  (15 ban ghi)
+-- 6. NHAN VIEN
+-- =============================================================================
+CREATE TABLE nhan_vien (
+    id            INT IDENTITY(1,1) PRIMARY KEY,
+    ma_nhan_vien  VARCHAR(50) UNIQUE,
+    ten_nhan_vien NVARCHAR(150),
+    sdt           NVARCHAR(20),
+    email         NVARCHAR(200),
+    trang_thai    INT DEFAULT 1
+);
+
+INSERT INTO nhan_vien (ma_nhan_vien, ten_nhan_vien, sdt, email) VALUES
+('NV001', N'Nguyen Van Phuc', '0988888888', 'phuc@famicoats.com'),
+('NV002', N'Le Minh Duc', '0911111111', 'duc@famicoats.com'),
+('NV003', N'Tran Dai Luong', '0922222222', 'luong@famicoats.com');
+
+-- =============================================================================
+-- 7. HOA DON  (15 ban ghi)
 -- =============================================================================
 CREATE TABLE hoa_don (
     id                        INT IDENTITY(1,1) PRIMARY KEY,
     id_dia_chi                INT REFERENCES dia_chi(id),
     id_phuong_thuc_thanh_toan INT REFERENCES phuong_thuc_thanh_toan(id),
     id_ma_giam_gia            INT REFERENCES phieu_giam_gia(id),
+    id_nhan_vien              INT REFERENCES nhan_vien(id),
     ngay_dat_hang             DATETIME,
     ngay_xac_nhan             DATETIME,
     ten_khach_hang            NVARCHAR(150),
@@ -212,29 +221,29 @@ CREATE TABLE hoa_don (
     trang_thai                INT   DEFAULT 1
 );
 
-INSERT INTO hoa_don (id_dia_chi, id_phuong_thuc_thanh_toan, id_ma_giam_gia,
+INSERT INTO hoa_don (id_dia_chi, id_phuong_thuc_thanh_toan, id_ma_giam_gia, id_nhan_vien,
     ngay_dat_hang, ngay_xac_nhan,
     ten_khach_hang, sdt_khach_hang, email_khach_hang, dia_chi_khach_hang,
     tong_so_luong, tam_tinh, tien_giam_hoa_don, tong_thanh_toan, da_thanh_toan,
     trang_thai_thanh_toan, trang_thai_don_hang, trang_thai) VALUES
-( 1, 1, NULL, '2026-06-01 08:30:00', '2026-06-01 09:00:00', N'Nguyen Van An',   '0901234567', 'an.nguyen@gmail.com',    N'25 Hang Gai, Ha Noi',           2, 3700000, 0,      3700000, 3700000, 1, 3, 1),
-( 2, 2, 1,    '2026-06-03 10:15:00', '2026-06-03 10:45:00', N'Tran Thi Bich',   '0912345678', 'bich.tran@gmail.com',    N'88 Le Loi, Ho Chi Minh',        3, 5400000, 810000, 4590000, 4590000, 1, 3, 1),
-( 3, 3, NULL, '2026-06-05 14:00:00', '2026-06-05 14:30:00', N'Le Van Cuong',    '0923456789', 'cuong.le@gmail.com',     N'12 Tran Phu, Da Nang',          1, 1200000, 0,      1200000, 1200000, 1, 3, 1),
-( 4, 1, 6,    '2026-06-08 09:00:00', '2026-06-08 09:30:00', N'Pham Thi Dung',   '0934567890', 'dung.pham@yahoo.com',    N'45 Dinh Tien Hoang, Hai Phong', 2, 3100000, 300000, 2800000, 2800000, 1, 3, 1),
-( 5, 2, 2,    '2026-06-10 11:30:00', NULL,                  N'Hoang Van Em',    '0945678901', 'em.hoang@gmail.com',     N'78 Nguyen Trai, Can Tho',       1, 650000,  0,      617500,  0,       0, 0, 1),
-( 6, 4, NULL, '2026-06-12 16:00:00', '2026-06-13 08:00:00', N'Ngo Thi Phuong',  '0956789012', 'phuong.ngo@gmail.com',   N'99 Dai lo Binh Duong',          4, 6600000, 0,      6600000, 6600000, 1, 2, 1),
-( 7, 1, 7,    '2026-06-15 08:45:00', '2026-06-15 09:15:00', N'Dang Van Giang',  '0967890123', 'giang.dang@gmail.com',   N'3 Pham Van Thuan, Dong Nai',    3, 4650000, 465000, 4185000, 4185000, 1, 3, 1),
-( 8, 3, NULL, '2026-06-18 13:00:00', '2026-06-18 13:45:00', N'Bui Thi Ha',      '0978901234', 'ha.bui@gmail.com',       N'22 Le Loi, Hue',                2, 2900000, 0,      2900000, 2900000, 1, 1, 1),
-( 9, 2, 1,    '2026-06-20 10:00:00', NULL,                  N'Dinh Van Inh',    '0989012345', 'inh.dinh@gmail.com',     N'56 Yersin, Nha Trang',          1, 1850000, 200000, 1650000, 0,       0, 0, 1),
-(10, 5, NULL, '2026-06-22 09:30:00', '2026-06-22 10:00:00', N'Vu Thi Kim',      '0990123456', 'kim.vu@gmail.com',       N'7 Tran Hung Dao, Quang Nam',    5, 8250000, 0,      8250000, 8250000, 1, 3, 1),
-(11, 1, 4,    '2026-06-25 11:00:00', '2026-06-25 11:30:00', N'Phan Van Long',   '0901234568', 'long.phan@gmail.com',    N'14 Ly Thai To, Bac Ninh',       2, 4000000, 500000, 3500000, 3500000, 1, 3, 1),
-(12, 3, NULL, '2026-06-28 15:30:00', NULL,                  N'Trinh Thi Mai',   '0912345679', 'mai.trinh@gmail.com',    N'38 Tran Dang Ninh, Nam Dinh',   3, 3750000, 0,      3750000, 0,       0, 4, 1),
-(13, 2, 6,    '2026-07-01 08:00:00', '2026-07-01 08:45:00', N'Cao Van Nghia',   '0923456780', 'nghia.cao@gmail.com',    N'67 Le Hoan, Thanh Hoa',         1, 2100000, 300000, 1800000, 1800000, 1, 2, 1),
-(14, 4, 2,    '2026-07-05 10:30:00', '2026-07-05 11:00:00', N'Ly Thi Oanh',     '0934567891', 'oanh.ly@gmail.com',      N'5 Nguyen Gia Thieu, Nghe An',   2, 1500000, 75000,  1425000, 1425000, 1, 1, 1),
-(15, 1, 7,    '2026-07-10 14:00:00', NULL,                  N'Truong Van Phuc', '0945678902', 'phuc.truong@gmail.com',  N'92 Tran Phu, Ha Tinh',          4, 7400000, 740000, 6660000, 0,       0, 0, 1);
+( 1, 1, NULL, 1, '2026-06-01 08:30:00', '2026-06-01 09:00:00', N'Nguyen Van An',   '0901234567', 'an.nguyen@gmail.com',    N'25 Hang Gai, Ha Noi',           2, 3700000, 0,      3700000, 3700000, 1, 3, 1),
+( 2, 2, 1,    2, '2026-06-03 10:15:00', '2026-06-03 10:45:00', N'Tran Thi Bich',   '0912345678', 'bich.tran@gmail.com',    N'88 Le Loi, Ho Chi Minh',        3, 5400000, 810000, 4590000, 4590000, 1, 3, 1),
+( 3, 3, NULL, 3, '2026-06-05 14:00:00', '2026-06-05 14:30:00', N'Le Van Cuong',    '0923456789', 'cuong.le@gmail.com',     N'12 Tran Phu, Da Nang',          1, 1200000, 0,      1200000, 1200000, 1, 3, 1),
+( 4, 1, 5,    1, '2026-06-08 09:00:00', '2026-06-08 09:30:00', N'Pham Thi Dung',   '0934567890', 'dung.pham@yahoo.com',    N'45 Dinh Tien Hoang, Hai Phong', 2, 3100000, 300000, 2800000, 2800000, 1, 3, 1),
+( 5, 2, 2,    2, '2026-06-10 11:30:00', NULL,                  N'Hoang Van Em',    '0945678901', 'em.hoang@gmail.com',     N'78 Nguyen Trai, Can Tho',       1, 650000,  0,      617500,  0,       0, 0, 1),
+( 6, 1, NULL, 3, '2026-06-12 16:00:00', '2026-06-13 08:00:00', N'Ngo Thi Phuong',  '0956789012', 'phuong.ngo@gmail.com',   N'99 Dai lo Binh Duong',          4, 6600000, 0,      6600000, 6600000, 1, 2, 1),
+( 7, 1, 4,    1, '2026-06-15 08:45:00', '2026-06-15 09:15:00', N'Dang Van Giang',  '0967890123', 'giang.dang@gmail.com',   N'3 Pham Van Thuan, Dong Nai',    3, 4650000, 465000, 4185000, 4185000, 1, 3, 1),
+( 8, 3, NULL, 2, '2026-06-18 13:00:00', '2026-06-18 13:45:00', N'Bui Thi Ha',      '0978901234', 'ha.bui@gmail.com',       N'22 Le Loi, Hue',                2, 2900000, 0,      2900000, 2900000, 1, 1, 1),
+( 9, 2, 1,    3, '2026-06-20 10:00:00', NULL,                  N'Dinh Van Inh',    '0989012345', 'inh.dinh@gmail.com',     N'56 Yersin, Nha Trang',          1, 1850000, 200000, 1650000, 0,       0, 0, 1),
+(10, 4, NULL, 1, '2026-06-22 09:30:00', '2026-06-22 10:00:00', N'Vu Thi Kim',      '0990123456', 'kim.vu@gmail.com',       N'7 Tran Hung Dao, Quang Nam',    5, 8250000, 0,      8250000, 8250000, 1, 3, 1),
+(11, 1, 4,    2, '2026-06-25 11:00:00', '2026-06-25 11:30:00', N'Phan Van Long',   '0901234568', 'long.phan@gmail.com',    N'14 Ly Thai To, Bac Ninh',       2, 4000000, 500000, 3500000, 3500000, 1, 3, 1),
+(12, 3, NULL, 3, '2026-06-28 15:30:00', NULL,                  N'Trinh Thi Mai',   '0912345679', 'mai.trinh@gmail.com',    N'38 Tran Dang Ninh, Nam Dinh',   3, 3750000, 0,      3750000, 0,       0, 4, 1),
+(13, 2, 3,    1, '2026-07-01 08:00:00', '2026-07-01 08:45:00', N'Cao Van Nghia',   '0923456780', 'nghia.cao@gmail.com',    N'67 Le Hoan, Thanh Hoa',         1, 2100000, 300000, 1800000, 1800000, 1, 2, 1),
+(14, 1, 2,    2, '2026-07-05 10:30:00', '2026-07-05 11:00:00', N'Ly Thi Oanh',     '0934567891', 'oanh.ly@gmail.com',      N'5 Nguyen Gia Thieu, Nghe An',   2, 1500000, 75000,  1425000, 1425000, 1, 1, 1),
+(15, 1, 5,    3, '2026-07-10 14:00:00', NULL,                  N'Truong Van Phuc', '0945678902', 'phuc.truong@gmail.com',  N'92 Tran Phu, Ha Tinh',          4, 7400000, 740000, 6660000, 0,       0, 0, 1);
 
 -- =============================================================================
--- 7. CHI TIET HOA DON  (15 ban ghi)
+-- 8. CHI TIET HOA DON
 -- =============================================================================
 CREATE TABLE chi_tiet_hoa_don (
     id                   INT IDENTITY(1,1) PRIMARY KEY,
@@ -262,10 +271,12 @@ INSERT INTO chi_tiet_hoa_don (id_hoa_don, id_chi_tiet_san_pham, don_gia, gia_gia
 (10, 15,  550000, 0,      5, 2750000),
 (11,  8, 2100000, 500000, 2, 3200000),
 (12,  7, 1200000, 0,      3, 3600000),
-(13,  9, 2100000, 300000, 1, 1800000);
+(13,  9, 2100000, 300000, 1, 1800000),
+(14, 11, 1450000, 0,      1, 1450000),
+(15, 13, 1350000, 0,      5, 6750000);
 
 -- =============================================================================
--- 8. LICH SU HOA DON  (15 ban ghi)
+-- 9. LICH SU HOA DON
 -- =============================================================================
 CREATE TABLE lich_su_hoa_don (
     id                 INT IDENTITY(1,1) PRIMARY KEY,
@@ -286,16 +297,24 @@ INSERT INTO lich_su_hoa_don (id_hoa_don, trang_thai_cu, trang_thai_moi, ghi_chu,
 ( 2, 2, 3, N'Hoan thanh',                    '2026-06-05 14:00:00', 1),
 ( 3, 0, 1, N'Xac nhan don',                  '2026-06-05 14:30:00', 1),
 ( 3, 1, 3, N'Khach tu den nhan',              '2026-06-06 09:00:00', 1),
+( 4, 0, 1, N'Xac nhan don',                  '2026-06-08 09:30:00', 1),
+( 5, 0, 1, N'Xac nhan don',                  '2026-06-10 12:00:00', 1),
 ( 6, 0, 1, N'Xac nhan don hang',             '2026-06-13 08:00:00', 1),
 ( 6, 1, 2, N'Dang giao hang',                '2026-06-13 16:00:00', 1),
 ( 7, 0, 1, N'Xac nhan don',                  '2026-06-15 09:15:00', 1),
 ( 7, 1, 3, N'Giao thanh cong',               '2026-06-17 13:00:00', 1),
+( 8, 0, 1, N'Xac nhan don',                  '2026-06-18 13:45:00', 1),
+( 9, 0, 1, N'Xac nhan don',                  '2026-06-20 10:30:00', 1),
+(10, 0, 1, N'Xac nhan don',                  '2026-06-22 10:00:00', 1),
+(11, 0, 1, N'Xac nhan don',                  '2026-06-25 11:30:00', 1),
 (12, 0, 1, N'Xac nhan don',                  '2026-06-28 16:00:00', 1),
 (12, 1, 4, N'Khach yeu cau huy - het hang',  '2026-06-29 08:30:00', 1),
-(13, 0, 1, N'Xac nhan don hang',             '2026-07-01 08:45:00', 1);
+(13, 0, 1, N'Xac nhan don hang',             '2026-07-01 08:45:00', 1),
+(14, 0, 1, N'Xac nhan don hang',             '2026-07-05 11:00:00', 1),
+(15, 0, 1, N'Xac nhan don hang',             '2026-07-10 14:30:00', 1);
 
 -- =============================================================================
--- 9. LICH SU THANH TOAN  (15 ban ghi)
+-- 10. LICH SU THANH TOAN
 -- =============================================================================
 CREATE TABLE lich_su_thanh_toan (
     id                  INT IDENTITY(1,1) PRIMARY KEY,
@@ -332,8 +351,9 @@ PRINT N'  phuong_thuc_thanh_toan : 5  ban ghi';
 PRINT N'  dia_chi                : 15 ban ghi';
 PRINT N'  san_pham               : 15 ban ghi';
 PRINT N'  chi_tiet_san_pham      : 15 ban ghi';
-PRINT N'  phieu_giam_gia         : 15 ban ghi';
+PRINT N'  phieu_giam_gia         : 5 ban ghi';
+PRINT N'  nhan_vien              : 3 ban ghi';
 PRINT N'  hoa_don                : 15 ban ghi';
-PRINT N'  chi_tiet_hoa_don       : 15 ban ghi';
-PRINT N'  lich_su_hoa_don        : 15 ban ghi';
+PRINT N'  chi_tiet_hoa_don       : 17 ban ghi';
+PRINT N'  lich_su_hoa_don        : 23 ban ghi';
 PRINT N'  lich_su_thanh_toan     : 15 ban ghi';
