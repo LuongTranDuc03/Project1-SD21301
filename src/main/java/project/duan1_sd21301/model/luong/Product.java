@@ -21,13 +21,13 @@ public class Product {
     private int discountPercent;
     private int stock;
     private int sold;
-    private double rating;
+
     private String brand;
     private String description;
     private String origin;
-    private String warranty;
+
     private String careInstructions;
-    private String status; // AVAILABLE (Còn hàng), LOW_STOCK (Sắp hết), OUT_OF_STOCK (Hết hàng)
+    private String status; // AVAILABLE (Còn hàng), OUT_OF_STOCK (Hết hàng)
     private String bgColor;
     private List<String> colorCircles;
     private List<ProductDetail> details; // Danh sách chi tiết sản phẩm (biến thể)

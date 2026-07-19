@@ -608,13 +608,14 @@
                                 for (Product prod : products) {
                                     String statusLabel = "";
                                     String statusClass = "";
-                                    if ("AVAILABLE".equals(prod.getStatus())) {
+                                    String pStatus = prod.getStatus();
+                                    if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
+                                        pStatus = prod.getStock() > 0 ? "AVAILABLE" : "OUT_OF_STOCK";
+                                    }
+                                    if ("AVAILABLE".equals(pStatus)) {
                                         statusLabel = "Còn hàng";
                                         statusClass = "available";
-                                    } else if ("LOW_STOCK".equals(prod.getStatus())) {
-                                        statusLabel = "Sắp hết";
-                                        statusClass = "low_stock";
-                                    } else if ("OUT_OF_STOCK".equals(prod.getStatus())) {
+                                    } else if ("OUT_OF_STOCK".equals(pStatus)) {
                                         statusLabel = "Hết hàng";
                                         statusClass = "out_of_stock";
                                     }
@@ -652,13 +653,13 @@
                             </td>
                             <td style="text-align: center;">
                                 <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
-                                    <!-- Sửa -->
-                                    <a href="${pageContext.request.contextPath}/admin/products?action=edit&id=<%= prod.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    </a>
                                     <!-- Chi tiết -->
                                     <a href="${pageContext.request.contextPath}/admin/products?id=<%= prod.getId() %>" class="action-icon-btn details-btn" title="Chi tiết">
                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    </a>
+                                    <!-- Sửa -->
+                                    <a href="${pageContext.request.contextPath}/admin/products?action=edit&id=<%= prod.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     </a>
                                     <!-- Toggle status -->
                                     <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
@@ -710,10 +711,6 @@
                 oldStatus = 'OUT_OF_STOCK';
                 oldBadgeText = 'Hết hàng';
                 oldBadgeClass = 'out_of_stock';
-            } else if (badge.classList.contains('low_stock')) {
-                oldStatus = 'LOW_STOCK';
-                oldBadgeText = 'Sắp hết';
-                oldBadgeClass = 'low_stock';
             }
         }
 
@@ -750,7 +747,7 @@
             })
             .then(data => {
                 if (data.success) {
-                    // Confirmed by server. Update row state if server status is different (e.g. LOW_STOCK)
+                    // Confirmed by server. Update row state if server status is different
                     if (row) {
                         row.dataset.status = data.newStatus;
                     }
@@ -759,9 +756,6 @@
                         if (data.newStatus === 'AVAILABLE') {
                             badge.classList.add('available');
                             badge.textContent = 'Còn hàng';
-                        } else if (data.newStatus === 'LOW_STOCK') {
-                            badge.classList.add('low_stock');
-                            badge.textContent = 'Sắp hết';
                         } else if (data.newStatus === 'OUT_OF_STOCK') {
                             badge.classList.add('out_of_stock');
                             badge.textContent = 'Hết hàng';
@@ -814,7 +808,7 @@
         const btn = document.getElementById('toggleFilterBtn');
         if (body.classList.contains('collapsed')) {
             body.classList.remove('collapsed');
-            btn.textContent = 'Nhấn để thu gọn/mở rộng';
+            btn.textContent = 'Nhấn để thu gọn';
         } else {
             body.classList.add('collapsed');
             btn.textContent = 'Nhấn để mở rộng';
@@ -937,7 +931,7 @@
 
             let matchStatus = true;
             if (status === 'AVAILABLE') {
-                matchStatus = row.dataset.status === 'AVAILABLE' || row.dataset.status === 'LOW_STOCK';
+                matchStatus = row.dataset.status === 'AVAILABLE';
             } else if (status === 'OUT_OF_STOCK') {
                 matchStatus = row.dataset.status === 'OUT_OF_STOCK';
             }

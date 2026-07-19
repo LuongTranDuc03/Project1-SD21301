@@ -10,6 +10,43 @@
     }
     String contextPath = request.getContextPath();
 %>
+<style>
+    .has-submenu .submenu {
+        display: none;
+        list-style: none;
+        padding-left: 40px;
+        margin: 4px 0 0 0;
+    }
+    .has-submenu.submenu-open .submenu {
+        display: block;
+    }
+    .has-submenu.submenu-open .chevron-icon {
+        transform: rotate(180deg);
+    }
+    .submenu li {
+        margin-bottom: 4px;
+    }
+    .submenu a {
+        display: block;
+        padding: 8px 12px;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 13.5px;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .submenu a:hover {
+        color: #ffffff;
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    body.sidebar-collapsed .submenu {
+        display: none !important;
+    }
+    body.sidebar-collapsed .chevron-icon {
+        display: none !important;
+    }
+</style>
 <aside class="sidebar">
     <!-- 1. Brand Header -->
     <div class="sidebar-header">
@@ -72,14 +109,23 @@
                         <span class="menu-text">Quản lý hoá đơn</span>
                     </a>
                 </li>
-                <!-- Quản lý sản phẩm -->
-                <li class="<%= uri.endsWith("/admin/products") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/products">
+                <!-- Quản lý sản phẩm (Dropdown) -->
+                <li class="has-submenu <%= uri.contains("/admin/products") || uri.contains("/admin/variants") ? "submenu-open" : "" %>">
+                    <a href="javascript:void(0)" class="submenu-toggle" onclick="this.parentElement.classList.toggle('submenu-open')">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         </span>
                         <span class="menu-text">Quản lý sản phẩm</span>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </a>
+                    <ul class="submenu">
+                        <li class="<%= uri.endsWith("/admin/products") && request.getParameter("action") == null ? "active" : "" %>">
+                            <a href="<%= contextPath %>/admin/products">Danh sách sản phẩm</a>
+                        </li>
+                        <li class="<%= uri.endsWith("/admin/variants") ? "active" : "" %>">
+                            <a href="<%= contextPath %>/admin/variants">Danh sách biến thể</a>
+                        </li>
+                    </ul>
                 </li>
                 <!-- Quản lý phiếu giảm giá -->
                 <li class="<%= uri.endsWith("/admin/coupons") ? "active" : "" %>">

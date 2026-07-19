@@ -95,7 +95,6 @@ public class ProductValidator {
             String category,
             String brand,
             String origin,
-            String warranty,
             String status,
             boolean isEdit,
             List<Product> existingProducts,
@@ -149,7 +148,7 @@ public class ProductValidator {
             errors.add("Danh mục sản phẩm không được để trống.");
         }
 
-        // 4. Validate Brand, Origin, Warranty
+        // 4. Validate Brand, Origin
         if (brand != null && !brand.trim().isEmpty()) {
             if (brand.trim().length() > 50) {
                 errors.add("Thương hiệu không được vượt quá 50 ký tự.");
@@ -196,9 +195,7 @@ public class ProductValidator {
                 }
             }
         }
-        if (warranty != null && warranty.trim().length() > 50) {
-            errors.add("Thông tin bảo hành không được vượt quá 50 ký tự.");
-        }
+
 
         // 5. Validate Status
         if (status == null || status.trim().isEmpty()) {

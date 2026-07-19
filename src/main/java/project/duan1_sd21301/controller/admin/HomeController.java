@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "MenuController", value = "/admin/menu")
-public class MenuController extends HttpServlet {
+@WebServlet(name = "HomeController", value = "/admin/home")
+public class HomeController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
