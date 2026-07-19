@@ -221,6 +221,7 @@
             width: 100%;
             padding: 10px 12px;
             border: 1px solid #cbd5e1;
+            height: 38px;
             border-radius: 6px;
             font-size: 13px;
             font-family: inherit;

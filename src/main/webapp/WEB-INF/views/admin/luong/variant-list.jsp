@@ -147,9 +147,25 @@
             -webkit-appearance: none; background: transparent; pointer-events: none; margin: 0; padding: 0;
         }
         .price-slider-container input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; pointer-events: all; width: 18px; height: 18px;
-            background-color: #ffffff; border: 2px solid #10b981; border-radius: 50%;
-            cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            pointer-events: auto;
+            -webkit-appearance: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            border: 2px solid #ffffff;
+        }
+        .price-slider-container input[type="range"]::-moz-range-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            border: 2px solid #ffffff;
         }
         .slider-track {
             position: absolute; width: 100%; height: 5px; top: 50%; transform: translateY(-50%);
