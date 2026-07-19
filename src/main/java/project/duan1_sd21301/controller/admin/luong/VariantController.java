@@ -73,6 +73,14 @@ public class VariantController extends HttpServlet {
             return;
         }
 
+        String toastMessage = (String) session.getAttribute("toastMessage");
+        if (toastMessage != null) {
+            request.setAttribute("toastMessage", toastMessage);
+            request.setAttribute("toastType", session.getAttribute("toastType"));
+            session.removeAttribute("toastMessage");
+            session.removeAttribute("toastType");
+        }
+
         request.setAttribute("variants", allVariants);
         request.setAttribute("filterProductId", filterProductId);
         request.getRequestDispatcher("/WEB-INF/views/admin/luong/variant-list.jsp").forward(request, response);
@@ -112,6 +120,24 @@ public class VariantController extends HttpServlet {
                                     if (widthStr != null && !widthStr.isEmpty()) d.setWidth(Double.parseDouble(widthStr.replace(",", "")));
                                     if (thicknessStr != null && !thicknessStr.isEmpty()) d.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
                                 } catch (NumberFormatException ignored) {}
+
+                                // Tính lại tổng số lượng của sản phẩm cha
+                                int totalStock = 0;
+                                for (ProductDetail pd : p.getDetails()) {
+                                    totalStock += pd.getStock();
+                                }
+                                p.setStock(totalStock);
+
+                                // Cập nhật trạng thái sản phẩm cha
+                                if (totalStock > 0) {
+                                    p.setStatus("AVAILABLE");
+                                } else {
+                                    p.setStatus("OUT_OF_STOCK");
+                                }
+
+                                session.setAttribute("toastMessage", "Cập nhật biến thể thành công!");
+                                session.setAttribute("toastType", "success");
+
                                 break;
                             }
                         }

@@ -332,6 +332,15 @@ public class ProductController extends HttpServlet {
                         }
                 }
 
+                jakarta.servlet.http.HttpSession session = request.getSession();
+                String toastMessage = (String) session.getAttribute("toastMessage");
+                if (toastMessage != null) {
+                        request.setAttribute("toastMessage", toastMessage);
+                        request.setAttribute("toastType", session.getAttribute("toastType"));
+                        session.removeAttribute("toastMessage");
+                        session.removeAttribute("toastType");
+                }
+
                 request.setAttribute("pageTitle", "Quản lý sản phẩm");
                 request.setAttribute("products", products);
 
@@ -616,6 +625,8 @@ public class ProductController extends HttpServlet {
                                         e.printStackTrace();
                                 }
                         }
+                        request.getSession().setAttribute("toastMessage", "Thêm biến thể thành công!");
+                        request.getSession().setAttribute("toastType", "success");
                         response.sendRedirect(request.getContextPath() + "/admin/products?action=edit&id=" + productId);
                         return;
                 }
@@ -784,6 +795,8 @@ public class ProductController extends HttpServlet {
                                                         .details(details)
                                                         .build();
                                         products.set(i, updatedProduct);
+                                        request.getSession().setAttribute("toastMessage", "Cập nhật sản phẩm thành công!");
+                                        request.getSession().setAttribute("toastType", "success");
                                         break;
                                 }
                         }
@@ -835,6 +848,8 @@ public class ProductController extends HttpServlet {
                         }
 
                         products.add(newProduct);
+                        request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thành công!");
+                        request.getSession().setAttribute("toastType", "success");
                 }
 
                 response.sendRedirect(request.getContextPath() + "/admin/products");
