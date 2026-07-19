@@ -451,6 +451,7 @@
 
         <!-- 2. Thân trang hiển thị danh sách sản phẩm -->
         <div class="content-wrapper">
+            <%-- KHU VỰC LOGIC JSP: Khởi tạo danh sách sản phẩm, tính toán khoảng giá và filter --%>
             <%
                 List<Product> products = (List<Product>) request.getAttribute("products");
                 int totalProducts = (products != null) ? products.size() : 0;
@@ -509,7 +510,7 @@
                 </div>
             </div>
 
-            <!-- Bộ lọc & tìm kiếm -->
+            <!-- KHU VỰC TÌM KIẾM VÀ BỘ LỌC: Các bộ lọc danh mục, giá, thương hiệu, trạng thái -->
             <div class="custom-card">
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bộ lọc tìm kiếm</span>
@@ -574,7 +575,7 @@
                 </div>
             </div>
 
-            <!-- Bảng danh sách sản phẩm (Table layout) -->
+            <!-- KHU VỰC BẢNG DỮ LIỆU SẢN PHẨM: Hiển thị danh sách sản phẩm -->
             <div class="custom-card">
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bảng dữ liệu sản phẩm</span>
@@ -686,8 +687,10 @@
     </main>
 </div>
 
+<%-- KHU VỰC JAVASCRIPT: Toggle trạng thái, filter, UI update --%>
 <script>
     // ===== TOGGLE STATUS =====
+    // Hàm xử lý việc bật/tắt trạng thái hiển thị của sản phẩm thông qua checkbox
     window.toggleProductStatus = function(productId, checkboxEl) {
         const row = document.querySelector('#productTbody tr[data-id="' + productId + '"]');
         const badge = row ? row.querySelector('.badge-status') : null;
@@ -802,6 +805,7 @@
     const allRows = () => Array.from(document.querySelectorAll('#productTbody tr[data-id]'));
     const totalCount = allRows().length || 0; // captured before any filter
 
+    // Hàm thu gọn/mở rộng card chứa bộ lọc
     function toggleFilterCard() {
         const body = document.getElementById('filterCardBody');
         const btn = document.getElementById('toggleFilterBtn');
@@ -814,6 +818,7 @@
         }
     }
 
+    // Hàm cập nhật thanh trượt giá (price slider) và hiển thị khoảng giá đã chọn
     function updateSlider() {
         let minVal = parseInt(minPriceInput.value);
         let maxVal = parseInt(maxPriceInput.value);
@@ -841,6 +846,7 @@
 
 
 
+    // Hàm áp dụng các bộ lọc (phiên bản cũ)
     function applyFilters_old() {
         const keyword = (document.getElementById('searchInput').value || '').toLowerCase().trim();
         const status  = document.getElementById('statusFilter').value;
@@ -893,6 +899,7 @@
         document.getElementById('resetBtn').style.display = hasFilter ? 'flex' : 'none';
     }
 
+    // Hàm xóa các bộ lọc (phiên bản cũ)
     function resetFilters_old() {
         document.getElementById('searchInput').value = '';
         document.getElementById('statusFilter').value = '';
@@ -908,6 +915,7 @@
         applyFilters();
     });
     // ===== NEW FILTER IMPLEMENTATION =====
+    // Hàm áp dụng các bộ lọc (tìm kiếm, danh mục, thương hiệu, trạng thái, khoảng giá) và hiển thị kết quả
     function applyFilters() {
         const keyword = (document.getElementById('searchInput').value || '').toLowerCase().trim();
         const category = document.getElementById('categoryFilter').value;
@@ -961,6 +969,7 @@
         document.getElementById('resetBtn').style.display = hasFilter ? 'flex' : 'none';
     }
 
+    // Hàm xóa tất cả các bộ lọc và đưa về trạng thái mặc định ban đầu
     function resetFilters() {
         document.getElementById('searchInput').value = '';
         document.getElementById('categoryFilter').value = '';

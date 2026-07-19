@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%-- KHU VỰC LOGIC JSP: Xác định URI hiện tại để highlight menu active --%>
 <%
     // Lấy URI hiện tại để so sánh và set active class cho menu
     String uri = (String) request.getAttribute("javax.servlet.forward.request_uri");
@@ -11,7 +12,7 @@
     String contextPath = request.getContextPath();
 %>
 <aside class="sidebar">
-    <!-- 1. Brand Header -->
+    <!-- KHU VỰC BRAND HEADER: Logo và tên ứng dụng -->
     <div class="sidebar-header">
         <div class="brand">
             <div class="brand-logo">
@@ -31,7 +32,7 @@
         </button>
     </div>
 
-    <!-- 2. Menu Navigation -->
+    <!-- KHU VỰC MENU ĐIỀU HƯỚNG CHÍNH -->
     <nav class="sidebar-menu">
         <div class="menu-section">
             <span class="menu-title">MENU CHÍNH</span>
@@ -112,7 +113,7 @@
         </div>
     </nav>
 
-    <!-- 3. Sidebar Footer -->
+    <!-- KHU VỰC FOOTER SIDEBAR: Cài đặt, đăng xuất và thông tin user -->
     <div class="sidebar-footer">
         <div class="footer-links">
             <a href="<%= contextPath %>/admin/settings" class="footer-item <%= uri.endsWith("/admin/settings") ? "active-footer-link" : "" %>" style="display: flex; align-items: center; gap: 10px; color: <%= uri.endsWith("/admin/settings") ? "#ffffff" : "#9ca3af" %>; text-decoration: none;">
@@ -136,6 +137,7 @@
     </div>
 </aside>
 
+<%-- KHU VỰC JAVASCRIPT: Xử lý thu gọn/mở rộng sidebar và lưu trạng thái vào localStorage --%>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const toggleBtn = document.getElementById("sidebar-toggle");
@@ -153,6 +155,7 @@
             updateToggleIcon(collapsedNow);
         });
         
+        // Hàm cập nhật icon của nút thu gọn/mở rộng sidebar
         function updateToggleIcon(collapsed) {
             if (collapsed) {
                 // Đổi icon sang chevron-right (>) khi bị thu nhỏ

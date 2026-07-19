@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
+<%-- KHU VỰC LOGIC JSP: Khởi tạo sản phẩm để kiểm tra là Thêm mới hay Chỉnh sửa --%>
 <%
     Product product = (Product) request.getAttribute("product");
     boolean isEdit = (product != null);
@@ -427,7 +428,7 @@
                         <input type="hidden" name="isEdit" value="true">
                         <input type="hidden" name="id" value="<%= product.getId() %>">
                     <% } %>
-                    <!-- 1. Thông tin chung sản phẩm -->
+                    <!-- KHU VỰC THÔNG TIN CHUNG SẢN PHẨM: Nhập các thông tin cơ bản -->
                     <div class="form-card">
                         <div class="form-card-title">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -484,7 +485,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. Danh sách biến thể động -->
+                    <!-- KHU VỰC DANH SÁCH BIẾN THỂ ĐỘNG: Thêm, sửa, xoá các biến thể (màu sắc, size...) -->
                     <div class="form-card">
                         <div class="form-card-title" style="justify-content: space-between; border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -517,7 +518,7 @@
         </main>
     </div>
 
-    <!-- Javascript xử lý thêm/xóa biến thể con động -->
+    <%-- KHU VỰC JAVASCRIPT: Quản lý biến thể động, form submit, preview hình ảnh --%>
     <script>
         let variantIndex = 0;
         const container = document.getElementById('variants-container');
@@ -992,6 +993,7 @@
             }, 10);
         };
 
+        // Hàm đóng modal xác nhận quay lại danh sách
         window.closeConfirmModal = function() {
             const modal = document.getElementById('confirmBackModal');
             modal.classList.remove('active');
@@ -1014,6 +1016,7 @@
             }
         };
 
+        // Hàm đóng modal xác nhận lưu thay đổi
         window.closeEditConfirmModal = function() {
             const modal = document.getElementById('editConfirmBackModal');
             modal.classList.remove('active');
@@ -1022,6 +1025,7 @@
             }, 250);
         };
 
+        // Hàm lưu thay đổi form hiện tại và sau đó quay lại danh sách
         window.saveAndGoBack = function() {
             isFormDirty = false;
             const form = document.getElementById('productForm');
@@ -1050,6 +1054,7 @@
             }
         };
 
+        // Hàm thực hiện chuyển hướng về trang danh sách sản phẩm
         window.proceedBackToList = function() {
             window.location.href = "${pageContext.request.contextPath}/admin/products";
         };

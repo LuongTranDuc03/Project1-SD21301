@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
 </head>
 <body>
+<%-- KHU VỰC LOGIC JSP: Khởi tạo dữ liệu form và kiểm tra trạng thái Edit/Add --%>
 <%
     Coupon coupon = (Coupon) request.getAttribute("coupon");
     boolean isEdit      = Boolean.TRUE.equals(request.getAttribute("isEdit"));
@@ -90,7 +91,7 @@
                     <input type="hidden" name="id" value="<%= couponId %>">
 
                     <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
-                        <!-- Row 1 -->
+                        <!-- KHU VỰC THÔNG TIN CƠ BẢN: Tên và Số lượng -->
                         <div class="cf-group">
                             <label class="cf-label" for="name">Tên phiếu giảm giá <span class="req">*</span></label>
                             <input type="text" id="name" name="name" class="cf-input"
@@ -106,7 +107,7 @@
                                    min="1" step="1" required>
                         </div>
 
-                        <!-- Row 2 -->
+                        <!-- KHU VỰC THỜI GIAN: Ngày bắt đầu và kết thúc -->
                         <div class="cf-group">
                             <label class="cf-label" for="startDate">Ngày bắt đầu <span class="req">*</span></label>
                             <input type="date" id="startDate" name="startDate" class="cf-input"
@@ -118,7 +119,7 @@
                                    value="<%= endDate %>" required>
                         </div>
 
-                        <!-- Row 3 -->
+                        <!-- KHU VỰC LOẠI GIẢM VÀ GIÁ TRỊ: Cấu hình mức giảm giá -->
                         <div class="cf-group">
                             <label class="cf-label" for="discountType">Loại giảm</label>
                             <select id="discountType" name="discountType" class="cf-select" required onchange="onTypeChange()">
@@ -140,7 +141,7 @@
                             </div>
                         </div>
 
-                        <!-- Row 4 -->
+                        <!-- KHU VỰC RÀNG BUỘC: Giảm tối đa và Đơn tối thiểu -->
                         <div class="cf-group" id="maxDiscountGroup" style="<%= discountType == 1 ? "display:none;" : "" %>">
                             <label class="cf-label" for="maxDiscountAmount">Giảm tối đa (VNĐ) <span class="req">*</span></label>
                             <input type="text" id="maxDiscountAmount" name="maxDiscountAmount" class="cf-input"
@@ -159,7 +160,7 @@
                             </div>
                         </div>
 
-                        <!-- Row 5 (Extra fields not in image 2 but required) -->
+                        <!-- KHU VỰC ĐỊNH DANH VÀ THỐNG KÊ: Mã giảm giá và Số lượng đã dùng -->
                         <div class="cf-group">
                             <label class="cf-label" for="code">Mã phiếu giảm giá <span class="req">*</span></label>
                             <input type="text" id="code" name="code" class="cf-input"
@@ -178,14 +179,14 @@
                         <div class="cf-group"></div>
                         <% } %>
 
-                        <!-- Row 6 -->
+                        <!-- KHU VỰC MÔ TẢ CHI TIẾT -->
                         <div class="cf-group span2">
                             <label class="cf-label" for="description">Mô tả</label>
                             <textarea id="description" name="description" class="cf-textarea"
                                       placeholder="Nhập mô tả..."><%= description %></textarea>
                         </div>
                         
-                        <!-- Row 7 -->
+                        <!-- KHU VỰC TRẠNG THÁI -->
                         <div class="cf-group span2">
                             <label class="cf-label">Trạng thái <span class="req">*</span></label>
                             <div style="display: flex; gap: 24px; align-items: center; margin-top: 6px;">
@@ -217,7 +218,9 @@
     </main>
 </div>
 
+<%-- KHU VỰC JAVASCRIPT: Format số tiền, validate ngày tháng và xử lý logic form --%>
 <script>
+    // Khởi tạo ngày giờ hiện tại cho UI
     (function() {
         var d    = new Date();
         var days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
@@ -227,6 +230,7 @@
         if (el) el.textContent = days[d.getDay()] + ', ' + dd + '/' + mm + '/' + d.getFullYear();
     })();
 
+    // Xử lý thay đổi loại giảm giá (%, VNĐ)
     function onTypeChange() {
         var sel    = document.getElementById('discountType');
         var unit   = document.getElementById('unitLabel');
@@ -240,12 +244,14 @@
         if (dVal) dVal.dispatchEvent(new Event('input'));
     }
 
+    // Tự động in hoa và loại bỏ ký tự đặc biệt cho mã giảm giá
     document.getElementById('code').addEventListener('input', function() {
         var pos = this.selectionStart;
         this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
         this.setSelectionRange(pos, pos);
     });
 
+    // Xử lý validate trước khi submit form (kiểm tra ngày, bỏ dấu chấm)
     document.getElementById('couponForm').addEventListener('submit', function(e) {
         var bd = document.getElementById('startDate').value;
         var kt = document.getElementById('endDate').value;
@@ -265,6 +271,7 @@
         });
     });
 
+    // Format số tiền nhập vào (thêm dấu chấm phân cách)
     function formatCurrencyInput(e) {
         var isPct = document.getElementById('discountType').value === '0';
         var val = this.value.replace(/\D/g, ''); // keep only digits
@@ -281,6 +288,7 @@
         }
     }
 
+    // Khởi tạo và format các trường nhập tiền lúc load trang
     (function initCurrencyFields() {
         var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
         fields.forEach(function(id) {

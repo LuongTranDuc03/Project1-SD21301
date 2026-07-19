@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body>
+<%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu danh sách phiếu giảm giá, bộ lọc và phân trang --%>
 <%
     List<Coupon> coupons      = (List<Coupon>) request.getAttribute("coupons");
     Map<Integer,String> typeLabels  = (Map<Integer,String>) request.getAttribute("discountTypeLabels");
@@ -96,7 +97,7 @@
             </div>
             <% } %>
 
-            <!-- Bộ lọc & tìm kiếm -->
+            <!-- KHU VỰC TÌM KIẾM VÀ BỘ LỌC: Lọc theo mã, loại, trạng thái và ngày -->
             <div class="custom-card">
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bộ lọc tìm kiếm</span>
@@ -171,7 +172,7 @@
                 </div>
             </div>
 
-            <!-- Bảng dữ liệu phiếu giảm giá -->
+            <!-- KHU VỰC BẢNG DỮ LIỆU PHIẾU GIẢM GIÁ: Hiển thị danh sách các mã giảm giá -->
             <div class="custom-card">
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bảng dữ liệu phiếu giảm giá</span>
@@ -258,6 +259,7 @@
                                    class="action-icon-btn" title="Chỉnh sửa">
                                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
+                              <%--  check time --%>
                                 <% boolean isExpired = (c.getEndDate() != null && c.getEndDate().isBefore(java.time.LocalDate.now())); %>
                                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/toggle-status"
                                       style="display:inline;" id="toggleForm-<%= c.getId() %>">
@@ -283,7 +285,8 @@
             </div>
             </div>
 
-                                <div class="cl-pagination">
+                <!-- KHU VỰC PHÂN TRANG: Chuyển trang và hiển thị tổng số kết quả -->
+                <div class="cl-pagination">
                     <span class="info">
                         Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
                         trong tổng <strong><%= String.format("%,d", total) %></strong> phiếu
@@ -312,7 +315,9 @@
     </main>
 </div>
 
+<%-- KHU VỰC JAVASCRIPT: Xử lý tìm kiếm delay, toast thông báo, toggle form --%>
 <script>
+    // Khởi tạo ngày giờ hiện tại cho UI
     (function() {
         var d    = new Date();
         var days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
@@ -322,6 +327,7 @@
         if (el) el.textContent = days[d.getDay()] + ', ' + dd + '/' + mm + '/' + d.getFullYear();
     })();
 
+    // Xử lý tìm kiếm với delay (debounce) và nút xoá
     (function () {
         var input    = document.getElementById('searchInput');
         var form     = document.getElementById('searchForm');
@@ -329,6 +335,7 @@
         var clearBtn = document.getElementById('clearBtn');
         var timer    = null;
 
+        // Cập nhật trạng thái hiển thị của nút xoá tìm kiếm
         function updateClearBtn() { box.classList.toggle('has-value', input.value.trim().length > 0); }
         updateClearBtn();
 
@@ -346,6 +353,7 @@
         });
     })();
 
+    // Xử lý tự động ẩn thông báo thành công sau 3 giây
     (function () {
         var banner = document.getElementById('toastSuccess');
         if (banner) setTimeout(function () {
@@ -355,6 +363,7 @@
         }, 3000);
     })();
     
+    // Thu gọn/mở rộng card bộ lọc
     function toggleFilterCard() {
         const body = document.getElementById('filterCardBody');
         const btn = document.getElementById('toggleFilterBtn');
@@ -367,6 +376,7 @@
         }
     }
 
+    // Hiển thị thông báo lỗi bằng toast
     function showErrorToast(msg) {
         var oldToast = document.getElementById('toastError');
         if (oldToast) oldToast.remove();

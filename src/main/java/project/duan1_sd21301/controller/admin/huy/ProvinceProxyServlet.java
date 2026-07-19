@@ -1,4 +1,4 @@
-package project.duan1_sd21301.controller.admin.phuc;
+package project.duan1_sd21301.controller.admin.huy;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

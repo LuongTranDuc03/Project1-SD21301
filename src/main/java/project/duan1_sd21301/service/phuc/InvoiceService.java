@@ -3,72 +3,54 @@ package project.duan1_sd21301.service.phuc;
 import project.duan1_sd21301.model.phuc.Invoice;
 import project.duan1_sd21301.model.phuc.InvoiceDetail;
 import project.duan1_sd21301.model.phuc.InvoiceHistory;
+import project.duan1_sd21301.repository.phuc.InvoiceRepository;
 
 import java.util.List;
 
 /**
- * InvoiceService – Interface định nghĩa các "hành động" liên quan đến hóa đơn.
- *
- * Controller sẽ gọi các phương thức trong interface này để thực hiện nghiệp vụ.
- * Lớp InvoiceServiceImpl sẽ cài đặt (implements) chi tiết từng phương thức.
+ * InvoiceService – Lớp service quản lý các nghiệp vụ liên quan đến hóa đơn.
  */
-public interface InvoiceService {
+public class InvoiceService {
 
-    // =========================================================
-    //  GHI DỮ LIỆU
-    // =========================================================
+    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
 
-    /** Thêm mới một hóa đơn vào database */
-    Invoice save(Invoice invoice);
+    public Invoice save(Invoice invoice) {
+        return invoiceRepository.save(invoice);
+    }
 
-    /** Cập nhật thông tin hóa đơn */
-    Invoice update(Invoice invoice);
+    public Invoice update(Invoice invoice) {
+        return invoiceRepository.update(invoice);
+    }
 
-    /** Xóa mềm hóa đơn: đặt status = 0, không xóa dữ liệu thật */
-    void softDelete(int id);
+    public void softDelete(int id) {
+        invoiceRepository.softDelete(id);
+    }
 
-    /**
-     * Cập nhật trạng thái hóa đơn, xử lý tồn kho, và ghi lịch sử trong một lần.
-     * Tất cả thực hiện trong một transaction để đảm bảo tính toàn vẹn dữ liệu.
-     *
-     * @param invoice       hóa đơn đã được set trạng thái mới
-     * @param detailList    danh sách sản phẩm trong đơn (để tính số lượng tồn kho)
-     * @param history       bản ghi lịch sử cần lưu
-     * @param updateStock   true = có thay đổi tồn kho
-     * @param increaseStock true = hoàn kho (hủy đơn); false = trừ kho (phục hồi đơn)
-     */
-    void updateStatusAndSaveHistory(Invoice invoice,
-                                    List<InvoiceDetail> detailList,
-                                    InvoiceHistory history,
-                                    boolean updateStock,
-                                    boolean increaseStock);
+    public void updateStatusAndSaveHistory(Invoice invoice,
+                                           List<InvoiceDetail> detailList,
+                                           InvoiceHistory history,
+                                           boolean updateStock,
+                                           boolean increaseStock) {
+        invoiceRepository.updateStatusAndSaveHistory(invoice, detailList, history, updateStock, increaseStock);
+    }
 
-    // =========================================================
-    //  ĐỌC DỮ LIỆU
-    // =========================================================
+    public Invoice findById(int id) {
+        return invoiceRepository.findById(id);
+    }
 
-    /** Tìm hóa đơn theo ID (kèm địa chỉ và phương thức thanh toán). Trả về null nếu không thấy. */
-    Invoice findById(int id);
+    public List<InvoiceDetail> findDetailsByInvoiceId(int invoiceId) {
+        return invoiceRepository.findDetailsByInvoiceId(invoiceId);
+    }
 
-    /** Lấy danh sách sản phẩm chi tiết trong một hóa đơn */
-    List<InvoiceDetail> findDetailsByInvoiceId(int invoiceId);
+    public List<InvoiceHistory> findHistoryByInvoiceId(int invoiceId) {
+        return invoiceRepository.findHistoryByInvoiceId(invoiceId);
+    }
 
-    /** Lấy lịch sử thay đổi trạng thái của một hóa đơn (mới nhất lên trước) */
-    List<InvoiceHistory> findHistoryByInvoiceId(int invoiceId);
+    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size) {
+        return invoiceRepository.findAll(orderStatus, keyword, fromDateStr, toDateStr, page, size);
+    }
 
-    /**
-     * Lấy danh sách hóa đơn có lọc và phân trang.
-     *
-     * @param orderStatus null = tất cả; 0/1/2/3/4 = lọc theo trạng thái
-     * @param keyword     tìm theo tên KH, SĐT, mã hóa đơn; null/rỗng = không lọc
-     * @param page        số trang (bắt đầu từ 0)
-     * @param size        số bản ghi mỗi trang
-     */
-    List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size);
-
-    /**
-     * Đếm tổng số hóa đơn theo điều kiện lọc.
-     * Dùng để tính tổng số trang cho phân trang.
-     */
-    long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr);
+    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr) {
+        return invoiceRepository.countAll(orderStatus, keyword, fromDateStr, toDateStr);
+    }
 }

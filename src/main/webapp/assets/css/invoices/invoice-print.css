@@ -125,5 +125,6 @@
     .print-area { margin: 0; padding: 0; max-width: 100%; }
     .invoice-doc { border: none; border-radius: 0; box-shadow: none; padding: 20px; }
     body { background: #fff !important; }
+    @page { margin: 0; }
 }
 

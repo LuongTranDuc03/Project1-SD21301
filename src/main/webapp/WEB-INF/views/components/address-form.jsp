@@ -22,7 +22,7 @@
 %>
 <div class="address-form-wrapper">
 
-    <!-- Tỉnh / Thành phố -->
+    <!-- KHU VỰC TỈNH/THÀNH PHỐ -->
     <div class="addr-field">
         <label for="provinceSelect">Tỉnh / Thành phố <span class="req">*</span></label>
         <div class="select-wrapper">
@@ -36,7 +36,7 @@
         <div class="addr-loading" id="provinceLoading">Đang tải...</div>
     </div>
 
-    <!-- Xã / Phường / Thị trấn -->
+    <!-- KHU VỰC XÃ/PHƯỜNG -->
     <div class="addr-field">
         <label for="wardSelect">Xã / Phường / Thị trấn <span class="req">*</span></label>
         <div class="select-wrapper">
@@ -50,7 +50,7 @@
         <div class="addr-loading" id="wardLoading" style="display:none">Đang tải...</div>
     </div>
 
-    <!-- Địa chỉ chi tiết -->
+    <!-- KHU VỰC ĐỊA CHỈ CHI TIẾT -->
     <div class="addr-field">
         <label for="addressDetailInput">Địa chỉ chi tiết <span class="req">*</span></label>
         <input type="text" id="addressDetailInput" name="addressDetail"
@@ -80,6 +80,7 @@
 .addr-loading { font-size: 11px; color: #9ca3af; margin-top: 2px; }
 </style>
 
+<%-- KHU VỰC JAVASCRIPT: Gọi API lấy danh sách tỉnh/xã và xử lý tự động chọn --%>
 <script>
 (function () {
     'use strict';
@@ -97,7 +98,7 @@
     var prefillProv = '<%= prefillProvince != null ? prefillProvince : "" %>';
     var prefillWard = '<%= prefillWard != null ? prefillWard : "" %>';
 
-    // ---- Load danh sách tỉnh ----
+    // Hàm tải danh sách các tỉnh/thành phố từ API
     function loadProvinces() {
         loadProv.style.display = 'block';
         fetch(PROVINCES_URL)
@@ -130,7 +131,7 @@
             });
     }
 
-    // ---- Load danh sách xã/phường theo mã tỉnh (depth=2) ----
+    // Hàm tải danh sách xã/phường/thị trấn dựa vào mã tỉnh đã chọn
     function loadWards(provinceCode) {
         selWard.disabled = true;
         selWard.innerHTML = '<option value="">Đang tải...</option>';

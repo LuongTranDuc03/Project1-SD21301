@@ -2,6 +2,7 @@
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
+<%-- KHU VỰC LOGIC JSP: Xử lý màu sắc, chuẩn bị dữ liệu sản phẩm hiển thị --%>
 <%!
     public String getColorHex(String colorName) {
         if (colorName == null) return "#cbd5e1";
@@ -626,7 +627,7 @@
                         </div>
                     </div>
 
-                    <!-- 1. Thông tin chung sản phẩm -->
+                    <!-- KHU VỰC THÔNG TIN CHUNG SẢN PHẨM: Tên, giá, đánh giá, danh mục -->
                     <div class="detail-card">
                         <div class="detail-card-title">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -719,7 +720,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. Danh sách biến thể con -->
+                    <!-- KHU VỰC DANH SÁCH BIẾN THỂ CON: Hiển thị các tuỳ chọn màu, size, giá tương ứng -->
                     <div class="detail-card" style="padding: 0; overflow: hidden;">
                         <div style="padding: 24px 24px 16px 24px;">
                             <div class="detail-card-title" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
@@ -877,8 +878,10 @@
     </div>
 
     <!-- Script xử lý hiển thị ảnh Base64 / Placeholder và tương tác chuyển ảnh con -->
+    <%-- KHU VỰC JAVASCRIPT: Xử lý modal và hình ảnh preview --%>
     <script>
         // Hàm chuyển ảnh chính khi click vào ảnh con
+        // Hàm chuyển ảnh lớn tương ứng khi click vào ảnh thu nhỏ
         window.switchGalleryImage = function(thumbEl) {
             const gallery = thumbEl.closest('.variant-gallery');
             const mainImg = gallery.querySelector('.gallery-main-img');
@@ -1039,10 +1042,12 @@
     <script>
         window.currentModalImages = [];
 
+        // Hàm kích hoạt input file để chọn ảnh mới tải lên
         window.triggerModalImageUpload = function() {
             document.getElementById('modalImageInput').click();
         };
 
+        // Hàm xử lý khi người dùng chọn file ảnh tải lên (đọc Base64 và hiển thị)
         window.handleModalImageSelect = function(input) {
             const files = input.files;
             if (!files || files.length === 0) return;
@@ -1067,11 +1072,13 @@
             });
         };
 
+        // Hàm xóa ảnh khỏi danh sách ảnh hiện tại trong modal
         window.deleteModalImage = function(index) {
             window.currentModalImages.splice(index, 1);
             renderModalPreviews();
         };
 
+        // Hàm render (hiển thị) danh sách ảnh xem trước trong modal chỉnh sửa
         window.renderModalPreviews = function() {
             const previewContainer = document.getElementById('modal-img-previews');
             previewContainer.innerHTML = '';
@@ -1101,6 +1108,7 @@
             });
         };
 
+        // Hàm mở modal chỉnh sửa biến thể và điền dữ liệu (populate) từ dòng được chọn
         window.openEditModal = function(btn) {
             document.getElementById('editVariantId').value = btn.getAttribute('data-id');
             document.getElementById('editColor').value = btn.getAttribute('data-color');
@@ -1157,6 +1165,7 @@
             }, 10);
         };
 
+        // Hàm đóng modal chỉnh sửa biến thể
         window.closeEditModal = function() {
             const modal = document.getElementById('editVariantModal');
             modal.classList.remove('active');
@@ -1188,6 +1197,7 @@
         });
 
         // Mở modal xác nhận xóa biến thể
+        // Hàm mở modal xác nhận xóa biến thể
         window.confirmDeleteVariant = function(btn) {
             const variantId = btn.getAttribute('data-variant-id');
             const variantLabel = btn.getAttribute('data-variant-label');
@@ -1196,6 +1206,7 @@
             document.getElementById('deleteVariantModal').classList.add('active');
         };
 
+        // Hàm đóng modal xác nhận xóa biến thể
         window.closeDeleteVariantModal = function() {
             document.getElementById('deleteVariantModal').classList.remove('active');
         };

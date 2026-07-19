@@ -1,27 +1,4 @@
 -- =============================================================================
---  FamiCoats - Database Initialization Script
---  Du an: SD21301 | Tac gia: phuc
---  Ngay tao: 2026-07-15
---
---  Bang ten tieng Viet (dung theo entity), cot ten tieng Viet dung @Column(name).
---  Du lieu mau: 15 ban ghi / chuc nang.
--- =============================================================================
-
--- ---------------------------------------------------------------------------
--- 0. Reset (chay lai sach)
--- ---------------------------------------------------------------------------
-IF OBJECT_ID('lich_su_thanh_toan',     'U') IS NOT NULL DROP TABLE lich_su_thanh_toan;
-IF OBJECT_ID('lich_su_hoa_don',        'U') IS NOT NULL DROP TABLE lich_su_hoa_don;
-IF OBJECT_ID('chi_tiet_hoa_don',       'U') IS NOT NULL DROP TABLE chi_tiet_hoa_don;
-IF OBJECT_ID('hoa_don',                'U') IS NOT NULL DROP TABLE hoa_don;
-IF OBJECT_ID('nhan_vien',              'U') IS NOT NULL DROP TABLE nhan_vien;
-IF OBJECT_ID('phieu_giam_gia',         'U') IS NOT NULL DROP TABLE phieu_giam_gia;
-IF OBJECT_ID('chi_tiet_san_pham',      'U') IS NOT NULL DROP TABLE chi_tiet_san_pham;
-IF OBJECT_ID('san_pham',               'U') IS NOT NULL DROP TABLE san_pham;
-IF OBJECT_ID('phuong_thuc_thanh_toan', 'U') IS NOT NULL DROP TABLE phuong_thuc_thanh_toan;
-IF OBJECT_ID('dia_chi',                'U') IS NOT NULL DROP TABLE dia_chi;
-
--- =============================================================================
 -- 1. PHUONG THUC THANH TOAN
 -- =============================================================================
 CREATE TABLE phuong_thuc_thanh_toan (
@@ -226,20 +203,20 @@ INSERT INTO hoa_don (id_dia_chi, id_phuong_thuc_thanh_toan, id_ma_giam_gia, id_n
     ten_khach_hang, sdt_khach_hang, email_khach_hang, dia_chi_khach_hang,
     tong_so_luong, tam_tinh, tien_giam_hoa_don, tong_thanh_toan, da_thanh_toan,
     trang_thai_thanh_toan, trang_thai_don_hang, trang_thai) VALUES
-( 1, 1, NULL, 1, '2026-06-01 08:30:00', '2026-06-01 09:00:00', N'Nguyen Van An',   '0901234567', 'an.nguyen@gmail.com',    N'25 Hang Gai, Ha Noi',           2, 3700000, 0,      3700000, 3700000, 1, 3, 1),
-( 2, 2, 1,    2, '2026-06-03 10:15:00', '2026-06-03 10:45:00', N'Tran Thi Bich',   '0912345678', 'bich.tran@gmail.com',    N'88 Le Loi, Ho Chi Minh',        3, 5400000, 810000, 4590000, 4590000, 1, 3, 1),
-( 3, 3, NULL, 3, '2026-06-05 14:00:00', '2026-06-05 14:30:00', N'Le Van Cuong',    '0923456789', 'cuong.le@gmail.com',     N'12 Tran Phu, Da Nang',          1, 1200000, 0,      1200000, 1200000, 1, 3, 1),
-( 4, 1, 5,    1, '2026-06-08 09:00:00', '2026-06-08 09:30:00', N'Pham Thi Dung',   '0934567890', 'dung.pham@yahoo.com',    N'45 Dinh Tien Hoang, Hai Phong', 2, 3100000, 300000, 2800000, 2800000, 1, 3, 1),
+( 1, 1, NULL, 1, '2026-06-01 08:30:00', NULL,                  N'Nguyen Van An',   '0901234567', 'an.nguyen@gmail.com',    N'25 Hang Gai, Ha Noi',           2, 3700000, 0,      3700000, 3700000, 1, 0, 1),
+( 2, 2, 1,    2, '2026-06-03 10:15:00', NULL,                  N'Tran Thi Bich',   '0912345678', 'bich.tran@gmail.com',    N'88 Le Loi, Ho Chi Minh',        3, 5400000, 810000, 4590000, 4590000, 1, 0, 1),
+( 3, 3, NULL, 3, '2026-06-05 14:00:00', NULL,                  N'Le Van Cuong',    '0923456789', 'cuong.le@gmail.com',     N'12 Tran Phu, Da Nang',          1, 1200000, 0,      1200000, 1200000, 1, 0, 1),
+( 4, 1, 5,    1, '2026-06-08 09:00:00', NULL,                  N'Pham Thi Dung',   '0934567890', 'dung.pham@yahoo.com',    N'45 Dinh Tien Hoang, Hai Phong', 2, 3100000, 300000, 2800000, 2800000, 1, 0, 1),
 ( 5, 2, 2,    2, '2026-06-10 11:30:00', NULL,                  N'Hoang Van Em',    '0945678901', 'em.hoang@gmail.com',     N'78 Nguyen Trai, Can Tho',       1, 650000,  0,      617500,  0,       0, 0, 1),
-( 6, 1, NULL, 3, '2026-06-12 16:00:00', '2026-06-13 08:00:00', N'Ngo Thi Phuong',  '0956789012', 'phuong.ngo@gmail.com',   N'99 Dai lo Binh Duong',          4, 6600000, 0,      6600000, 6600000, 1, 2, 1),
-( 7, 1, 4,    1, '2026-06-15 08:45:00', '2026-06-15 09:15:00', N'Dang Van Giang',  '0967890123', 'giang.dang@gmail.com',   N'3 Pham Van Thuan, Dong Nai',    3, 4650000, 465000, 4185000, 4185000, 1, 3, 1),
-( 8, 3, NULL, 2, '2026-06-18 13:00:00', '2026-06-18 13:45:00', N'Bui Thi Ha',      '0978901234', 'ha.bui@gmail.com',       N'22 Le Loi, Hue',                2, 2900000, 0,      2900000, 2900000, 1, 1, 1),
+( 6, 1, NULL, 3, '2026-06-12 16:00:00', NULL,                  N'Ngo Thi Phuong',  '0956789012', 'phuong.ngo@gmail.com',   N'99 Dai lo Binh Duong',          4, 6600000, 0,      6600000, 6600000, 1, 0, 1),
+( 7, 1, 4,    1, '2026-06-15 08:45:00', NULL,                  N'Dang Van Giang',  '0967890123', 'giang.dang@gmail.com',   N'3 Pham Van Thuan, Dong Nai',    3, 4650000, 465000, 4185000, 4185000, 1, 0, 1),
+( 8, 3, NULL, 2, '2026-06-18 13:00:00', NULL,                  N'Bui Thi Ha',      '0978901234', 'ha.bui@gmail.com',       N'22 Le Loi, Hue',                2, 2900000, 0,      2900000, 2900000, 1, 0, 1),
 ( 9, 2, 1,    3, '2026-06-20 10:00:00', NULL,                  N'Dinh Van Inh',    '0989012345', 'inh.dinh@gmail.com',     N'56 Yersin, Nha Trang',          1, 1850000, 200000, 1650000, 0,       0, 0, 1),
-(10, 4, NULL, 1, '2026-06-22 09:30:00', '2026-06-22 10:00:00', N'Vu Thi Kim',      '0990123456', 'kim.vu@gmail.com',       N'7 Tran Hung Dao, Quang Nam',    5, 8250000, 0,      8250000, 8250000, 1, 3, 1),
-(11, 1, 4,    2, '2026-06-25 11:00:00', '2026-06-25 11:30:00', N'Phan Van Long',   '0901234568', 'long.phan@gmail.com',    N'14 Ly Thai To, Bac Ninh',       2, 4000000, 500000, 3500000, 3500000, 1, 3, 1),
-(12, 3, NULL, 3, '2026-06-28 15:30:00', NULL,                  N'Trinh Thi Mai',   '0912345679', 'mai.trinh@gmail.com',    N'38 Tran Dang Ninh, Nam Dinh',   3, 3750000, 0,      3750000, 0,       0, 4, 1),
-(13, 2, 3,    1, '2026-07-01 08:00:00', '2026-07-01 08:45:00', N'Cao Van Nghia',   '0923456780', 'nghia.cao@gmail.com',    N'67 Le Hoan, Thanh Hoa',         1, 2100000, 300000, 1800000, 1800000, 1, 2, 1),
-(14, 1, 2,    2, '2026-07-05 10:30:00', '2026-07-05 11:00:00', N'Ly Thi Oanh',     '0934567891', 'oanh.ly@gmail.com',      N'5 Nguyen Gia Thieu, Nghe An',   2, 1500000, 75000,  1425000, 1425000, 1, 1, 1),
+(10, 4, NULL, 1, '2026-06-22 09:30:00', NULL,                  N'Vu Thi Kim',      '0990123456', 'kim.vu@gmail.com',       N'7 Tran Hung Dao, Quang Nam',    5, 8250000, 0,      8250000, 8250000, 1, 0, 1),
+(11, 1, 4,    2, '2026-06-25 11:00:00', NULL,                  N'Phan Van Long',   '0901234568', 'long.phan@gmail.com',    N'14 Ly Thai To, Bac Ninh',       2, 4000000, 500000, 3500000, 3500000, 1, 0, 1),
+(12, 3, NULL, 3, '2026-06-28 15:30:00', NULL,                  N'Trinh Thi Mai',   '0912345679', 'mai.trinh@gmail.com',    N'38 Tran Dang Ninh, Nam Dinh',   3, 3750000, 0,      3750000, 0,       0, 0, 1),
+(13, 2, 3,    1, '2026-07-01 08:00:00', NULL,                  N'Cao Van Nghia',   '0923456780', 'nghia.cao@gmail.com',    N'67 Le Hoan, Thanh Hoa',         1, 2100000, 300000, 1800000, 1800000, 1, 0, 1),
+(14, 1, 2,    2, '2026-07-05 10:30:00', NULL,                  N'Ly Thi Oanh',     '0934567891', 'oanh.ly@gmail.com',      N'5 Nguyen Gia Thieu, Nghe An',   2, 1500000, 75000,  1425000, 1425000, 1, 0, 1),
 (15, 1, 5,    3, '2026-07-10 14:00:00', NULL,                  N'Truong Van Phuc', '0945678902', 'phuc.truong@gmail.com',  N'92 Tran Phu, Ha Tinh',          4, 7400000, 740000, 6660000, 0,       0, 0, 1);
 
 -- =============================================================================
@@ -289,29 +266,21 @@ CREATE TABLE lich_su_hoa_don (
 );
 
 INSERT INTO lich_su_hoa_don (id_hoa_don, trang_thai_cu, trang_thai_moi, ghi_chu, thoi_gian_cap_nhat, trang_thai) VALUES
-( 1, 0, 1, N'Xac nhan don hang',             '2026-06-01 09:00:00', 1),
-( 1, 1, 2, N'Da ban giao van chuyen',         '2026-06-01 15:00:00', 1),
-( 1, 2, 3, N'Giao hang thanh cong',           '2026-06-03 11:00:00', 1),
-( 2, 0, 1, N'Xac nhan don',                  '2026-06-03 10:45:00', 1),
-( 2, 1, 2, N'Ban giao shipper',               '2026-06-04 08:00:00', 1),
-( 2, 2, 3, N'Hoan thanh',                    '2026-06-05 14:00:00', 1),
-( 3, 0, 1, N'Xac nhan don',                  '2026-06-05 14:30:00', 1),
-( 3, 1, 3, N'Khach tu den nhan',              '2026-06-06 09:00:00', 1),
-( 4, 0, 1, N'Xac nhan don',                  '2026-06-08 09:30:00', 1),
-( 5, 0, 1, N'Xac nhan don',                  '2026-06-10 12:00:00', 1),
-( 6, 0, 1, N'Xac nhan don hang',             '2026-06-13 08:00:00', 1),
-( 6, 1, 2, N'Dang giao hang',                '2026-06-13 16:00:00', 1),
-( 7, 0, 1, N'Xac nhan don',                  '2026-06-15 09:15:00', 1),
-( 7, 1, 3, N'Giao thanh cong',               '2026-06-17 13:00:00', 1),
-( 8, 0, 1, N'Xac nhan don',                  '2026-06-18 13:45:00', 1),
-( 9, 0, 1, N'Xac nhan don',                  '2026-06-20 10:30:00', 1),
-(10, 0, 1, N'Xac nhan don',                  '2026-06-22 10:00:00', 1),
-(11, 0, 1, N'Xac nhan don',                  '2026-06-25 11:30:00', 1),
-(12, 0, 1, N'Xac nhan don',                  '2026-06-28 16:00:00', 1),
-(12, 1, 4, N'Khach yeu cau huy - het hang',  '2026-06-29 08:30:00', 1),
-(13, 0, 1, N'Xac nhan don hang',             '2026-07-01 08:45:00', 1),
-(14, 0, 1, N'Xac nhan don hang',             '2026-07-05 11:00:00', 1),
-(15, 0, 1, N'Xac nhan don hang',             '2026-07-10 14:30:00', 1);
+( 1, 0, 0, N'Tạo đơn hàng', '2026-06-01 08:30:00', 1),
+( 2, 0, 0, N'Tạo đơn hàng', '2026-06-03 10:15:00', 1),
+( 3, 0, 0, N'Tạo đơn hàng', '2026-06-05 14:00:00', 1),
+( 4, 0, 0, N'Tạo đơn hàng', '2026-06-08 09:00:00', 1),
+( 5, 0, 0, N'Tạo đơn hàng', '2026-06-10 11:30:00', 1),
+( 6, 0, 0, N'Tạo đơn hàng', '2026-06-12 16:00:00', 1),
+( 7, 0, 0, N'Tạo đơn hàng', '2026-06-15 08:45:00', 1),
+( 8, 0, 0, N'Tạo đơn hàng', '2026-06-18 13:00:00', 1),
+( 9, 0, 0, N'Tạo đơn hàng', '2026-06-20 10:00:00', 1),
+(10, 0, 0, N'Tạo đơn hàng', '2026-06-22 09:30:00', 1),
+(11, 0, 0, N'Tạo đơn hàng', '2026-06-25 11:00:00', 1),
+(12, 0, 0, N'Tạo đơn hàng', '2026-06-28 15:30:00', 1),
+(13, 0, 0, N'Tạo đơn hàng', '2026-07-01 08:00:00', 1),
+(14, 0, 0, N'Tạo đơn hàng', '2026-07-05 10:30:00', 1),
+(15, 0, 0, N'Tạo đơn hàng', '2026-07-10 14:00:00', 1);
 
 -- =============================================================================
 -- 10. LICH SU THANH TOAN
@@ -355,5 +324,5 @@ PRINT N'  phieu_giam_gia         : 5 ban ghi';
 PRINT N'  nhan_vien              : 3 ban ghi';
 PRINT N'  hoa_don                : 15 ban ghi';
 PRINT N'  chi_tiet_hoa_don       : 17 ban ghi';
-PRINT N'  lich_su_hoa_don        : 23 ban ghi';
+PRINT N'  lich_su_hoa_don        : 15 ban ghi';
 PRINT N'  lich_su_thanh_toan     : 15 ban ghi';

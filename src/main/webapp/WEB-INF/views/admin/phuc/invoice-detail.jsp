@@ -18,17 +18,26 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-detail.css">
 </head>
 <body>
+<%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu từ Controller truyền sang giao diện --%>
 <%
+    // Lấy thông tin hoá đơn, chi tiết hoá đơn và lịch sử trạng thái từ Request
     Invoice inv = (Invoice) request.getAttribute("invoice");
     List<InvoiceDetail>  detailList  = (List<InvoiceDetail>)  request.getAttribute("detailList");
     List<InvoiceHistory> historyList = (List<InvoiceHistory>) request.getAttribute("historyList");
+    
+    // Lấy danh sách map hiển thị nhãn trạng thái (ví dụ: 0 -> Chờ xác nhận)
     Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    
+    // Khởi tạo các đối tượng format ngày tháng
     DateTimeFormatter dtf     = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     DateTimeFormatter dtfFull = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm");
 
+    // Nếu không tìm thấy hoá đơn, điều hướng về trang danh sách để tránh lỗi
     if (inv == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
     int orderStatus = inv.getOrderStatus();
+    
+    // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
     java.util.function.Function<Integer, String> bClassFn = (s) -> {
         if (s == null)  return "cho-xu-ly";
         if (s == 4)     return "da-hoan-tien";
@@ -40,13 +49,14 @@
     String badgeClass = bClassFn.apply(orderStatus);
     String badgeLabel = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
 
+    // Chuẩn bị các chuỗi thông tin khách hàng, fallback (mặc định) sang chuỗi rỗng hoặc "—" nếu null
     String customerName    = inv.getCustomerName()    != null ? inv.getCustomerName()    : "";
-    char   avatarChar      = customerName.trim().isEmpty() ? 'K' : customerName.trim().charAt(0);
+    char   avatarChar      = customerName.trim().isEmpty() ? 'K' : customerName.trim().charAt(0); // Lấy chữ cái đầu làm avatar
     String customerPhone   = inv.getCustomerPhone()   != null ? inv.getCustomerPhone()   : "—";
     String customerEmail   = inv.getCustomerEmail()   != null ? inv.getCustomerEmail()   : "—";
     String customerAddress = inv.getCustomerAddress() != null ? inv.getCustomerAddress() : "—";
     String payMethod       = inv.getPaymentMethod()   != null ? inv.getPaymentMethod().getName() : "Chưa xác định";
-    boolean paid           = inv.getPaymentStatus() == 1;
+    boolean paid           = inv.getPaymentStatus() == 1; // 1 = Đã thanh toán
 %>
 <div class="app-container">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
@@ -74,16 +84,19 @@
         </header>
 
         <div class="content-wrapper">
+                        <%-- KHU VỰC TOPBAR: Chứa nút quay lại và các thao tác (In, Cập nhật, Huỷ) --%>
                         <div class="detail-topbar">
                 <a href="${pageContext.request.contextPath}/admin/invoices" class="back-link">
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     Quay lại danh sách
                 </a>
                 <div class="topbar-actions">
+                    <%-- Link mở trang in hoá đơn trên tab mới --%>
                     <a href="${pageContext.request.contextPath}/admin/invoices/print?id=<%= inv.getId() %>" class="btn-print" target="_blank">
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         In hoá đơn
                     </a>
+                    <%-- Nếu đơn hàng chưa bị huỷ (3) hoặc chưa hoàn tiền (4) thì mới hiển thị nút cập nhật/huỷ --%>
                     <% if (orderStatus != 4 && orderStatus != 3) { %>
                     <button class="btn-action" style="background:#3b82f6;color:white;border:none;" onclick="openModal('update')">Cập nhật trạng thái</button>
                     <button class="btn-action btn-huy" onclick="openModal('cancel')">Huỷ đơn</button>
@@ -112,7 +125,8 @@
                             </div>
                         </div>
 
-                                                <table class="prod-table">
+                                                <%-- KHU VỰC BẢNG SẢN PHẨM: Hiển thị chi tiết danh sách sản phẩm trong hoá đơn --%>
+                       <table class="prod-table">
                             <thead>
                             <tr>
                                 <th>Sản phẩm</th>
@@ -152,7 +166,7 @@
                             </tbody>
                         </table>
 
-                                                <div style="border-top:1px solid #f3f4f6;margin-top:8px;">
+                        <div style="border-top:1px solid #f3f4f6;margin-top:8px;">
                             <div class="fin-row">
                                 <span class="fin-label">Tạm tính</span>
                                 <span class="fin-value"><%= inv.getSubtotal() != null ? String.format("%,.0fđ", inv.getSubtotal()).replace(",", ".") : "—" %></span>
@@ -177,6 +191,7 @@
                         </div>
                     </div>
 
+                                        <%-- KHU VỰC LỊCH SỬ XỬ LÝ: Hiển thị các bước đổi trạng thái đơn hàng dạng timeline --%>
                                         <div class="detail-card">
                         <div class="timeline-section">
                             <h3>Lịch sử xử lý đơn hàng</h3>
@@ -203,6 +218,7 @@
                         </div>
                     </div>
                 </div>
+                                <%-- KHU VỰC THÔNG TIN BÊN PHẢI (SIDEBAR): Thông tin khách hàng, Thanh toán, Ghi chú --%>
                                 <div class="detail-side">
                                         <div class="side-card">
                         <div class="side-card-title">Thông tin khách hàng</div>
@@ -255,6 +271,7 @@
                 </div>            </div>        </div>    </main>
 </div>
 
+<%-- KHU VỰC MODAL CẬP NHẬT TRẠNG THÁI --%>
 <div class="modal-overlay" id="confirmModal">
     <div class="modal-box">
         <h3>Cập nhật trạng thái</h3>
@@ -283,6 +300,7 @@
     </div>
 </div>
 
+<%-- KHU VỰC MODAL HUỶ ĐƠN HÀNG --%>
 <div class="modal-overlay" id="cancelModal">
     <div class="modal-box">
         <h3 style="color:#ef4444;">⚠️ Xác nhận huỷ đơn hàng</h3>
@@ -319,7 +337,9 @@
 </div>
 <% } %>
 
+<%-- KHU VỰC JAVASCRIPT: Xử lý các tương tác trên giao diện người dùng --%>
 <script>
+    // Logic 1: Hiển thị ngày giờ hiện tại ở thanh navbar (góc trên bên phải)
     (function() {
         var d = new Date();
         var days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
@@ -327,15 +347,22 @@
         if (el) el.textContent = days[d.getDay()] + ', ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
     })();
 
+    // Logic 2: Hàm mở modal theo loại (update = cập nhật trạng thái, cancel = huỷ đơn)
     function openModal(type) {
         document.getElementById(type === 'cancel' ? 'cancelModal' : 'confirmModal').classList.add('show');
     }
+
+    // Logic 3: Hàm đóng modal khi bấm nút Huỷ/Quay lại
     function closeModal(id) {
         document.getElementById(id).classList.remove('show');
     }
+
+    // Logic 4: Lắng nghe sự kiện click ra ngoài vùng form modal để tự động đóng modal
     document.querySelectorAll('.modal-overlay').forEach(function(o) {
         o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('show'); });
     });
+
+    // Logic 5: Tự động ẩn thông báo thành công (toast message) sau 4 giây để không vướng màn hình
     (function() {
         var toast = document.getElementById('toastSuccess');
         if (toast) setTimeout(function() { toast.style.display = 'none'; }, 4000);

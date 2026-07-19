@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import project.duan1_sd21301.model.phuc.Coupon;
 import project.duan1_sd21301.service.phuc.CouponService;
-import project.duan1_sd21301.service.phuc.impl.CouponServiceImpl;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -45,7 +44,7 @@ public class CouponController extends HttpServlet {
         STATUS_LABELS.put(3, "Đã huỷ");
     }
 
-    private final CouponService repo = new CouponServiceImpl();
+    private final CouponService repo = new CouponService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -101,7 +100,7 @@ public class CouponController extends HttpServlet {
         page = Math.min(page, totalPages - 1);
 
         List<Coupon> list = repo.findAll(discountType, status, keyword, fromDate, toDate, page, PAGE_SIZE);
-
+//
         LocalDate now = LocalDate.now();
         for (Coupon c : list) {
             if (c.getEndDate() != null && c.getEndDate().isBefore(now)) {
@@ -248,7 +247,7 @@ public class CouponController extends HttpServlet {
         if (redirectUrl.contains("?")) {
             redirectUrl = redirectUrl.replaceAll("[&?]err=expired", "");
         }
-
+//
         if (id >= 0 && st != null) {
             Coupon c = repo.findById(id);
             if (c != null && c.getEndDate() != null && c.getEndDate().isBefore(LocalDate.now()) && st == 1) {

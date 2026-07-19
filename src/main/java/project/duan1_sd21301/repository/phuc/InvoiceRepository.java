@@ -24,10 +24,6 @@ import java.util.List;
  */
 public class InvoiceRepository {
 
-    // =========================================================
-    //  GHI DỮ LIỆU (WRITE)
-    // =========================================================
-
     /**
      * Thêm mới một hóa đơn vào database.
      */
@@ -115,7 +111,7 @@ public class InvoiceRepository {
                         if (sanPham != null) {
                             // Tính số lượng thay đổi: dương = tăng kho, âm = giảm kho
                             int soLuongThayDoi = increaseStock
-                                    ? +detail.getQuantity()   // Hủy đơn → hoàn kho (+)
+                                    ? +detail.getQuantity()  // Hủy đơn → hoàn kho (+)
                                     : -detail.getQuantity();  // Phục hồi đơn → trừ kho (-)
 
                             sanPham.setStock(sanPham.getStock() + soLuongThayDoi);

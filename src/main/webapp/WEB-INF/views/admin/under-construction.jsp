@@ -88,12 +88,12 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Nhúng Sidebar dùng chung -->
+        <!-- KHU VỰC ĐIỀU HƯỚNG TRÁI: Nhúng Sidebar dùng chung -->
         <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
 
-        <!-- Khu vực nội dung chính bên phải -->
+        <!-- KHU VỰC NỘI DUNG CHÍNH (MAIN CONTENT) -->
         <main class="main-content">
-            <!-- 1. Thanh Navbar trên cùng -->
+            <!-- KHU VỰC NAVBAR: Thanh điều hướng phía trên -->
             <header class="navbar">
                 <div class="breadcrumb">
                     <span>FamiCoats Admin</span> / <span class="active-crumb">${requestScope.pageTitle}</span>
@@ -111,7 +111,7 @@
                 </div>
             </header>
 
-            <!-- 2. Thân trang -->
+            <!-- KHU VỰC THÂN TRANG: Hiển thị nội dung thông báo -->
             <div class="content-wrapper">
                 <!-- Tiêu đề trang -->
                 <div class="page-header">
@@ -119,7 +119,7 @@
                     <div class="subtitle">Hệ thống quản lý FamiCoats</div>
                 </div>
 
-                <!-- Card báo trạng thái đang phát triển -->
+                <!-- KHU VỰC CARD THÔNG BÁO: Báo trạng thái chức năng chưa hoàn thiện -->
                 <div class="under-construction-card">
                     <div class="construction-icon-wrapper">
                         <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">

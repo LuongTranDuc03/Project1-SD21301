@@ -16,15 +16,24 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-print.css">
 </head>
 <body style="background:#F1F5F9;font-family:'Inter',sans-serif;">
+<%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu hiển thị trên hoá đơn in --%>
 <%
+    // Lấy thông tin hoá đơn và chi tiết hoá đơn từ Request
     Invoice inv = (Invoice) request.getAttribute("invoice");
     List<InvoiceDetail> detailList = (List<InvoiceDetail>) request.getAttribute("detailList");
+    
+    // Lấy danh sách map hiển thị nhãn trạng thái
     Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    
+    // Format ngày tháng theo định dạng dd/MM/yyyy
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // Nếu không tìm thấy hoá đơn, điều hướng về trang danh sách
     if (inv == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
     int orderStatus = inv.getOrderStatus();
+    
+    // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
     java.util.function.Function<Integer, String> bClassFn = (s) -> {
         if (s == null) return "cho-xu-ly";
         if (s == 4)    return "da-huy";
@@ -36,6 +45,7 @@
     String badgeClass  = bClassFn.apply(orderStatus);
     String badgeLabel  = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
 
+    // Chuẩn bị thông tin khách hàng, fallback sang "—" nếu dữ liệu bị trống (null)
     String customerName    = inv.getCustomerName()    != null ? inv.getCustomerName()    : "";
     String customerPhone   = inv.getCustomerPhone()   != null ? inv.getCustomerPhone()   : "—";
     String customerEmail   = inv.getCustomerEmail()   != null ? inv.getCustomerEmail()   : "—";
@@ -44,13 +54,14 @@
     String orderDate       = inv.getOrderDate()       != null ? inv.getOrderDate().format(dtf) : "—";
 %>
 
-<!-- Top bar (hidden when printing) -->
+<!-- KHU VỰC TOPBAR: Chứa nút quay lại và nút "In ngay" (Thanh này sẽ tự động ẩn đi khi in nhờ CSS) -->
 <div class="print-topbar">
     <a href="${pageContext.request.contextPath}/admin/invoices/detail?id=<%= inv.getId() %>" class="back-link">
         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         Quay lại
     </a>
     <span class="print-title">Xem trước bản in — #HD-<%= inv.getId() %></span>
+    <%-- Nút gọi lệnh window.print() của trình duyệt để hiển thị hộp thoại in máy in --%>
     <button class="btn-print-now" onclick="window.print()">
         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         In ngay
@@ -61,7 +72,7 @@
 <div class="print-area">
     <div class="invoice-doc">
 
-        <!-- Header -->
+        <!-- PHẦN HEADER: Thông tin cửa hàng, Mã hoá đơn, Ngày đặt và Trạng thái -->
         <div class="doc-header">
             <div>
                 <div class="company-logo">
@@ -83,7 +94,7 @@
             </div>
         </div>
 
-        <!-- Customer + Delivery -->
+        <!-- PHẦN THÔNG TIN KHÁCH HÀNG: Người mua và Địa chỉ giao hàng -->
         <div class="doc-parties">
             <div>
                 <div class="party-label">Thông tin người mua</div>
@@ -104,7 +115,7 @@
             </div>
         </div>
 
-        <!-- Product table -->
+        <!-- PHẦN BẢNG SẢN PHẨM: Hiển thị danh sách các mặt hàng khách đã mua -->
         <table class="doc-table">
             <thead>
             <tr>
@@ -144,7 +155,7 @@
             </tbody>
         </table>
 
-        <!-- Financial -->
+        <!-- PHẦN TỔNG TIỀN (FINANCIAL): Tạm tính, Giảm giá, Tổng thanh toán và Phương thức -->
         <div class="doc-fin">
             <div class="doc-fin-row">
                 <span class="lbl">Tạm tính</span>
@@ -163,7 +174,7 @@
             <div class="doc-fin-sub">Thanh toán qua: <strong><%= payMethod %></strong></div>
         </div>
 
-        <!-- Note -->
+        <!-- PHẦN GHI CHÚ: Lời cảm ơn hoặc ghi chú của đơn hàng -->
         <div class="doc-note">
             <div class="doc-note-label">Ghi chú</div>
             <div class="doc-note-text">
@@ -173,7 +184,7 @@
             </div>
         </div>
 
-        <!-- Footer -->
+        <!-- PHẦN FOOTER: Thông tin cuối trang, website và ngày giờ in -->
         <div class="doc-footer">
             FamiCoats &nbsp;·&nbsp; famicoats.vn &nbsp;·&nbsp; 1900 1234 &nbsp;·&nbsp;
             In lúc: <%= new java.util.Date() %>
