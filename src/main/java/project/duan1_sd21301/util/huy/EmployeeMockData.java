@@ -241,4 +241,16 @@ public final class EmployeeMockData {
         }
         return false;
     }
+
+    public static Employee login(String email, String password) {
+        if (cachedEmployees == null) loadAll();
+        for (Employee e : cachedEmployees) {
+            if (e.getEmail() != null && e.getEmail().equalsIgnoreCase(email)
+                    && e.getPassword() != null && e.getPassword().equals(password)
+                    && e.getStatus() == 1) {
+                return e;
+            }
+        }
+        return null;
+    }
 }

@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="project.duan1_sd21301.model.huy.Employee" %>
 <%
     // Lấy URI hiện tại để so sánh và set active class cho menu
     String uri = (String) request.getAttribute("javax.servlet.forward.request_uri");
@@ -145,6 +146,11 @@
                         <span class="menu-text">Quản lý khách hàng</span>
                     </a>
                 </li>
+                <%
+                    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+                    boolean isAdmin = (loggedInUser != null && loggedInUser.getRoleName() != null && loggedInUser.getRoleName().equalsIgnoreCase("Admin"));
+                    if (isAdmin) {
+                %>
                 <!-- Quản lý nhân viên -->
                 <li class="<%= uri.endsWith("/admin/employees") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/employees">
@@ -154,6 +160,7 @@
                         <span class="menu-text">Quản lý nhân viên</span>
                     </a>
                 </li>
+                <% } %>
             </ul>
         </div>
     </nav>
@@ -165,7 +172,7 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 <span>Cài đặt</span>
             </a>
-            <a href="#" class="footer-item">
+            <a href="<%= contextPath %>/logout" class="footer-item">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 <span>Đăng xuất</span>
             </a>
@@ -173,10 +180,14 @@
         
         <!-- User Profile Card -->
         <div class="user-card">
-            <div class="user-avatar">A</div>
+            <% if (loggedInUser != null && loggedInUser.getAvatar() != null && !loggedInUser.getAvatar().isEmpty()) { %>
+                <img src="<%= loggedInUser.getAvatar() %>" alt="Avatar" class="user-avatar" style="object-fit: cover; border-radius: 8px;">
+            <% } else { %>
+                <div class="user-avatar"><%= loggedInUser != null && loggedInUser.getFullName() != null && !loggedInUser.getFullName().isEmpty() ? loggedInUser.getFullName().substring(0, 1).toUpperCase() : "A" %></div>
+            <% } %>
             <div class="user-info">
-                <span class="user-name">Admin</span>
-                <span class="user-email">jacketzone@admin.vn</span>
+                <span class="user-name"><%= loggedInUser != null ? loggedInUser.getFullName() : "Admin" %></span>
+                <span class="user-email"><%= loggedInUser != null ? loggedInUser.getEmail() : "admin@famicoats.vn" %></span>
             </div>
         </div>
     </div>

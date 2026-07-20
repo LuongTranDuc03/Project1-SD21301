@@ -319,4 +319,25 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         return emp;
     }
 
+    @Override
+    public Employee login(String email, String password) {
+        String sql = "SELECT nv.*, vt.ten_vai_tro FROM nhan_vien nv " +
+                "LEFT JOIN vai_tro vt ON nv.id_vai_tro = vt.id " +
+                "WHERE nv.email = ? AND nv.mat_khau = ? AND nv.trang_thai = 1";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

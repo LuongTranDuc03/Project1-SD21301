@@ -485,15 +485,9 @@
                                                                     <%= c.getId() %>
                                                                 </td>
                                                                 <td>
-                                                                    <div
-                                                                        style="display: flex; align-items: center; gap: 12px;">
-                                                                        <img src="<%= c.getAvatar() %>"
-                                                                            class="customer-avatar-img" alt="avatar"
-                                                                            style="border: 1px solid #d1d5db;">
-                                                                        <span style="font-weight: 600; color: #1e293b;">
-                                                                            <%= c.getFullName() %>
-                                                                        </span>
-                                                                    </div>
+                                                                    <span style="font-weight: 600; color: #1e293b;">
+                                                                        <%= c.getFullName() %>
+                                                                    </span>
                                                                 </td>
                                                                 <td
                                                                     style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: #334155;">
