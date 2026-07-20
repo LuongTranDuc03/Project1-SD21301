@@ -147,7 +147,6 @@ public class ProductValidator {
             errors.add("Danh mục sản phẩm không được để trống.");
         }
 
-        // 4. Validate Brand, Origin
         if (brand != null && !brand.trim().isEmpty()) {
             if (brand.trim().length() > 50) {
                 errors.add("Thương hiệu không được vượt quá 50 ký tự.");
@@ -194,7 +193,6 @@ public class ProductValidator {
                 }
             }
         }
-
 
         // 5. Validate Status
         if (status == null || status.trim().isEmpty()) {
