@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 import project.duan1_sd21301.model.ha.Customer;
 import project.duan1_sd21301.model.ha.Address;
-import project.duan1_sd21301.validate.ha.CustomerValidator;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;

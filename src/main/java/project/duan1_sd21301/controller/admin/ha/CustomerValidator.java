@@ -1,4 +1,4 @@
-package project.duan1_sd21301.validate.ha;
+package project.duan1_sd21301.controller.admin.ha;
 
 import project.duan1_sd21301.model.ha.Customer;
 
