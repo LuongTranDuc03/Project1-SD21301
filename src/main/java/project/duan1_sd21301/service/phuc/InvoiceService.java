@@ -46,11 +46,15 @@ public class InvoiceService {
         return invoiceRepository.findHistoryByInvoiceId(invoiceId);
     }
 
-    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size) {
-        return invoiceRepository.findAll(orderStatus, keyword, fromDateStr, toDateStr, page, size);
+    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, Integer paymentMethodId, int page, int size) {
+        return invoiceRepository.findAll(orderStatus, keyword, fromDateStr, toDateStr, paymentMethodId, page, size);
     }
 
-    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr) {
-        return invoiceRepository.countAll(orderStatus, keyword, fromDateStr, toDateStr);
+    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, Integer paymentMethodId) {
+        return invoiceRepository.countAll(orderStatus, keyword, fromDateStr, toDateStr, paymentMethodId);
+    }
+
+    public List<project.duan1_sd21301.model.phuc.PaymentMethod> findAllPaymentMethods() {
+        return invoiceRepository.findAllPaymentMethods();
     }
 }

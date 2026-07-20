@@ -111,6 +111,13 @@ public class InvoiceController extends HttpServlet {
             catch (NumberFormatException ignored) { }
         }
 
+        Integer paymentMethodId = null;
+        String pmiParam = request.getParameter("paymentMethodId");
+        if (pmiParam != null && !pmiParam.isEmpty()) {
+            try { paymentMethodId = Integer.parseInt(pmiParam); }
+            catch (NumberFormatException ignored) { }
+        }
+
         int page = 0;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
@@ -118,12 +125,13 @@ public class InvoiceController extends HttpServlet {
             catch (NumberFormatException ignored) { }
         }
 
-        long total      = invoiceRepo.countAll(orderStatus, keyword, fromDate, toDate);
+        long total      = invoiceRepo.countAll(orderStatus, keyword, fromDate, toDate, paymentMethodId);
         int totalPages  = (int) Math.ceil((double) total / PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         page = Math.min(page, totalPages - 1);
 
-        List<Invoice> invoices = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, page, PAGE_SIZE);
+        List<Invoice> invoices = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, paymentMethodId, page, PAGE_SIZE);
+        List<project.duan1_sd21301.model.phuc.PaymentMethod> paymentMethods = invoiceRepo.findAllPaymentMethods();
 
         request.setAttribute("invoices",           invoices);
         request.setAttribute("orderStatusLabels",  ORDER_STATUS_LABELS);
@@ -132,6 +140,8 @@ public class InvoiceController extends HttpServlet {
         request.setAttribute("size",               PAGE_SIZE);
         request.setAttribute("totalPages",         totalPages);
         request.setAttribute("currentOrderStatus", orderStatus);
+        request.setAttribute("currentPaymentMethodId", paymentMethodId);
+        request.setAttribute("paymentMethods",     paymentMethods);
         request.setAttribute("keyword",            keyword);
         request.setAttribute("fromDate",           fromDate);
         request.setAttribute("toDate",             toDate);
@@ -263,8 +273,15 @@ public class InvoiceController extends HttpServlet {
             catch (NumberFormatException ignored) { }
         }
 
+        Integer paymentMethodId = null;
+        String pmiParam = request.getParameter("paymentMethodId");
+        if (pmiParam != null && !pmiParam.isEmpty()) {
+            try { paymentMethodId = Integer.parseInt(pmiParam); }
+            catch (NumberFormatException ignored) { }
+        }
+
         // Lấy TẤT CẢ hóa đơn (không phân trang) theo filter
-        List<Invoice> all = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, 0, Integer.MAX_VALUE);
+        List<Invoice> all = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, paymentMethodId, 0, Integer.MAX_VALUE);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 

@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.phuc.Invoice" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -24,17 +24,13 @@
 
 <body>
 <%-- KHU VỰC LOGIC JSP: Khởi tạo và lấy dữ liệu phân trang, lọc hoá đơn từ Request --%>
-<% List<Invoice> invoices = (List<Invoice>) request.getAttribute("invoices");
-    Map<Integer, String> statusLabels = (Map<Integer, String>)
-            request.getAttribute("orderStatusLabels");
-    long total = request.getAttribute("total") != null ? (long)
-            request.getAttribute("total") : 0;
-    int pageNo = request.getAttribute("page") != null ? (int)
-            request.getAttribute("page") : 0;
-    int size = request.getAttribute("size") != null ? (int)
-            request.getAttribute("size") : 10;
-    int totalPages = request.getAttribute("totalPages") != null ? (int)
-            request.getAttribute("totalPages") : 1;
+<%
+    List<Invoice> invoices = (List<Invoice>) request.getAttribute("invoices");
+    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    long total = request.getAttribute("total") != null ? (long) request.getAttribute("total") : 0;
+    int pageNo = request.getAttribute("page") != null ? (int) request.getAttribute("page") : 0;
+    int size = request.getAttribute("size") != null ? (int) request.getAttribute("size") : 10;
+    int totalPages = request.getAttribute("totalPages") != null ? (int) request.getAttribute("totalPages") : 1;
     Integer currentStatus = (Integer) request.getAttribute("currentOrderStatus");
     String keyword = (String) request.getAttribute("keyword");
     String fromDate = (String) request.getAttribute("fromDate");
@@ -42,12 +38,15 @@
 
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    String baseUrl = request.getContextPath() + "/admin/invoices?"
-            + (currentStatus != null ? "trangThai=" + currentStatus + "&" : "")
-            + (fromDate != null && !fromDate.isEmpty() ? "fromDate=" + fromDate + "&" : "")
-            + (toDate != null && !toDate.isEmpty() ? "toDate=" + toDate + "&" : "")
-            + (keyword != null && !keyword.isEmpty() ? "q=" +
-            java.net.URLEncoder.encode(keyword, StandardCharsets.UTF_8) + "&" : "");
+    StringBuilder baseUrlSb = new StringBuilder(request.getContextPath() + "/admin/invoices?");
+    if (currentStatus != null) baseUrlSb.append("trangThai=").append(currentStatus).append("&");
+    if (fromDate != null && !fromDate.isEmpty()) baseUrlSb.append("fromDate=").append(fromDate).append("&");
+    if (toDate != null && !toDate.isEmpty()) baseUrlSb.append("toDate=").append(toDate).append("&");
+    if (keyword != null && !keyword.isEmpty())
+        baseUrlSb.append("q=").append(java.net.URLEncoder.encode(keyword, "UTF-8")).append("&");
+    Integer currentPaymentMethodId = (Integer) request.getAttribute("currentPaymentMethodId");
+    if (currentPaymentMethodId != null) baseUrlSb.append("paymentMethodId=").append(currentPaymentMethodId).append("&");
+    String baseUrl = baseUrlSb.toString();
 
     java.util.function.Function<Integer, String> badgeClass = (s) -> {
         if (s == null) return "cho-xu-ly";
@@ -97,35 +96,7 @@
                     </strong> hoá đơn
                     </div>
                 </div>
-                <div class="cl-actions">
-                    <% StringBuilder exportUrl = new
-                            StringBuilder(request.getContextPath()
-                            + "/admin/invoices/export-excel?_=1");
-                        if
-                        (currentStatus != null) exportUrl.append("&trangThai=").append(currentStatus);
-                        if (fromDate != null && !fromDate.isEmpty()) exportUrl.append(" &fromDate=").append(fromDate);
-                        if (toDate != null && !toDate.isEmpty()) exportUrl.append(" &toDate=").append(toDate);
-                        if (keyword != null && !keyword.isEmpty()) {
-                            exportUrl.append(" &q=").append(java.net.URLEncoder.encode(keyword, " UTF-8"));
-                        } %>
-                    <a href="<%= exportUrl %>" class="btn-export"
-                       id="btnExportExcel"
-                       title="Xuất danh sách hóa đơn ra Excel"
-                       style="background-color: #E11D48; border-color: #E11D48; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;">
-                        <svg viewBox="0 0 24 24" width="15" height="15"
-                             stroke="currentColor" stroke-width="2.5"
-                             fill="none" stroke-linecap="round"
-                             stroke-linejoin="round">
-                            <path
-                                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                            <polyline points="10 9 9 9 8 9"/>
-                        </svg>
-                        Xuất Excel
-                    </a>
-                </div>
+
             </div>
 
             <!-- KHU VỰC TÌM KIẾM VÀ BỘ LỌC: Tìm kiếm theo mã, khách hàng, ngày tháng và trạng thái -->
@@ -134,8 +105,7 @@
                                             <span class="card-header-title">&#8226; Bộ lọc tìm
                                                 kiếm</span>
                     <button class="toggle-filter-btn" id="toggleFilterBtn"
-                            onclick="toggleFilterCard()">Nhấn để thu
-                        gọn
+                            onclick="toggleFilterCard()">Nhấn để thu gọn
                     </button>
                 </div>
                 <div class="card-body-content" id="filterCardBody"
@@ -162,6 +132,25 @@
                                    placeholder="Tên khách hàng, SĐT hoặc mã HD..."
                                    value="<%= keyword != null ? keyword : "" %>"
                                    autocomplete="off">
+                        </div>
+
+                        <div style="display: flex; align-items: center; min-width: max-content;">
+                            <select name="paymentMethodId"
+                                    onchange="document.getElementById('searchForm').submit()"
+                                    style="padding: 8px 28px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #374151; outline: none; background: #fff; cursor: pointer;">
+                                <option value="">Loại hoá đơn</option>
+                                <%
+                                    List<project.duan1_sd21301.model.phuc.PaymentMethod> paymentMethods = (List<project.duan1_sd21301.model.phuc.PaymentMethod>) request.getAttribute("paymentMethods");
+                                    if (paymentMethods != null) {
+                                        for (project.duan1_sd21301.model.phuc.PaymentMethod pm : paymentMethods) {
+                                %>
+                                <option value="<%= pm.getId() %>" <%= currentPaymentMethodId != null && currentPaymentMethodId.equals(pm.getId()) ? "selected" : "" %>><%= pm.getName() %>
+                                </option>
+                                <%
+                                        }
+                                    }
+                                %>
+                            </select>
                         </div>
 
                         <div
@@ -233,7 +222,7 @@
                         </div>
 
                         <a href="${pageContext.request.contextPath}/admin/invoices"
-                           class="btn-reset-filter <%= (keyword != null && !keyword.isEmpty()) || currentStatus != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty()) ? "" : "hidden" %>"
+                           class="btn-reset-filter <%= (keyword != null && !keyword.isEmpty()) || currentStatus != null || currentPaymentMethodId != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty()) ? "" : "hidden" %>"
                            id="btnReset" title="Đặt lại toàn bộ bộ lọc"
                            style="flex-shrink: 0; min-width: max-content;">
                             <svg viewBox="0 0 24 24" width="13" height="13"
@@ -247,44 +236,64 @@
                         </a>
                     </form>
 
-                    <div class="filter-row" style="margin-top: 16px;">
-                        <div class="category-pills">
-                            <button type="button"
-                                    class="cat-pill <%= currentStatus == null ? "active" : "" %>"
-                                    onclick="applyFilter(null)">Tất cả
-                            </button>
-                            <button type="button"
-                                    class="cat-pill <%= Integer.valueOf(0).equals(currentStatus) ? "active" : "" %>"
-                                    onclick="applyFilter(0)">Chờ xác nhận
-                            </button>
-                            <button type="button"
-                                    class="cat-pill <%= Integer.valueOf(1).equals(currentStatus) ? "active" : "" %>"
-                                    onclick="applyFilter(1)">Đã xác nhận
-                            </button>
-                            <button type="button"
-                                    class="cat-pill <%= Integer.valueOf(2).equals(currentStatus) ? "active" : "" %>"
-                                    onclick="applyFilter(2)">Hoàn thành
-                            </button>
-                            <button type="button"
-                                    class="cat-pill <%= Integer.valueOf(3).equals(currentStatus) ? "active" : "" %>"
-                                    onclick="applyFilter(3)">Đã huỷ
-                            </button>
-                            <button type="button"
-                                    class="cat-pill <%= Integer.valueOf(4).equals(currentStatus) ? "active" : "" %>"
-                                    onclick="applyFilter(4)">Đã hoàn tiền
-                            </button>
-                        </div>
-                    </div>
-                    </form>
+
                 </div>
             </div>
 
             <!-- KHU VỰC BẢNG DỮ LIỆU HOÁ ĐƠN: Hiển thị danh sách hoá đơn dựa trên bộ lọc -->
             <div class="custom-card">
                 <div class="card-header-bar">
-                                            <span class="card-header-title">&#8226; Bảng dữ liệu hoá
-                                                đơn</span>
+                                            <span class="card-header-title">&#8226; Bảng dữ liệu hoá đơn</span>
                 </div>
+
+                <div class="filter-row"
+                     style="padding: 16px 20px 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div class="category-pills">
+                        <button type="button" class="cat-pill <%= currentStatus == null ? "active" : "" %>"
+                                onclick="applyFilter(null)">Tất cả
+                        </button>
+                        <% if (statusLabels != null) {
+                            for (Map.Entry<Integer, String> e : statusLabels.entrySet()) { %>
+                        <button type="button"
+                                class="cat-pill <%= e.getKey().equals(currentStatus) ? "active" : "" %>"
+                                onclick="applyFilter(<%= e.getKey() %>)"><%= e.getValue() %>
+                        </button>
+                        <% }
+                        } %>
+                    </div>
+
+                    <div class="cl-actions">
+                        <%
+                            StringBuilder exportUrl = new StringBuilder(request.getContextPath() + "/admin/invoices/export-excel?_=1");
+                            if (currentStatus != null) exportUrl.append("&trangThai=").append(currentStatus);
+                            if (fromDate != null && !fromDate.isEmpty())
+                                exportUrl.append("&fromDate=").append(fromDate);
+                            if (toDate != null && !toDate.isEmpty()) exportUrl.append("&toDate=").append(toDate);
+                            if (keyword != null && !keyword.isEmpty())
+                                exportUrl.append("&q=").append(java.net.URLEncoder.encode(keyword, "UTF-8"));
+                            if (currentPaymentMethodId != null)
+                                exportUrl.append("&paymentMethodId=").append(currentPaymentMethodId);
+                        %>
+                        <a href="<%= exportUrl %>" class="btn-export"
+                           id="btnExportExcel"
+                           title="Xuất danh sách hóa đơn ra Excel"
+                           style="background-color: #E11D48; border-color: #E11D48; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;">
+                            <svg viewBox="0 0 24 24" width="15" height="15"
+                                 stroke="currentColor" stroke-width="2.5"
+                                 fill="none" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <path
+                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                            Xuất Excel
+                        </a>
+                    </div>
+                </div>
+
                 <div class="il-table-wrap"
                      style="background:#fff; overflow-x:auto;">
                     <table class="il-table admin-table"

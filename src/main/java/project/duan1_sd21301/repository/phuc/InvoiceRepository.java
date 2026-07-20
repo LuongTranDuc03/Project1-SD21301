@@ -198,7 +198,7 @@ public class InvoiceRepository {
      * @param page        số trang (bắt đầu từ 0)
      * @param size        số bản ghi mỗi trang
      */
-    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, int page, int size) {
+    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, Integer paymentMethodId, int page, int size) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             StringBuilder hql = new StringBuilder(
                     "FROM Invoice hd LEFT JOIN FETCH hd.paymentMethod WHERE 1=1 ");
@@ -206,6 +206,10 @@ public class InvoiceRepository {
             // Lọc theo trạng thái nếu có chọn
             if (orderStatus != null) {
                 hql.append("AND hd.orderStatus = :orderStatus ");
+            }
+
+            if (paymentMethodId != null) {
+                hql.append("AND hd.paymentMethod.id = :paymentMethodId ");
             }
 
             LocalDate fromDate = null;
@@ -250,6 +254,7 @@ public class InvoiceRepository {
 
             // Gán giá trị cho các tham số
             if (orderStatus != null) query.setParameter("orderStatus", orderStatus);
+            if (paymentMethodId != null) query.setParameter("paymentMethodId", paymentMethodId);
             if (fromDate != null) {
                 query.setParameter("startOfDay", fromDate.atStartOfDay());
             }
@@ -273,13 +278,17 @@ public class InvoiceRepository {
      * Đếm tổng số hóa đơn theo điều kiện lọc.
      * Dùng để tính tổng số trang cho phân trang.
      */
-    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr) {
+    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr, Integer paymentMethodId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             StringBuilder hql = new StringBuilder(
                     "SELECT COUNT(hd) FROM Invoice hd WHERE 1=1 ");
 
             if (orderStatus != null) {
                 hql.append("AND hd.orderStatus = :orderStatus ");
+            }
+
+            if (paymentMethodId != null) {
+                hql.append("AND hd.paymentMethod.id = :paymentMethodId ");
             }
 
             LocalDate fromDate = null;
@@ -316,6 +325,7 @@ public class InvoiceRepository {
             Query<Long> query = session.createQuery(hql.toString(), Long.class);
 
             if (orderStatus != null) query.setParameter("orderStatus", orderStatus);
+            if (paymentMethodId != null) query.setParameter("paymentMethodId", paymentMethodId);
             if (fromDate != null) {
                 query.setParameter("startOfDay", fromDate.atStartOfDay());
             }
@@ -328,6 +338,15 @@ public class InvoiceRepository {
             }
 
             return query.uniqueResult();
+        }
+    }
+
+    /**
+     * Lấy danh sách tất cả các phương thức thanh toán
+     */
+    public List<project.duan1_sd21301.model.phuc.PaymentMethod> findAllPaymentMethods() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("FROM PaymentMethod", project.duan1_sd21301.model.phuc.PaymentMethod.class).getResultList();
         }
     }
 }

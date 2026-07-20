@@ -18,6 +18,21 @@ import java.util.List;
  */
 public class CouponRepository {
 
+    /**
+     * Tự động cập nhật trạng thái các phiếu giảm giá đã hết hạn thành Hết hạn (2).
+     */
+    public void updateExpiredCoupons() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            String hql = "UPDATE Coupon c SET c.status = 2 WHERE c.status != 2 AND c.endDate < CURRENT_DATE";
+            session.createMutationQuery(hql).executeUpdate();
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
     // =========================================================
     //  GHI DỮ LIỆU (WRITE)
     // =========================================================

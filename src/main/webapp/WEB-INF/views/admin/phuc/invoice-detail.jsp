@@ -91,6 +91,10 @@
                     Quay lại danh sách
                 </a>
                 <div class="topbar-actions">
+                    <button class="btn-action" style="background:#fff;color:#374151;border:1px solid #cbd5e1;" onclick="openQrModal()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/><rect x="7" y="14" width="3" height="3"/><rect x="14" y="14" width="3" height="3"/></svg>
+                        Mã QR
+                    </button>
                     <%-- Link mở trang in hoá đơn trên tab mới --%>
                     <a href="${pageContext.request.contextPath}/admin/invoices/print?id=<%= inv.getId() %>" class="btn-print" target="_blank">
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -320,6 +324,18 @@
     </div>
 </div>
 
+<%-- KHU VỰC MODAL MÃ QR --%>
+<div class="modal-overlay" id="qrModal">
+    <div class="modal-box" style="text-align: center;">
+        <h3>Mã QR Hoá đơn #<%= inv.getId() %></h3>
+        <p style="margin-bottom: 16px; font-size: 13px; color: #6b7280;">Quét mã này để xem hoá đơn dạng in</p>
+        <div id="detail-qrcode" style="display: flex; justify-content: center; padding: 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 auto 20px; width: max-content;"></div>
+        <div class="modal-actions" style="justify-content: center;">
+            <button type="button" class="btn-cancel-m" onclick="closeModal('qrModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
 <% if ("updated".equals(msgParam) || "cancelled".equals(msgParam)) { %>
 <style>
     @keyframes slideDownToast {
@@ -367,6 +383,24 @@
         var toast = document.getElementById('toastSuccess');
         if (toast) setTimeout(function() { toast.style.display = 'none'; }, 4000);
     })();
+    // Logic 6: Mở modal mã QR và tự động tạo mã nếu chưa có
+    var isQrGenerated = false;
+    function openQrModal() {
+        document.getElementById('qrModal').classList.add('show');
+        if (!isQrGenerated) {
+            var detailUrl = window.location.origin + '${pageContext.request.contextPath}/admin/invoices/print?id=<%= inv.getId() %>';
+            new QRCode(document.getElementById("detail-qrcode"), {
+                text: detailUrl,
+                width: 180,
+                height: 180,
+                colorDark : "#111827",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L
+            });
+            isQrGenerated = true;
+        }
+    }
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>

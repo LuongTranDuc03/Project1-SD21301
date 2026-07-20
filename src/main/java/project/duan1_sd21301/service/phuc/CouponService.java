@@ -24,6 +24,10 @@ public class CouponService {
         couponRepository.toggleStatus(id, newStatus);
     }
 
+    public void updateExpiredCoupons() {
+        couponRepository.updateExpiredCoupons();
+    }
+
     public Coupon findById(int id) {
         return couponRepository.findById(id);
     }

@@ -184,7 +184,6 @@
                         <th>STT</th>
                         <th>Mã giảm giá</th>
                         <th>Tên chương trình</th>
-                        <th>Loại giảm</th>
                         <th>Giá trị giảm</th>
                         <th>Đơn hàng tối thiểu</th>
                         <th>Số lượng</th>
@@ -225,10 +224,9 @@
                                 int tt = c.getStatus() != null ? c.getStatus() : 0;
                                 String ttCls, ttLbl;
                                 switch (tt) {
-                                    case 1:  ttCls = "dang-ap-dung";   ttLbl = "Đang áp dụng";   break;
-                                    case 2:  ttCls = "ket-thuc";       ttLbl = "Kết thúc";        break;
-                                    case 3:  ttCls = "da-huy";         ttLbl = "Đã huỷ";          break;
-                                    default: ttCls = "chua-kich-hoat"; ttLbl = "Chưa kích hoạt";  break;
+                                    case 1:  ttCls = "dang-ap-dung";   ttLbl = "Đang kích hoạt";   break;
+                                    case 2:  ttCls = "ket-thuc";       ttLbl = "Hết hạn";          break;
+                                    default: ttCls = "chua-kich-hoat"; ttLbl = "Chưa kích hoạt";   break;
                                 }
 
                                 boolean isOn = (tt == 1);
@@ -239,7 +237,6 @@
                         <td style="font-weight:600;color:#111827;max-width:180px;">
                             <%= c.getName() != null ? c.getName() : "" %>
                         </td>
-                        <td><span class="badge-status <%= typeBadgeCls %>"><%= typeLabel %></span></td>
                         <td style="font-weight:700;color:#E11D48;"><%= valueStr %></td>
                         <td style="color:#6b7280;"><%= minOrder %></td>
                         <td>
@@ -264,7 +261,7 @@
                                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/toggle-status"
                                       style="display:inline;" id="toggleForm-<%= c.getId() %>">
                                     <input type="hidden" name="id"        value="<%= c.getId() %>">
-                                    <input type="hidden" name="status" value="<%= isOn ? 3 : 1 %>">
+                                    <input type="hidden" name="status" value="<%= isOn ? 0 : 1 %>">
                                     <label class="toggle-switch" title="<%= isOn ? "Tắt" : "Bật" %> phiếu">
                                         <input type="checkbox" <%= isOn ? "checked" : "" %>
                                                onchange="if (<%= isExpired %> && this.checked) { showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!'); this.checked = false; } else { document.getElementById('toggleForm-<%= c.getId() %>').submit(); }">

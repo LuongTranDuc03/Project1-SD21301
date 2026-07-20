@@ -39,9 +39,8 @@ public class CouponController extends HttpServlet {
 
         STATUS_LABELS = new LinkedHashMap<>();
         STATUS_LABELS.put(0, "Chưa kích hoạt");
-        STATUS_LABELS.put(1, "Đang áp dụng");
-        STATUS_LABELS.put(2, "Kết thúc");
-        STATUS_LABELS.put(3, "Đã huỷ");
+        STATUS_LABELS.put(1, "Đang kích hoạt");
+        STATUS_LABELS.put(2, "Hết hạn");
     }
 
     private final CouponService repo = new CouponService();
@@ -93,6 +92,8 @@ public class CouponController extends HttpServlet {
             try { page = Math.max(0, Integer.parseInt(pageParam)); }
             catch (NumberFormatException ignored) {}
         }
+        // Tự động cập nhật trạng thái các mã đã hết hạn trước khi load danh sách
+        repo.updateExpiredCoupons();
 
         long total     = repo.countAll(discountType, status, keyword, fromDate, toDate);
         int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
@@ -228,7 +229,7 @@ public class CouponController extends HttpServlet {
                     .startDate(startDate)
                     .endDate(endDate)
                     .description(description)
-                    .status(status != null ? status : 1)
+                    .status(0)
                     .createdAt(LocalDateTime.now())
                     .build();
 

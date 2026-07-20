@@ -90,118 +90,91 @@
                 <form method="post" action="${pageContext.request.contextPath}/admin/coupons/save" id="couponForm" novalidate>
                     <input type="hidden" name="id" value="<%= couponId %>">
 
-                    <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
-                        <!-- KHU VỰC THÔNG TIN CƠ BẢN: Tên và Số lượng -->
-                        <div class="cf-group">
-                            <label class="cf-label" for="name">Tên phiếu giảm giá <span class="req">*</span></label>
-                            <input type="text" id="name" name="name" class="cf-input"
-                                   placeholder="Tên phiếu giảm giá"
-                                   value="<%= name %>"
-                                   maxlength="255" required>
+                    <!-- SECTION 1: THÔNG TIN CHUNG -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                        <h3 class="cf-section-title" style="display: flex; align-items: center; gap: 8px; color: #334155; border-bottom-color: #cbd5e1;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                            Thông tin chung
+                        </h3>
+                        <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
+                            <div class="cf-group">
+                                <label class="cf-label" for="code">Mã phiếu giảm giá <span class="req">*</span></label>
+                                <input type="text" id="code" name="code" class="cf-input" value="<%= code %>" maxlength="50" required>
+                            </div>
+                            <div class="cf-group">
+                                <label class="cf-label" for="name">Tên chương trình <span class="req">*</span></label>
+                                <input type="text" id="name" name="name" class="cf-input" value="<%= name %>" maxlength="255" required>
+                            </div>
+                            <div class="cf-group">
+                                <label class="cf-label" for="quantity">Số lượng phát hành <span class="req">*</span></label>
+                                <input type="number" id="quantity" name="quantity" class="cf-input" value="<%= quantity %>" min="1" step="1" required>
+                            </div>
+                            <% if (isEdit) { %>
+                            <div class="cf-group">
+                                <label class="cf-label" for="usedQuantity">Số lượng đã dùng</label>
+                                <input type="number" id="usedQuantity" name="usedQuantity" class="cf-input" value="<%= usedQuantity %>" min="0" step="1" readonly style="background-color: #f1f5f9; color: #64748b; font-weight: 600;">
+                            </div>
+                            <% } else { %>
+                            <div class="cf-group"></div>
+                            <% } %>
                         </div>
-                        <div class="cf-group">
-                            <label class="cf-label" for="quantity">Số lượng <span class="req">*</span></label>
-                            <input type="number" id="quantity" name="quantity" class="cf-input"
-                                   placeholder="1"
-                                   value="<%= quantity %>"
-                                   min="1" step="1" required>
-                        </div>
+                    </div>
 
-                        <!-- KHU VỰC THỜI GIAN: Ngày bắt đầu và kết thúc -->
-                        <div class="cf-group">
-                            <label class="cf-label" for="startDate">Ngày bắt đầu <span class="req">*</span></label>
-                            <input type="date" id="startDate" name="startDate" class="cf-input"
-                                   value="<%= startDate %>" required>
-                        </div>
-                        <div class="cf-group">
-                            <label class="cf-label" for="endDate">Ngày kết thúc <span class="req">*</span></label>
-                            <input type="date" id="endDate" name="endDate" class="cf-input"
-                                   value="<%= endDate %>" required>
-                        </div>
-
-                        <!-- KHU VỰC LOẠI GIẢM VÀ GIÁ TRỊ: Cấu hình mức giảm giá -->
-                        <div class="cf-group">
-                            <label class="cf-label" for="discountType">Loại giảm</label>
-                            <select id="discountType" name="discountType" class="cf-select" required onchange="onTypeChange()">
-                                <option value="0" <%= discountType == 0 ? "selected" : "" %>>Giảm %</option>
-                                <option value="1" <%= discountType == 1 ? "selected" : "" %>>Giảm tiền</option>
-                            </select>
-                        </div>
-                        <div class="cf-group">
-                            <label class="cf-label" for="discountValue">Giá trị giảm <span class="req">*</span></label>
-                            <div style="position:relative;">
-                                <input type="text" id="discountValue" name="discountValue" class="cf-input"
-                                       placeholder="1"
-                                       value="<%= discountValue %>"
-                                       required style="padding-right:48px;">
-                                <span id="unitLabel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
-                                    font-size:12px;color:#9ca3af;font-weight:600;pointer-events:none;">
-                                    <%= discountType == 0 ? "%" : "VNĐ" %>
-                                </span>
+                    <!-- SECTION 2: CẤU HÌNH MỨC GIẢM -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                        <h3 class="cf-section-title" style="display: flex; align-items: center; gap: 8px; color: #334155; border-bottom-color: #cbd5e1;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                            Cấu hình mức giảm
+                        </h3>
+                        <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
+                            <div class="cf-group">
+                                <label class="cf-label" for="discountType">Hình thức giảm</label>
+                                <select id="discountType" name="discountType" class="cf-select" required onchange="onTypeChange()">
+                                    <option value="0" <%= discountType == 0 ? "selected" : "" %>>Giảm theo phần trăm (%)</option>
+                                    <option value="1" <%= discountType == 1 ? "selected" : "" %>>Giảm số tiền cố định (VNĐ)</option>
+                                </select>
+                            </div>
+                            <div class="cf-group">
+                                <label class="cf-label" for="discountValue">Mức giảm <span class="req">*</span></label>
+                                <div style="position:relative;">
+                                    <input type="text" id="discountValue" name="discountValue" class="cf-input" value="<%= discountValue %>" required style="padding-right:48px; font-weight: 600; color: #0f172a;">
+                                    <span id="unitLabel" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:#64748b;font-weight:700;pointer-events:none;">
+                                        <%= discountType == 0 ? "%" : "VNĐ" %>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="cf-group" id="maxDiscountGroup" style="<%= discountType == 1 ? "display:none;" : "" %>">
+                                <label class="cf-label" for="maxDiscountAmount">Giảm tối đa (VNĐ) <span class="req">*</span></label>
+                                <input type="text" id="maxDiscountAmount" name="maxDiscountAmount" class="cf-input" value="<%= maxDiscountAmount %>">
+                            </div>
+                            <div class="cf-group" id="minOrderGroup" style="grid-column: <%= discountType == 1 ? "1" : "2" %>;">
+                                <label class="cf-label" for="minOrderValue">Áp dụng cho đơn từ (VNĐ)</label>
+                                <div style="position:relative;">
+                                    <input type="text" id="minOrderValue" name="minOrderValue" class="cf-input" value="<%= minOrderValue %>" style="padding-right:48px;">
+                                    <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:#64748b;font-weight:700;pointer-events:none;">VNĐ</span>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- KHU VỰC RÀNG BUỘC: Giảm tối đa và Đơn tối thiểu -->
-                        <div class="cf-group" id="maxDiscountGroup" style="<%= discountType == 1 ? "display:none;" : "" %>">
-                            <label class="cf-label" for="maxDiscountAmount">Giảm tối đa (VNĐ) <span class="req">*</span></label>
-                            <input type="text" id="maxDiscountAmount" name="maxDiscountAmount" class="cf-input"
-                                   placeholder="0"
-                                   value="<%= maxDiscountAmount %>">
-                        </div>
-                        <div class="cf-group" id="minOrderGroup" style="grid-column: <%= discountType == 1 ? "1" : "2" %>;">
-                            <label class="cf-label" for="minOrderValue">Đơn hàng tối thiểu</label>
-                            <div style="position:relative;">
-                                <input type="text" id="minOrderValue" name="minOrderValue" class="cf-input"
-                                       placeholder="0"
-                                       value="<%= minOrderValue %>"
-                                       style="padding-right:48px;">
-                                <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
-                                    font-size:12px;color:#9ca3af;font-weight:600;pointer-events:none;">VNĐ</span>
+                    <!-- SECTION 3: THỜI GIAN VÀ MÔ TẢ -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
+                        <h3 class="cf-section-title" style="display: flex; align-items: center; gap: 8px; color: #334155; border-bottom-color: #cbd5e1;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            Thời gian & Mô tả
+                        </h3>
+                        <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
+                            <div class="cf-group">
+                                <label class="cf-label" for="startDate">Thời gian bắt đầu <span class="req">*</span></label>
+                                <input type="date" id="startDate" name="startDate" class="cf-input" value="<%= startDate %>" required>
                             </div>
-                        </div>
-
-                        <!-- KHU VỰC ĐỊNH DANH VÀ THỐNG KÊ: Mã giảm giá và Số lượng đã dùng -->
-                        <div class="cf-group">
-                            <label class="cf-label" for="code">Mã phiếu giảm giá <span class="req">*</span></label>
-                            <input type="text" id="code" name="code" class="cf-input"
-                                   placeholder="VD: SALE15"
-                                   value="<%= code %>"
-                                   maxlength="50" required>
-                        </div>
-                        <% if (isEdit) { %>
-                        <div class="cf-group">
-                            <label class="cf-label" for="usedQuantity">Đã sử dụng</label>
-                            <input type="number" id="usedQuantity" name="usedQuantity" class="cf-input"
-                                   value="<%= usedQuantity %>"
-                                   min="0" step="1" readonly style="background-color: #f9fafb;">
-                        </div>
-                        <% } else { %>
-                        <div class="cf-group"></div>
-                        <% } %>
-
-                        <!-- KHU VỰC MÔ TẢ CHI TIẾT -->
-                        <div class="cf-group span2">
-                            <label class="cf-label" for="description">Mô tả</label>
-                            <textarea id="description" name="description" class="cf-textarea"
-                                      placeholder="Nhập mô tả..."><%= description %></textarea>
-                        </div>
-                        
-                        <!-- KHU VỰC TRẠNG THÁI -->
-                        <div class="cf-group span2">
-                            <label class="cf-label">Trạng thái <span class="req">*</span></label>
-                            <div style="display: flex; gap: 24px; align-items: center; margin-top: 6px;">
-                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
-                                    <input type="radio" name="status" value="0" <%= status == 0 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Chưa kích hoạt
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
-                                    <input type="radio" name="status" value="1" <%= status == 1 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Đang áp dụng
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
-                                    <input type="radio" name="status" value="2" <%= status == 2 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Kết thúc
-                                </label>
-                                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #374151;">
-                                    <input type="radio" name="status" value="3" <%= status == 3 ? "checked" : "" %> style="accent-color: #3b82f6; width: 16px; height: 16px;"> Đã huỷ
-                                </label>
+                            <div class="cf-group">
+                                <label class="cf-label" for="endDate">Thời gian kết thúc <span class="req">*</span></label>
+                                <input type="date" id="endDate" name="endDate" class="cf-input" value="<%= endDate %>" required>
+                            </div>
+                            <div class="cf-group span2">
+                                <label class="cf-label" for="description">Mô tả chương trình / Điều kiện áp dụng</label>
+                                <textarea id="description" name="description" class="cf-textarea" rows="3"><%= description %></textarea>
                             </div>
                         </div>
                     </div>
@@ -251,16 +224,57 @@
         this.setSelectionRange(pos, pos);
     });
 
-    // Xử lý validate trước khi submit form (kiểm tra ngày, bỏ dấu chấm)
+    // Xử lý validate trước khi submit form (kiểm tra ngày, bỏ dấu chấm, logic dữ liệu)
     document.getElementById('couponForm').addEventListener('submit', function(e) {
+        var code = document.getElementById('code').value.trim();
+        var name = document.getElementById('name').value.trim();
+        var quantity = document.getElementById('quantity').value.trim();
         var bd = document.getElementById('startDate').value;
         var kt = document.getElementById('endDate').value;
-        if (bd && kt && bd > kt) {
+        var discountType = document.getElementById('discountType').value;
+        var discountValue = document.getElementById('discountValue').value.trim().replace(/\./g, '');
+        var maxDiscountAmount = document.getElementById('maxDiscountAmount').value.trim().replace(/\./g, '');
+        var minOrderValue = document.getElementById('minOrderValue').value.trim().replace(/\./g, '');
+
+        if (!code) { e.preventDefault(); showErrorToast('Vui lòng nhập mã phiếu giảm giá!'); return; }
+        if (!name) { e.preventDefault(); showErrorToast('Vui lòng nhập tên phiếu giảm giá!'); return; }
+        if (!quantity || parseInt(quantity) <= 0) { e.preventDefault(); showErrorToast('Số lượng phải lớn hơn 0!'); return; }
+        if (!bd) { e.preventDefault(); showErrorToast('Vui lòng chọn ngày bắt đầu!'); return; }
+        if (!kt) { e.preventDefault(); showErrorToast('Vui lòng chọn ngày kết thúc!'); return; }
+        if (bd > kt) { e.preventDefault(); showErrorToast('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!'); return; }
+        
+        if (!discountValue || parseInt(discountValue) <= 0) {
             e.preventDefault();
-            alert('Ngày kết thúc phải sau ngày bắt đầu!');
+            showErrorToast('Giá trị giảm phải lớn hơn 0!');
             return;
         }
+
+        var minOrder = minOrderValue ? parseInt(minOrderValue) : 0;
         
+        if (discountType === '0') {
+            if (parseInt(discountValue) > 100) {
+                e.preventDefault();
+                showErrorToast('Giá trị giảm phần trăm không được vượt quá 100%!');
+                return;
+            }
+            if (!maxDiscountAmount || parseInt(maxDiscountAmount) <= 0) {
+                e.preventDefault();
+                showErrorToast('Vui lòng nhập Giảm tối đa lớn hơn 0!');
+                return;
+            }
+            if (minOrder > 0 && parseInt(maxDiscountAmount) > minOrder) {
+                e.preventDefault();
+                showErrorToast('Giảm tối đa không được lớn hơn Đơn hàng tối thiểu!');
+                return;
+            }
+        } else {
+            if (minOrder > 0 && parseInt(discountValue) > minOrder) {
+                e.preventDefault();
+                showErrorToast('Giá trị giảm không được lớn hơn Đơn hàng tối thiểu!');
+                return;
+            }
+        }
+
         // Remove dot formatting before submitting
         var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
         fields.forEach(function(id) {
@@ -306,6 +320,35 @@
             }
         });
     })();
+
+    // Hiển thị thông báo lỗi bằng toast
+    function showErrorToast(msg) {
+        var oldToast = document.getElementById('toastError');
+        if (oldToast) oldToast.remove();
+        var toast = document.createElement('div');
+        toast.id = 'toastError';
+        toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #fecaca;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;';
+        toast.innerHTML = '<div style="width:24px;height:24px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="#ef4444" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>' +
+                          '<span style="font-size:14px;font-weight:500;color:#1f2937;">' + msg + '</span>' +
+                          '<button onclick="this.parentElement.remove()" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>';
+        
+        // Ensure animation keyframes are injected
+        if (!document.getElementById('toastStyles')) {
+            var style = document.createElement('style');
+            style.id = 'toastStyles';
+            style.innerHTML = '@keyframes slideDownToast { from { top: -50px; opacity: 0; } to { top: 24px; opacity: 1; } }';
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(toast);
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.style.transition = 'opacity .4s';
+                toast.style.opacity = '0';
+                setTimeout(function() { if(toast.parentElement) toast.remove(); }, 450);
+            }
+        }, 4000);
+    }
 </script>
 </body>
 </html>
