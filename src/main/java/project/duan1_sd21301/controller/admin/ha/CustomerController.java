@@ -283,6 +283,30 @@ public class CustomerController extends HttpServlet {
             }
         }
 
+        // Xuất danh sách khách hàng (đã được lọc) ra file CSV (Excel)
+        if ("exportExcel".equals(action)) {
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=\"danh_sach_khach_hang.csv\"");
+            try (java.io.PrintWriter writer = response.getWriter()) {
+                // Ghi ký tự BOM để Excel hiểu file là UTF-8
+                writer.write('\ufeff');
+                writer.println("STT,Mã khách hàng,Tên khách hàng,Số điện thoại,Email,Giới tính,Trạng thái");
+                int stt = 1;
+                // Sử dụng filteredCustomers thay vì allCustomers
+                for (Customer cust : filteredCustomers) {
+                    String name = cust.getFullName() != null ? cust.getFullName().replace("\"", "\"\"") : "";
+                    String phone = cust.getPhoneNumber() != null ? cust.getPhoneNumber() : "";
+                    String email = cust.getEmail() != null ? cust.getEmail() : "";
+                    String gender = cust.getGender() != null ? cust.getGender() : "";
+                    String statusLabel = cust.getStatus() != null ? (cust.getStatus().equals("ACTIVE") ? "Hoạt động" : "Ngừng hoạt động") : "";
+
+                    writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                            stt++, cust.getId(), name, phone, email, gender, statusLabel);
+                }
+            }
+            return;
+        }
+
         // Đẩy dữ liệu ra view
         request.setAttribute("pageTitle", "Quản lý khách hàng");
         request.setAttribute("customers", filteredCustomers);
