@@ -20,25 +20,25 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
     <style>
         .form-card {
-            background-color: #ffffff;
-            border: 2px solid #0f172a;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
             overflow: visible;
             margin-bottom: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .form-card-title {
-            background-color: #0f172a;
+            background-color: #12192D;
             color: #ffffff;
             padding: 12px 20px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            border-bottom: 1px solid #0f172a;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             display: flex;
             align-items: center;
             gap: 8px;
-            border-radius: 5px 5px 0 0;
+            border-radius: 8px 8px 0 0;
         }
         .form-card-title svg {
             color: #ffffff !important;

@@ -392,7 +392,7 @@
                                                 <!-- Bộ lọc giới tính -->
                                                 <div class="filter-field">
                                                     <label>Giới tính</label>
-                                                    <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+                                                    <div style="display: flex; align-items: center; gap: 16px; height: 38px;">
                                                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
                                                             <input type="radio" name="filterGender" value="Tất cả" onchange="this.form.submit()" ${requestScope.filterGenderVal == null || requestScope.filterGenderVal == 'Tất cả' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
                                                             Tất cả
@@ -411,7 +411,7 @@
                                                 <!-- Bộ lọc trạng thái -->
                                                 <div class="filter-field">
                                                     <label>Trạng thái</label>
-                                                    <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+                                                    <div style="display: flex; align-items: center; gap: 16px; height: 38px;">
                                                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
                                                             <input type="radio" name="filterStatus" value="Tất cả" onchange="this.form.submit()" ${requestScope.filterStatusVal == null || requestScope.filterStatusVal == 'Tất cả' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
                                                             Tất cả

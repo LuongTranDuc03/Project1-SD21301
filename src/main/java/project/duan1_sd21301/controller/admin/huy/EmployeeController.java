@@ -111,23 +111,24 @@ public class EmployeeController extends HttpServlet {
         List<Employee> mockEmployees = EmployeeMockData.loadAll();
         List<Role> mockRoles = EmployeeMockData.loadAllRoles();
 
-        // Merge: Mock data sẽ đè lên DB data nếu trùng ID (để xử lý trường hợp update DB lỗi nhưng update mock thành công)
+        // Merge: Mock data sẽ đè lên DB data nếu trùng ID (để xử lý trường hợp update
+        // DB lỗi nhưng update mock thành công)
         java.util.Map<Integer, Employee> mergedMap = new java.util.LinkedHashMap<>();
-        
+
         // 1. Nạp data từ DB trước
         if (employees != null) {
             for (Employee e : employees) {
                 mergedMap.put(e.getId(), e);
             }
         }
-        
+
         // 2. Ghi đè hoặc thêm mới từ Mock data
         if (mockEmployees != null) {
             for (Employee me : mockEmployees) {
                 mergedMap.put(me.getId(), me);
             }
         }
-        
+
         // Cập nhật lại danh sách employees
         employees = new java.util.ArrayList<>(mergedMap.values());
         // Sắp xếp giảm dần theo ID để nhân viên mới nhất (hoặc vừa sửa) lên đầu
@@ -136,7 +137,8 @@ public class EmployeeController extends HttpServlet {
         if (roles == null || roles.isEmpty()) {
             roles = mockRoles != null ? mockRoles : new java.util.ArrayList<>();
         }
-        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName())).collect(java.util.stream.Collectors.toList());
+        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
+                .collect(java.util.stream.Collectors.toList());
 
         long totalActive = employees.stream().filter(emp -> emp.getStatus() == 1).count();
         long totalInactive = employees.stream().filter(emp -> emp.getStatus() == 0).count();
@@ -146,6 +148,14 @@ public class EmployeeController extends HttpServlet {
         request.setAttribute("totalActive", totalActive);
         request.setAttribute("totalInactive", totalInactive);
         request.setAttribute("totalAll", employees.size());
+
+        String toastMessage = (String) request.getSession().getAttribute("toastMessage");
+        if (toastMessage != null) {
+            request.setAttribute("toastMessage", toastMessage);
+            request.setAttribute("toastType", request.getSession().getAttribute("toastType"));
+            request.getSession().removeAttribute("toastMessage");
+            request.getSession().removeAttribute("toastType");
+        }
 
         request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-list.jsp").forward(request, response);
     }
@@ -174,15 +184,26 @@ public class EmployeeController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-detail.jsp").forward(request, response);
     }
 
-    private void forwardToForm(HttpServletRequest request, HttpServletResponse response, Employee employee, boolean isEdit) throws ServletException, IOException {
+    private void forwardToForm(HttpServletRequest request, HttpServletResponse response, Employee employee,
+            boolean isEdit) throws ServletException, IOException {
         request.setAttribute("employee", employee);
         request.setAttribute("isEdit", isEdit);
         List<Role> roles = repository.findAllRoles();
         if (roles == null || roles.isEmpty()) {
             roles = EmployeeMockData.loadAllRoles();
         }
-        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName())).collect(java.util.stream.Collectors.toList());
+        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
+                .collect(java.util.stream.Collectors.toList());
         request.setAttribute("roles", roles);
+
+        String toastMessage = (String) request.getSession().getAttribute("toastMessage");
+        if (toastMessage != null) {
+            request.setAttribute("toastMessage", toastMessage);
+            request.setAttribute("toastType", request.getSession().getAttribute("toastType"));
+            request.getSession().removeAttribute("toastMessage");
+            request.getSession().removeAttribute("toastType");
+        }
+
         request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-form.jsp").forward(request, response);
     }
 
@@ -210,7 +231,8 @@ public class EmployeeController extends HttpServlet {
         java.util.Map<String, String> errors = EmployeeValidator.validate(emp);
         if (!errors.isEmpty()) {
             String firstError = errors.values().iterator().next();
-            request.getSession().setAttribute("errorMsg", firstError);
+            request.getSession().setAttribute("toastMessage", firstError);
+            request.getSession().setAttribute("toastType", "error");
             forwardToForm(request, response, emp, false);
             return;
         }
@@ -219,7 +241,8 @@ public class EmployeeController extends HttpServlet {
         boolean emailExists = repository.isEmailExist(emp.getEmail(), null)
                 || EmployeeMockData.isEmailExist(emp.getEmail(), null);
         if (emailExists) {
-            request.getSession().setAttribute("errorMsg", "Email da ton tai trong he thong!");
+            request.getSession().setAttribute("toastMessage", "Email đã tồn tại trong hệ thống!");
+            request.getSession().setAttribute("toastType", "error");
             forwardToForm(request, response, emp, false);
             return;
         }
@@ -227,7 +250,8 @@ public class EmployeeController extends HttpServlet {
                 (repository.isPhoneExist(emp.getPhoneNumber(), null)
                         || EmployeeMockData.isPhoneExist(emp.getPhoneNumber(), null));
         if (phoneExists) {
-            request.getSession().setAttribute("errorMsg", "So dien thoai da ton tai trong he thong!");
+            request.getSession().setAttribute("toastMessage", "Số điện thoại đã tồn tại trong hệ thống!");
+            request.getSession().setAttribute("toastType", "error");
             forwardToForm(request, response, emp, false);
             return;
         }
@@ -237,7 +261,8 @@ public class EmployeeController extends HttpServlet {
             boolean maNvExists = repository.isMaNhanVienExist(emp.getMaNhanVien(), null)
                     || EmployeeMockData.isMaNhanVienExist(emp.getMaNhanVien(), null);
             if (maNvExists) {
-                request.getSession().setAttribute("errorMsg", "Ma nhan vien da ton tai trong he thong!");
+                request.getSession().setAttribute("toastMessage", "Mã nhân viên đã tồn tại trong hệ thống!");
+                request.getSession().setAttribute("toastType", "error");
                 forwardToForm(request, response, emp, false);
                 return;
             }
@@ -286,14 +311,17 @@ public class EmployeeController extends HttpServlet {
                         + "<div style='padding:16px 32px;background:#f8fafc;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;'>Tran trong, <strong>Team FamiCoats</strong></div>"
                         + "</div></body></html>";
                 emailUtil.sendHtmlMail(emp.getEmail(), subject, html);
-                request.getSession().setAttribute("successMsg",
-                        "Them nhan vien thanh cong va da tu dong gui email tai khoan!");
+                request.getSession().setAttribute("toastMessage",
+                        "Thêm nhân viên thành công và đã tự động gửi email tài khoản!");
+                request.getSession().setAttribute("toastType", "success");
             } catch (Exception e) {
                 e.printStackTrace();
-                request.getSession().setAttribute("successMsg", "Them nhan vien thanh cong nhung loi gui email!");
+                request.getSession().setAttribute("toastMessage", "Thêm nhân viên thành công nhưng lỗi gửi email!");
+                request.getSession().setAttribute("toastType", "error");
             }
         } else {
-            request.getSession().setAttribute("errorMsg", "Them nhan vien that bai tu Database!");
+            request.getSession().setAttribute("toastMessage", "Thêm nhân viên thất bại từ Database!");
+            request.getSession().setAttribute("toastType", "error");
         }
         // Remove old existing duplicate block
         response.sendRedirect(request.getContextPath() + "/admin/employees");
@@ -308,7 +336,8 @@ public class EmployeeController extends HttpServlet {
         if (!errors.isEmpty()) {
             // Get first error to display
             String firstError = errors.values().iterator().next();
-            request.getSession().setAttribute("errorMsg", firstError);
+            request.getSession().setAttribute("toastMessage", firstError);
+            request.getSession().setAttribute("toastType", "error");
             forwardToForm(request, response, emp, true);
             return;
         }
@@ -317,7 +346,8 @@ public class EmployeeController extends HttpServlet {
         boolean emailExists = repository.isEmailExist(emp.getEmail(), emp.getId())
                 || EmployeeMockData.isEmailExist(emp.getEmail(), emp.getId());
         if (emailExists) {
-            request.getSession().setAttribute("errorMsg", "Email da ton tai trong he thong!");
+            request.getSession().setAttribute("toastMessage", "Email đã tồn tại trong hệ thống!");
+            request.getSession().setAttribute("toastType", "error");
             forwardToForm(request, response, emp, true);
             return;
         }
@@ -325,7 +355,8 @@ public class EmployeeController extends HttpServlet {
                 (repository.isPhoneExist(emp.getPhoneNumber(), emp.getId())
                         || EmployeeMockData.isPhoneExist(emp.getPhoneNumber(), emp.getId()));
         if (phoneExists) {
-            request.getSession().setAttribute("errorMsg", "So dien thoai da ton tai trong he thong!");
+            request.getSession().setAttribute("toastMessage", "Số điện thoại đã tồn tại trong hệ thống!");
+            request.getSession().setAttribute("toastType", "error");
             forwardToForm(request, response, emp, true);
             return;
         }
@@ -334,14 +365,16 @@ public class EmployeeController extends HttpServlet {
             boolean maNvExists = repository.isMaNhanVienExist(emp.getMaNhanVien(), emp.getId())
                     || EmployeeMockData.isMaNhanVienExist(emp.getMaNhanVien(), emp.getId());
             if (maNvExists) {
-                request.getSession().setAttribute("errorMsg", "Ma nhan vien da ton tai trong he thong!");
+                request.getSession().setAttribute("toastMessage", "Mã nhân viên đã tồn tại trong hệ thống!");
+                request.getSession().setAttribute("toastType", "error");
                 forwardToForm(request, response, emp, true);
                 return;
             }
         } else {
             // Keep old maNhanVien if empty on update
             Employee oldEmp = repository.findById(emp.getId());
-            if (oldEmp == null) oldEmp = EmployeeMockData.findById(emp.getId());
+            if (oldEmp == null)
+                oldEmp = EmployeeMockData.findById(emp.getId());
             if (oldEmp != null) {
                 emp.setMaNhanVien(oldEmp.getMaNhanVien());
             }
@@ -352,9 +385,11 @@ public class EmployeeController extends HttpServlet {
             success = EmployeeMockData.update(emp);
         }
         if (success) {
-            request.getSession().setAttribute("successMsg", "Cap nhat thanh cong!");
+            request.getSession().setAttribute("toastMessage", "Cập nhật thành công!");
+            request.getSession().setAttribute("toastType", "success");
         } else {
-            request.getSession().setAttribute("errorMsg", "Khong tim thay nhan vien hoac cap nhat that bai.");
+            request.getSession().setAttribute("toastMessage", "Không tìm thấy nhân viên hoặc cập nhật thất bại.");
+            request.getSession().setAttribute("toastType", "error");
         }
         response.sendRedirect(request.getContextPath() + "/admin/employees");
     }
@@ -387,8 +422,10 @@ public class EmployeeController extends HttpServlet {
             if (!success) {
                 success = EmployeeMockData.update(employee);
             }
-            
-            String msg = success ? (newStatus == 1 ? "Da kich hoat tai khoan nhan vien!" : "Da chuyen trang thai nghi viec!") : "Cap nhat trang thai that bai!";
+
+            String msg = success
+                    ? (newStatus == 1 ? "Da kich hoat tai khoan nhan vien!" : "Da chuyen trang thai nghi viec!")
+                    : "Cap nhat trang thai that bai!";
 
             if ("POST".equalsIgnoreCase(request.getMethod())) {
                 response.setContentType("application/json");
@@ -403,12 +440,15 @@ public class EmployeeController extends HttpServlet {
             }
 
             if (success) {
-                request.getSession().setAttribute("successMsg", msg);
+                request.getSession().setAttribute("toastMessage", msg);
+                request.getSession().setAttribute("toastType", "success");
             } else {
-                request.getSession().setAttribute("errorMsg", msg);
+                request.getSession().setAttribute("toastMessage", msg);
+                request.getSession().setAttribute("toastType", "error");
             }
         } else {
-            request.getSession().setAttribute("errorMsg", "Khong tim thay nhan vien!");
+            request.getSession().setAttribute("toastMessage", "Không tìm thấy nhân viên!");
+            request.getSession().setAttribute("toastType", "error");
         }
 
         String redirect = request.getParameter("redirect");
@@ -513,7 +553,7 @@ public class EmployeeController extends HttpServlet {
         if (idStr != null && !idStr.isEmpty()) {
             emp.setId(Integer.parseInt(idStr));
         }
-        
+
         String maNV = req.getParameter("maNhanVien");
         if (maNV != null && !maNV.trim().isEmpty()) {
             emp.setMaNhanVien(maNV.trim());
@@ -537,7 +577,8 @@ public class EmployeeController extends HttpServlet {
         if (roles == null || roles.isEmpty()) {
             roles = EmployeeMockData.loadAllRoles();
         }
-        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName())).collect(java.util.stream.Collectors.toList());
+        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
+                .collect(java.util.stream.Collectors.toList());
         String rName = roles.stream().filter(r -> r.getId() == roleId).map(Role::getRoleName).findFirst().orElse("");
         emp.setRoleName(rName);
 

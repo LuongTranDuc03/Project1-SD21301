@@ -176,8 +176,8 @@ input:checked+.slider:before { transform: translateX(16px); }
 }
 .filter-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 16px 24px;
+    grid-template-columns: 1.5fr 1fr 1fr 1.8fr auto;
+    gap: 16px;
 }
 @media (max-width: 992px) {
     .filter-grid {
@@ -203,6 +203,7 @@ input:checked+.slider:before { transform: translateX(16px); }
     width: 100%;
     padding: 10px 12px;
     border: 1px solid #cbd5e1;
+    height: 38px;
     border-radius: 6px;
     font-size: 13px;
     font-family: inherit;

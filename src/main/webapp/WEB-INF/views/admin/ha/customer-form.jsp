@@ -34,20 +34,28 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 24px;
+            overflow: hidden;
             margin-bottom: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
+        .form-card-body {
+            padding: 24px;
+        }
         .form-card-title {
-            font-size: 16px;
+            background-color: #12192D;
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 13px;
             font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: 8px;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 12px;
+        }
+        .form-card-title svg {
+            color: #ffffff !important;
         }
         .form-grid {
             display: grid;
@@ -278,7 +286,7 @@
                         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                         Thông tin cá nhân & Ảnh đại diện
                     </div>
-
+                    <div class="form-card-body">
                     <!-- Khu vực upload ảnh đại diện -->
                     <div class="avatar-upload-area">
                         <img src="<%= (c != null && c.getAvatar() != null && !c.getAvatar().isEmpty()) ? c.getAvatar() : "https://i.pravatar.cc/150?img=0" %>" id="avatarPreview" class="preview-avatar" alt="avatar preview" onerror="this.src='https://i.pravatar.cc/150?img=0'" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; margin-bottom: 0;">
@@ -331,6 +339,7 @@
                             </select>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- 2. Địa chỉ mặc định -->
@@ -339,6 +348,7 @@
                         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         Địa chỉ giao hàng mặc định
                     </div>
+                    <div class="form-card-body">
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label class="form-label">Tên người nhận<span class="required">*</span></label>
@@ -377,16 +387,18 @@
                         </div>
                     </div>
                     <input type="hidden" name="diaChiMacDinh" id="customerDefaultAddress" value="<%= (c != null && c.getDefaultAddress() != null) ? c.getDefaultAddress().getAddressDetail() : "" %>">
+                    </div>
                 </div>
 
                 <!-- 3. Các địa chỉ khác -->
                 <div class="form-card">
-                    <div class="form-card-title" style="justify-content: space-between; border-bottom: none; padding-bottom: 0;">
+                    <div class="form-card-title">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                             Các địa chỉ nhận hàng phụ
                         </div>
                     </div>
+                    <div class="form-card-body">
 
                     <button type="button" class="btn-add-address" onclick="addNewAddressCard()">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -447,6 +459,7 @@
                                 }
                             }
                         %>
+                    </div>
                     </div>
                 </div>
 

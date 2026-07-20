@@ -60,39 +60,12 @@
 
                                             <div class="content-wrapper">
 
-                                                <div id="toast-container"></div>
-                                                <% if (session.getAttribute("successMsg") !=null) { %>
-                                                    <script>
-                                                        window.addEventListener('DOMContentLoaded', () => {
-                                                            showToast('success', '\u2713', '<%= session.getAttribute("successMsg") %>');
-                                                        });
-                                                    </script>
-                                                    <% session.removeAttribute("successMsg"); %>
-                                                        <% } %>
-                                                            <% if (session.getAttribute("errorMsg") !=null) { %>
-                                                                <script>
-                                                                    window.addEventListener('DOMContentLoaded', () => {
-                                                                        showToast('error', '!', '<%= session.getAttribute("errorMsg") %>');
-                                                                    });
-                                                                </script>
-                                                                <% session.removeAttribute("errorMsg"); %>
-                                                                    <% } %>
-
-                                                                        <div class="page-header"
-                                                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                                                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                                                                             <div>
-                                                                                <h1
-                                                                                    style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0;">
-                                                                                    Quản lý nhân viên</h1>
-                                                                                <div
-                                                                                    style="font-size: 14px; color: #64748b;">
-                                                                                    Tổng <span
-                                                                                        style="color: #0F172A; font-weight: 700;">${totalAll
-                                                                                        != null ? totalAll : 0}</span>
-                                                                                    nhân sự</div>
+                                                                                <h1>Quản lý nhân viên</h1>
+                                                                                <div class="subtitle">Tổng ${totalAll != null ? totalAll : 0} nhân sự</div>
                                                                             </div>
-                                                                            <div
-                                                                                style="display: flex; gap: 12px; align-items: center;">
+                                                                            <div style="display: flex; gap: 8px;">
                                                                                 <% if (isAdmin) { %>
                                                                                     <button onclick="exportToCSV()" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                                                                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
@@ -125,20 +98,17 @@
                                                                                     onclick="toggleFilterCard()">Nhấn để
                                                                                     thu gọn</button>
                                                                             </div>
-                                                                            <div class="card-body-content"
-                                                                                id="filterCardBody">
-                                                                                <div class="filter-grid" style="grid-template-columns: 2.5fr 1.2fr 1fr 1fr auto; gap: 16px;">
+                                                                            <div class="card-body-content" id="filterCardBody">
+                                                                                <div class="filter-grid">
 
                                                                                     <!-- Tìm kiếm -->
                                                                                     <div class="filter-field">
-                                                                                        <label for="empSearch">Tìm
-                                                                                            kiếm</label>
-                                                                                        <div
-                                                                                            style="position: relative;">
+                                                                                        <label for="empSearch">Tìm kiếm</label>
+                                                                                        <div style="position: relative;">
                                                                                             <input type="text"
                                                                                                 id="empSearch"
                                                                                                 class="filter-control"
-                                                                                                style="padding-left: 36px;"
+                                                                                                style="padding-left: 36px; width: 100%; box-sizing: border-box;"
                                                                                                 placeholder="Tìm tên, mã, số điện thoại..."
                                                                                                 onkeyup="filterTable()">
                                                                                             <svg viewBox="0 0 24 24"
@@ -247,12 +217,10 @@
                                                                                     </div>
 
                                                                                     <!-- Đặt lại -->
-                                                                                    <div class="filter-field"
-                                                                                        style="display: flex; align-items: flex-end; justify-content: flex-end; visibility: hidden;"
-                                                                                        id="resetFilterContainer">
-                                                                                        <button class="btn-reset-filter"
+                                                                                    <div class="filter-field" style="grid-column: -1; justify-content: flex-end; align-items: flex-end; visibility: hidden;" id="resetFilterContainer">
+                                                                                        <button type="button" class="btn-reset-filter"
                                                                                         onclick="document.getElementById('empSearch').value=''; document.getElementById('roleFilter').value='all'; document.querySelector('input[name=\'genderFilter\'][value=\'all\']').checked = true; document.querySelector('input[name=\'statusFilter\'][value=\'all\']').checked = true; filterTable();"
-                                                                                        style="display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s; font-size: 13px; height: 38px;">
+                                                                                        style="display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s; font-size: 13px; height: 38px; box-sizing: border-box; width: fit-content;">
                                                                                         <svg viewBox="0 0 24 24"
                                                                                             width="14" height="14"
                                                                                             stroke="currentColor"
@@ -388,13 +356,13 @@
                                                                                                 <% if (isAdmin) { %>
                                                                                                     <td style="padding: 14px 16px; text-align: center;">
                                                                                                         <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=edit&id=<%= emp.getId() %>"
-                                                                                                                class="action-icon-btn edit-btn" title="Sửa">
-                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                                                                                            </a>
                                                                                                             <a href="${pageContext.request.contextPath}/admin/employees?action=view&id=<%= emp.getId() %>"
                                                                                                                 class="action-icon-btn details-btn" title="Chi tiết">
                                                                                                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                                                                            </a>
+                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=edit&id=<%= emp.getId() %>"
+                                                                                                                class="action-icon-btn edit-btn" title="Chỉnh sửa">
+                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                                                                                             </a>
                                                                                                             <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
                                                                                                                 <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onchange="window.location.href='${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=<%= emp.getId() %>'">
@@ -442,20 +410,7 @@
                                             });
                                         }
 
-                                        // ====== Toast ======
-                                        // Hàm hiển thị thông báo góc màn hình (Toast message)
-                                        // type: 'success' hoặc 'error', icon: biểu tượng, msg: nội dung thông báo
-                                        function showToast(type, icon, msg) {
-                                            const container = document.getElementById('toast-container');
-                                            const toast = document.createElement('div');
-                                            toast.className = 'toast ' + type;
-                                            toast.innerHTML = '<span class="toast-icon">' + icon + '</span><span class="toast-msg">' + msg + '</span>';
-                                            container.appendChild(toast);
-                                            // Delay nhỏ để CSS transition hoạt động (trượt thông báo vào)
-                                            setTimeout(() => toast.classList.add('show'), 50);
-                                            // Sau 4 giây, tự động ẩn và xóa thông báo khỏi DOM
-                                            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
-                                        }
+                                        // script logic for toast is handled by toast.jsp
 
                                         // ====== Tìm kiếm & Lọc ======
                                         const searchInput = document.getElementById('empSearch');
@@ -608,5 +563,8 @@
                                     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
                                     <script src="${pageContext.request.contextPath}/assets/js/qr-scanner.js"></script>
                                 </body>
+                                
+                                <%-- Toast thông báo dùng chung --%>
+                                <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 
                                 </html>

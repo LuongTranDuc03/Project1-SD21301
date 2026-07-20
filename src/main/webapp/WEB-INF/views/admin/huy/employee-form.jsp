@@ -54,47 +54,29 @@
                                         alert("Lỗi Promise: " + (event.reason ? event.reason.message : event.reason));
                                     });
                                 </script>
-                                                                <div id="toast-container"></div>
-                                                                <% if (session.getAttribute("successMsg") != null) { %>
-                                                                    <script>
-                                                                        document.addEventListener('DOMContentLoaded', () => {
-                                                                            showToast('success', '\u2713', '<%= session.getAttribute("successMsg") %>');
-                                                                        });
-                                                                    </script>
-                                                                    <% session.removeAttribute("successMsg"); %>
-                                                                <% } %>
-                                                                <% if (session.getAttribute("errorMsg") != null) { %>
-                                                                    <script>
-                                                                        document.addEventListener('DOMContentLoaded', () => {
-                                                                            showToast('error', '!', '<%= session.getAttribute("errorMsg") %>');
-                                                                        });
-                                                                    </script>
-                                                                    <% session.removeAttribute("errorMsg"); %>
-                                                                <% } %>
-
                                                                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
                                 <style>
                                     .form-card {
-                                        background-color: #ffffff;
-                                        border: 2px solid #0f172a;
+                                        background: #ffffff;
+                                        border: 1px solid #e2e8f0;
                                         border-radius: 8px;
                                         overflow: visible;
                                         margin-bottom: 16px;
-                                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                                        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
                                     }
 
                                     .form-card-title {
-                                        background-color: #0f172a;
+                                        background-color: #12192D;
                                         color: #ffffff;
                                         padding: 12px 20px;
-                                        font-size: 14px;
+                                        font-size: 13px;
                                         font-weight: 700;
-                                        border-bottom: 1px solid #0f172a;
+                                        letter-spacing: 0.5px;
                                         text-transform: uppercase;
                                         display: flex;
                                         align-items: center;
                                         gap: 8px;
-                                        border-radius: 5px 5px 0 0;
+                                        border-radius: 8px 8px 0 0;
                                     }
 
                                     .form-card-title svg {
@@ -696,23 +678,7 @@
                                             if (typeof syncFullAddress === 'function') syncFullAddress();
                                         }
                                     }
-
-                                    // ====== Toast ======
-                                    function showToast(type, icon, msg) {
-                                        let container = document.getElementById('toast-container');
-                                        if (!container) {
-                                            container = document.createElement('div');
-                                            container.id = 'toast-container';
-                                            document.body.appendChild(container);
-                                        }
-                                        const toast = document.createElement('div');
-                                        toast.className = 'toast ' + type;
-                                        toast.innerHTML = '<span class="toast-icon">' + icon + '</span><span class="toast-msg">' + msg + '</span>';
-                                        container.appendChild(toast);
-                                        setTimeout(() => toast.classList.add('show'), 50);
-                                        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
-                                    }
-
+                                     // Toast is now handled by layout/toast.jsp
                                     function handleScanBtnClick() {
                                         Swal.fire({
                                             title: 'Tải ảnh CCCD',
@@ -834,5 +800,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
                                 <script src="${pageContext.request.contextPath}/assets/js/qr-scanner.js"></script>
                             </body>
+
+                            <%-- Toast thông báo dùng chung --%>
+                            <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 
                             </html>
