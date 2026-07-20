@@ -28,6 +28,47 @@
 
                                     <link rel="stylesheet"
                                         href="${pageContext.request.contextPath}/assets/css/employees/employee-list.css?v=2.6">
+                                    <style>
+                                        /* Pagination Styling */
+                                        .pagination-container {
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+                                            gap: 8px;
+                                            padding: 20px 0;
+                                            margin-top: 10px;
+                                        }
+                                        .page-btn {
+                                            min-width: 32px;
+                                            height: 32px;
+                                            padding: 0 10px;
+                                            display: inline-flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            border-radius: 6px;
+                                            border: 1px solid #cbd5e1;
+                                            background-color: #ffffff;
+                                            color: #475569;
+                                            font-size: 13px;
+                                            font-weight: 600;
+                                            cursor: pointer;
+                                            transition: all 0.2s;
+                                        }
+                                        .page-btn:hover:not(:disabled) {
+                                            background-color: #f1f5f9;
+                                            color: #0f172a;
+                                            border-color: #94a3b8;
+                                        }
+                                        .page-btn.active {
+                                            background-color: #1e3a8a;
+                                            color: #ffffff;
+                                            border-color: #1e3a8a;
+                                        }
+                                        .page-btn:disabled {
+                                            opacity: 0.5;
+                                            cursor: not-allowed;
+                                        }
+                                    </style>
                                 </head>
 
                                 <body>
@@ -384,7 +425,8 @@
                                                                                                 <% } %>
                                                                                 </tbody>
                                                                             </table>
-                                                                            <!-- Phân trang bị loại bỏ theo yêu cầu -->
+                                                                            <!-- Pagination Container -->
+                                                                            <div id="paginationContainer" class="pagination-container"></div>
                                                                         </div>
                                             </div>
                                         </main>
@@ -449,27 +491,108 @@
                                                 const rowId = row.getAttribute('data-id') || '';
                                                 const fullText = rowText + " " + rowAddress + " " + rowId;
 
-                                                const matchSearch = searchVal === '' || fullText.indexOf(searchVal) > -1;
-                                                const matchRole = (roleVal.toLowerCase() === 'all') || (rowRole.toLowerCase() === roleVal.toLowerCase());
-                                                const matchGender = (genderVal === 'all') || (rowGender.toLowerCase() === genderVal.toLowerCase());
-                                                const matchStatus = (statusVal === 'all') || (rowStatus === statusVal);
+                                                const matchSearch = !searchVal || fullText.includes(searchVal);
+                                                const matchRole = roleVal === 'all' || rowRole.toLowerCase() === roleVal.toLowerCase();
+                                                const matchGender = genderVal === 'all' || rowGender.toLowerCase() === genderVal.toLowerCase();
+                                                const matchStatus = statusVal === 'all' || rowStatus === statusVal;
 
                                                 if (matchSearch && matchRole && matchGender && matchStatus) {
-                                                    row.style.display = "";
+                                                    visibleRows.push(row);
                                                 } else {
-                                                    row.style.display = "none";
+                                                    row.style.display = 'none';
                                                 }
                                             });
 
-                                            // Show/hide reset button based on whether any filter is active
+                                            // Pagination Logic
+                                            const totalItems = visibleRows.length;
+                                            const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+                                            
+                                            if (currentPage > totalPages) currentPage = totalPages;
+                                            if (currentPage < 1) currentPage = 1;
+
+                                            const startIndex = (currentPage - 1) * itemsPerPage;
+                                            const endIndex = startIndex + itemsPerPage;
+
+                                            // Display only rows for the current page
+                                            visibleRows.forEach((row, idx) => {
+                                                if (idx >= startIndex && idx < endIndex) {
+                                                    row.style.display = '';
+                                                    // Update STT based on overall filtered index
+                                                    const sttCell = row.querySelector('td:first-child');
+                                                    if (sttCell) {
+                                                        sttCell.textContent = (idx + 1) + '';
+                                                    }
+                                                } else {
+                                                    row.style.display = 'none';
+                                                }
+                                            });
+
                                             const isFiltering = searchVal !== '' || roleVal !== 'all' || genderVal !== 'all' || statusVal !== 'all';
                                             const resetContainer = document.getElementById('resetFilterContainer');
                                             if (resetContainer) {
                                                 resetContainer.style.visibility = isFiltering ? 'visible' : 'hidden';
                                             }
+
+                                            renderPagination(totalItems, totalPages);
                                         }
 
-                                        if (searchInput) searchInput.addEventListener('keyup', filterTable); filterTable();
+                                        function renderPagination(totalItems, totalPages) {
+                                            const container = document.getElementById('paginationContainer');
+                                            if (!container) return;
+                                            
+                                            container.innerHTML = '';
+                                            
+                                            if (totalItems === 0 || totalPages <= 1) {
+                                                return; // No pagination needed
+                                            }
+
+                                            // Previous button
+                                            const prevBtn = document.createElement('button');
+                                            prevBtn.className = 'page-btn';
+                                            prevBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+                                            prevBtn.disabled = currentPage === 1;
+                                            prevBtn.onclick = () => { currentPage--; filterTable(); };
+                                            container.appendChild(prevBtn);
+
+                                            // Page buttons
+                                            for (let i = 1; i <= totalPages; i++) {
+                                                if (totalPages > 7) {
+                                                    if (i !== 1 && i !== totalPages && Math.abs(i - currentPage) > 1) {
+                                                        if (i === 2 || i === totalPages - 1) {
+                                                            const dots = document.createElement('span');
+                                                            dots.innerHTML = '...';
+                                                            dots.style.padding = '0 5px';
+                                                            dots.style.color = '#94a3b8';
+                                                            container.appendChild(dots);
+                                                        }
+                                                        continue;
+                                                    }
+                                                }
+
+                                                const pageBtn = document.createElement('button');
+                                                pageBtn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                                                pageBtn.textContent = i;
+                                                pageBtn.onclick = () => { currentPage = i; filterTable(); };
+                                                container.appendChild(pageBtn);
+                                            }
+
+                                            // Next button
+                                            const nextBtn = document.createElement('button');
+                                            nextBtn.className = 'page-btn';
+                                            nextBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+                                            nextBtn.disabled = currentPage === totalPages;
+                                            nextBtn.onclick = () => { currentPage++; filterTable(); };
+                                            container.appendChild(nextBtn);
+                                        }
+
+                                        let currentPage = 1;
+                                        const itemsPerPage = 10;
+
+                                        // Chạy lần đầu khi trang được tải xong
+                                        if (searchInput) searchInput.addEventListener('keyup', () => { currentPage = 1; filterTable(); });
+                                        document.addEventListener("DOMContentLoaded", function() {
+                                            filterTable();
+                                        });
 
                                         // ====== Real Scan CCCD ======
                                         const btnScanList = document.getElementById('btnScanList');

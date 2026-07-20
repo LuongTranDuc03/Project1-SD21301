@@ -41,9 +41,10 @@ public class AuthFilter implements Filter {
         // --- Role-Based Authorization ---
         Employee user = (Employee) session.getAttribute("loggedInUser");
         
-        // Màn Quản lý nhân viên chỉ dành cho Admin
-        // Giả sử tên role là "Admin", hoặc roleId = 1
-        boolean isAdmin = user.getRoleName() != null && user.getRoleName().equalsIgnoreCase("Admin");
+        // Màn Quản lý nhân viên chỉ dành cho Admin hoặc Quản lý (id = 1 hoặc 2)
+        boolean isAdmin = (user.getRoleId() == 2 || user.getRoleId() == 1) || 
+                          (user.getRoleName() != null && 
+                          (user.getRoleName().equalsIgnoreCase("Admin") || user.getRoleName().equalsIgnoreCase("Quản lý")));
         
         if (path.contains("/admin/employees") && !isAdmin) {
             // Không có quyền, chuyển về trang chủ (dashboard)

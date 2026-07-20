@@ -148,7 +148,10 @@
                 </li>
                 <%
                     Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
-                    boolean isAdmin = (loggedInUser != null && loggedInUser.getRoleName() != null && loggedInUser.getRoleName().equalsIgnoreCase("Admin"));
+                    boolean isAdmin = (loggedInUser != null && 
+                                       (loggedInUser.getRoleId() == 2 || loggedInUser.getRoleId() == 1 ||
+                                       (loggedInUser.getRoleName() != null && 
+                                       (loggedInUser.getRoleName().equalsIgnoreCase("Admin") || loggedInUser.getRoleName().equalsIgnoreCase("Quản lý")))));
                     if (isAdmin) {
                 %>
                 <!-- Quản lý nhân viên -->
