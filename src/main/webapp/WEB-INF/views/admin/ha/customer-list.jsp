@@ -253,6 +253,45 @@
                                 border-color: #cbd5e1 !important;
                                 transform: translateY(-1px) !important;
                             }
+                            /* Pagination Styling */
+                            .pagination-container {
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                gap: 8px;
+                                padding: 20px 0;
+                                margin-top: 10px;
+                            }
+                            .page-btn {
+                                min-width: 32px;
+                                height: 32px;
+                                padding: 0 10px;
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: 6px;
+                                border: 1px solid #cbd5e1;
+                                background-color: #ffffff;
+                                color: #475569;
+                                font-size: 13px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                            }
+                            .page-btn:hover:not(:disabled) {
+                                background-color: #f1f5f9;
+                                color: #0f172a;
+                                border-color: #94a3b8;
+                            }
+                            .page-btn.active {
+                                background-color: #1e3a8a;
+                                color: #ffffff;
+                                border-color: #1e3a8a;
+                            }
+                            .page-btn:disabled {
+                                opacity: 0.5;
+                                cursor: not-allowed;
+                            }
                         </style>
                     </head>
 
@@ -426,6 +465,7 @@
                                                         <th style="text-align: center; width: 140px;">HÀNH ĐỘNG</th>
                                                     </tr>
                                                 </thead>
+                                                <tbody id="customerTableBody">
                                                 <%-- Duyệt qua danh sách khách hàng được truyền từ Servlet Controller --%>
                                                 <% List<Customer> customers = (List<Customer>)
                                                         request.getAttribute("customers");
@@ -435,7 +475,7 @@
                                                         for (Customer c : customers) {
                                                         %>
                                                         <%-- Khi click vào dòng thì chuyển hướng sang trang xem chi tiết khách hàng --%>
-                                                        <tr>
+                                                        <tr class="customer-data-row">
                                                                 <td
                                                                     style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #475569; text-align: center;">
                                                                     <%= stt++ %>
@@ -530,6 +570,7 @@
                                                                 <% } %>
                                                             </tbody>
                                             </table>
+                                            <div id="paginationContainer" class="pagination-container"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -597,7 +638,91 @@
                                     }
                                     sessionStorage.removeItem('lastFocus');
                                 }
+                                
+                                // Khởi chạy phân trang
+                                applyPagination(1);
                             });
+                            
+                            // ===== HÀM PHÂN TRANG (PAGINATION) =====
+                            let currentPage = 1;
+                            const itemsPerPage = 10;
+                            
+                            function applyPagination(page = 1) {
+                                currentPage = page;
+                                const rows = Array.from(document.querySelectorAll('.customer-data-row'));
+                                const totalItems = rows.length;
+                                
+                                if (totalItems === 0) return; // Bảng trống
+                                
+                                const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+                                if (currentPage > totalPages) currentPage = totalPages;
+                                if (currentPage < 1) currentPage = 1;
+                                
+                                const startIndex = (currentPage - 1) * itemsPerPage;
+                                const endIndex = startIndex + itemsPerPage;
+                                
+                                rows.forEach((row, idx) => {
+                                    if (idx >= startIndex && idx < endIndex) {
+                                        row.style.display = '';
+                                        // Cập nhật lại số thứ tự (nếu cần liên tục theo trang)
+                                        // const sttCell = row.querySelector('td:first-child');
+                                        // if (sttCell) sttCell.textContent = idx + 1;
+                                    } else {
+                                        row.style.display = 'none';
+                                    }
+                                });
+                                
+                                renderPagination(totalItems, totalPages);
+                            }
+                            
+                            function renderPagination(totalItems, totalPages) {
+                                const container = document.getElementById('paginationContainer');
+                                if (!container) return;
+                                
+                                container.innerHTML = '';
+                                
+                                if (totalItems === 0 || totalPages <= 1) {
+                                    return; // Không cần phân trang
+                                }
+                                
+                                // Nút Previous
+                                const prevBtn = document.createElement('button');
+                                prevBtn.className = 'page-btn';
+                                prevBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+                                prevBtn.disabled = currentPage === 1;
+                                prevBtn.onclick = () => applyPagination(currentPage - 1);
+                                container.appendChild(prevBtn);
+                                
+                                // Các nút số trang
+                                for (let i = 1; i <= totalPages; i++) {
+                                    if (totalPages > 7) {
+                                        if (i !== 1 && i !== totalPages && Math.abs(i - currentPage) > 1) {
+                                            if (i === 2 || i === totalPages - 1) {
+                                                const dots = document.createElement('span');
+                                                dots.innerHTML = '...';
+                                                dots.style.padding = '0 5px';
+                                                dots.style.color = '#94a3b8';
+                                                container.appendChild(dots);
+                                            }
+                                            continue;
+                                        }
+                                    }
+                                    
+                                    const pageBtn = document.createElement('button');
+                                    pageBtn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                                    pageBtn.textContent = i;
+                                    pageBtn.onclick = () => applyPagination(i);
+                                    container.appendChild(pageBtn);
+                                }
+                                
+                                // Nút Next
+                                const nextBtn = document.createElement('button');
+                                nextBtn.className = 'page-btn';
+                                nextBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+                                nextBtn.disabled = currentPage === totalPages;
+                                nextBtn.onclick = () => applyPagination(currentPage + 1);
+                                container.appendChild(nextBtn);
+                            }
                             
                             // Hàm xuất Excel kèm theo các tham số bộ lọc hiện tại
                             function exportExcelFiltered() {
