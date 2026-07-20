@@ -1017,7 +1017,6 @@
                                 <input type="hidden" name="variantSize" value="\${v.size}">
                                 <input type="hidden" name="variantColor" value="\${color}">
                                 <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || 'anh-default.png'}">
-                                <input type="hidden" name="variantImportPrice" value="0">
                             </td>
                             <td style="width: 13%;">
                                 <input type="text" name="variantStyle" class="form-input style-input-\${cIdx}" placeholder="Ví dụ: Slim-fit" value="\${v.style || ''}" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">

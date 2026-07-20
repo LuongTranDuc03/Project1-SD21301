@@ -15,11 +15,7 @@ public class Product {
     private String id;
     private String category;
     private String name;
-    private String englishName;
     private double price;
-    private double oldPrice;
-    private int discountPercent;
-    private int stock;
     private int sold;
 
     private String brand;
@@ -28,9 +24,15 @@ public class Product {
 
     private String careInstructions;
     private String status; // AVAILABLE (Còn hàng), OUT_OF_STOCK (Hết hàng)
-    private String bgColor;
-    private List<String> colorCircles;
     private List<ProductDetail> details; // Danh sách chi tiết sản phẩm (biến thể)
+
+    // Tính tổng stock từ các biến thể
+    public int getStock() {
+        if (details == null || details.isEmpty()) return 0;
+        int total = 0;
+        for (ProductDetail d : details) total += d.getStock();
+        return total;
+    }
 
     public String getPriceRangeFormatted() {
         if (details == null || details.isEmpty()) {

@@ -16,7 +16,8 @@ import java.util.List;
 public class VariantController extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         jakarta.servlet.http.HttpSession session = request.getSession();
         @SuppressWarnings("unchecked")
         List<Product> products = (List<Product>) session.getAttribute("products");
@@ -28,7 +29,7 @@ public class VariantController extends HttpServlet {
         }
 
         String filterProductId = request.getParameter("productId");
-        
+
         List<ProductDetail> allVariants = new ArrayList<>();
         for (Product product : products) {
             if (filterProductId != null && !filterProductId.trim().isEmpty()) {
@@ -56,7 +57,8 @@ public class VariantController extends HttpServlet {
                     if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
                         pStatus = v.getStock() > 0 ? "Còn hàng" : "Hết hàng";
                     }
-                    String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng" : "Hết hàng";
+                    String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng"
+                            : "Hết hàng";
                     writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.0f,%d,\"%s\"\n",
                             stt++,
                             v.getProductId() != null ? v.getProductId() : "",
@@ -87,7 +89,8 @@ public class VariantController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String action = request.getParameter("action");
         if ("edit".equals(action)) {
             String productId = request.getParameter("productId");
@@ -113,28 +116,23 @@ public class VariantController extends HttpServlet {
                             if (color.equals(d.getColor()) && size.equals(d.getSize())) {
                                 d.setStyle(style);
                                 try {
-                                    if (priceStr != null && !priceStr.isEmpty()) d.setPrice(Double.parseDouble(priceStr.replace(",", "")));
-                                    if (stockStr != null && !stockStr.isEmpty()) d.setStock(Integer.parseInt(stockStr.replace(",", "")));
-                                    if (weightStr != null && !weightStr.isEmpty()) d.setWeight(Double.parseDouble(weightStr.replace(",", "")));
-                                    if (lengthStr != null && !lengthStr.isEmpty()) d.setLength(Double.parseDouble(lengthStr.replace(",", "")));
-                                    if (widthStr != null && !widthStr.isEmpty()) d.setWidth(Double.parseDouble(widthStr.replace(",", "")));
-                                    if (thicknessStr != null && !thicknessStr.isEmpty()) d.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
-                                } catch (NumberFormatException ignored) {}
-
-                                // Tính lại tổng số lượng của sản phẩm cha
-                                int totalStock = 0;
-                                for (ProductDetail pd : p.getDetails()) {
-                                    totalStock += pd.getStock();
-                                }
-                                p.setStock(totalStock);
-
-                                // Cập nhật trạng thái sản phẩm cha
-                                if (totalStock > 0) {
-                                    p.setStatus("AVAILABLE");
-                                } else {
-                                    p.setStatus("OUT_OF_STOCK");
+                                    if (priceStr != null && !priceStr.isEmpty())
+                                        d.setPrice(Double.parseDouble(priceStr.replace(",", "")));
+                                    if (stockStr != null && !stockStr.isEmpty())
+                                        d.setStock(Integer.parseInt(stockStr.replace(",", "")));
+                                    if (weightStr != null && !weightStr.isEmpty())
+                                        d.setWeight(Double.parseDouble(weightStr.replace(",", "")));
+                                    if (lengthStr != null && !lengthStr.isEmpty())
+                                        d.setLength(Double.parseDouble(lengthStr.replace(",", "")));
+                                    if (widthStr != null && !widthStr.isEmpty())
+                                        d.setWidth(Double.parseDouble(widthStr.replace(",", "")));
+                                    if (thicknessStr != null && !thicknessStr.isEmpty())
+                                        d.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
+                                } catch (NumberFormatException ignored) {
                                 }
 
+                                // Cập nhật trạng thái sản phẩm cha dựa trên stock tính từ biến thể
+                                p.setStatus(p.getStock() > 0 ? "AVAILABLE" : "OUT_OF_STOCK");
                                 session.setAttribute("toastMessage", "Cập nhật biến thể thành công!");
                                 session.setAttribute("toastType", "success");
 
@@ -174,4 +172,3 @@ public class VariantController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/variants");
     }
 }
-

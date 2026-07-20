@@ -101,7 +101,6 @@ public class ProductValidator {
             String[] sizes,
             String[] colors,
             String[] styles,
-            String[] importPrices,
             String[] prices,
             String[] stocks,
             String[] lengths,
@@ -230,21 +229,7 @@ public class ProductValidator {
             }
 
             // Prices
-            double ip = -1;
             double p = -1;
-            try {
-                if (importPrices != null && importPrices.length > i && importPrices[i] != null && !importPrices[i].trim().isEmpty()) {
-                    ip = Double.parseDouble(importPrices[i]);
-                    if (ip < 0) {
-                        errors.add(prefix + "Giá nhập phải là số không âm.");
-                    }
-                } else {
-                    errors.add(prefix + "Giá nhập không được để trống.");
-                }
-            } catch (NumberFormatException e) {
-                errors.add(prefix + "Giá nhập phải là một số hợp lệ.");
-            }
-
             try {
                 if (prices != null && prices.length > i && prices[i] != null && !prices[i].trim().isEmpty()) {
                     p = Double.parseDouble(prices[i]);
@@ -256,10 +241,6 @@ public class ProductValidator {
                 }
             } catch (NumberFormatException e) {
                 errors.add(prefix + "Giá bán phải là một số hợp lệ.");
-            }
-
-            if (ip >= 0 && p >= 0 && p < ip) {
-                errors.add(prefix + "Giá bán không được nhỏ hơn giá nhập (Giá bán: " + p + " < Giá nhập: " + ip + ").");
             }
 
             // Stock
@@ -334,7 +315,6 @@ public class ProductValidator {
             String color,
             String size,
             String style,
-            String importPriceStr,
             String priceStr,
             String stockStr,
             String lengthStr,
@@ -359,19 +339,7 @@ public class ProductValidator {
             errors.add("Kiểu dáng không được vượt quá 50 ký tự.");
         }
 
-        double ip = -1;
         double p = -1;
-        try {
-            if (importPriceStr != null && !importPriceStr.trim().isEmpty()) {
-                ip = Double.parseDouble(importPriceStr);
-                if (ip < 0) errors.add("Giá nhập phải là số không âm.");
-            } else {
-                errors.add("Giá nhập không được để trống.");
-            }
-        } catch (NumberFormatException e) {
-            errors.add("Giá nhập phải là số hợp lệ.");
-        }
-
         try {
             if (priceStr != null && !priceStr.trim().isEmpty()) {
                 p = Double.parseDouble(priceStr);
@@ -381,10 +349,6 @@ public class ProductValidator {
             }
         } catch (NumberFormatException e) {
             errors.add("Giá bán phải là số hợp lệ.");
-        }
-
-        if (ip >= 0 && p >= 0 && p < ip) {
-            errors.add("Giá bán không được nhỏ hơn giá nhập (Giá bán: " + p + " < Giá nhập: " + ip + ").");
         }
 
         try {

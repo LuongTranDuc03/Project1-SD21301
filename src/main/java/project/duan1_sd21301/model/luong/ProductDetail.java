@@ -16,7 +16,6 @@ public class ProductDetail {
     private String size;
     private String color;
     private String style;
-    private double importPrice;
     private double price;
 
     private int stock;
