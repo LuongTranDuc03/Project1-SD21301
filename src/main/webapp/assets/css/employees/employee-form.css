@@ -1,0 +1,182 @@
+.custom-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card-header-bar {
+    background-color: #12192D;
+    color: #ffffff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.card-body-content {
+    padding: 24px 30px 30px 30px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+                                    .form-grid {
+                                        display: grid;
+                                        grid-template-columns: repeat(2, 1fr);
+                                        gap: 20px;
+                                    }
+
+                                    .form-group-full {
+                                        grid-column: span 2;
+                                    }
+
+                                    .form-group {
+                                        display: flex;
+                                        flex-direction: column;
+                                        margin-bottom: 0;
+                                    }
+
+                                    .form-group label {
+                                        font-size: 13px;
+                                        font-weight: 600;
+                                        color: #334155;
+                                        margin-bottom: 8px;
+                                    }
+
+                                    .form-group input,
+                                    .form-group select,
+                                    .form-group textarea {
+                                        width: 100%;
+                                        box-sizing: border-box;
+                                        padding: 8px 12px;
+                                        border-radius: 6px;
+                                        border: 1px solid #CBD5E1;
+                                        font-family: inherit;
+                                        font-size: 13px;
+                                        outline: none;
+                                    }
+
+                                    .form-group input:focus,
+                                    .form-group select:focus,
+                                    .form-group textarea:focus {
+                                        border-color: #12192D;
+                                        box-shadow: 0 0 0 3px rgba(18, 25, 45, 0.15);
+                                    }
+
+                                    .disabled-input {
+                                        background-color: #EAEAF1 !important;
+                                        cursor: not-allowed;
+                                        color: #64748B;
+                                    }
+
+                                    .radio-group {
+                                        display: flex;
+                                        gap: 16px;
+                                        padding: 8px 12px;
+                                        border: 1px solid #CBD5E1;
+                                        border-radius: 6px;
+                                        box-sizing: border-box;
+                                        background-color: #fff;
+                                        align-items: center;
+                                        height: auto;
+                                    }
+
+                                    .radio-group label {
+                                        font-weight: 500;
+                                        font-size: 13px;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 6px;
+                                        margin: 0;
+                                        cursor: pointer;
+                                        color: #1E293B;
+                                    }
+
+                                    .form-actions {
+                                        display: flex;
+                                        justify-content: flex-end;
+                                        align-items: center;
+                                        margin-top: 16px;
+                                        padding-top: 16px;
+                                        padding-bottom: 8px;
+                                        border-top: 1px solid #E2E8F0;
+                                    }
+
+                                    .btn-cancel {
+                                        background-color: #ffffff;
+                                        border: 1px solid #e2e8f0;
+                                        color: #0f172a;
+                                        font-size: 13px;
+                                        padding: 8px 16px;
+                                        border-radius: 6px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        text-decoration: none;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        transition: all 0.2s;
+                                    }
+
+                                    .btn-cancel:hover {
+                                        background-color: #F1F5F9;
+                                        color: #0F172A;
+                                    }
+
+                                    .btn-save {
+                                        background: #12192D;
+                                        border: none;
+                                        color: #ffffff;
+                                        padding: 8px 20px;
+                                        border-radius: 6px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        transition: all 0.2s;
+                                    }
+
+                                    .btn-save:hover {
+                                        background: #0f172a;
+                                    }
+
+                                    .status-badge {
+                                        display: inline-block;
+                                        border-radius: 6px;
+                                        padding: 2px 10px;
+                                        font-size: 12px;
+                                        font-weight: 600;
+                                    }
+
+                                    .status-active {
+                                        background: #ECFDF5;
+                                        color: #047857;
+                                    }
+
+                                    .status-inactive {
+                                        background: #FEF2F2;
+                                        color: #B91C1C;
+                                    }
+
+                                    /* Custom Select2 styling to match the form */
+                                    .select2-container .select2-selection--single {
+                                        height: 35px;
+                                        border: 1px solid #CBD5E1;
+                                        border-radius: 6px;
+                                        display: flex;
+                                        align-items: center;
+                                    }
+
+                                    .select2-container--default .select2-selection--single .select2-selection__rendered {
+                                        color: #334155;
+                                        font-size: 13px;
+                                        padding-left: 12px;
+                                    }
+
+                                    .select2-container--default .select2-selection--single .select2-selection__arrow {
+                                        height: 33px;
+                                    }
