@@ -1,0 +1,187 @@
+.custom-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card-header-bar {
+    background-color: #12192D;
+    color: #ffffff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.card-body-content {
+    padding: 24px 30px 30px 30px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+                        .form-container {
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                            padding: 16px 24px;
+                            margin: 0 auto;
+                        }
+
+                        .form-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 20px;
+                        }
+
+                        .form-group-full {
+                            grid-column: span 2;
+                        }
+
+                        .form-group {
+                            display: flex;
+                            flex-direction: column;
+                            margin-bottom: 0;
+                        }
+
+                        .form-group label {
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: #334155;
+                            margin-bottom: 8px;
+                        }
+
+                        .readonly-text {
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            border: 1px solid #CBD5E1;
+                            background-color: #EAEAF1;
+                            font-family: inherit;
+                            font-size: 13px;
+                            color: #0F172A;
+                            font-weight: 500;
+                            cursor: not-allowed;
+                        }
+
+                        .detail-role-badge {
+                            display: inline-block;
+                            background: #F0F9FF;
+                            color: #0369A1;
+                            border-radius: 6px;
+                            padding: 2px 10px;
+                            font-size: 12px;
+                            font-weight: 600;
+                        }
+
+                        .status-badge {
+                            display: inline-block;
+                            border-radius: 6px;
+                            padding: 2px 10px;
+                            font-size: 12px;
+                            font-weight: 600;
+                        }
+
+                        .status-active {
+                            background: #ECFDF5;
+                            color: #047857;
+                        }
+
+                        .status-inactive {
+                            background: #FEF2F2;
+                            color: #B91C1C;
+                        }
+
+                        .form-actions {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-top: 16px;
+                            padding-top: 16px;
+                            border-top: 1px solid #E2E8F0;
+                        }
+
+                        .btn-cancel {
+                            background-color: transparent;
+                            border: 1px solid transparent;
+                            color: #64748B;
+                            padding: 8px 20px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: all 0.2s;
+                        }
+
+                        .btn-cancel:hover {
+                            background-color: #F1F5F9;
+                            color: #0F172A;
+                        }
+
+                        .btn-save {
+                            background: #12192D;
+                            border: none;
+                            color: #ffffff;
+                            padding: 8px 20px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: all 0.2s;
+                        }
+
+                        .btn-save:hover {
+                            background: #0f172a;
+                        }
+
+                        .btn-delete {
+                            background: #EF4444;
+                            border: none;
+                            color: #ffffff;
+                            padding: 8px 20px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            text-decoration: none;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            transition: all 0.2s;
+                        }
+
+                        .btn-delete:hover {
+                            background: #dc2626;
+                        }
+
+                        @media(max-width: 768px) {
+                            .form-grid {
+                                grid-template-columns: 1fr 1fr;
+                            }
+
+                            .form-group-full {
+                                grid-column: span 2;
+                            }
+                        }
+
+                        @media(max-width: 480px) {
+                            .form-grid {
+                                grid-template-columns: 1fr;
+                            }
+
+                            .form-group-full {
+                                grid-column: span 1;
+                            }
+                        }

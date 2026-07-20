@@ -1,0 +1,612 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+    <%@ page import="project.duan1_sd21301.model.huy.Employee" %>
+        <%@ page import="project.duan1_sd21301.repository.huy.Role" %>
+            <%@ page import="java.util.List" %>
+                <%@ page import="java.util.Date" %>
+                    <%@ page import="java.text.SimpleDateFormat" %>
+                        <% String currentUserRole="Admin" ; session.setAttribute("currentUserRole", currentUserRole);
+                            boolean isAdmin=true; List<Role> listRoles = (List<Role>) request.getAttribute("roles");
+                                %>
+                                <!DOCTYPE html>
+                                <html lang="vi">
+
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>
+                                        <%= isAdmin ? "FamiCoats Admin - Quản lý nhân viên"
+                                            : "FamiCoats - Danh bạ nội bộ" %>
+                                    </title>
+                                    <link rel="preconnect" href="https://fonts.googleapis.com">
+                                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                                    <link
+                                        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+                                        rel="stylesheet">
+                                    <link rel="stylesheet"
+                                        href="${pageContext.request.contextPath}/assets/css/admin.css">
+                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+                                    <link rel="stylesheet"
+                                        href="${pageContext.request.contextPath}/assets/css/employees/employee-list.css?v=2.6">
+                                </head>
+
+                                <body>
+                                    <div class="app-container">
+                                        <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
+
+                                        <main class="main-content">
+                                            <header class="navbar">
+                                                <div class="breadcrumb">
+                                                    <span>FamiCoats</span> / <span class="active-crumb">
+                                                        <%= isAdmin ? "Quản lý nhân viên" : "Danh bạ nội bộ" %>
+                                                    </span>
+                                                </div>
+                                                <div class="navbar-right">
+                                                    <button class="notif-btn">
+                                                        <svg viewBox="0 0 24 24" width="20" height="20"
+                                                            stroke="currentColor" stroke-width="2" fill="none">
+                                                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9">
+                                                            </path>
+                                                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                                        </svg>
+                                                    </button>
+                                                    <div class="date-pill" id="live-date">Thứ Năm, 09/07/2026</div>
+                                                    <div class="profile-pill">
+                                                        <span class="profile-avatar-mini">A</span>
+                                                        <span>Admin</span>
+                                                    </div>
+                                                </div>
+                                            </header>
+
+                                            <div class="content-wrapper">
+
+                                                <div id="toast-container"></div>
+                                                <% if (session.getAttribute("successMsg") !=null) { %>
+                                                    <script>
+                                                        window.addEventListener('DOMContentLoaded', () => {
+                                                            showToast('success', '\u2713', '<%= session.getAttribute("successMsg") %>');
+                                                        });
+                                                    </script>
+                                                    <% session.removeAttribute("successMsg"); %>
+                                                        <% } %>
+                                                            <% if (session.getAttribute("errorMsg") !=null) { %>
+                                                                <script>
+                                                                    window.addEventListener('DOMContentLoaded', () => {
+                                                                        showToast('error', '!', '<%= session.getAttribute("errorMsg") %>');
+                                                                    });
+                                                                </script>
+                                                                <% session.removeAttribute("errorMsg"); %>
+                                                                    <% } %>
+
+                                                                        <div class="page-header"
+                                                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                                                            <div>
+                                                                                <h1
+                                                                                    style="font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0;">
+                                                                                    Quản lý nhân viên</h1>
+                                                                                <div
+                                                                                    style="font-size: 14px; color: #64748b;">
+                                                                                    Tổng <span
+                                                                                        style="color: #0F172A; font-weight: 700;">${totalAll
+                                                                                        != null ? totalAll : 0}</span>
+                                                                                    nhân sự</div>
+                                                                            </div>
+                                                                            <div
+                                                                                style="display: flex; gap: 12px; align-items: center;">
+                                                                                <% if (isAdmin) { %>
+                                                                                    <button onclick="exportToCSV()" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                                                        <span>Xuất Excel</span>
+                                                                                    </button>
+                                                                                    <button type="button" id="btnScanList" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+                                                                                            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
+                                                                                        </svg>
+                                                                                        <span>Quét CCCD</span>
+                                                                                    </button>
+                                                                                    <a href="${pageContext.request.contextPath}/admin/employees?action=add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
+                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                                                        </svg>
+                                                                                        <span>Thêm nhân viên</span>
+                                                                                    </a>
+                                                                                    <% } %>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <!-- Bộ lọc & tìm kiếm -->
+                                                                        <div class="custom-card">
+                                                                            <div class="card-header-bar">
+                                                                                <span class="card-header-title">&#8226;
+                                                                                    Bộ lọc tìm kiếm</span>
+                                                                                <button class="toggle-filter-btn"
+                                                                                    id="toggleFilterBtn"
+                                                                                    onclick="toggleFilterCard()">Nhấn để
+                                                                                    thu gọn</button>
+                                                                            </div>
+                                                                            <div class="card-body-content"
+                                                                                id="filterCardBody">
+                                                                                <div class="filter-grid" style="grid-template-columns: 2.5fr 1.2fr 1fr 1fr auto; gap: 16px;">
+
+                                                                                    <!-- Tìm kiếm -->
+                                                                                    <div class="filter-field">
+                                                                                        <label for="empSearch">Tìm
+                                                                                            kiếm</label>
+                                                                                        <div
+                                                                                            style="position: relative;">
+                                                                                            <input type="text"
+                                                                                                id="empSearch"
+                                                                                                class="filter-control"
+                                                                                                style="padding-left: 36px;"
+                                                                                                placeholder="Tìm tên, mã, số điện thoại..."
+                                                                                                onkeyup="filterTable()">
+                                                                                            <svg viewBox="0 0 24 24"
+                                                                                                width="16" height="16"
+                                                                                                stroke="#94a3b8"
+                                                                                                stroke-width="2"
+                                                                                                fill="none"
+                                                                                                stroke-linecap="round"
+                                                                                                stroke-linejoin="round"
+                                                                                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+                                                                                                <circle cx="11" cy="11"
+                                                                                                    r="8"></circle>
+                                                                                                <line x1="21" y1="21"
+                                                                                                    x2="16.65"
+                                                                                                    y2="16.65"></line>
+                                                                                            </svg>
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    <!-- Vai trò -->
+                                                                                    <div class="filter-field">
+                                                                                        <label for="roleFilter">Vai
+                                                                                            trò</label>
+                                                                                        <select id="roleFilter"
+                                                                                            class="filter-control"
+                                                                                            onchange="filterTable()">
+                                                                                            <option value="all">Tất cả
+                                                                                                vai trò</option>
+                                                                                            <% if (listRoles !=null) {
+                                                                                                for
+                                                                                                (project.duan1_sd21301.repository.huy.Role
+                                                                                                r : listRoles) { 
+                                                                                                if("Admin".equals(r.getRoleName())) continue;
+                                                                                                %>
+                                                                                                <option
+                                                                                                    value="<%= r.getRoleName() %>">
+                                                                                                    <%= r.getRoleName()
+                                                                                                        %>
+                                                                                                </option>
+                                                                                                <% } } %>
+                                                                                        </select>
+                                                                                    </div>
+
+                                                                                    <!-- Giới tính -->
+                                                                                    <div class="filter-field">
+                                                                                        <label>Giới tính</label>
+                                                                                        <div
+                                                                                            style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+                                                                                            <label
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                <input type="radio"
+                                                                                                    name="genderFilter"
+                                                                                                    value="all"
+                                                                                                    onchange="filterTable()"
+                                                                                                    checked> Tất cả
+                                                                                            </label>
+                                                                                            <label
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                <input type="radio"
+                                                                                                    name="genderFilter"
+                                                                                                    value="true"
+                                                                                                    onchange="filterTable()">
+                                                                                                Nam
+                                                                                            </label>
+                                                                                            <label
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                <input type="radio"
+                                                                                                    name="genderFilter"
+                                                                                                    value="false"
+                                                                                                    onchange="filterTable()">
+                                                                                                Nữ
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    <!-- Trạng thái -->
+                                                                                    <div class="filter-field">
+                                                                                        <label>Trạng thái</label>
+                                                                                        <div
+                                                                                            style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+                                                                                            <label
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                <input type="radio"
+                                                                                                    name="statusFilter"
+                                                                                                    value="all"
+                                                                                                    onchange="filterTable()"
+                                                                                                    checked> Tất cả
+                                                                                            </label>
+                                                                                            <label
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                <input type="radio"
+                                                                                                    name="statusFilter"
+                                                                                                    value="1"
+                                                                                                    onchange="filterTable()">
+                                                                                                Đang hoạt động
+                                                                                            </label>
+                                                                                            <label
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                <input type="radio"
+                                                                                                    name="statusFilter"
+                                                                                                    value="0"
+                                                                                                    onchange="filterTable()">
+                                                                                                Đã nghỉ việc
+                                                                                            </label>
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    <!-- Đặt lại -->
+                                                                                    <div class="filter-field"
+                                                                                        style="display: flex; align-items: flex-end; justify-content: flex-end; visibility: hidden;"
+                                                                                        id="resetFilterContainer">
+                                                                                        <button class="btn-reset-filter"
+                                                                                        onclick="document.getElementById('empSearch').value=''; document.getElementById('roleFilter').value='all'; document.querySelector('input[name=\'genderFilter\'][value=\'all\']').checked = true; document.querySelector('input[name=\'statusFilter\'][value=\'all\']').checked = true; filterTable();"
+                                                                                        style="display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s; font-size: 13px; height: 38px;">
+                                                                                        <svg viewBox="0 0 24 24"
+                                                                                            width="14" height="14"
+                                                                                            stroke="currentColor"
+                                                                                            stroke-width="2.5"
+                                                                                            fill="none">
+                                                                                            <polyline
+                                                                                                points="1 4 1 10 7 10">
+                                                                                            </polyline>
+                                                                                            <path
+                                                                                                d="M3.51 15a9 9 0 1 0 .49-3.5">
+                                                                                            </path>
+                                                                                        </svg>
+                                                                                        Đặt lại
+                                                                                        </button>
+                                                                                    </div>
+
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="custom-card">
+                                                                            <div class="card-header-bar">
+                                                                                <span class="card-header-title">&#8226;
+                                                                                    Bảng dữ liệu nhân viên</span>
+                                                                            </div>
+                                                                            <table class="invoice-table"
+                                                                                style="table-layout: fixed; width: 100%;">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th
+                                                                                            style="text-align: center; width: 50px;">
+                                                                                            STT</th>
+                                                                                        <th
+                                                                                            style="text-align: left; width: 120px;">
+                                                                                            Mã nhân viên</th>
+                                                                                        <th
+                                                                                            style="text-align: left; width: 200px;">
+                                                                                            Họ và tên</th>
+                                                                                        <th
+                                                                                            style="text-align: left; width: 120px;">
+                                                                                            Vai trò</th>
+                                                                                        <th
+                                                                                            style="text-align: left; width: 110px;">
+                                                                                            SĐT</th>
+                                                                                        <th
+                                                                                            style="text-align: left; width: 220px;">
+                                                                                            Email</th>
+                                                                                        <th
+                                                                                            style="text-align: left; width: 240px;">
+                                                                                            Địa chỉ</th>
+                                                                                        <th
+                                                                                            style="text-align: center; width: 130px;">
+                                                                                            Trạng thái</th>
+                                                                                        <% if (isAdmin) { %>
+                                                                                            <th
+                                                                                                style="text-align: center; width: 120px;">
+                                                                                                Hành động</th>
+                                                                                            <% } %>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody id="empTbody">
+                                                                                    <% List<Employee> listEmp = (List
+                                                                                        <Employee>)
+                                                                                            request.getAttribute("employees");
+                                                                                            SimpleDateFormat df = new
+                                                                                            SimpleDateFormat("yyyy-MM-dd");
+
+                                                                                            if (listEmp != null &&
+                                                                                            !listEmp.isEmpty()) {
+                                                                                            int stt = 1;
+                                                                                            for (Employee emp : listEmp)
+                                                                                            {
+                                                                                            %>
+                                                                                            <tr data-role="<%= emp.getRoleName() %>"
+                                                                                                data-gender="<%= emp.getGender() != null ? emp.getGender() : "" %>"
+                                                                                                data-status="<%= emp.getStatus() %>"
+                                                                                                data-address="<%= emp.getAddress() != null ? emp.getAddress().toLowerCase() : "" %>"
+                                                                                                data-id="<%= emp.getId() %>"
+                                                                                                onmouseover="this.style.backgroundColor='#F8FAFC'"
+                                                                                                onmouseout="this.style.backgroundColor='transparent'">
+                                                                                                <td
+                                                                                                    style="text-align: center; color: #64748b; font-weight: 500;">
+                                                                                                    <%= stt++ %>
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <%= emp.getMaNhanVien()
+                                                                                                        %>
+                                                                                                </td>
+                                                                                                <td><span
+                                                                                                        style="font-weight: 600; color: #0f172a;">
+                                                                                                        <%= emp.getFullName()
+                                                                                                            !=null ?
+                                                                                                            emp.getFullName()
+                                                                                                            : "—" %>
+                                                                                                    </span></td>
+                                                                                                <td
+                                                                                                    style="padding: 14px 16px;">
+                                                                                                    <span
+                                                                                                        style="font-size:14px; font-weight:500; color:#334155;">
+                                                                                                        <% 
+                                                                                                            String rName = emp.getRoleName();
+                                                                                                            if ("Admin".equals(rName) || rName == null || rName.isEmpty()) rName = "Quản lý";
+                                                                                                        %>
+                                                                                                        <%= rName %>
+                                                                                                    </span>
+                                                                                                </td>
+                                                                                                <td
+                                                                                                    style="padding: 14px 16px;">
+                                                                                                    <%= emp.getPhoneNumber()
+                                                                                                        %>
+                                                                                                </td>
+                                                                                                <td
+                                                                                                    style="padding: 14px 16px;">
+                                                                                                    <%= emp.getEmail()
+                                                                                                        %>
+                                                                                                </td>
+                                                                                                <td style="padding: 14px 16px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                                                                                    title="<%= emp.getAddress() != null ? emp.getAddress() : "" %>">
+                                                                                                    <%= emp.getAddress()
+                                                                                                        !=null &&
+                                                                                                        !emp.getAddress().isEmpty()
+                                                                                                        ?
+                                                                                                        emp.getAddress()
+                                                                                                        : "-" %>
+                                                                                                </td>
+                                                                                                <td
+                                                                                                    style="padding: 14px 16px; text-align: center;">
+                                                                                                    <span
+                                                                                                        class="badge-status <%= emp.getStatus()==1 ? "active" : "inactive" %>">
+                                                                                                        <%= emp.getStatus()==1 ? "Đang hoạt động" : "Đã nghỉ việc" %>
+                                                                                                    </span>
+                                                                                                </td>
+                                                                                                <% if (isAdmin) { %>
+                                                                                                    <td style="padding: 14px 16px; text-align: center;">
+                                                                                                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=edit&id=<%= emp.getId() %>"
+                                                                                                                class="action-icon-btn edit-btn" title="Sửa">
+                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                                                                            </a>
+                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=view&id=<%= emp.getId() %>"
+                                                                                                                class="action-icon-btn details-btn" title="Chi tiết">
+                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                                                                            </a>
+                                                                                                            <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
+                                                                                                                <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onchange="window.location.href='${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=<%= emp.getId() %>'">
+                                                                                                                <span class="slider"></span>
+                                                                                                            </label>
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <% } %>
+                                                                                            </tr>
+                                                                                            <% } } else { %>
+                                                                                                <tr>
+                                                                                                    <td colspan="9"
+                                                                                                        style="padding: 40px; text-align: center; color: #94A3B8; font-weight: 500;">
+                                                                                                        Không tìm thấy
+                                                                                                        nhân viên nào
+                                                                                                        trong hệ thống.
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                                <% } %>
+                                                                                </tbody>
+                                                                            </table>
+                                                                            <!-- Phân trang bị loại bỏ theo yêu cầu -->
+                                                                        </div>
+                                            </div>
+                                        </main>
+                                    </div>
+
+
+                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                                    <script>
+                                        function confirmAction(url, title, text) {
+                                            Swal.fire({
+                                                title: title,
+                                                text: text,
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3B82F6',
+                                                cancelButtonColor: '#94A3B8',
+                                                confirmButtonText: 'Đồng ý',
+                                                cancelButtonText: 'Hủy'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    window.location.href = url;
+                                                }
+                                            });
+                                        }
+
+                                        // ====== Toast ======
+                                        // Hàm hiển thị thông báo góc màn hình (Toast message)
+                                        // type: 'success' hoặc 'error', icon: biểu tượng, msg: nội dung thông báo
+                                        function showToast(type, icon, msg) {
+                                            const container = document.getElementById('toast-container');
+                                            const toast = document.createElement('div');
+                                            toast.className = 'toast ' + type;
+                                            toast.innerHTML = '<span class="toast-icon">' + icon + '</span><span class="toast-msg">' + msg + '</span>';
+                                            container.appendChild(toast);
+                                            // Delay nhỏ để CSS transition hoạt động (trượt thông báo vào)
+                                            setTimeout(() => toast.classList.add('show'), 50);
+                                            // Sau 4 giây, tự động ẩn và xóa thông báo khỏi DOM
+                                            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+                                        }
+
+                                        // ====== Tìm kiếm & Lọc ======
+                                        const searchInput = document.getElementById('empSearch');
+                                        const roleFilter = document.getElementById('roleFilter');
+                                        const tableRows = document.querySelectorAll('#empTbody tr');
+
+                                        function toggleFilterCard() {
+                                            const body = document.getElementById('filterCardBody');
+                                            const btn = document.getElementById('toggleFilterBtn');
+                                            if (body.classList.contains('collapsed')) {
+                                                body.classList.remove('collapsed');
+                                                btn.textContent = 'Nhấn để thu gọn';
+                                            } else {
+                                                body.classList.add('collapsed');
+                                                btn.textContent = 'Nhấn để mở rộng';
+                                            }
+                                        }
+
+                                        function filterTable() {
+                                            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                                            const roleVal = roleFilter ? (roleFilter.value || '').trim() : 'all';
+                                            const genderRadio = document.querySelector('input[name="genderFilter"]:checked');
+                                            const genderVal = genderRadio ? genderRadio.value : 'all';
+                                            const statusRadio = document.querySelector('input[name="statusFilter"]:checked');
+                                            const statusVal = statusRadio ? statusRadio.value : 'all';
+
+                                            let visibleRows = [];
+                                            tableRows.forEach(row => {
+                                                if (row.children.length === 1) return; // Bỏ qua dòng trống
+
+                                                const rowText = row.innerText.toLowerCase();
+                                                const rowRole = (row.getAttribute('data-role') || '').trim();
+                                                const rowStatus = row.getAttribute('data-status') || '';
+                                                const rowGender = (row.getAttribute('data-gender') || '').trim();
+                                                const rowAddress = row.getAttribute('data-address') || '';
+                                                const rowId = row.getAttribute('data-id') || '';
+                                                const fullText = rowText + " " + rowAddress + " " + rowId;
+
+                                                const matchSearch = searchVal === '' || fullText.indexOf(searchVal) > -1;
+                                                const matchRole = (roleVal.toLowerCase() === 'all') || (rowRole.toLowerCase() === roleVal.toLowerCase());
+                                                const matchGender = (genderVal === 'all') || (rowGender.toLowerCase() === genderVal.toLowerCase());
+                                                const matchStatus = (statusVal === 'all') || (rowStatus === statusVal);
+
+                                                if (matchSearch && matchRole && matchGender && matchStatus) {
+                                                    row.style.display = "";
+                                                } else {
+                                                    row.style.display = "none";
+                                                }
+                                            });
+
+                                            // Show/hide reset button based on whether any filter is active
+                                            const isFiltering = searchVal !== '' || roleVal !== 'all' || genderVal !== 'all' || statusVal !== 'all';
+                                            const resetContainer = document.getElementById('resetFilterContainer');
+                                            if (resetContainer) {
+                                                resetContainer.style.visibility = isFiltering ? 'visible' : 'hidden';
+                                            }
+                                        }
+
+                                        if (searchInput) searchInput.addEventListener('keyup', filterTable); filterTable();
+
+                                        // ====== Real Scan CCCD ======
+                                        const btnScanList = document.getElementById('btnScanList');
+                                        if (btnScanList) {
+                                            btnScanList.addEventListener('click', function () {
+                                                Swal.fire({
+                                                    title: 'Tải ảnh CCCD',
+                                                    html: '<input type="file" id="cccdImage" accept="image/*" style="margin-top: 10px; width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">',
+                                                    showCancelButton: true,
+                                                    confirmButtonText: 'Xử lý & Quét',
+                                                    cancelButtonText: 'Hủy',
+                                                    confirmButtonColor: '#3B82F6',
+                                                    cancelButtonColor: '#94A3B8',
+                                                    preConfirm: () => {
+                                                        const file = document.getElementById('cccdImage').files[0];
+                                                        if (!file) {
+                                                            Swal.showValidationMessage('Vui lòng chọn ảnh CCCD');
+                                                        }
+                                                        return file;
+                                                    }
+                                                }).then(async (result) => {
+                                                    if (result.isConfirmed) {
+                                                        const file = result.value;
+                                                        Swal.fire({
+                                                            title: 'Đang giải mã ảnh QR...',
+                                                            allowOutsideClick: false,
+                                                            didOpen: () => { Swal.showLoading(); }
+                                                        });
+                                                        try {
+                                                            const qrText = await decodeQR(file);
+                                                            const cccdData = parseCccdString(qrText);
+                                                            
+                                                            sessionStorage.setItem('scannedCccdData', JSON.stringify(cccdData));
+                                                            
+                                                            Swal.fire({ icon: 'success', title: 'Giải mã thành công!', text: 'Đang chuyển hướng...', showConfirmButton: false, timer: 1500 });
+                                                            setTimeout(() => {
+                                                                window.location.href = "${pageContext.request.contextPath}/admin/employees?action=add";
+                                                            }, 1500);
+                                                        } catch (err) {
+                                                            Swal.fire({ icon: 'error', title: 'Lỗi', text: err.message || "Không thể giải mã QR" });
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        }
+
+                                        // ====== Xuất Excel (CSV) ======
+                                        // Hàm xuất bảng dữ liệu hiện tại (những dòng đang hiển thị) ra file Excel đuôi CSV
+                                        function exportToCSV() {
+                                            let csv = [];
+                                            let rows = document.querySelectorAll("table tr");
+                                            // Duyệt qua tất cả các dòng <tr> của bảng
+                                            for (let i = 0; i < rows.length; i++) {
+                                                // Bỏ qua những dòng đang bị ẩn bởi bộ lọc tìm kiếm
+                                                if (rows[i].style.display === 'none') continue;
+
+                                                let row = [], cols = rows[i].querySelectorAll("td, th");
+
+                                                // Duyệt qua từng cột <td> hoặc <th> của dòng đó
+                                                for (let j = 0; j < cols.length; j++) {
+                                                    // Kiểm tra xem cột này có phải cột "Hành động" (chứa các nút Sửa/Chi tiết) không. 
+                                                    // Nếu phải thì bỏ qua, không xuất ra file CSV.
+                                                    const isActionCol = (i === 0 && cols[j].innerText.indexOf('Hành động') > -1) ||
+                                                        (i > 0 && rows[0].querySelectorAll("th")[j] && rows[0].querySelectorAll("th")[j].innerText.indexOf('Hành động') > -1);
+                                                    if (isActionCol) continue;
+
+                                                    // Xóa các ký tự xuống dòng (\n) và làm sạch khoảng trắng
+                                                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+                                                    // Mã hóa dấu ngoặc kép " để không làm hỏng định dạng file CSV
+                                                    data = data.replace(/"/g, '""');
+                                                    row.push('"' + data + '"');
+                                                }
+                                                // Nối các cột bằng dấu phẩy (chuẩn định dạng CSV: Comma-Separated Values)
+                                                csv.push(row.join(","));
+                                            }
+                                            // Thêm \uFEFF vào đầu file để đánh dấu chuẩn BOM của UTF-8 (giúp Excel đọc được tiếng Việt có dấu)
+                                            let csvFile = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+
+                                            // Mẹo: Tạo một thẻ <a> ẩn để giả lập hành động Tải xuống (Download) file vừa tạo
+                                            let downloadLink = document.createElement("a");
+                                            downloadLink.download = "danh_sach_nhan_vien.csv";
+                                            downloadLink.href = window.URL.createObjectURL(csvFile);
+                                            downloadLink.style.display = "none";
+                                            document.body.appendChild(downloadLink);
+                                            downloadLink.click();
+                                            document.body.removeChild(downloadLink);
+                                        }
+
+
+                                    </script>
+                                    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+                                    <script src="${pageContext.request.contextPath}/assets/js/qr-scanner.js"></script>
+                                </body>
+
+                                </html>
