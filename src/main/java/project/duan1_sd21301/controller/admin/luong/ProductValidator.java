@@ -8,22 +8,22 @@ import project.duan1_sd21301.model.luong.ProductDetail;
 public class ProductValidator {
 
     public static final List<String> VALID_BRANDS = java.util.Arrays.asList(
-        "Nike", "Adidas", "Uniqlo", "Zara", "H&M", "Levi's", "The North Face", "FamiCoats", "Gucci", "Puma"
-    );
+            "Nike", "Adidas", "Uniqlo", "Zara", "H&M", "Levi's", "The North Face", "FamiCoats", "Gucci", "Puma");
 
     public static final List<String> VALID_ORIGINS = java.util.Arrays.asList(
-        "Việt Nam", "Mỹ", "Nhật Bản", "Hàn Quốc", "Trung Quốc", "Đức", "Ý", "Pháp", "Anh", "Thái Lan"
-    );
+            "Việt Nam", "Mỹ", "Nhật Bản", "Hàn Quốc", "Trung Quốc", "Đức", "Ý", "Pháp", "Anh", "Thái Lan");
 
     private static String removeAccent(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         String temp = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(temp).replaceAll("").replace('đ', 'd').replace('Đ', 'd').toLowerCase();
     }
 
     public static int getLevenshteinDistance(String s1, String s2) {
-        if (s1 == null || s2 == null) return Integer.MAX_VALUE;
+        if (s1 == null || s2 == null)
+            return Integer.MAX_VALUE;
         String a1 = removeAccent(s1.trim());
         String a2 = removeAccent(s2.trim());
         int[] costs = new int[a2.length() + 1];
@@ -43,13 +43,15 @@ public class ProductValidator {
                     }
                 }
             }
-            if (i > 0) costs[a2.length()] = lastValue;
+            if (i > 0)
+                costs[a2.length()] = lastValue;
         }
         return costs[a2.length()];
     }
 
     public static String normalizeBrand(String brand) {
-        if (brand == null || brand.trim().isEmpty()) return "";
+        if (brand == null || brand.trim().isEmpty())
+            return "";
         String trimmed = brand.trim();
         for (String b : VALID_BRANDS) {
             if (b.equalsIgnoreCase(trimmed)) {
@@ -60,7 +62,8 @@ public class ProductValidator {
     }
 
     public static String normalizeOrigin(String origin) {
-        if (origin == null || origin.trim().isEmpty()) return "";
+        if (origin == null || origin.trim().isEmpty())
+            return "";
         String trimmed = origin.trim().replaceAll("\\s+", " ");
         for (String o : VALID_ORIGINS) {
             if (o.equalsIgnoreCase(trimmed)) {
@@ -107,8 +110,7 @@ public class ProductValidator {
             String[] widths,
             String[] thicknesses,
             String[] weights,
-            String[] variantImages
-    ) {
+            String[] variantImages) {
         List<String> errors = new ArrayList<>();
 
         // 1. Validate Product ID (if adding)
@@ -121,7 +123,8 @@ public class ProductValidator {
                     // Check duplicate
                     for (Product p : existingProducts) {
                         if (p.getId().equalsIgnoreCase(idTrim)) {
-                            errors.add("Mã sản phẩm '" + idTrim + "' đã tồn tại trong hệ thống. Vui lòng chọn mã khác.");
+                            errors.add(
+                                    "Mã sản phẩm '" + idTrim + "' đã tồn tại trong hệ thống. Vui lòng chọn mã khác.");
                             break;
                         }
                     }
@@ -163,9 +166,11 @@ public class ProductValidator {
                         }
                     }
                     if (suggestion != null) {
-                        errors.add("Thương hiệu '" + brand + "' không hợp lệ. Có phải bạn muốn nhập '" + suggestion + "' không?");
+                        errors.add("Thương hiệu '" + brand + "' không hợp lệ. Có phải bạn muốn nhập '" + suggestion
+                                + "' không?");
                     } else {
-                        errors.add("Thương hiệu '" + brand + "' không hợp lệ. Vui lòng chọn một trong các thương hiệu: " + String.join(", ", VALID_BRANDS));
+                        errors.add("Thương hiệu '" + brand + "' không hợp lệ. Vui lòng chọn một trong các thương hiệu: "
+                                + String.join(", ", VALID_BRANDS));
                     }
                 }
             }
@@ -186,9 +191,11 @@ public class ProductValidator {
                         }
                     }
                     if (suggestion != null) {
-                        errors.add("Xuất xứ '" + origin + "' không hợp lệ. Có phải bạn muốn nhập '" + suggestion + "' không?");
+                        errors.add("Xuất xứ '" + origin + "' không hợp lệ. Có phải bạn muốn nhập '" + suggestion
+                                + "' không?");
                     } else {
-                        errors.add("Xuất xứ '" + origin + "' không hợp lệ. Vui lòng chọn một trong các xuất xứ: " + String.join(", ", VALID_ORIGINS));
+                        errors.add("Xuất xứ '" + origin + "' không hợp lệ. Vui lòng chọn một trong các xuất xứ: "
+                                + String.join(", ", VALID_ORIGINS));
                     }
                 }
             }
@@ -208,7 +215,7 @@ public class ProductValidator {
         // 7. Validate each Variant
         for (int i = 0; i < sizes.length; i++) {
             String prefix = "Biến thể " + (i + 1) + ": ";
-            
+
             // Size
             if (sizes[i] == null || sizes[i].trim().isEmpty()) {
                 errors.add(prefix + "Kích cỡ không được để trống.");
@@ -259,7 +266,8 @@ public class ProductValidator {
             try {
                 if (lengths != null && lengths.length > i && lengths[i] != null && !lengths[i].trim().isEmpty()) {
                     double len = Double.parseDouble(lengths[i]);
-                    if (len <= 0) errors.add(prefix + "Chiều dài phải là số dương lớn hơn 0.");
+                    if (len <= 0)
+                        errors.add(prefix + "Chiều dài phải là số dương lớn hơn 0.");
                 } else {
                     errors.add(prefix + "Chiều dài không được để trống.");
                 }
@@ -270,7 +278,8 @@ public class ProductValidator {
             try {
                 if (widths != null && widths.length > i && widths[i] != null && !widths[i].trim().isEmpty()) {
                     double wid = Double.parseDouble(widths[i]);
-                    if (wid <= 0) errors.add(prefix + "Chiều rộng phải là số dương lớn hơn 0.");
+                    if (wid <= 0)
+                        errors.add(prefix + "Chiều rộng phải là số dương lớn hơn 0.");
                 } else {
                     errors.add(prefix + "Chiều rộng không được để trống.");
                 }
@@ -279,9 +288,11 @@ public class ProductValidator {
             }
 
             try {
-                if (thicknesses != null && thicknesses.length > i && thicknesses[i] != null && !thicknesses[i].trim().isEmpty()) {
+                if (thicknesses != null && thicknesses.length > i && thicknesses[i] != null
+                        && !thicknesses[i].trim().isEmpty()) {
                     double thick = Double.parseDouble(thicknesses[i]);
-                    if (thick <= 0) errors.add(prefix + "Độ dày phải là số dương lớn hơn 0.");
+                    if (thick <= 0)
+                        errors.add(prefix + "Độ dày phải là số dương lớn hơn 0.");
                 } else {
                     errors.add(prefix + "Độ dày không được để trống.");
                 }
@@ -292,7 +303,8 @@ public class ProductValidator {
             try {
                 if (weights != null && weights.length > i && weights[i] != null && !weights[i].trim().isEmpty()) {
                     double w = Double.parseDouble(weights[i]);
-                    if (w <= 0) errors.add(prefix + "Trọng lượng phải là số dương lớn hơn 0.");
+                    if (w <= 0)
+                        errors.add(prefix + "Trọng lượng phải là số dương lớn hơn 0.");
                 } else {
                     errors.add(prefix + "Trọng lượng không được để trống.");
                 }
@@ -301,7 +313,8 @@ public class ProductValidator {
             }
 
             // Images
-            if (variantImages == null || variantImages.length <= i || variantImages[i] == null || variantImages[i].trim().isEmpty() || "anh-default.png".equals(variantImages[i].trim())) {
+            if (variantImages == null || variantImages.length <= i || variantImages[i] == null
+                    || variantImages[i].trim().isEmpty() || "anh-default.png".equals(variantImages[i].trim())) {
                 errors.add(prefix + "Vui lòng tải lên hoặc chọn ít nhất một hình ảnh thực tế cho biến thể.");
             }
         }
@@ -319,8 +332,7 @@ public class ProductValidator {
             String widthStr,
             String thicknessStr,
             String weightStr,
-            String imagesStr
-    ) {
+            String imagesStr) {
         List<String> errors = new ArrayList<>();
 
         if (color == null || color.trim().isEmpty()) {
@@ -341,7 +353,8 @@ public class ProductValidator {
         try {
             if (priceStr != null && !priceStr.trim().isEmpty()) {
                 p = Double.parseDouble(priceStr);
-                if (p < 0) errors.add("Giá bán phải là số không âm.");
+                if (p < 0)
+                    errors.add("Giá bán phải là số không âm.");
             } else {
                 errors.add("Giá bán không được để trống.");
             }
@@ -352,7 +365,8 @@ public class ProductValidator {
         try {
             if (stockStr != null && !stockStr.trim().isEmpty()) {
                 int st = Integer.parseInt(stockStr);
-                if (st < 0) errors.add("Số lượng tồn kho phải là số nguyên không âm.");
+                if (st < 0)
+                    errors.add("Số lượng tồn kho phải là số nguyên không âm.");
             } else {
                 errors.add("Số lượng tồn kho không được để trống.");
             }
@@ -363,7 +377,8 @@ public class ProductValidator {
         try {
             if (lengthStr != null && !lengthStr.trim().isEmpty()) {
                 double len = Double.parseDouble(lengthStr);
-                if (len <= 0) errors.add("Chiều dài phải là số dương lớn hơn 0.");
+                if (len <= 0)
+                    errors.add("Chiều dài phải là số dương lớn hơn 0.");
             } else {
                 errors.add("Chiều dài không được để trống.");
             }
@@ -374,7 +389,8 @@ public class ProductValidator {
         try {
             if (widthStr != null && !widthStr.trim().isEmpty()) {
                 double wid = Double.parseDouble(widthStr);
-                if (wid <= 0) errors.add("Chiều rộng phải là số dương lớn hơn 0.");
+                if (wid <= 0)
+                    errors.add("Chiều rộng phải là số dương lớn hơn 0.");
             } else {
                 errors.add("Chiều rộng không được để trống.");
             }
@@ -385,7 +401,8 @@ public class ProductValidator {
         try {
             if (thicknessStr != null && !thicknessStr.trim().isEmpty()) {
                 double thick = Double.parseDouble(thicknessStr);
-                if (thick <= 0) errors.add("Độ dày phải là số dương lớn hơn 0.");
+                if (thick <= 0)
+                    errors.add("Độ dày phải là số dương lớn hơn 0.");
             } else {
                 errors.add("Độ dày không được để trống.");
             }
@@ -396,7 +413,8 @@ public class ProductValidator {
         try {
             if (weightStr != null && !weightStr.trim().isEmpty()) {
                 double w = Double.parseDouble(weightStr);
-                if (w <= 0) errors.add("Trọng lượng phải là số dương lớn hơn 0.");
+                if (w <= 0)
+                    errors.add("Trọng lượng phải là số dương lớn hơn 0.");
             } else {
                 errors.add("Trọng lượng không được để trống.");
             }

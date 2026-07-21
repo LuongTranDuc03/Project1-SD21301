@@ -28,9 +28,11 @@ public class Product {
 
     // Tính tổng stock từ các biến thể
     public int getStock() {
-        if (details == null || details.isEmpty()) return 0;
+        if (details == null || details.isEmpty())
+            return 0;
         int total = 0;
-        for (ProductDetail d : details) total += d.getStock();
+        for (ProductDetail d : details)
+            total += d.getStock();
         return total;
     }
 
@@ -42,8 +44,10 @@ public class Product {
         double maxPrice = Double.MIN_VALUE;
         for (ProductDetail detail : details) {
             double p = detail.getPrice();
-            if (p < minPrice) minPrice = p;
-            if (p > maxPrice) maxPrice = p;
+            if (p < minPrice)
+                minPrice = p;
+            if (p > maxPrice)
+                maxPrice = p;
         }
         if (minPrice == Double.MAX_VALUE || maxPrice == Double.MIN_VALUE) {
             return String.format("%,.0fđ", price).replace(",", ".");
@@ -54,4 +58,3 @@ public class Product {
         return String.format("%,.0fđ - %,.0fđ", minPrice, maxPrice).replace(",", ".");
     }
 }
-

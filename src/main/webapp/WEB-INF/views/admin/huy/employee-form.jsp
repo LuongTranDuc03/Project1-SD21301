@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
     <%@ page import="project.duan1_sd21301.model.huy.Employee" %>
-        <%@ page import="project.duan1_sd21301.repository.huy.Role" %>
+        <%@ page import="project.duan1_sd21301.model.huy.Role" %>
             <%@ page import="java.util.List" %>
                 <%@ page import="java.text.SimpleDateFormat" %>
 <% 
@@ -314,7 +314,7 @@
                                                                             required>
                                                                             <option value="">-- Chọn vai trò --</option>
                                                                             <% if (listRoles !=null) { for
-                                                                                (project.duan1_sd21301.repository.huy.Role
+                                                                                (project.duan1_sd21301.model.huy.Role
                                                                                 role : listRoles) { %>
                                                                                 <option value="<%= role.getId() %>"
                                                                                     <%=(isEdit &&
