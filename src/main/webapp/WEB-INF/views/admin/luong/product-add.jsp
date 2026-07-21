@@ -6,7 +6,7 @@
     boolean isEdit = (product != null && !"true".equals(request.getAttribute("isValidationAddError")));
     String pageTitleStr = (String) request.getAttribute("pageTitle");
     if (pageTitleStr == null) {
-        pageTitleStr = isEdit ? "Chỉnh sửa sản phẩm " + product.getId() : "Thêm sản phẩm mới";
+        pageTitleStr = isEdit ? "Chỉnh sửa sản phẩm " + product.getCode() : "Thêm sản phẩm mới";
     }
 %>
 <!DOCTYPE html>
@@ -568,7 +568,7 @@
                             <div class="form-grid">
                             <div class="form-group">
                                 <label class="form-label" for="id">Mã sản phẩm <span style="color: red;">*</span></label>
-                                <input type="text" id="id" name="id" class="form-input" placeholder="Ví dụ: SP001" value="<%= product != null && product.getId() != null ? product.getId() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %> required>
+                                <input type="text" id="code" name="code" class="form-input" placeholder="Ví dụ: SP001" value="<%= product != null && product.getCode() != null ? product.getCode() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %> required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="name">Tên sản phẩm <span style="color: red;">*</span></label>

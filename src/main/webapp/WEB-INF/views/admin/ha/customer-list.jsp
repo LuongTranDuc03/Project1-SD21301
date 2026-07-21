@@ -504,9 +504,9 @@
                                                                     <%= c.getGender() %>
                                                                 </td>
                                                                 <td style="color: #475569; font-size: 13px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
-                                                                    title="<%= (c.getDefaultAddress() != null) ? c.getDefaultAddress().getAddressDetail() : "" %>">
+                                                                    title="<%= (c.getDefaultAddress() != null) ? c.getDefaultAddress().getDetailedAddress() : "" %>">
                                                                     <%= (c.getDefaultAddress() != null) ?
-                                                                        c.getDefaultAddress().getAddressDetail() : "N/A"
+                                                                        c.getDefaultAddress().getDetailedAddress() : "N/A"
                                                                         %>
                                                                 </td>
                                                                 <td style="text-align: center;">

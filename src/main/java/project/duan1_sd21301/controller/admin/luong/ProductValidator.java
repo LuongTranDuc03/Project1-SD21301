@@ -93,7 +93,7 @@ public class ProductValidator {
     }
 
     public static List<String> validateProduct(
-            String id,
+            String code,
             String name,
             String category,
             String brand,
@@ -113,18 +113,18 @@ public class ProductValidator {
             String[] variantImages) {
         List<String> errors = new ArrayList<>();
 
-        // 1. Validate Product ID (if adding)
+        // 1. Validate Product Code (if adding)
         if (!isEdit) {
-            if (id != null && !id.trim().isEmpty()) {
-                String idTrim = id.trim();
-                if (!idTrim.matches("^SP\\d{3,5}$")) {
+            if (code != null && !code.trim().isEmpty()) {
+                String codeTrim = code.trim();
+                if (!codeTrim.matches("^SP\\d{3,5}$")) {
                     errors.add("Mã sản phẩm phải bắt đầu bằng 'SP' theo sau là 3 đến 5 chữ số (Ví dụ: SP009).");
                 } else {
                     // Check duplicate
                     for (Product p : existingProducts) {
-                        if (p.getId().equalsIgnoreCase(idTrim)) {
+                        if (p.getCode().equalsIgnoreCase(codeTrim)) {
                             errors.add(
-                                    "Mã sản phẩm '" + idTrim + "' đã tồn tại trong hệ thống. Vui lòng chọn mã khác.");
+                                    "Mã sản phẩm '" + codeTrim + "' đã tồn tại trong hệ thống. Vui lòng chọn mã khác.");
                             break;
                         }
                     }

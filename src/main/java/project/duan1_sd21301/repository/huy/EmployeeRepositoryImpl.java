@@ -85,7 +85,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                 list.add(new Role(
                         rs.getInt("id"),
                         rs.getString("ten_vai_tro"),
-                        rs.getString("mo_ta"),
                         rs.getInt("trang_thai")));
             }
         } catch (SQLException e) {

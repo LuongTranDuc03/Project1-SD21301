@@ -581,7 +581,7 @@ public class EmployeeController extends HttpServlet {
 
         // Xây dựng Role object và gán vào Employee
         Role selectedRole = roles.stream().filter(r -> r.getId() == roleId).findFirst()
-                .orElse(new Role(roleId, "", "", 1));
+                .orElse(new Role(roleId, "", 1));
         emp.setRole(selectedRole);
 
         String pwd = req.getParameter("password");

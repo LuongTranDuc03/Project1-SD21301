@@ -674,10 +674,10 @@
                                         }
                                     }
                         %>
-                        <tr data-id="<%= prod.getId() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
+                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td>
-                                <span class="product-id-text"><%= prod.getId() %></span>
+                                <span class="product-id-text"><%= prod.getCode() %></span>
                             </td>
                             <td>
                                 <span class="product-name-text"><%= prod.getName() != null ? prod.getName() : "" %></span>
@@ -700,17 +700,17 @@
                             <td style="text-align: center;">
                                 <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
                                     <!-- Chi tiết -->
-                                    <a href="${pageContext.request.contextPath}/admin/products?id=<%= prod.getId() %>" class="action-icon-btn details-btn" title="Chi tiết">
+                                    <a href="${pageContext.request.contextPath}/admin/products?code=<%= prod.getCode() %>" class="action-icon-btn details-btn" title="Chi tiết">
                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                     </a>
                                     <!-- Sửa -->
-                                    <a href="${pageContext.request.contextPath}/admin/products?action=edit&id=<%= prod.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                                    <a href="${pageContext.request.contextPath}/admin/products?action=edit&code=<%= prod.getCode() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     </a>
                                     <!-- Toggle status -->
                                     <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
                                         <input type="checkbox" <%= !"OUT_OF_STOCK".equals(prod.getStatus()) ? "checked" : "" %>
-                                               onchange="toggleProductStatus('<%= prod.getId() %>', this)">
+                                               onchange="toggleProductStatus('<%= prod.getCode() %>', this)">
                                         <span class="slider"></span>
                                     </label>
                                 </div>

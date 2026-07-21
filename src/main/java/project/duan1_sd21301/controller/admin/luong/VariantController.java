@@ -28,18 +28,18 @@ public class VariantController extends HttpServlet {
             return;
         }
 
-        String filterProductId = request.getParameter("productId");
+        String filterProductCode = request.getParameter("productCode");
 
         List<ProductDetail> allVariants = new ArrayList<>();
         for (Product product : products) {
-            if (filterProductId != null && !filterProductId.trim().isEmpty()) {
-                if (!product.getId().equals(filterProductId)) {
+            if (filterProductCode != null && !filterProductCode.trim().isEmpty()) {
+                if (!product.getCode().equals(filterProductCode)) {
                     continue;
                 }
             }
             if (product.getDetails() != null) {
                 for (ProductDetail pd : product.getDetails()) {
-                    pd.setProductId(product.getId());
+                    pd.setProduct(product);
                     allVariants.add(pd);
                 }
             }
@@ -61,7 +61,7 @@ public class VariantController extends HttpServlet {
                             : "Hết hàng";
                     writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.0f,%d,\"%s\"\n",
                             stt++,
-                            v.getProductId() != null ? v.getProductId() : "",
+                            (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "",
                             v.getColor() != null ? v.getColor() : "",
                             v.getSize() != null ? v.getSize() : "",
                             v.getStyle() != null ? v.getStyle() : "",
@@ -84,7 +84,7 @@ public class VariantController extends HttpServlet {
         }
 
         request.setAttribute("variants", allVariants);
-        request.setAttribute("filterProductId", filterProductId);
+        request.setAttribute("filterProductCode", filterProductCode);
         request.getRequestDispatcher("/WEB-INF/views/admin/luong/variant-list.jsp").forward(request, response);
     }
 
@@ -93,7 +93,7 @@ public class VariantController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         if ("edit".equals(action)) {
-            String productId = request.getParameter("productId");
+            String productCode = request.getParameter("productCode");
             String color = request.getParameter("color");
             String size = request.getParameter("size");
             String style = request.getParameter("style");
@@ -109,9 +109,9 @@ public class VariantController extends HttpServlet {
             @SuppressWarnings("unchecked")
             List<Product> products = (List<Product>) session.getAttribute("products");
 
-            if (products != null && productId != null && color != null && size != null) {
+            if (products != null && productCode != null && color != null && size != null) {
                 for (Product p : products) {
-                    if (productId.equals(p.getId()) && p.getDetails() != null) {
+                    if (productCode.equals(p.getCode()) && p.getDetails() != null) {
                         for (ProductDetail d : p.getDetails()) {
                             if (color.equals(d.getColor()) && size.equals(d.getSize())) {
                                 d.setStyle(style);
@@ -144,7 +144,7 @@ public class VariantController extends HttpServlet {
                 }
             }
         } else if ("toggleStatus".equals(action)) {
-            String productId = request.getParameter("productId");
+            String productCode = request.getParameter("productCode");
             String color = request.getParameter("color");
             String size = request.getParameter("size");
             String status = request.getParameter("status");
@@ -153,9 +153,9 @@ public class VariantController extends HttpServlet {
             @SuppressWarnings("unchecked")
             List<Product> products = (List<Product>) session.getAttribute("products");
 
-            if (products != null && productId != null && color != null && size != null && status != null) {
+            if (products != null && productCode != null && color != null && size != null && status != null) {
                 for (Product p : products) {
-                    if (productId.equals(p.getId()) && p.getDetails() != null) {
+                    if (productCode.equals(p.getCode()) && p.getDetails() != null) {
                         for (ProductDetail d : p.getDetails()) {
                             if (color.equals(d.getColor()) && size.equals(d.getSize())) {
                                 d.setStatus(status);

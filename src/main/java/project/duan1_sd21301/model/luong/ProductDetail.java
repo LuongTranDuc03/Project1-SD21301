@@ -12,7 +12,8 @@ import java.util.List;
 @Builder
 public class ProductDetail {
     private int id;
-    private String productId;
+    private String code;
+    private Product product;
     private String size;
     private String color;
     private String style;

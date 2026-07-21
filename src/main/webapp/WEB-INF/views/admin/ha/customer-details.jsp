@@ -339,26 +339,26 @@
                                                                                 <span
                                                                                     style="font-weight: 400; color: #64748b; margin-left: 8px;">
                                                                                     <%= (c.getDefaultAddress() !=null &&
-                                                                                        c.getDefaultAddress().getRecipientPhone()
+                                                                                        c.getDefaultAddress().getPhoneNumber()
                                                                                         !=null &&
-                                                                                        !c.getDefaultAddress().getRecipientPhone().isEmpty())
+                                                                                        !c.getDefaultAddress().getPhoneNumber().isEmpty())
                                                                                         ?
-                                                                                        c.getDefaultAddress().getRecipientPhone()
+                                                                                        c.getDefaultAddress().getPhoneNumber()
                                                                                         : c.getPhoneNumber() %>
                                                                                 </span>
                                                                         </div>
                                                                         <div
                                                                             style="font-size: 13px; color: #475569; line-height: 1.5; margin-top: 2px;">
                                                                             <%= (c.getDefaultAddress() !=null &&
-                                                                                c.getDefaultAddress().getAddressDetail()
+                                                                                c.getDefaultAddress().getDetailedAddress()
                                                                                 !=null) ?
-                                                                                c.getDefaultAddress().getAddressDetail()
+                                                                                c.getDefaultAddress().getDetailedAddress()
                                                                                 : "Chưa đăng ký địa chỉ mặc định." %>
                                                                         </div>
                                                                         <% if (c.getDefaultAddress() !=null &&
-                                                                            c.getDefaultAddress().getAddressDetail()
+                                                                            c.getDefaultAddress().getDetailedAddress()
                                                                             !=null &&
-                                                                            !c.getDefaultAddress().getAddressDetail().trim().isEmpty())
+                                                                            !c.getDefaultAddress().getDetailedAddress().trim().isEmpty())
                                                                             { %>
                                                                             <div>
                                                                                 <span
@@ -393,17 +393,17 @@
                                                                                     c.getFullName() %>
                                                                                     <span
                                                                                         style="font-weight: 400; color: #64748b; margin-left: 8px;">
-                                                                                        <%= (otherAddr.getRecipientPhone()
+                                                                                        <%= (otherAddr.getPhoneNumber()
                                                                                             !=null &&
-                                                                                            !otherAddr.getRecipientPhone().isEmpty())
+                                                                                            !otherAddr.getPhoneNumber().isEmpty())
                                                                                             ?
-                                                                                            otherAddr.getRecipientPhone()
+                                                                                            otherAddr.getPhoneNumber()
                                                                                             : c.getPhoneNumber() %>
                                                                                     </span>
                                                                             </div>
                                                                             <div
                                                                                 style="font-size: 13px; color: #475569; line-height: 1.5; margin-top: 2px;">
-                                                                                <%= otherAddr.getAddressDetail() %>
+                                                                                <%= otherAddr.getDetailedAddress() %>
                                                                             </div>
                                                                         </div>
                                                                         <div

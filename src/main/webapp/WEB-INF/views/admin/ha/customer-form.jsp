@@ -253,9 +253,9 @@
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
                     <h1><%= isEdit ? "Cập nhật hồ sơ khách hàng" : "Thêm khách hàng mới" %></h1>
-                    <div class="subtitle"><%= (c != null) ? "Chỉnh sửa các trường thông tin của " + c.getId() : "Điền đầy đủ thông tin để lưu khách hàng" %></div>
+                    <div class="subtitle"><%= (c != null) ? "Chỉnh sửa các trường thông tin của " + c.getCode() : "Điền đầy đủ thông tin để lưu khách hàng" %></div>
                 </div>
-                <a href="<%= contextPath %>/admin/customers<%= (c != null) ? "?action=details&id=" + c.getId() : "" %>" class="btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; padding: 10px 16px; font-weight: 600;">
+                <a href="<%= contextPath %>/admin/customers<%= (c != null) ? "?action=details&code=" + c.getCode() : "" %>" class="btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; padding: 10px 16px; font-weight: 600;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     <span>Quay lại</span>
                 </a>
@@ -303,8 +303,8 @@
                     <!-- Khung điền biểu mẫu chung -->
                     <div class="form-grid">
                         <div class="form-group">
-                            <label class="form-label" for="customerId">Mã khách hàng</label>
-                            <input type="text" name="id" id="customerId" class="form-input" placeholder="Bỏ trống để tự sinh (Gợi ý: <%= request.getAttribute("nextId") != null ? request.getAttribute("nextId") : "KH005" %>)" value="<%= (c != null && c.getId() != null) ? c.getId() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %>>
+                            <label class="form-label" for="customerCode">Mã khách hàng</label>
+                            <input type="text" name="code" id="customerCode" class="form-input" placeholder="Bỏ trống để tự sinh (Gợi ý: <%= request.getAttribute("nextCode") != null ? request.getAttribute("nextCode") : "KH005" %>)" value="<%= (c != null && c.getCode() != null) ? c.getCode() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %>>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="customerName">Họ và tên<span class="required">*</span></label>
@@ -342,53 +342,62 @@
                     </div>
                 </div>
 
+                <%
+                    Address defAddr = (c != null) ? c.getDefaultAddress() : null;
+                %>
                 <!-- 2. Địa chỉ mặc định -->
                 <div class="form-card">
                     <div class="form-card-title">
-                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:#64748b;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         Địa chỉ giao hàng mặc định
                     </div>
                     <div class="form-card-body">
+                    <input type="hidden" name="defaultAddressCode" value="<%= defAddr != null ? defAddr.getCode() : "" %>">
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label class="form-label">Tên người nhận<span class="required">*</span></label>
-                            <input type="text" name="diaChiMacDinhTen" id="defaultAddressTen" class="form-input" placeholder="Tên người nhận" required value="<%= (c != null && c.getDefaultAddress() != null) ? c.getDefaultAddress().getRecipientName() : "" %>">
+                            <input type="text" name="defaultRecipientName" id="defaultAddressTen" class="form-input" placeholder="Tên người nhận" required value="<%= defAddr != null ? defAddr.getRecipientName() : "" %>">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Số điện thoại<span class="required">*</span></label>
-                            <input type="text" name="diaChiMacDinhSdt" id="defaultAddressSdt" class="form-input" placeholder="Số điện thoại" required value="<%= (c != null && c.getDefaultAddress() != null) ? c.getDefaultAddress().getRecipientPhone() : "" %>">
+                            <input type="text" name="defaultPhoneNumber" id="defaultAddressSdt" class="form-input" placeholder="Số điện thoại" required value="<%= defAddr != null ? defAddr.getPhoneNumber() : "" %>">
                         </div>
                     </div>
-
-                    <input type="hidden" id="customerDefaultAddressSync" value="<%= (c != null && c.getDefaultAddress() != null) ? c.getDefaultAddress().getAddressDetail() : "" %>">  
-
-                    <div class="form-grid" style="margin-top: 16px;">
+                    <input type="hidden" id="defaultProvinceVal" value="<%= defAddr != null && defAddr.getProvince() != null ? defAddr.getProvince() : "" %>">
+                    <input type="hidden" id="defaultDistrictVal" value="<%= defAddr != null && defAddr.getDistrict() != null ? defAddr.getDistrict() : "" %>">
+                    <input type="hidden" id="defaultWardVal" value="<%= defAddr != null && defAddr.getWard() != null ? defAddr.getWard() : "" %>">
+                    <div class="form-grid" style="margin-top:16px;">
                         <div class="form-group">
                             <label class="form-label">Tỉnh / Thành phố<span class="required">*</span></label>
-                            <select id="defaultProvince" class="form-select" required>
+                            <select id="defaultProvince" name="defaultProvince" class="form-select" required>
                                 <option value="">-- Chọn Tỉnh/Thành --</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quận / Huyện<span class="required">*</span></label>
-                            <select id="defaultDistrict" class="form-select" required disabled>
+                            <select id="defaultDistrict" name="defaultDistrict" class="form-select" required disabled>
                                 <option value="">-- Chọn Quận/Huyện --</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phường / Xã<span class="required">*</span></label>
-                            <select id="defaultWard" class="form-select" required disabled>
+                            <select id="defaultWard" name="defaultWard" class="form-select" required disabled>
                                 <option value="">-- Chọn Phường/Xã --</option>
                             </select>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group" style="grid-column: 1 / -1;">
                             <label class="form-label">Số nhà, tên đường<span class="required">*</span></label>
-                            <input type="text" id="defaultAddressDetailInput" class="form-input" placeholder="Số nhà, tên đường, ngõ ngách..." required>
+                            <input type="text" id="defaultAddressDetailInput" name="defaultDetailedAddress" class="form-input" placeholder="Số nhà, tên đường, ngõ ngách..." required value="<%= defAddr != null && defAddr.getDetailedAddress() != null ? defAddr.getDetailedAddress() : "" %>">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label">Ghi chú</label>
+                            <input type="text" name="defaultNote" class="form-input" placeholder="Ghi chú (tuỳ chọn)" value="<%= defAddr != null && defAddr.getNote() != null ? defAddr.getNote() : "" %>">
                         </div>
                     </div>
-                    <input type="hidden" name="diaChiMacDinh" id="customerDefaultAddress" value="<%= (c != null && c.getDefaultAddress() != null) ? c.getDefaultAddress().getAddressDetail() : "" %>">
                     </div>
                 </div>
+
+
 
                 <!-- 3. Các địa chỉ khác -->
                 <div class="form-card">
@@ -408,50 +417,59 @@
                     <div id="otherAddressesContainer">
                         <%
                             if (c != null && c.getOtherAddresses() != null) {
-                                for (int i = 0; i < c.getOtherAddresses().size(); i++) {
-                                    Address addr = c.getOtherAddresses().get(i);
+                                for (Address addr : c.getOtherAddresses()) {
                         %>
                         <div class="address-card-row">
-                            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 12px;">
-                                <button type="button" class="back-btn" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="setDefaultAddress(this)">Đặt làm mặc định</button>
-                                <button type="button" class="back-btn" style="padding: 4px 8px; font-size: 11px; height: 28px; color: #ef4444; border-color: #fee2e2; background-color: #fef2f2;" onclick="removeAddressField(this)">
-                                    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                    Xóa
-                                </button>
+                            <input type="hidden" name="otherAddressCode" value="<%= addr.getCode() %>">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">Mã: <%= addr.getCode() %></span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="back-btn" style="padding: 4px 8px; font-size: 11px; height: 28px;" onclick="setDefaultAddress(this)">Đặt làm mặc định</button>
+                                    <button type="button" class="back-btn" style="padding: 4px 8px; font-size: 11px; height: 28px; color: #ef4444; border-color: #fee2e2; background-color: #fef2f2;" onclick="removeAddressField(this)">
+                                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        Xóa
+                                    </button>
+                                </div>
                             </div>
                             <div class="form-grid-2">
                                 <div class="form-group">
                                     <label class="form-label">Tên người nhận</label>
-                                    <input type="text" name="diaChiKhacTen" class="form-input" placeholder="Tên người nhận" value="<%= addr.getRecipientName() != null ? addr.getRecipientName() : "" %>">
+                                    <input type="text" name="otherRecipientName" class="form-input" placeholder="Tên người nhận" value="<%= addr.getRecipientName() != null ? addr.getRecipientName() : "" %>">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">SĐT người nhận</label>
-                                    <input type="text" name="diaChiKhacSdt" class="form-input" placeholder="Số điện thoại" value="<%= addr.getRecipientPhone() != null ? addr.getRecipientPhone() : "" %>">
+                                    <input type="text" name="otherPhoneNumber" class="form-input" placeholder="Số điện thoại" value="<%= addr.getPhoneNumber() != null ? addr.getPhoneNumber() : "" %>">
                                 </div>
                             </div>
-                            <input type="hidden" name="diaChiKhac" class="other-address-hidden" value="<%= addr.getAddressDetail() != null ? addr.getAddressDetail() : "" %>">
+                            <input type="hidden" name="otherProvinceHidden" class="other-province-hidden" value="<%= addr.getProvince() != null ? addr.getProvince() : "" %>">
+                            <input type="hidden" name="otherDistrictHidden" class="other-district-hidden" value="<%= addr.getDistrict() != null ? addr.getDistrict() : "" %>">
+                            <input type="hidden" name="otherWardHidden" class="other-ward-hidden" value="<%= addr.getWard() != null ? addr.getWard() : "" %>">
                             <div class="form-grid" style="margin-top: 16px;">
                                 <div class="form-group">
                                     <label class="form-label">Tỉnh / Thành phố</label>
-                                    <select class="other-province form-select">
+                                    <select name="otherProvince" class="other-province form-select">
                                         <option value="">-- Chọn Tỉnh/Thành --</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Quận / Huyện</label>
-                                    <select class="other-district form-select" disabled>
+                                    <select name="otherDistrict" class="other-district form-select" disabled>
                                         <option value="">-- Chọn Quận/Huyện --</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Phường / Xã</label>
-                                    <select class="other-ward form-select" disabled>
+                                    <select name="otherWard" class="other-ward form-select" disabled>
                                         <option value="">-- Chọn Phường/Xã --</option>
                                     </select>
                                 </div>
                                 <div class="form-group full-width">
                                     <label class="form-label">Số nhà, tên đường</label>
-                                    <input type="text" class="other-detail-input form-input" placeholder="Số nhà, tên đường, ngõ ngách...">
+                                    <input type="text" name="otherDetailedAddress" class="other-detail-input form-input" placeholder="Số nhà, tên đường, ngõ ngách..." value="<%= addr.getDetailedAddress() != null ? addr.getDetailedAddress() : "" %>">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Ghi chú</label>
+                                    <input type="text" name="otherNote" class="form-input" placeholder="Ghi chú" value="<%= addr.getNote() != null ? addr.getNote() : "" %>">
                                 </div>
                             </div>
                         </div>

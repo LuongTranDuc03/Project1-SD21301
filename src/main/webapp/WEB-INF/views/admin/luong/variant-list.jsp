@@ -391,10 +391,10 @@
                                     String statusClass = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "available" : "out_of_stock";
                                     String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng" : "Hết hàng";
                         %>
-                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productid="<%= v.getProductId() != null ? v.getProductId().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= statusClass.equals("available") ? "AVAILABLE" : "OUT_OF_STOCK" %>">
+                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= statusClass.equals("available") ? "AVAILABLE" : "OUT_OF_STOCK" %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
-                                <span class="product-id-text"><%= v.getProductId() != null ? v.getProductId() : "N/A" %></span>
+                                <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
                             </td>
                             <td style="text-align: center;">
                                 <% if (v.getImages() != null && !v.getImages().isEmpty()) { %>
@@ -422,7 +422,7 @@
                             </td>
                             <td style="text-align: center;">
                                 <a href="javascript:void(0)" onclick="openEditVariantModal(this)" class="action-icon-btn edit-btn" title="Chỉnh sửa"
-                                   data-productid="<%= v.getProductId() != null ? v.getProductId() : "" %>"
+                                   data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "" %>"
                                    data-color="<%= v.getColor() != null ? v.getColor() : "" %>"
                                    data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
                                    data-style="<%= v.getStyle() != null ? v.getStyle() : "" %>"
@@ -478,7 +478,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
-                        <input type="text" id="edit-productId" name="productId" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                        <input type="text" id="edit-productCode" name="productCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
@@ -545,7 +545,7 @@
             tr.dataset.status = newStatusData;
         }
         
-        var productId = tr.dataset.productid || '';
+        var productCode = tr.dataset.productcode || '';
         var color = tr.dataset.color || '';
         var size = tr.dataset.size || '';
         
@@ -561,7 +561,7 @@
                 }
             }
         };
-        xhr.send("action=toggleStatus&productId=" + encodeURIComponent(productId) + "&color=" + encodeURIComponent(color) + "&size=" + encodeURIComponent(size) + "&status=" + encodeURIComponent(newStatusLabel));
+        xhr.send("action=toggleStatus&productCode=" + encodeURIComponent(productCode) + "&color=" + encodeURIComponent(color) + "&size=" + encodeURIComponent(size) + "&status=" + encodeURIComponent(newStatusLabel));
 
         // Gọi lại hàm filter để đồng bộ nếu bộ lọc đang được áp dụng
         if (typeof applyFilters === 'function') {
@@ -570,7 +570,7 @@
     }
 
     function openEditVariantModal(btn) {
-        document.getElementById('edit-productId').value = btn.getAttribute('data-productid');
+        document.getElementById('edit-productCode').value = btn.getAttribute('data-productcode');
         document.getElementById('edit-color').value = btn.getAttribute('data-color');
         document.getElementById('edit-size').value = btn.getAttribute('data-size');
         document.getElementById('edit-style').value = btn.getAttribute('data-style');

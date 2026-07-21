@@ -3,16 +3,15 @@ package project.duan1_sd21301.model.huy;
 public class Role {
     private int id;
     private String roleName;
-    private String description;
+
     private int status; // 1: Active, 0: Inactive
 
     public Role() {
     }
 
-    public Role(int id, String roleName, String description, int status) {
+    public Role(int id, String roleName, int status) {
         this.id = id;
         this.roleName = roleName;
-        this.description = description;
         this.status = status;
     }
 
@@ -32,13 +31,7 @@ public class Role {
         this.roleName = roleName;
     }
 
-    public String getDescription() {
-        return description;
-    }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public int getStatus() {
         return status;

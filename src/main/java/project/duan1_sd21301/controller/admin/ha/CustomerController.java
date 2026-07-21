@@ -6,9 +6,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
-import project.duan1_sd21301.model.ha.Customer;
 import project.duan1_sd21301.model.ha.Address;
+import project.duan1_sd21301.model.ha.Customer;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,115 +20,107 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Controller xử lý tất cả các nghiệp vụ CRUD và quản trị Khách hàng của hệ thống.
- * Hỗ trợ Upload File và quản lý bộ nhớ tạm thời ServletContext.
- */
 @WebServlet(name = "CustomerController", value = "/admin/customers")
 @MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 2, // Ngưỡng dung lượng file lưu tạm trong bộ nhớ (2MB)
-        maxFileSize = 1024 * 1024 * 10,      // Dung lượng file tối đa được phép tải lên (10MB)
-        maxRequestSize = 1024 * 1024 * 50    // Tổng dung lượng tối đa cho một Request (50MB)
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
 )
 public class CustomerController extends HttpServlet {
 
-    // Định dạng ngày chuẩn dùng cho trường nhập Ngày sinh (yyyy-MM-dd)
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    /**
-     * Phương thức khởi tạo Servlet.
-     * Nạp sẵn các bản ghi khách hàng giả lập vào ServletContext để hiển thị ban đầu.
-     */
     @Override
     public void init() throws ServletException {
-        // Nếu ServletContext chưa có danh sách khách hàng thì tiến hành tạo mới
         if (getServletContext().getAttribute("customers") == null) {
             List<Customer> customers = new ArrayList<>();
             try {
-                // Khách hàng mẫu thứ nhất
-                customers.add(Customer.builder()
-                        .id("KH001")
-                        .fullName("Nguyễn Anh Tuấn")
-                        .email("anhtuan.nguyen@gmail.com")
-                        .password("tuannh123")
-                        .phoneNumber("0987654321")
-                        .dateOfBirth(dateFormat.parse("1995-05-12"))
-                        .gender("Nam")
-                        .avatar("https://i.pravatar.cc/150?img=11")
-                        .status("Hoạt động")
-                        .defaultAddress(new Address("Nguyễn Anh Tuấn", "0987654321", "123 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh"))
-                        .otherAddresses(new ArrayList<>(Arrays.asList(
-                                new Address("Nguyễn Anh Tuấn", "0987654321", "345 Điện Biên Phủ, Bình Thạnh, TP. Hồ Chí Minh")
-                        )))
-                        .build());
+                // KH001
+                Address addr1a = Address.builder()
+                        .id(1).code("DC001").recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321")
+                        .province("TP. Hồ Chí Minh").district("Quận 1").ward("Phường Bến Nghé")
+                        .detailedAddress("123 Nguyễn Trãi").isDefault(true).note("").build();
+                Address addr1b = Address.builder()
+                        .id(2).code("DC002").recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321")
+                        .province("TP. Hồ Chí Minh").district("Bình Thạnh").ward("Phường 25")
+                        .detailedAddress("345 Điện Biên Phủ").isDefault(false).note("").build();
+                addr1a.setCustomer(null); // sẽ set sau khi build customer
+                addr1b.setCustomer(null);
+                Customer c1 = Customer.builder()
+                        .id(1).code("KH001").fullName("Nguyễn Anh Tuấn").email("anhtuan.nguyen@gmail.com")
+                        .password("tuannh123").phoneNumber("0987654321")
+                        .dateOfBirth(dateFormat.parse("1995-05-12")).gender("Nam")
+                        .avatar("https://i.pravatar.cc/150?img=11").status("Hoạt động")
+                        .addresses(new ArrayList<>(Arrays.asList(addr1a, addr1b))).build();
+                addr1a.setCustomer(c1); addr1b.setCustomer(c1);
+                customers.add(c1);
 
-                // Khách hàng mẫu thứ hai
-                customers.add(Customer.builder()
-                        .id("KH002")
-                        .fullName("Trần Thị Mai")
-                        .email("maitran98@gmail.com")
-                        .password("maipassword")
-                        .phoneNumber("0912345678")
-                        .dateOfBirth(dateFormat.parse("1998-09-20"))
-                        .gender("Nữ")
-                        .avatar("https://i.pravatar.cc/150?img=47")
-                        .status("Hoạt động")
-                        .defaultAddress(new Address("Trần Thị Mai", "0912345678", "456 Lê Lợi, Quận Hải Châu, Đà Nẵng"))
-                        .otherAddresses(new ArrayList<>(Arrays.asList(
-                                new Address("Trần Thị Mai", "0912345678", "12 Nguyễn Văn Linh, Thanh Khê, Đà Nẵng"),
-                                new Address("Trần Thị Mai", "0912345678", "78 Trần Hưng Đạo, Sơn Trà, Đà Nẵng")
-                        )))
-                        .build());
+                // KH002
+                Address addr2a = Address.builder()
+                        .id(3).code("DC003").recipientName("Trần Thị Mai").phoneNumber("0912345678")
+                        .province("Đà Nẵng").district("Quận Hải Châu").ward("Phường Hải Châu I")
+                        .detailedAddress("456 Lê Lợi").isDefault(true).note("").build();
+                Address addr2b = Address.builder()
+                        .id(4).code("DC004").recipientName("Trần Thị Mai").phoneNumber("0912345678")
+                        .province("Đà Nẵng").district("Quận Thanh Khê").ward("Phường Thanh Khê Tây")
+                        .detailedAddress("12 Nguyễn Văn Linh").isDefault(false).note("").build();
+                Address addr2c = Address.builder()
+                        .id(5).code("DC005").recipientName("Trần Thị Mai").phoneNumber("0912345678")
+                        .province("Đà Nẵng").district("Quận Sơn Trà").ward("Phường An Hải Bắc")
+                        .detailedAddress("78 Trần Hưng Đạo").isDefault(false).note("").build();
+                Customer c2 = Customer.builder()
+                        .id(2).code("KH002").fullName("Trần Thị Mai").email("maitran98@gmail.com")
+                        .password("maipassword").phoneNumber("0912345678")
+                        .dateOfBirth(dateFormat.parse("1998-09-20")).gender("Nữ")
+                        .avatar("https://i.pravatar.cc/150?img=47").status("Hoạt động")
+                        .addresses(new ArrayList<>(Arrays.asList(addr2a, addr2b, addr2c))).build();
+                addr2a.setCustomer(c2); addr2b.setCustomer(c2); addr2c.setCustomer(c2);
+                customers.add(c2);
 
-                // Khách hàng mẫu thứ ba
-                customers.add(Customer.builder()
-                        .id("KH003")
-                        .fullName("Lê Minh Hoàng")
-                        .email("hoangleminh@yahoo.com")
-                        .password("hoang1992")
-                        .phoneNumber("0909090909")
-                        .dateOfBirth(dateFormat.parse("1992-12-30"))
-                        .gender("Nam")
-                        .avatar("https://i.pravatar.cc/150?img=12")
-                        .status("Khóa")
-                        .defaultAddress(new Address("Lê Minh Hoàng", "0909090909", "789 Cầu Giấy, Quận Cầu Giấy, Hà Nội"))
-                        .otherAddresses(new ArrayList<>())
-                        .build());
+                // KH003
+                Address addr3a = Address.builder()
+                        .id(6).code("DC006").recipientName("Lê Minh Hoàng").phoneNumber("0909090909")
+                        .province("Hà Nội").district("Quận Cầu Giấy").ward("Phường Dịch Vọng")
+                        .detailedAddress("789 Cầu Giấy").isDefault(true).note("").build();
+                Customer c3 = Customer.builder()
+                        .id(3).code("KH003").fullName("Lê Minh Hoàng").email("hoangleminh@yahoo.com")
+                        .password("hoang1992").phoneNumber("0909090909")
+                        .dateOfBirth(dateFormat.parse("1992-12-30")).gender("Nam")
+                        .avatar("https://i.pravatar.cc/150?img=12").status("Khóa")
+                        .addresses(new ArrayList<>(Arrays.asList(addr3a))).build();
+                addr3a.setCustomer(c3);
+                customers.add(c3);
 
-                // Khách hàng mẫu thứ tư
-                customers.add(Customer.builder()
-                        .id("KH004")
-                        .fullName("Phạm Khánh Vy")
-                        .email("vypham.khanh@hotmail.com")
-                        .password("vycute99")
-                        .phoneNumber("0977777777")
-                        .dateOfBirth(dateFormat.parse("1999-03-15"))
-                        .gender("Nữ")
-                        .avatar("https://i.pravatar.cc/150?img=49")
-                        .status("Hoạt động")
-                        .defaultAddress(new Address("Phạm Khánh Vy", "0977777777", "321 Trần Hưng Đạo, Quận Ninh Kiều, Cần Thơ"))
-                        .otherAddresses(new ArrayList<>(Arrays.asList(
-                                new Address("Phạm Khánh Vy", "0977777777", "56 Mậu Thân, Ninh Kiều, Cần Thơ")
-                        )))
-                        .build());
+                // KH004
+                Address addr4a = Address.builder()
+                        .id(7).code("DC007").recipientName("Phạm Khánh Vy").phoneNumber("0977777777")
+                        .province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Tân An")
+                        .detailedAddress("321 Trần Hưng Đạo").isDefault(true).note("").build();
+                Address addr4b = Address.builder()
+                        .id(8).code("DC008").recipientName("Phạm Khánh Vy").phoneNumber("0977777777")
+                        .province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Xuân Khánh")
+                        .detailedAddress("56 Mậu Thân").isDefault(false).note("").build();
+                Customer c4 = Customer.builder()
+                        .id(4).code("KH004").fullName("Phạm Khánh Vy").email("vypham.khanh@hotmail.com")
+                        .password("vycute99").phoneNumber("0977777777")
+                        .dateOfBirth(dateFormat.parse("1999-03-15")).gender("Nữ")
+                        .avatar("https://i.pravatar.cc/150?img=49").status("Hoạt động")
+                        .addresses(new ArrayList<>(Arrays.asList(addr4a, addr4b))).build();
+                addr4a.setCustomer(c4); addr4b.setCustomer(c4);
+                customers.add(c4);
 
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            // Lưu trữ danh sách vừa tạo vào ServletContext (tồn tại suốt vòng đời ứng dụng)
             getServletContext().setAttribute("customers", customers);
         }
     }
 
-    /**
-     * Xử lý các yêu cầu lấy thông tin hoặc điều hướng giao diện (HTTP GET).
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Chuyển toast message từ session sang request (nếu có)
-        jakarta.servlet.http.HttpSession session = request.getSession();
+        HttpSession session = request.getSession();
         String toastMsg = (String) session.getAttribute("toastMessage");
         String toastType = (String) session.getAttribute("toastType");
         if (toastMsg != null) {
@@ -137,36 +130,25 @@ public class CustomerController extends HttpServlet {
             session.removeAttribute("toastType");
         }
 
-        // Lấy danh sách khách hàng hiện thời từ ServletContext
         List<Customer> allCustomers = (List<Customer>) getServletContext().getAttribute("customers");
-        if (allCustomers == null) {
-            allCustomers = new ArrayList<>();
-        }
+        if (allCustomers == null) allCustomers = new ArrayList<>();
 
         String action = request.getParameter("action");
 
-        // 1. Giao diện Thêm mới khách hàng
+        // 1. Thêm mới
         if ("add-form".equals(action)) {
-            // Tự sinh mã khách hàng gợi ý để hiển thị gợi ý trên placeholder
-            String nextId = generateNextCustomerId(allCustomers);
-            request.setAttribute("nextId", nextId);
+            String nextCode = generateNextCustomerCode(allCustomers);
+            request.setAttribute("nextCode", nextCode);
             request.setAttribute("isEdit", false);
             request.setAttribute("pageTitle", "Thêm khách hàng");
             request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-form.jsp").forward(request, response);
             return;
         }
 
-        // 2. Giao diện Cập nhật thông tin khách hàng
+        // 2. Form sửa — tìm theo code
         if ("edit-form".equals(action)) {
-            String id = request.getParameter("id");
-            Customer customer = null;
-            // Tìm khách hàng có ID tương ứng trong danh sách dữ liệu
-            for (Customer c : allCustomers) {
-                if (c.getId().equals(id)) {
-                    customer = c;
-                    break;
-                }
-            }
+            String code = request.getParameter("code");
+            Customer customer = findByCode(allCustomers, code);
             request.setAttribute("pageTitle", "Chỉnh sửa khách hàng");
             request.setAttribute("customer", customer);
             request.setAttribute("isEdit", true);
@@ -174,154 +156,107 @@ public class CustomerController extends HttpServlet {
             return;
         }
 
-        // 3. Giao diện Xem hồ sơ chi tiết khách hàng
+        // 3. Chi tiết — tìm theo code
         if ("details".equals(action)) {
-            String id = request.getParameter("id");
-            Customer customer = null;
-            for (Customer c : allCustomers) {
-                if (c.getId().equals(id)) {
-                    customer = c;
-                    break;
-                }
-            }
+            String code = request.getParameter("code");
+            Customer customer = findByCode(allCustomers, code);
             request.setAttribute("pageTitle", "Chi tiết hồ sơ khách hàng");
             request.setAttribute("customer", customer);
             request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-details.jsp").forward(request, response);
             return;
         }
 
-        // 4. Thiết lập một địa chỉ phụ lên làm địa chỉ mặc định chính thức
+        // 4. Đặt địa chỉ mặc định theo addressCode
         if ("set-default-address".equals(action)) {
-            String id = request.getParameter("id");
-            String indexStr = request.getParameter("index");
-            if (id != null && indexStr != null) {
-                try {
-                    int idx = Integer.parseInt(indexStr);
-                    for (Customer cust : allCustomers) {
-                        if (cust.getId().equals(id)) {
-                            List<Address> other = cust.getOtherAddresses();
-                            if (idx >= 0 && idx < other.size()) {
-                                // Thực hiện đổi chỗ giữa địa chỉ mặc định cũ và địa chỉ phụ mới được chọn
-                                Address oldDefault = cust.getDefaultAddress();
-                                cust.setDefaultAddress(other.get(idx));
-                                other.set(idx, oldDefault);
-                                session.setAttribute("toastMessage", "Thiết lập địa chỉ mặc định thành công!");
-                                session.setAttribute("toastType", "success");
-                            }
-                            break;
-                        }
+            String customerCode = request.getParameter("code");
+            String addressCode = request.getParameter("addressCode");
+            if (customerCode != null && addressCode != null) {
+                Customer cust = findByCode(allCustomers, customerCode);
+                if (cust != null && cust.getAddresses() != null) {
+                    for (Address a : cust.getAddresses()) {
+                        a.setDefault(a.getCode().equals(addressCode));
                     }
-                } catch (NumberFormatException ignored) {
+                    session.setAttribute("toastMessage", "Thiết lập địa chỉ mặc định thành công!");
+                    session.setAttribute("toastType", "success");
                 }
             }
-            // Quay trở lại trang xem chi tiết khách hàng
-            response.sendRedirect(request.getContextPath() + "/admin/customers?action=details&id=" + id);
+            response.sendRedirect(request.getContextPath() + "/admin/customers?action=details&code=" + request.getParameter("code"));
             return;
         }
 
-        // 5. Giao diện Danh sách khách hàng (Có tìm kiếm và bộ lọc)
+        // 5. Danh sách + tìm kiếm / lọc
         String search = request.getParameter("search");
-
         String filterStatus = request.getParameter("filterStatus");
         String filterGender = request.getParameter("filterGender");
         String filterAddress = request.getParameter("filterAddress");
 
         List<Customer> filteredCustomers = new ArrayList<>();
-
-        // Lọc tuần tự qua danh sách toàn bộ khách hàng
         for (Customer c : allCustomers) {
             boolean matches = true;
 
-            // Tìm kiếm nhanh: so sánh từ khóa với Mã, Tên, SĐT, Email
             if (search != null && !search.trim().isEmpty()) {
-                String keyword = search.toLowerCase().trim();
-                matches = c.getId().toLowerCase().contains(keyword)
-                        || c.getFullName().toLowerCase().contains(keyword)
-                        || c.getPhoneNumber().contains(keyword)
-                        || c.getEmail().toLowerCase().contains(keyword);
+                String kw = search.toLowerCase().trim();
+                matches = c.getCode().toLowerCase().contains(kw)
+                        || c.getFullName().toLowerCase().contains(kw)
+                        || c.getPhoneNumber().contains(kw)
+                        || c.getEmail().toLowerCase().contains(kw);
             }
 
-            // Lọc theo Giới tính (Tất cả, Nam, Nữ, Khác)
-            if (matches && filterGender != null && !filterGender.trim().isEmpty() && !"Tất cả".equalsIgnoreCase(filterGender)) {
+            if (matches && filterGender != null && !filterGender.trim().isEmpty()
+                    && !"Tất cả".equalsIgnoreCase(filterGender)) {
                 matches = filterGender.equalsIgnoreCase(c.getGender());
             }
 
-            // Lọc theo Địa chỉ (kiểm tra trong defaultAddress và otherAddresses)
             if (matches && filterAddress != null && !filterAddress.trim().isEmpty()) {
-                String addrKeyword = filterAddress.toLowerCase().trim();
-                boolean addressMatch = false;
-                
-                if (c.getDefaultAddress() != null && c.getDefaultAddress().getAddressDetail() != null) {
-                    if (c.getDefaultAddress().getAddressDetail().toLowerCase().contains(addrKeyword)) {
-                        addressMatch = true;
+                String addrKw = filterAddress.toLowerCase().trim();
+                boolean found = false;
+                if (c.getAddresses() != null) {
+                    for (Address a : c.getAddresses()) {
+                        String full = buildFullAddress(a).toLowerCase();
+                        if (full.contains(addrKw)) { found = true; break; }
                     }
                 }
-                
-                if (!addressMatch && c.getOtherAddresses() != null) {
-                    for (Address otherAddr : c.getOtherAddresses()) {
-                        if (otherAddr != null && otherAddr.getAddressDetail() != null) {
-                            if (otherAddr.getAddressDetail().toLowerCase().contains(addrKeyword)) {
-                                addressMatch = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                matches = addressMatch;
+                matches = found;
             }
 
-
-
-            // Lọc theo Trạng thái hoạt động (Hoạt động, Khóa)
-            if (matches && filterStatus != null && !filterStatus.trim().isEmpty() && !"Tất cả".equalsIgnoreCase(filterStatus)) {
+            if (matches && filterStatus != null && !filterStatus.trim().isEmpty()
+                    && !"Tất cả".equalsIgnoreCase(filterStatus)) {
                 matches = filterStatus.equalsIgnoreCase(c.getStatus());
             }
 
-            // Nếu thoả mãn toàn bộ bộ lọc thì thêm vào danh sách hiển thị
-            if (matches) {
-                filteredCustomers.add(c);
-            }
+            if (matches) filteredCustomers.add(c);
         }
 
-        // Xuất danh sách khách hàng (đã được lọc) ra file CSV (Excel)
+        // Export CSV
         if ("exportExcel".equals(action)) {
             response.setContentType("text/csv; charset=UTF-8");
             response.setHeader("Content-Disposition", "attachment; filename=\"danh_sach_khach_hang.csv\"");
             try (java.io.PrintWriter writer = response.getWriter()) {
-                // Ghi ký tự BOM để Excel hiểu file là UTF-8
                 writer.write('\ufeff');
                 writer.println("STT,Mã khách hàng,Tên khách hàng,Số điện thoại,Email,Giới tính,Trạng thái");
                 int stt = 1;
-                // Sử dụng filteredCustomers thay vì allCustomers
                 for (Customer cust : filteredCustomers) {
                     String name = cust.getFullName() != null ? cust.getFullName().replace("\"", "\"\"") : "";
-                    String phone = cust.getPhoneNumber() != null ? cust.getPhoneNumber() : "";
-                    String email = cust.getEmail() != null ? cust.getEmail() : "";
-                    String gender = cust.getGender() != null ? cust.getGender() : "";
-                    String statusLabel = cust.getStatus() != null ? (cust.getStatus().equals("ACTIVE") ? "Hoạt động" : "Ngừng hoạt động") : "";
-
                     writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                            stt++, cust.getId(), name, phone, email, gender, statusLabel);
+                            stt++, cust.getCode(), name,
+                            cust.getPhoneNumber() != null ? cust.getPhoneNumber() : "",
+                            cust.getEmail() != null ? cust.getEmail() : "",
+                            cust.getGender() != null ? cust.getGender() : "",
+                            cust.getStatus() != null ? cust.getStatus() : "");
                 }
             }
             return;
         }
 
-        // Đẩy dữ liệu ra view
         request.setAttribute("pageTitle", "Quản lý khách hàng");
         request.setAttribute("customers", filteredCustomers);
         request.setAttribute("searchVal", search != null ? search : "");
-
         request.setAttribute("filterStatusVal", filterStatus != null ? filterStatus : "Tất cả");
         request.setAttribute("filterGenderVal", filterGender != null ? filterGender : "Tất cả");
         request.setAttribute("filterAddressVal", filterAddress != null ? filterAddress : "");
-
         request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-list.jsp").forward(request, response);
     }
 
-    /**
-     * Xử lý gửi các biểu mẫu thêm, cập nhật hoặc xóa dữ liệu (HTTP POST).
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -329,242 +264,246 @@ public class CustomerController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
         List<Customer> customers = (List<Customer>) getServletContext().getAttribute("customers");
+        if (customers == null) { customers = new ArrayList<>(); getServletContext().setAttribute("customers", customers); }
+        HttpSession session = request.getSession();
 
-        if (customers == null) {
-            customers = new ArrayList<>();
-            getServletContext().setAttribute("customers", customers);
-        }
-
-        // Trường hợp thêm mới hoặc chỉnh sửa thông tin khách hàng
         if ("add".equals(action) || "edit".equals(action)) {
-            String id = request.getParameter("id");
-            
-            // Xử lý cơ chế mã tự sinh: Nếu bỏ trống khi thêm mới, sinh mã tự động.
-            if ("add".equals(action) && (id == null || id.trim().isEmpty())) {
-                id = generateNextCustomerId(customers);
-            } else if (id != null) {
-                id = id.trim();
+            String code = request.getParameter("code");
+            if ("add".equals(action) && (code == null || code.trim().isEmpty())) {
+                code = generateNextCustomerCode(customers);
+            } else if (code != null) {
+                code = code.trim();
             }
-            
+
             String hoTen = request.getParameter("hoTen");
             String email = request.getParameter("email");
             String soDienThoai = request.getParameter("soDienThoai");
             String ngaySinhStr = request.getParameter("ngaySinh");
             String gioiTinh = request.getParameter("gioiTinh");
-
             String trangThai = request.getParameter("trangThai");
-            String diaChiMacDinhTen = request.getParameter("diaChiMacDinhTen");
-            String diaChiMacDinhSdt = request.getParameter("diaChiMacDinhSdt");
-            String diaChiMacDinhDetail = request.getParameter("diaChiMacDinh");
+            String existingAvatar = request.getParameter("anhDaiDien");
 
-            String[] diaChiKhacTenArr = request.getParameterValues("diaChiKhacTen");
-            String[] diaChiKhacSdtArr = request.getParameterValues("diaChiKhacSdt");
-            String[] diaChiKhacDetailArr = request.getParameterValues("diaChiKhac");
-            String existingAnhDaiDien = request.getParameter("anhDaiDien"); // Nhận link ảnh cũ để phòng trường hợp không đổi ảnh
-
-            // XỬ LÝ UPLOAD TỆP TIN ẢNH ĐẠI DIỆN
-            String anhDaiDien = existingAnhDaiDien;
+            // Upload ảnh
+            String anhDaiDien = existingAvatar;
             try {
                 Part filePart = request.getPart("anhDaiDienFile");
                 if (filePart != null && filePart.getSize() > 0) {
-                    String fileName = filePart.getSubmittedFileName();
-                    // Lưu file vào thư mục /uploads bên trong webapp
                     File uploadDir = new File(getServletContext().getRealPath("/"), "uploads");
-                    if (!uploadDir.exists()) {
-                        uploadDir.mkdirs();
-                    }
-                    // Đặt tên tệp tin độc nhất bằng timestamp để không bị ghi đè
-                    String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
-                    File fileToSave = new File(uploadDir, uniqueFileName);
-                    filePart.write(fileToSave.getAbsolutePath());
-
-                    // Tạo URL tương đối truy cập ảnh từ client
+                    if (!uploadDir.exists()) uploadDir.mkdirs();
+                    String uniqueFileName = System.currentTimeMillis() + "_" + filePart.getSubmittedFileName();
+                    filePart.write(new File(uploadDir, uniqueFileName).getAbsolutePath());
                     anhDaiDien = request.getContextPath() + "/uploads/" + uniqueFileName;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            } catch (Exception e) { e.printStackTrace(); }
 
-            // Nếu thêm mới và hoàn toàn không chọn tải ảnh nào lên, tự chọn ngẫu nhiên một avatar có sẵn
             if ("add".equals(action) && (anhDaiDien == null || anhDaiDien.trim().isEmpty())) {
-                anhDaiDien = "https://i.pravatar.cc/150?img=" + (int) (Math.random() * 70);
+                anhDaiDien = "https://i.pravatar.cc/150?img=" + (int)(Math.random() * 70);
             }
 
-            // Chuyển đổi định dạng Ngày sinh
             Date ngaySinh = null;
             try {
-                if (ngaySinhStr != null && !ngaySinhStr.isEmpty()) {
-                    ngaySinh = dateFormat.parse(ngaySinhStr);
+                if (ngaySinhStr != null && !ngaySinhStr.isEmpty()) ngaySinh = dateFormat.parse(ngaySinhStr);
+            } catch (ParseException e) { ngaySinh = new Date(); }
+
+            // Xây dựng danh sách địa chỉ từ form
+            // Địa chỉ mặc định
+            String defaultRecipient = request.getParameter("defaultRecipientName");
+            String defaultPhone     = request.getParameter("defaultPhoneNumber");
+            String defaultProvince  = request.getParameter("defaultProvince");
+            String defaultDistrict  = request.getParameter("defaultDistrict");
+            String defaultWard      = request.getParameter("defaultWard");
+            String defaultDetail    = request.getParameter("defaultDetailedAddress");
+            String defaultNote      = request.getParameter("defaultNote");
+            String defaultAddrCode  = request.getParameter("defaultAddressCode");
+
+            // Các địa chỉ phụ
+            String[] otherCodes      = request.getParameterValues("otherAddressCode");
+            String[] otherRecipients = request.getParameterValues("otherRecipientName");
+            String[] otherPhones     = request.getParameterValues("otherPhoneNumber");
+            String[] otherProvinces  = request.getParameterValues("otherProvince");
+            String[] otherDistricts  = request.getParameterValues("otherDistrict");
+            String[] otherWards      = request.getParameterValues("otherWard");
+            String[] otherDetails    = request.getParameterValues("otherDetailedAddress");
+            String[] otherNotes      = request.getParameterValues("otherNote");
+
+            List<Address> addresses = new ArrayList<>();
+
+            // Địa chỉ mặc định
+            // Lấy nextAddressId
+            int nextAddrId = getNextAddressId(customers);
+            String resolvedDefaultCode = (defaultAddrCode != null && !defaultAddrCode.trim().isEmpty())
+                    ? defaultAddrCode.trim() : generateNextAddressCode(customers, 0);
+            Address defaultAddr = Address.builder()
+                    .id(nextAddrId++)
+                    .code(resolvedDefaultCode)
+                    .recipientName(defaultRecipient != null ? defaultRecipient.trim() : "")
+                    .phoneNumber(defaultPhone != null ? defaultPhone.trim() : "")
+                    .province(defaultProvince != null ? defaultProvince.trim() : "")
+                    .district(defaultDistrict != null ? defaultDistrict.trim() : "")
+                    .ward(defaultWard != null ? defaultWard.trim() : "")
+                    .detailedAddress(defaultDetail != null ? defaultDetail.trim() : "")
+                    .isDefault(true)
+                    .note(defaultNote != null ? defaultNote.trim() : "")
+                    .build();
+            addresses.add(defaultAddr);
+
+            // Các địa chỉ phụ
+            if (otherDetails != null) {
+                for (int i = 0; i < otherDetails.length; i++) {
+                    String detail = otherDetails[i];
+                    if (detail == null || detail.trim().isEmpty()) continue;
+                    String oCode = (otherCodes != null && otherCodes.length > i && otherCodes[i] != null && !otherCodes[i].trim().isEmpty())
+                            ? otherCodes[i].trim() : generateNextAddressCode(customers, addresses.size());
+                    Address otherAddr = Address.builder()
+                            .id(nextAddrId++)
+                            .code(oCode)
+                            .recipientName(safe(otherRecipients, i))
+                            .phoneNumber(safe(otherPhones, i))
+                            .province(safe(otherProvinces, i))
+                            .district(safe(otherDistricts, i))
+                            .ward(safe(otherWards, i))
+                            .detailedAddress(detail.trim())
+                            .isDefault(false)
+                            .note(safe(otherNotes, i))
+                            .build();
+                    addresses.add(otherAddr);
                 }
-            } catch (ParseException e) {
-                ngaySinh = new Date();
             }
 
-
-
-            // Khởi tạo đối tượng địa chỉ mặc định
-            Address defaultAddr = new Address(
-                    diaChiMacDinhTen != null ? diaChiMacDinhTen.trim() : "",
-                    diaChiMacDinhSdt != null ? diaChiMacDinhSdt.trim() : "",
-                    diaChiMacDinhDetail != null ? diaChiMacDinhDetail.trim() : ""
-            );
-
-            // Thu thập toàn bộ các địa chỉ phụ khác người dùng nhập
-            List<Address> listOtherAddr = new ArrayList<>();
-            if (diaChiKhacDetailArr != null) {
-                for (int i = 0; i < diaChiKhacDetailArr.length; i++) {
-                    String detail = diaChiKhacDetailArr[i];
-                    if (detail != null && !detail.trim().isEmpty()) {
-                        String ten = (diaChiKhacTenArr != null && diaChiKhacTenArr.length > i && diaChiKhacTenArr[i] != null) ? diaChiKhacTenArr[i].trim() : "";
-                        String sdt = (diaChiKhacSdtArr != null && diaChiKhacSdtArr.length > i && diaChiKhacSdtArr[i] != null) ? diaChiKhacSdtArr[i].trim() : "";
-                        listOtherAddr.add(new Address(ten, sdt, detail.trim()));
-                    }
-                }
-            }
-
-            // GỌI BỘ XÁC THỰC DỮ LIỆU (VALIDATE)
+            // Validate
             boolean isEdit = "edit".equals(action);
-            List<String> errors = CustomerValidator.validate(
-                    id, hoTen, email, soDienThoai, ngaySinh, gioiTinh,
-                    trangThai, diaChiMacDinhDetail, customers, isEdit
-            );
+            String defaultFullAddr = buildFullAddress(defaultAddr);
+            List<String> errors = CustomerValidator.validate(code, hoTen, email, soDienThoai, ngaySinh, gioiTinh, trangThai, defaultFullAddr, customers, isEdit);
 
-            // Nếu phát hiện lỗi nghiệp vụ: Dừng xử lý và trả về form kèm thông tin cũ
-            if(!errors.isEmpty()) {
+            if (!errors.isEmpty()) {
                 request.setAttribute("errors", errors);
                 request.setAttribute("isEdit", isEdit);
-                request.setAttribute("customer", Customer.builder()
-                        .id(id)
-                        .fullName(hoTen)
-                        .email(email)
-                        .phoneNumber(soDienThoai)
-                        .dateOfBirth(ngaySinh)
-                        .gender(gioiTinh)
-                        .status(trangThai)
-                        .avatar(anhDaiDien)
-                        .defaultAddress(defaultAddr)
-                        .otherAddresses(listOtherAddr)
-                        .build());
-                request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-form.jsp")
-                        .forward(request, response);
+                Customer preview = Customer.builder()
+                        .code(code).fullName(hoTen).email(email).phoneNumber(soDienThoai)
+                        .dateOfBirth(ngaySinh).gender(gioiTinh).status(trangThai).avatar(anhDaiDien)
+                        .addresses(addresses).build();
+                for (Address a : preview.getAddresses()) a.setCustomer(preview);
+                request.setAttribute("customer", preview);
+                request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-form.jsp").forward(request, response);
                 return;
             }
 
-            // Trường hợp dữ liệu hợp lệ: thực hiện Lưu hoặc Cập nhật
-            jakarta.servlet.http.HttpSession session = request.getSession();
             if ("add".equals(action)) {
-                // Tạo mới Khách hàng và chèn vào đầu danh sách
-                Customer newCustomer = Customer.builder()
-                        .id(id)
-                        .fullName(hoTen)
-                        .email(email)
-                        .phoneNumber(soDienThoai)
-                        .dateOfBirth(ngaySinh)
-                        .gender(gioiTinh)
-                        .avatar(anhDaiDien)
-                        .status(trangThai)
-                        .defaultAddress(defaultAddr)
-                        .otherAddresses(listOtherAddr)
-                        .build();
-                customers.add(0, newCustomer);
+                int nextId = 1;
+                for (Customer c : customers) { if (c.getId() >= nextId) nextId = c.getId() + 1; }
+                Customer newC = Customer.builder()
+                        .id(nextId).code(code).fullName(hoTen).email(email).phoneNumber(soDienThoai)
+                        .dateOfBirth(ngaySinh).gender(gioiTinh).avatar(anhDaiDien).status(trangThai)
+                        .addresses(addresses).build();
+                for (Address a : newC.getAddresses()) a.setCustomer(newC);
+                customers.add(0, newC);
                 session.setAttribute("toastMessage", "Thêm mới khách hàng thành công!");
                 session.setAttribute("toastType", "success");
             } else {
-                // Tìm kiếm khách hàng cũ và cập nhật đè các thuộc tính mới
-                for (Customer c : customers) {
-                    if (c.getId().equals(id)) {
-                        c.setFullName(hoTen);
-                        c.setEmail(email);
-                        c.setPhoneNumber(soDienThoai);
-                        c.setDateOfBirth(ngaySinh);
-                        c.setGender(gioiTinh);
-                        c.setAvatar(anhDaiDien);
-                        c.setStatus(trangThai);
-                        c.setDefaultAddress(defaultAddr);
-                        c.setOtherAddresses(listOtherAddr);
-                        break;
-                    }
+                Customer found = findByCode(customers, code);
+                if (found != null) {
+                    found.setFullName(hoTen); found.setEmail(email); found.setPhoneNumber(soDienThoai);
+                    found.setDateOfBirth(ngaySinh); found.setGender(gioiTinh);
+                    found.setAvatar(anhDaiDien); found.setStatus(trangThai);
+                    found.setAddresses(addresses);
+                    for (Address a : found.getAddresses()) a.setCustomer(found);
                 }
                 session.setAttribute("toastMessage", "Cập nhật khách hàng thành công!");
                 session.setAttribute("toastType", "success");
             }
-        } 
-        // Thao tác xóa một địa chỉ phụ khỏi hồ sơ khách hàng
-        else if ("delete-other-address".equals(action)) {
-            jakarta.servlet.http.HttpSession session = request.getSession();
-            String id = request.getParameter("id");
-            String indexStr = request.getParameter("index");
-            if (id != null && indexStr != null) {
-                try {
-                    int idx = Integer.parseInt(indexStr);
-                    for (Customer cust : customers) {
-                        if (cust.getId().equals(id)) {
-                            if (idx >= 0 && idx < cust.getOtherAddresses().size()) {
-                                cust.getOtherAddresses().remove(idx);
-                                session.setAttribute("toastMessage", "Xóa địa chỉ phụ thành công!");
-                                session.setAttribute("toastType", "success");
-                            }
-                            break;
-                        }
-                    }
-                } catch (NumberFormatException ignored) {
-                }
+
+        } else if ("delete-address".equals(action)) {
+            String customerCode = request.getParameter("code");
+            String addressCode  = request.getParameter("addressCode");
+            Customer cust = findByCode((List<Customer>) getServletContext().getAttribute("customers"), customerCode);
+            if (cust != null && addressCode != null) {
+                cust.getAddresses().removeIf(a -> addressCode.equals(a.getCode()));
+                session.setAttribute("toastMessage", "Xóa địa chỉ thành công!");
+                session.setAttribute("toastType", "success");
             }
-            response.sendRedirect(request.getContextPath() + "/admin/customers?action=details&id=" + id);
+            response.sendRedirect(request.getContextPath() + "/admin/customers?action=details&code=" + customerCode);
             return;
-        } 
-        // Thao tác đổi trạng thái (gạt switch) khách hàng
-        else if ("toggle-status".equals(action)) {
-            jakarta.servlet.http.HttpSession session = request.getSession();
-            String id = request.getParameter("id");
-            if (id != null) {
-                for (Customer c : customers) {
-                    if (c.getId().equals(id)) {
-                        if ("Hoạt động".equalsIgnoreCase(c.getStatus())) {
-                            c.setStatus("Khóa");
-                        } else {
-                            c.setStatus("Hoạt động");
-                        }
-                        session.setAttribute("toastMessage", "Cập nhật trạng thái thành công!");
-                        session.setAttribute("toastType", "success");
-                        break;
-                    }
-                }
+
+        } else if ("toggle-status".equals(action)) {
+            String code = request.getParameter("code");
+            Customer found = findByCode((List<Customer>) getServletContext().getAttribute("customers"), code);
+            if (found != null) {
+                found.setStatus("Hoạt động".equalsIgnoreCase(found.getStatus()) ? "Khóa" : "Hoạt động");
+                session.setAttribute("toastMessage", "Cập nhật trạng thái thành công!");
+                session.setAttribute("toastType", "success");
             }
-        }
-        // Thao tác xóa hẳn một khách hàng khỏi hệ thống
-        else if ("delete".equals(action)) {
-            jakarta.servlet.http.HttpSession session = request.getSession();
-            String id = request.getParameter("id");
-            customers.removeIf(c -> c.getId().equals(id));
+
+        } else if ("delete".equals(action)) {
+            String code = request.getParameter("code");
+            customers.removeIf(c -> c.getCode().equals(code));
             session.setAttribute("toastMessage", "Xóa khách hàng thành công!");
             session.setAttribute("toastType", "success");
         }
 
-        // Quay lại trang danh sách khách hàng
         response.sendRedirect(request.getContextPath() + "/admin/customers");
     }
 
-    /**
-     * Hàm phụ trợ quét danh sách khách hàng để sinh mã kế tiếp có số lớn nhất + 1.
-     * Ví dụ quét thấy KH004 thì sinh mã mới gợi ý là KH005.
-     */
-    private String generateNextCustomerId(List<Customer> customers) {
-        int maxNum = 0;
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private Customer findByCode(List<Customer> list, String code) {
+        if (list == null || code == null) return null;
+        for (Customer c : list) { if (code.equals(c.getCode())) return c; }
+        return null;
+    }
+
+    private String buildFullAddress(Address a) {
+        if (a == null) return "";
+        List<String> parts = new ArrayList<>();
+        if (a.getDetailedAddress() != null && !a.getDetailedAddress().isEmpty()) parts.add(a.getDetailedAddress());
+        if (a.getWard() != null && !a.getWard().isEmpty()) parts.add(a.getWard());
+        if (a.getDistrict() != null && !a.getDistrict().isEmpty()) parts.add(a.getDistrict());
+        if (a.getProvince() != null && !a.getProvince().isEmpty()) parts.add(a.getProvince());
+        return String.join(", ", parts);
+    }
+
+    private String safe(String[] arr, int i) {
+        return (arr != null && arr.length > i && arr[i] != null) ? arr[i].trim() : "";
+    }
+
+    private String generateNextCustomerCode(List<Customer> customers) {
+        int max = 0;
         if (customers != null) {
             for (Customer c : customers) {
-                String id = c.getId();
-                if (id != null && id.startsWith("KH")) {
-                    try {
-                        int num = Integer.parseInt(id.substring(2));
-                        if (num > maxNum) {
-                            maxNum = num;
-                        }
-                    } catch (NumberFormatException ignored) {
+                String code = c.getCode();
+                if (code != null && code.startsWith("KH")) {
+                    try { int n = Integer.parseInt(code.substring(2)); if (n > max) max = n; }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+        return String.format("KH%03d", max + 1);
+    }
+
+    private String generateNextAddressCode(List<Customer> customers, int offset) {
+        int max = 0;
+        if (customers != null) {
+            for (Customer c : customers) {
+                if (c.getAddresses() == null) continue;
+                for (Address a : c.getAddresses()) {
+                    String code = a.getCode();
+                    if (code != null && code.startsWith("DC")) {
+                        try { int n = Integer.parseInt(code.substring(2)); if (n > max) max = n; }
+                        catch (NumberFormatException ignored) {}
                     }
                 }
             }
         }
-        return String.format("KH%03d", maxNum + 1);
+        return String.format("DC%03d", max + 1 + offset);
+    }
+
+    private int getNextAddressId(List<Customer> customers) {
+        int max = 0;
+        if (customers != null) {
+            for (Customer c : customers) {
+                if (c.getAddresses() == null) continue;
+                for (Address a : c.getAddresses()) { if (a.getId() > max) max = a.getId(); }
+            }
+        }
+        return max + 1;
     }
 }

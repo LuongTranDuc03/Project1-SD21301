@@ -12,7 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Product {
-    private String id;
+    private int id;
+    private String code;
     private String category;
     private String name;
     private double price;

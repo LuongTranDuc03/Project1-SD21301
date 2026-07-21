@@ -88,9 +88,8 @@ public final class EmployeeMockData {
             while (roleMatcher.find()) {
                 int roleId = Integer.parseInt(roleMatcher.group(1));
                 String tenVaiTro = roleMatcher.group(2);
-                String moTa = roleMatcher.group(3);
                 int trangThai = Integer.parseInt(roleMatcher.group(4));
-                cachedRoles.add(new Role(roleId, tenVaiTro, moTa, trangThai));
+                cachedRoles.add(new Role(roleId, tenVaiTro, trangThai));
             }
         } catch (IOException ex) {
             ex.printStackTrace();
