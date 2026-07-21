@@ -9,6 +9,7 @@ import project.duan1_sd21301.model.huy.Employee;
 import project.duan1_sd21301.repository.huy.EmployeeRepository;
 import project.duan1_sd21301.repository.huy.EmployeeRepositoryImpl;
 import project.duan1_sd21301.model.huy.Role;
+import project.duan1_sd21301.service.EmailService;
 import project.duan1_sd21301.util.EmailUtil;
 import project.duan1_sd21301.util.huy.EmployeeMockData;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public class EmployeeController extends HttpServlet {
 
     private final EmployeeRepository repository = new EmployeeRepositoryImpl();
+    private final EmailService emailService = new EmailService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -279,46 +281,9 @@ public class EmployeeController extends HttpServlet {
         }
 
         if (success) {
-            try {
-                String host = "smtp.gmail.com";
-                int port = 587;
-                String username = "pdhuy190107@gmail.com";
-                String password = "huy19010700";
-                String from = "pdhuy190107@gmail.com";
-                EmailUtil emailUtil = new EmailUtil(host, port, username, password, from);
-
-                String subject = "Thong tin dang nhap he thong FamiCoats";
-                String html = "<!DOCTYPE html><html><body style='font-family:Inter,sans-serif;background:#f8fafc;margin:0;padding:20px;'>"
-                        + "<div style='max-width:480px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.08);'>"
-                        + "<div style='background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:28px 32px;color:#fff;'>"
-                        + "<h2 style='margin:0;font-size:20px;'>🔑 Thong tin dang nhap</h2>"
-                        + "<p style='margin:6px 0 0;opacity:0.85;font-size:13px;'>He thong quan ly FamiCoats</p>"
-                        + "</div>"
-                        + "<div style='padding:28px 32px;'>"
-                        + "<p style='margin:0 0 16px;color:#374151;'>Xin chao <strong>" + emp.getFullName()
-                        + "</strong>,</p>"
-                        + "<p style='margin:0 0 20px;color:#6b7280;font-size:14px;'>Duoi day la thong tin dang nhap he thong cua ban:</p>"
-                        + "<div style='background:#f3f4f6;border-radius:10px;padding:16px 20px;border-left:4px solid #6366f1;'>"
-                        + "<table style='border-collapse:collapse;width:100%;font-size:14px;'>"
-                        + "<tr><td style='padding:6px 0;color:#6b7280;width:100px;'>📧 Email</td>"
-                        + "<td style='padding:6px 0;font-weight:600;color:#1f2937;'>" + emp.getEmail() + "</td></tr>"
-                        + "<tr><td style='padding:6px 0;color:#6b7280;'>🔑 Mat khau</td>"
-                        + "<td style='padding:6px 0;font-weight:700;color:#dc2626;font-family:monospace;font-size:15px;'>"
-                        + emp.getPassword() + "</td></tr>"
-                        + "</table></div>"
-                        + "<p style='margin:20px 0 0;font-size:13px;color:#9ca3af;'> Vui long dang nhap va <strong style='color:#374151;'>doi mat khau ngay</strong> de bao mat tai khoan.</p>"
-                        + "</div>"
-                        + "<div style='padding:16px 32px;background:#f8fafc;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;'>Tran trong, <strong>Team FamiCoats</strong></div>"
-                        + "</div></body></html>";
-                emailUtil.sendHtmlMail(emp.getEmail(), subject, html);
-                request.getSession().setAttribute("toastMessage",
-                        "Thêm nhân viên thành công và đã tự động gửi email tài khoản!");
-                request.getSession().setAttribute("toastType", "success");
-            } catch (Exception e) {
-                e.printStackTrace();
-                request.getSession().setAttribute("toastMessage", "Thêm nhân viên thành công nhưng lỗi gửi email!");
-                request.getSession().setAttribute("toastType", "error");
-            }
+            emailService.sendLoginCredentialsAsync(emp);
+            request.getSession().setAttribute("toastMessage", "Thêm nhân viên thành công. Email tài khoản đang được gửi!");
+            request.getSession().setAttribute("toastType", "success");
         } else {
             request.getSession().setAttribute("toastMessage", "Thêm nhân viên thất bại từ Database!");
             request.getSession().setAttribute("toastType", "error");
@@ -460,11 +425,11 @@ public class EmployeeController extends HttpServlet {
     }
 
     private void sendMailAll(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String host = "smtp.gmail.com";
+        String host = "smtp.ethereal.email";
         int port = 587;
-        String username = "pdhuy190107@gmail.com";
-        String password = "huy19010700";
-        String from = "pdhuy190107@gmail.com";
+        String username = "jett29@ethereal.email";
+        String password = "FaCEtnyQXSGHCatZkB";
+        String from = "jett29@ethereal.email";
         EmailUtil emailUtil = new EmailUtil(host, port, username, password, from);
 
         List<Employee> employees = repository.findAll();
@@ -505,11 +470,11 @@ public class EmployeeController extends HttpServlet {
             return;
         }
 
-        String host = "smtp.gmail.com";
+        String host = "smtp.ethereal.email";
         int port = 587;
-        String username = "pdhuy190107@gmail.com";
-        String password = "huy19010700";
-        String from = "pdhuy190107@gmail.com";
+        String username = "jett29@ethereal.email";
+        String password = "FaCEtnyQXSGHCatZkB";
+        String from = "jett29@ethereal.email";
         EmailUtil emailUtil = new EmailUtil(host, port, username, password, from);
 
         String subject = "Thong tin dang nhap he thong FamiCoats";

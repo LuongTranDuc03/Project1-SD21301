@@ -107,25 +107,6 @@
                                                                                 <div class="subtitle">Tổng ${totalAll != null ? totalAll : 0} nhân sự</div>
                                                                             </div>
                                                                             <div style="display: flex; gap: 8px;">
-                                                                                <% if (isAdmin) { %>
-                                                                                    <button onclick="exportToCSV()" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                                                        <span>Xuất Excel</span>
-                                                                                    </button>
-                                                                                    <button type="button" id="btnScanList" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
-                                                                                            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
-                                                                                        </svg>
-                                                                                        <span>Quét CCCD</span>
-                                                                                    </button>
-                                                                                    <a href="${pageContext.request.contextPath}/admin/employees?action=add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
-                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                                                        </svg>
-                                                                                        <span>Thêm nhân viên</span>
-                                                                                    </a>
-                                                                                    <% } %>
                                                                             </div>
                                                                         </div>
 
@@ -230,7 +211,7 @@
                                                                                         <div
                                                                                             style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
                                                                                             <label
-                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
                                                                                                 <input type="radio"
                                                                                                     name="statusFilter"
                                                                                                     value="all"
@@ -238,7 +219,7 @@
                                                                                                     checked> Tất cả
                                                                                             </label>
                                                                                             <label
-                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
                                                                                                 <input type="radio"
                                                                                                     name="statusFilter"
                                                                                                     value="1"
@@ -246,7 +227,7 @@
                                                                                                 Đang hoạt động
                                                                                             </label>
                                                                                             <label
-                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
                                                                                                 <input type="radio"
                                                                                                     name="statusFilter"
                                                                                                     value="0"
@@ -279,6 +260,22 @@
 
                                                                                 </div>
                                                                             </div>
+                                                                        </div>
+
+                                                                        <div class="toolbar" style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 16px;">
+                                                                            <% if (isAdmin) { %>
+                                                                                <button onclick="exportToCSV()" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                                                                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                                                    <span>Xuất Excel</span>
+                                                                                </button>
+                                                                                <a href="${pageContext.request.contextPath}/admin/employees?action=add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
+                                                                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                                                    </svg>
+                                                                                    <span>Thêm nhân viên</span>
+                                                                                </a>
+                                                                            <% } %>
                                                                         </div>
 
                                                                         <div class="custom-card">
@@ -592,51 +589,6 @@
                                         document.addEventListener("DOMContentLoaded", function() {
                                             filterTable();
                                         });
-
-                                        // ====== Real Scan CCCD ======
-                                        const btnScanList = document.getElementById('btnScanList');
-                                        if (btnScanList) {
-                                            btnScanList.addEventListener('click', function () {
-                                                Swal.fire({
-                                                    title: 'Tải ảnh CCCD',
-                                                    html: '<input type="file" id="cccdImage" accept="image/*" style="margin-top: 10px; width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">',
-                                                    showCancelButton: true,
-                                                    confirmButtonText: 'Xử lý & Quét',
-                                                    cancelButtonText: 'Hủy',
-                                                    confirmButtonColor: '#3B82F6',
-                                                    cancelButtonColor: '#94A3B8',
-                                                    preConfirm: () => {
-                                                        const file = document.getElementById('cccdImage').files[0];
-                                                        if (!file) {
-                                                            Swal.showValidationMessage('Vui lòng chọn ảnh CCCD');
-                                                        }
-                                                        return file;
-                                                    }
-                                                }).then(async (result) => {
-                                                    if (result.isConfirmed) {
-                                                        const file = result.value;
-                                                        Swal.fire({
-                                                            title: 'Đang giải mã ảnh QR...',
-                                                            allowOutsideClick: false,
-                                                            didOpen: () => { Swal.showLoading(); }
-                                                        });
-                                                        try {
-                                                            const qrText = await decodeQR(file);
-                                                            const cccdData = parseCccdString(qrText);
-                                                            
-                                                            sessionStorage.setItem('scannedCccdData', JSON.stringify(cccdData));
-                                                            
-                                                            Swal.fire({ icon: 'success', title: 'Giải mã thành công!', text: 'Đang chuyển hướng...', showConfirmButton: false, timer: 1500 });
-                                                            setTimeout(() => {
-                                                                window.location.href = "${pageContext.request.contextPath}/admin/employees?action=add";
-                                                            }, 1500);
-                                                        } catch (err) {
-                                                            Swal.fire({ icon: 'error', title: 'Lỗi', text: err.message || "Không thể giải mã QR" });
-                                                        }
-                                                    }
-                                                });
-                                            });
-                                        }
 
                                         // ====== Xuất Excel (CSV) ======
                                         // Hàm xuất bảng dữ liệu hiện tại (những dòng đang hiển thị) ra file Excel đuôi CSV

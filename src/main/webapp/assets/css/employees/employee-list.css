@@ -176,7 +176,7 @@ input:checked+.slider:before { transform: translateX(16px); }
 }
 .filter-grid {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1.8fr auto;
+    grid-template-columns: 1.2fr 1fr 1fr 2.4fr auto;
     gap: 16px;
 }
 @media (max-width: 992px) {

@@ -335,11 +335,11 @@
                                                                                 value="<%= isEdit && emp.getCccd() != null ? emp.getCccd() : "" %>"
                                                                                 pattern="\d{12}" title="Vui lòng nhập đúng 12 chữ số CCCD"
                                                                                 maxlength="12">
-                                                                            <button type="button" id="btnScanCccd" onclick="handleScanBtnClick()" style="padding: 0 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #334155; font-weight: 500; white-space: nowrap;">
+                                                                            <button type="button" id="btnScanCccdCamera" onclick="startCameraScan()" style="padding: 0 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #334155; font-weight: 500; white-space: nowrap;">
                                                                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                    <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
+                                                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>
                                                                                 </svg>
-                                                                                Quét ảnh
+                                                                                Quét Camera
                                                                             </button>
                                                                         </div>
                                                                     </div>
@@ -459,6 +459,8 @@
                                         </div>
                                     </main>
                                 </div>
+                                
+
 
                                 <script>
                                     window.CONTEXT_PATH = '${pageContext.request.contextPath}';
@@ -736,25 +738,84 @@
                                     }
 
                                 </script>
+
+                                <!-- Camera QR Modal (duy nhất) -->
+                                <div id="qrCameraModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+                                    <div style="background: white; padding: 24px; border-radius: 12px; width: 440px; max-width: 95%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4);">
+                                        <h3 style="margin-top: 0; font-size: 18px; color: #0f172a;">📷 Quét mã QR CCCD</h3>
+                                        <div style="background: #fefce8; border: 1px solid #fde047; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: #713f12; text-align: left;">
+                                            💡 <strong>Mẹo quét thẻ vật lý:</strong><br>
+                                            • Đặt thẻ cách webcam <strong>15–25cm</strong><br>
+                                            • Hướng thẻ về phía có nguồn đèn (cửa sổ, đèn trần)<br>
+                                            • Tránh góc đặt khiến mã QR bị chụp ảnh (phản sáng)<br>
+                                            • Giữ thẻ thật yên, không rung
+                                        </div>
+                                        <div id="qrReader" style="width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 16px;"></div>
+                                        <div style="display: flex; gap: 8px; justify-content: center;">
+                                            <button type="button" id="btnToggleTorch" onclick="toggleTorch()" style="display:none; padding: 10px 20px; background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; color: #713f12; font-weight: 600; cursor: pointer; font-size: 13px;">
+                                                🔦 Bật Đèn
+                                            </button>
+                                            <button type="button" onclick="stopCameraScan()" style="padding: 10px 28px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; font-weight: 600; cursor: pointer; font-size: 14px;">
+                                                ✕ Đóng Camera
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <script>
-document.addEventListener('DOMContentLoaded', function() {
+                                    window.CONTEXT_PATH = '${pageContext.request.contextPath}';
+                                </script>
+                                <!-- jQuery (Optional but useful) -->
+                                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                
+                                <script src="${pageContext.request.contextPath}/assets/js/admin.js"></script>
 
-    const form = document.querySelector('form');
+                                <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Image preview
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const imagePlaceholder = document.getElementById('imagePlaceholder');
+    const changeImageBtn = document.getElementById('changeImageBtn');
+
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    if (imagePlaceholder) imagePlaceholder.style.display = 'none';
+                    if (changeImageBtn) changeImageBtn.style.display = 'inline-block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (changeImageBtn) {
+        changeImageBtn.addEventListener('click', function() {
+            if (imageInput) imageInput.click();
+        });
+    }
+
+    // 2. Validate form
+    const form = document.getElementById('employeeForm');
     if (form) {
-
         form.addEventListener('submit', function(e) {
+            // Xóa hết các lỗi cũ
             document.querySelectorAll('.error-msg').forEach(el => el.remove());
             let isValid = true;
-                const nameInput = document.querySelector('input[name="fullName"]');
 
-                const nameRegex = /^[\p{L}\s]{2,}$/u;
-                if (nameInput && (!nameInput.value || !nameRegex.test(nameInput.value.trim()))) {
-                    showError(nameInput, 'Họ và tên tối thiểu 2 ký tự và không chứa số hoặc ký tự đặc biệt.');
+            const cccdInput = document.querySelector('input[name="cccd"]');
+                const cccdRegex = /^\d{12}$/;
+                if (cccdInput && (!cccdInput.value || !cccdRegex.test(cccdInput.value.trim()))) {
+                    showError(cccdInput, 'CCCD phải là 12 chữ số.');
                     isValid = false;
                 }
 
                 const phoneInput = document.querySelector('input[name="phoneNumber"]');
-
                 const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
                 if (phoneInput && (!phoneInput.value || !phoneRegex.test(phoneInput.value.trim()))) {
                     showError(phoneInput, 'Số điện thoại phải 10 chữ số và bắt đầu bằng 03, 05, 07, 08, hoặc 09.');
@@ -797,8 +858,130 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
                                 </script>
-                                <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+                                <script src="https://unpkg.com/html5-qrcode"></script>
                                 <script src="${pageContext.request.contextPath}/assets/js/qr-scanner.js"></script>
+                                
+                                <script>
+                                    let html5QrCode = null;
+                                    let isScannerRunning = false;
+
+                                    function startCameraScan() {
+                                        // Nếu scanner đang chạy thì không khởi động lại
+                                        if (isScannerRunning) return;
+
+                                        const modal = document.getElementById('qrCameraModal');
+                                        modal.style.display = 'flex';
+
+                                        // Tạo mới instance mỗi lần mở để tránh lỗi state cũ
+                                        html5QrCode = new Html5Qrcode("qrReader");
+                                        
+                                        const config = {
+                                            fps: 30,
+                                            qrbox: { width: 300, height: 300 },
+                                            aspectRatio: 1.0,
+                                            experimentalFeatures: {
+                                                useBarCodeDetectorIfSupported: true
+                                            },
+                                            rememberLastUsedCamera: false
+                                        };
+
+                                        const onScanSuccess = (decodedText) => {
+                                            stopCameraScan();
+                                            handleScannedData(decodedText);
+                                        };
+
+                                        // Thử camera sau (điện thoại) -> fallback camera trước (laptop)
+                                        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+                                        .then(() => {
+                                            isScannerRunning = true;
+                                        })
+                                        .catch(() => {
+                                            // Camera sau thất bại, thử camera trước
+                                            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {})
+                                            .then(() => {
+                                                isScannerRunning = true;
+                                            })
+                                            .catch((err2) => {
+                                                console.error("Không mở được camera:", err2);
+                                                modal.style.display = 'none';
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Không thể mở Camera',
+                                                    html: 'Vui lòng:<br>• Cho phép trình duyệt truy cập camera<br>• Kiểm tra camera có đang dùng bởi app khác không<br>• Thử tải lại trang (F5)',
+                                                    confirmButtonColor: '#3b82f6'
+                                                });
+                                            });
+                                        });
+                                    }
+
+                                    let torchOn = false;
+                                    async function toggleTorch() {
+                                        if (!html5QrCode) return;
+                                        try {
+                                            torchOn = !torchOn;
+                                            await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+                                            const btn = document.getElementById('btnToggleTorch');
+                                            btn.textContent = torchOn ? '🔦 Tắt Đèn' : '🔦 Bật Đèn';
+                                            btn.style.background = torchOn ? '#fde047' : '#fef9c3';
+                                        } catch(e) { console.log('Torch not supported'); }
+                                    }
+
+                                    function stopCameraScan() {
+                                        const modal = document.getElementById('qrCameraModal');
+                                        modal.style.display = 'none';
+                                        isScannerRunning = false;
+
+                                        if (html5QrCode) {
+                                            const instance = html5QrCode;
+                                            html5QrCode = null;
+                                            instance.stop()
+                                            .then(() => instance.clear())
+                                            .catch(() => {
+                                                try { instance.clear(); } catch(e) {}
+                                            });
+                                        }
+                                    }
+
+                                    function handleScannedData(qrText) {
+                                        try {
+                                            const cccdData = parseCccdString(qrText);
+                                            fillCccdData(cccdData);
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: '✅ Thành công!',
+                                                text: 'Đã quét và điền thông tin CCCD.',
+                                                timer: 2000,
+                                                showConfirmButton: false
+                                            });
+                                        } catch (e) {
+                                            console.error(e);
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'QR không hợp lệ',
+                                                text: 'Mã QR không đúng định dạng CCCD Việt Nam. Vui lòng thử lại.',
+                                                confirmButtonColor: '#3b82f6'
+                                            });
+                                        }
+                                    }
+
+                                    function fillCccdData(data) {
+                                        const safeSet = (selector, value, byId) => {
+                                            const el = byId ? document.getElementById(selector) : document.querySelector(selector);
+                                            if (el && value) el.value = value;
+                                        };
+                                        safeSet('cccdInput', data.cccd, true);
+                                        safeSet('input[name="fullName"]', data.fullName);
+                                        safeSet('input[name="birthday"]', data.dob);
+                                        if (data.gender) {
+                                            const radio = document.querySelector('input[name="gender"][value="' + data.gender + '"]');
+                                            if (radio) radio.checked = true;
+                                        }
+                                        if (data.address) {
+                                            safeSet('detailAddress', data.address, true);
+                                            safeSet('fullAddress', data.address, true);
+                                        }
+                                    }
+                                </script>
                             </body>
 
                             <%-- Toast thông báo dùng chung --%>
