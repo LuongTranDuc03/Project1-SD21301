@@ -3,33 +3,32 @@ package project.duan1_sd21301.model.huy;
 import java.util.Date;
 
 public class Employee {
-    // ---- 14 cột DB ----
     private int id;
-    private String maNhanVien; // ma_nhan_vien: số thứ tự tự sinh, khác id
-    private int roleId; // id_vai_tro
-    private String fullName; // ho_ten
+    private String maNhanVien;  // ma_nhan_vien: mã hiển thị (NV001...)
+    private String fullName;    // ho_ten
     private String email;
-    private String password; // mat_khau
+    private String password;    // mat_khau
     private String phoneNumber; // so_dien_thoai
-    private Date birthday; // ngay_sinh
-    private Boolean gender; // gioi_tinh: true=Nam, false=Nữ
-    private String avatar; // anh_dai_dien
-    private int status; // trang_thai: 1=Đang làm, 0=Nghỉ việc
+    private Date birthday;      // ngay_sinh
+    private Boolean gender;     // gioi_tinh: true=Nam, false=Nữ
+    private String avatar;      // anh_dai_dien
+    private int status;         // trang_thai: 1=Đang làm, 0=Nghỉ việc
+    private String address;     // dia_chi tong hop
+    private String cccd;        // can_cuoc_cong_dan
 
-    private String address; // dia_chi tong hop
-    private String cccd; // can_cuoc_cong_dan
+    /**
+     * Đối tượng vai trò (quan hệ 1-1 với bảng vai_tro).
+     * Được populate sau khi JOIN trong Repository.
+     */
+    private Role role;
 
-    // ---- Helper (lấy từ JOIN vai_tro, không lưu DB) ----
-    private String roleName; // vai_tro.ten_vai_tro
+    public Employee() {}
 
-    public Employee() {
-    }
-
-    public Employee(int id, int roleId, String fullName, String email, String password,
+    public Employee(int id, String maNhanVien, String fullName, String email, String password,
                     String phoneNumber, Date birthday, Boolean gender,
-                    String avatar, int status, String address, String cccd) {
+                    String avatar, int status, String address, String cccd, Role role) {
         this.id = id;
-        this.roleId = roleId;
+        this.maNhanVien = maNhanVien;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
@@ -40,117 +39,63 @@ public class Employee {
         this.status = status;
         this.address = address;
         this.cccd = cccd;
+        this.role = role;
     }
 
     // ---- Getters & Setters ----
-    public int getId() {
-        return id;
-    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public String getMaNhanVien() {
-        return maNhanVien;
-    }
+    public String getMaNhanVien() { return maNhanVien; }
+    public void setMaNhanVien(String maNhanVien) { this.maNhanVien = maNhanVien; }
 
-    public void setMaNhanVien(String maNhanVien) {
-        this.maNhanVien = maNhanVien;
-    }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
 
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public Date getBirthday() { return birthday; }
+    public void setBirthday(Date birthday) { this.birthday = birthday; }
+
+    public Boolean getGender() { return gender; }
+    public void setGender(Boolean gender) { this.gender = gender; }
+
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
+
+    public int getStatus() { return status; }
+    public void setStatus(int status) { this.status = status; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getCccd() { return cccd; }
+    public void setCccd(String cccd) { this.cccd = cccd; }
+
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+
+    // ---- Convenience helpers (tránh NullPointerException khi role chưa được load) ----
+
+    /**
+     * Trả về id của vai trò. Trả về 0 nếu chưa có vai trò.
+     */
     public int getRoleId() {
-        return roleId;
+        return (role != null) ? role.getId() : 0;
     }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String v) {
-        this.fullName = v;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String v) {
-        this.email = v;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String v) {
-        this.password = v;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String v) {
-        this.phoneNumber = v;
-    }
-
-    public Date getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(Date v) {
-        this.birthday = v;
-    }
-
-    public Boolean getGender() {
-        return gender;
-    }
-
-    public void setGender(Boolean v) {
-        this.gender = v;
-    }
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String v) {
-        this.avatar = v;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int v) {
-        this.status = v;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String v) {
-        this.address = v;
-    }
-
-    public String getCccd() {
-        return cccd;
-    }
-
-    public void setCccd(String cccd) {
-        this.cccd = cccd;
-    }
-
+    /**
+     * Trả về tên vai trò. Trả về chuỗi rỗng nếu chưa có vai trò.
+     */
     public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String v) {
-        this.roleName = v;
+        return (role != null && role.getRoleName() != null) ? role.getRoleName() : "";
     }
 }

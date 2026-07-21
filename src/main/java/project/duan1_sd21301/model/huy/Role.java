@@ -1,4 +1,4 @@
-package project.duan1_sd21301.repository.huy;
+package project.duan1_sd21301.model.huy;
 
 public class Role {
     private int id;
@@ -6,7 +6,8 @@ public class Role {
     private String description;
     private int status; // 1: Active, 0: Inactive
 
-    public Role() {}
+    public Role() {
+    }
 
     public Role(int id, String roleName, String description, int status) {
         this.id = id;

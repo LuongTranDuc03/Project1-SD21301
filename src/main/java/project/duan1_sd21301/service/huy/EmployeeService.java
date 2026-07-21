@@ -1,7 +1,7 @@
 package project.duan1_sd21301.service.huy;
 
 import project.duan1_sd21301.model.huy.Employee;
-import project.duan1_sd21301.repository.huy.Role;
+import project.duan1_sd21301.model.huy.Role;
 import java.util.List;
 
 public interface EmployeeService {

@@ -1,7 +1,7 @@
 package project.duan1_sd21301.repository.huy;
 
 import project.duan1_sd21301.model.huy.Employee;
-import project.duan1_sd21301.repository.huy.Role;
+import project.duan1_sd21301.model.huy.Role;
 import project.duan1_sd21301.util.DatabaseConnection;
 
 import java.sql.*;
@@ -291,7 +291,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         Employee emp = new Employee();
         emp.setId(rs.getInt("id"));
         emp.setMaNhanVien(rs.getString("ma_nhan_vien"));
-        emp.setRoleId(rs.getInt("id_vai_tro"));
         emp.setFullName(rs.getString("ho_ten"));
         emp.setEmail(rs.getString("email"));
         emp.setPassword(rs.getString("mat_khau"));
@@ -313,8 +312,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         // Map địa chỉ tổng hợp (thử từng cột, bỏ qua nếu cột không tồn tại)
         try { emp.setAddress(rs.getString("dia_chi")); } catch (SQLException ignored) {}
 
-        // Helper field
-        emp.setRoleName(rs.getString("ten_vai_tro"));
+        // Xây dựng Role object từ kết quả JOIN
+        Role role = new Role();
+        role.setId(rs.getInt("id_vai_tro"));
+        try { role.setRoleName(rs.getString("ten_vai_tro")); } catch (SQLException ignored) {}
+        emp.setRole(role);
 
         return emp;
     }

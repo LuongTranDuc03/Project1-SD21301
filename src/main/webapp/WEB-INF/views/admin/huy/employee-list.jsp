@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
     <%@ page import="project.duan1_sd21301.model.huy.Employee" %>
-        <%@ page import="project.duan1_sd21301.repository.huy.Role" %>
+        <%@ page import="project.duan1_sd21301.model.huy.Role" %>
             <%@ page import="java.util.List" %>
                 <%@ page import="java.util.Date" %>
                     <%@ page import="java.text.SimpleDateFormat" %>
@@ -179,8 +179,7 @@
                                                                                             <option value="all">Tất cả
                                                                                                 vai trò</option>
                                                                                             <% if (listRoles !=null) {
-                                                                                                for
-                                                                                                (project.duan1_sd21301.repository.huy.Role
+                                                                                                for (Role
                                                                                                 r : listRoles) { 
                                                                                                 if("Admin".equals(r.getRoleName())) continue;
                                                                                                 %>

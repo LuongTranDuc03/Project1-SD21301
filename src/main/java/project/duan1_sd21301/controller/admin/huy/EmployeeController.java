@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import project.duan1_sd21301.model.huy.Employee;
 import project.duan1_sd21301.repository.huy.EmployeeRepository;
 import project.duan1_sd21301.repository.huy.EmployeeRepositoryImpl;
-import project.duan1_sd21301.repository.huy.Role;
+import project.duan1_sd21301.model.huy.Role;
 import project.duan1_sd21301.util.EmailUtil;
 import project.duan1_sd21301.util.huy.EmployeeMockData;
 
@@ -571,7 +571,6 @@ public class EmployeeController extends HttpServlet {
 
         String roleIdStr = req.getParameter("roleId");
         int roleId = roleIdStr != null && !roleIdStr.isEmpty() ? Integer.parseInt(roleIdStr) : 0;
-        emp.setRoleId(roleId);
 
         List<Role> roles = repository.findAllRoles();
         if (roles == null || roles.isEmpty()) {
@@ -579,8 +578,11 @@ public class EmployeeController extends HttpServlet {
         }
         roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
                 .collect(java.util.stream.Collectors.toList());
-        String rName = roles.stream().filter(r -> r.getId() == roleId).map(Role::getRoleName).findFirst().orElse("");
-        emp.setRoleName(rName);
+
+        // Xây dựng Role object và gán vào Employee
+        Role selectedRole = roles.stream().filter(r -> r.getId() == roleId).findFirst()
+                .orElse(new Role(roleId, "", "", 1));
+        emp.setRole(selectedRole);
 
         String pwd = req.getParameter("password");
         if (isNew) {

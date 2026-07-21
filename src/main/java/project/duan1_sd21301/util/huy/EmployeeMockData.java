@@ -1,7 +1,7 @@
 package project.duan1_sd21301.util.huy;
 
 import project.duan1_sd21301.model.huy.Employee;
-import project.duan1_sd21301.repository.huy.Role;
+import project.duan1_sd21301.model.huy.Role;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,7 +119,6 @@ public final class EmployeeMockData {
         Employee employee = new Employee();
         employee.setId(id);
         employee.setMaNhanVien(extractString(block, "ma_nhan_vien"));
-        employee.setRoleId(extractInt(block, "id_vai_tro"));
         employee.setFullName(extractString(block, "ho_ten"));
         employee.setEmail(extractString(block, "email"));
         employee.setPassword(extractString(block, "mat_khau"));
@@ -129,9 +128,14 @@ public final class EmployeeMockData {
         employee.setCccd(extractString(block, "cccd"));
         employee.setAvatar(extractString(block, "anh_dai_dien"));
         employee.setStatus(extractInt(block, "trang_thai"));
-        employee.setRoleName(roleNames.getOrDefault(employee.getRoleId(), ""));
-        
         employee.setAddress(extractString(block, "dia_chi_tong_hop"));
+
+        // Xây dựng Role object từ mock data
+        int roleId = extractInt(block, "id_vai_tro");
+        Role role = new Role();
+        role.setId(roleId);
+        role.setRoleName(roleNames.getOrDefault(roleId, ""));
+        employee.setRole(role);
 
         return employee;
     }

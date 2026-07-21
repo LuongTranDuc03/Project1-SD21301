@@ -284,6 +284,12 @@
                             <span>Xem tất cả biến thể</span>
                         </a>
                     <% } %>
+                    <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+                            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
+                        </svg>
+                        <span>Mã QR</span>
+                    </button>
                     <a href="${pageContext.request.contextPath}/admin/variants?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         <span>Xuất Excel</span>
@@ -373,7 +379,7 @@
                             <th style="text-align: center;">Hành động</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="variantTbody">
                         <%
                             if (variants != null && !variants.isEmpty()) {
                                 int stt = 1;
@@ -385,7 +391,7 @@
                                     String statusClass = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "available" : "out_of_stock";
                                     String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng" : "Hết hàng";
                         %>
-                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productid="<%= v.getProductId() != null ? v.getProductId().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-status="<%= statusClass.equals("available") ? "AVAILABLE" : "OUT_OF_STOCK" %>">
+                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productid="<%= v.getProductId() != null ? v.getProductId().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= statusClass.equals("available") ? "AVAILABLE" : "OUT_OF_STOCK" %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
                                 <span class="product-id-text"><%= v.getProductId() != null ? v.getProductId() : "N/A" %></span>
@@ -814,6 +820,78 @@
     document.addEventListener('DOMContentLoaded', () => {
         updateSlider(); // Initialize slider UI & apply initial filters
     });
+</script>
+
+<!-- Thư viện QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- Modal hiển thị QR Code Biến Thể -->
+<div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+        <div style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border-radius: 12px 12px 0 0;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Mã QR Biến Thể</h3>
+            <button type="button" onclick="closeQRModal()" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; display: flex; align-items: center; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div style="padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div id="qrcode" style="margin-bottom: 16px; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;"></div>
+            <p style="text-align: center; color: #64748b; font-size: 13px; margin: 0;">Quét mã này để xem danh sách biến thể ngay trên điện thoại.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function removeAccents(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    }
+
+    function showQRModal() {
+        document.getElementById('qrModal').style.display = 'flex';
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+
+        // Lấy các dòng biến thể đang hiển thị trên bảng
+        const rows = document.querySelectorAll('#variantTbody tr');
+        let text = "DANH SACH BIEN THE\n\n";
+        let count = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+            if (rows[i].style.display === 'none') continue;
+            const id   = rows[i].dataset.productid || '';
+            const size  = removeAccents(rows[i].dataset.size || '');
+            const color = removeAccents(rows[i].dataset.color || '');
+            const price = parseInt(rows[i].dataset.price || 0).toLocaleString('vi-VN');
+            const stock = rows[i].dataset.stock || '0';
+
+            text += "SP: " + id + " | " + size + " / " + color + "\n";
+            text += "Gia: " + price + "d | Ton: " + stock + "\n";
+            text += "------------------\n";
+            count++;
+            if (count >= 5) {
+                text += "(Hien " + count + " bien the dau)\n";
+                break;
+            }
+        }
+        if (count === 0) text += "Khong co bien the nao.";
+
+        try {
+            new QRCode(qrContainer, {
+                text: text,
+                width: 250,
+                height: 250,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } catch(e) {
+            qrContainer.innerHTML = '<p style="color:red;text-align:center">Lỗi tạo mã QR.</p>';
+        }
+    }
+
+    function closeQRModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
 </script>
 
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
