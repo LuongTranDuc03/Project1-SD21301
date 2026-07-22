@@ -659,7 +659,6 @@ body {
 .table-responsive {
     overflow-x: auto;
     width: 100%;
-    margin-top: 16px;
 }
 
 .invoice-table {
@@ -676,7 +675,7 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 14px 24px;
+    padding: 0px 24px;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -986,25 +985,30 @@ body.sidebar-collapsed .user-card {
     line-height: 1;
     transition: all 0.2s ease;
 }
+
 .rank-badge:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 .rank-gold {
     background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
     color: #B45309;
     border: 1px solid #FDE68A;
 }
+
 .rank-silver {
     background: linear-gradient(135deg, #F9FAFB, #F3F4F6);
     color: #4B5563;
     border: 1px solid #E5E7EB;
 }
+
 .rank-bronze {
     background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
     color: #C2410C;
     border: 1px solid #FED7AA;
 }
+
 .rank-diamond {
     background: linear-gradient(135deg, #F0F9FF, #E0F2FE);
     color: #0369A1;
@@ -1020,11 +1024,13 @@ body.sidebar-collapsed .user-card {
     font-weight: 600;
     transition: all 0.2s ease;
 }
+
 .status-pill.active {
     background-color: #ECFDF5;
     color: #065f46;
     border: none;
 }
+
 .status-pill.inactive {
     background-color: #FEF2F2;
     color: #991b1b;
@@ -1078,6 +1084,7 @@ body.sidebar-collapsed .user-card {
         transform: translateY(-20px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -1396,8 +1403,9 @@ body.sidebar-collapsed .user-card {
     border-radius: 8px !important;
     overflow: hidden !important;
     margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
+
 .card-header-bar {
     background-color: #12192D;
     color: #ffffff;
@@ -1406,6 +1414,7 @@ body.sidebar-collapsed .user-card {
     justify-content: space-between;
     align-items: center;
 }
+
 .card-header-title {
     font-size: 13px;
     font-weight: 700;
@@ -1429,6 +1438,7 @@ body.sidebar-collapsed .user-card {
     flex-shrink: 0 !important;
     text-decoration: none;
 }
+
 .action-icon-btn.edit-btn:hover,
 .action-icon-btn.details-btn:hover {
     background-color: #f1f5f9 !important;
@@ -1445,11 +1455,13 @@ body.sidebar-collapsed .user-card {
     height: 20px;
     vertical-align: middle;
 }
+
 .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
+
 .slider {
     position: absolute;
     cursor: pointer;
@@ -1461,6 +1473,7 @@ body.sidebar-collapsed .user-card {
     transition: .2s;
     border-radius: 20px;
 }
+
 .slider:before {
     position: absolute;
     content: "";
@@ -1472,10 +1485,12 @@ body.sidebar-collapsed .user-card {
     transition: .2s;
     border-radius: 50%;
 }
-input:checked + .slider {
+
+input:checked+.slider {
     background-color: #10b981;
 }
-input:checked + .slider:before {
+
+input:checked+.slider:before {
     transform: translateX(18px);
 }
 
@@ -1681,5 +1696,3 @@ input:checked + .slider:before {
     border-radius: 50%;
     border: 1px solid rgba(0, 0, 0, 0.08);
 }
-
-

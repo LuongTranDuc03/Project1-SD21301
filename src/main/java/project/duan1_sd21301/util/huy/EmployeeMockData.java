@@ -53,7 +53,7 @@ public final class EmployeeMockData {
 
             String json = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             Map<Integer, String> roleNames = parseRoleNames(json);
-            Matcher blockMatcher = Pattern.compile("\\{[^{}]*\"ma_nhan_vien\"[^{}]*\\}")
+            Matcher blockMatcher = Pattern.compile("\\{[^{}]*\"(code|ma_nhan_vien)\"[^{}]*\\}")
                     .matcher(json);
 
             while (blockMatcher.find()) {
@@ -117,7 +117,11 @@ public final class EmployeeMockData {
 
         Employee employee = new Employee();
         employee.setId(id);
-        employee.setMaNhanVien(extractString(block, "ma_nhan_vien"));
+        String codeStr = extractString(block, "code");
+        if (codeStr.isEmpty()) {
+            codeStr = extractString(block, "ma_nhan_vien");
+        }
+        employee.setCode(codeStr);
         employee.setFullName(extractString(block, "ho_ten"));
         employee.setEmail(extractString(block, "email"));
         employee.setPassword(extractString(block, "mat_khau"));
@@ -180,8 +184,8 @@ public final class EmployeeMockData {
             if (e.getId() > maxId) maxId = e.getId();
         }
         employee.setId(maxId + 1);
-        if (employee.getMaNhanVien() == null || employee.getMaNhanVien().isEmpty()) {
-            employee.setMaNhanVien(getNextMaNhanVien());
+        if (employee.getCode() == null || employee.getCode().isEmpty()) {
+            employee.setCode(getNextCode());
         }
         cachedEmployees.add(0, employee);
         return true;
@@ -198,11 +202,11 @@ public final class EmployeeMockData {
         return false;
     }
 
-    public static String getNextMaNhanVien() {
+    public static String getNextCode() {
         if (cachedEmployees == null) loadAll();
         int max = 0;
         for (Employee e : cachedEmployees) {
-            String ma = e.getMaNhanVien();
+            String ma = e.getCode();
             if (ma != null && ma.startsWith("NV")) {
                 try {
                     int num = Integer.parseInt(ma.substring(2));
@@ -234,10 +238,10 @@ public final class EmployeeMockData {
         }
         return false;
     }
-    public static boolean isMaNhanVienExist(String maNhanVien, Integer excludeId) {
+    public static boolean isCodeExist(String code, Integer excludeId) {
         if (cachedEmployees == null) loadAll();
         for (Employee e : cachedEmployees) {
-            if (e.getMaNhanVien() != null && e.getMaNhanVien().equalsIgnoreCase(maNhanVien)) {
+            if (e.getCode() != null && e.getCode().equalsIgnoreCase(code)) {
                 if (excludeId != null && e.getId() == excludeId) continue;
                 return true;
             }

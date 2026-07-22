@@ -346,7 +346,7 @@
                                                                                                     <%= stt++ %>
                                                                                                 </td>
                                                                                                 <td>
-                                                                                                    <%= emp.getMaNhanVien()
+                                                                                                    <%= emp.getCode()
                                                                                                         %>
                                                                                                 </td>
                                                                                                 <td><span

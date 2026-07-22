@@ -2,8 +2,8 @@ package project.duan1_sd21301.model.huy;
 
 public class Role {
     private int id;
+    private String code;
     private String roleName;
-
     private int status; // 1: Active, 0: Inactive
 
     public Role() {
@@ -11,6 +11,13 @@ public class Role {
 
     public Role(int id, String roleName, int status) {
         this.id = id;
+        this.roleName = roleName;
+        this.status = status;
+    }
+
+    public Role(int id, String code, String roleName, int status) {
+        this.id = id;
+        this.code = code;
         this.roleName = roleName;
         this.status = status;
     }
@@ -23,6 +30,14 @@ public class Role {
         this.id = id;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public String getRoleName() {
         return roleName;
     }
@@ -30,8 +45,6 @@ public class Role {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-
-
 
     public int getStatus() {
         return status;

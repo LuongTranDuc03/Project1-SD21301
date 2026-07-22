@@ -77,7 +77,7 @@
                                 border: 1px solid #e2e8f0;
                                 border-radius: 8px !important;
                                 overflow: hidden !important;
-                                margin-bottom: 10px;
+                                /* margin-bottom: 10px; */
                                 box-shadow: 0 1px 3px rgba(0,0,0,0.04);
                             }
                             .card-header-bar {
@@ -225,11 +225,15 @@
                             input:checked + .slider:before {
                                 transform: translateX(16px);
                             }
+                            .table-responsive {
+                                margin-top: 0 !important;
+                                padding-top: 0 !important;
+                            }
                             /* Align table headers in one line and shrink font size if too big */
                             .invoice-table th {
                                 white-space: nowrap !important;
                                 font-size: 11px !important;
-                                padding: 12px 20px !important;
+                                padding: 10px 20px !important;
                             }
                             /* Action Buttons Styling */
                             .action-icon-btn.edit-btn,
@@ -333,7 +337,7 @@
                                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                                         <div>
                                             <h1>Quản lý khách hàng</h1>
-                                            <div class="subtitle">Tổng số: <%= ((List<Customer>)
+                                            <div class="subtitle">Tổng <%= ((List<Customer>)
                                                     request.getAttribute("customers")).size() %> khách hàng</div>
                                         </div>
                                         <div style="display: flex; gap: 8px;">

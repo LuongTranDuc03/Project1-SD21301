@@ -15,7 +15,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         List<Employee> list = new ArrayList<>();
         String sql = "SELECT nv.*, vt.ten_vai_tro FROM nhan_vien nv " +
                 "LEFT JOIN vai_tro vt ON nv.id_vai_tro = vt.id " +
-                "ORDER BY nv.ma_nhan_vien DESC";
+                "ORDER BY nv.id DESC";
 
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -94,14 +94,14 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     }
 
     @Override
-    public String getNextMaNhanVien() {
-        String sql = "SELECT ma_nhan_vien FROM nhan_vien";
+    public String getNextCode() {
+        String sql = "SELECT code FROM nhan_vien";
         int max = 0;
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                String ma = rs.getString("ma_nhan_vien");
+                String ma = rs.getString("code");
                 if (ma != null && ma.startsWith("NV")) {
                     try {
                         int num = Integer.parseInt(ma.substring(2));
@@ -110,34 +110,56 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Fallback try ma_nhan_vien column
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement ps = conn.prepareStatement("SELECT ma_nhan_vien FROM nhan_vien");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String ma = rs.getString("ma_nhan_vien");
+                    if (ma != null && ma.startsWith("NV")) {
+                        try {
+                            int num = Integer.parseInt(ma.substring(2));
+                            if (num > max) max = num;
+                        } catch (Exception ignored) {}
+                    }
+                }
+            } catch (SQLException ignored) {}
         }
         return "NV" + String.format("%03d", max + 1);
     }
 
     @Override
-    public boolean isMaNhanVienExist(String maNhanVien, Integer excludeId) {
-        String sql = "SELECT 1 FROM nhan_vien WHERE ma_nhan_vien = ?";
+    public boolean isCodeExist(String code, Integer excludeId) {
+        String sql = "SELECT 1 FROM nhan_vien WHERE (code = ? OR ma_nhan_vien = ?)";
         if (excludeId != null) {
             sql += " AND id != ?";
         }
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, maNhanVien);
+            ps.setString(1, code);
+            ps.setString(2, code);
             if (excludeId != null) {
-                ps.setInt(2, excludeId);
+                ps.setInt(3, excludeId);
             }
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Fallback for single column
+            String fallbackSql = "SELECT 1 FROM nhan_vien WHERE code = ?";
+            if (excludeId != null) fallbackSql += " AND id != ?";
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
+                ps.setString(1, code);
+                if (excludeId != null) ps.setInt(2, excludeId);
+                try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+            } catch (SQLException ignored) {}
         }
         return false;
     }
 
-    public boolean isMaNhanVienExist(String maNhanVien) {
-        return isMaNhanVienExist(maNhanVien, null);
+    public boolean isCodeExist(String code) {
+        return isCodeExist(code, null);
     }
 
     @Override
@@ -184,24 +206,24 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
     public boolean insert(Employee entity) {
-        if (entity.getMaNhanVien() == null || entity.getMaNhanVien().isEmpty()) {
-            entity.setMaNhanVien(getNextMaNhanVien());
+        if (entity.getCode() == null || entity.getCode().isEmpty()) {
+            entity.setCode(getNextCode());
         }
 
-        // Bỏ qua nếu mã nhân viên đã tồn tại (check unique ma_nhan_vien)
-        if (isMaNhanVienExist(entity.getMaNhanVien())) {
-            System.out.println("Mã nhân viên đã tồn tại, bỏ qua insert: " + entity.getMaNhanVien());
+        // Bỏ qua nếu mã nhân viên đã tồn tại (check unique code)
+        if (isCodeExist(entity.getCode())) {
+            System.out.println("Mã nhân viên đã tồn tại, bỏ qua insert: " + entity.getCode());
             return false;
         }
 
-        String sql = "INSERT INTO nhan_vien (ma_nhan_vien, id_vai_tro, ho_ten, email, mat_khau, so_dien_thoai, " +
+        String sql = "INSERT INTO nhan_vien (code, id_vai_tro, ho_ten, email, mat_khau, so_dien_thoai, " +
                 "ngay_sinh, gioi_tinh, anh_dai_dien, cccd, trang_thai, dia_chi) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, entity.getMaNhanVien());
+            ps.setString(1, entity.getCode());
             ps.setInt(2, entity.getRoleId());
             ps.setString(3, entity.getFullName());
             ps.setString(4, entity.getEmail());
@@ -289,7 +311,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
     private Employee mapResultSetToEmployee(ResultSet rs) throws SQLException {
         Employee emp = new Employee();
         emp.setId(rs.getInt("id"));
-        emp.setMaNhanVien(rs.getString("ma_nhan_vien"));
+        try {
+            emp.setCode(rs.getString("code"));
+        } catch (SQLException e) {
+            try { emp.setCode(rs.getString("ma_nhan_vien")); } catch (SQLException ignored) {}
+        }
         emp.setFullName(rs.getString("ho_ten"));
         emp.setEmail(rs.getString("email"));
         emp.setPassword(rs.getString("mat_khau"));

@@ -16,8 +16,8 @@ public class Customer {
     private String avatar;
     private String status;
 
-    // Danh sách tất cả địa chỉ. Địa chỉ có isDefault = true là địa chỉ mặc định.
-    private List<Address> addresses;
+    // Danh sách tất cả địa chỉ của khách hàng (bảng trung gian khach_hang_dia_chi)
+    private List<CustomerAddress> addresses;
 
     public Customer() {
         this.addresses = new ArrayList<>();
@@ -25,7 +25,7 @@ public class Customer {
 
     public Customer(int id, String code, String fullName, String email, String password,
                     String phoneNumber, Date dateOfBirth, String gender,
-                    String avatar, String status, List<Address> addresses) {
+                    String avatar, String status, List<CustomerAddress> addresses) {
         this.id = id;
         this.code = code;
         this.fullName = fullName;
@@ -40,20 +40,20 @@ public class Customer {
     }
 
     // Helper: lấy địa chỉ mặc định
-    public Address getDefaultAddress() {
+    public CustomerAddress getDefaultAddress() {
         if (addresses == null) return null;
-        for (Address a : addresses) {
+        for (CustomerAddress a : addresses) {
             if (a.isDefault()) return a;
         }
         return addresses.isEmpty() ? null : addresses.get(0);
     }
 
-    // Helper: lấy danh sách địa chỉ phụ (không phải mặc định)
-    public List<Address> getOtherAddresses() {
-        List<Address> others = new ArrayList<>();
+    // Helper: lấy danh sách địa chỉ phụ
+    public List<CustomerAddress> getOtherAddresses() {
+        List<CustomerAddress> others = new ArrayList<>();
         if (addresses == null) return others;
-        Address def = getDefaultAddress();
-        for (Address a : addresses) {
+        CustomerAddress def = getDefaultAddress();
+        for (CustomerAddress a : addresses) {
             if (a != def) others.add(a);
         }
         return others;
@@ -90,8 +90,8 @@ public class Customer {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public List<Address> getAddresses() { return addresses; }
-    public void setAddresses(List<Address> addresses) {
+    public List<CustomerAddress> getAddresses() { return addresses; }
+    public void setAddresses(List<CustomerAddress> addresses) {
         this.addresses = addresses != null ? addresses : new ArrayList<>();
     }
 
@@ -111,7 +111,7 @@ public class Customer {
         private String gender;
         private String avatar;
         private String status;
-        private List<Address> addresses;
+        private List<CustomerAddress> addresses;
 
         public CustomerBuilder id(int id) { this.id = id; return this; }
         public CustomerBuilder code(String code) { this.code = code; return this; }
@@ -123,7 +123,7 @@ public class Customer {
         public CustomerBuilder gender(String gender) { this.gender = gender; return this; }
         public CustomerBuilder avatar(String avatar) { this.avatar = avatar; return this; }
         public CustomerBuilder status(String status) { this.status = status; return this; }
-        public CustomerBuilder addresses(List<Address> addresses) { this.addresses = addresses; return this; }
+        public CustomerBuilder addresses(List<CustomerAddress> addresses) { this.addresses = addresses; return this; }
 
         public Customer build() {
             return new Customer(id, code, fullName, email, password, phoneNumber,

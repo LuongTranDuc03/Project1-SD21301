@@ -9,9 +9,9 @@ import java.util.List;
 public interface EmployeeRepository extends BaseRepository<Employee, Integer> {
     Employee findByEmail(String email);
     List<Role> findAllRoles();
-    String getNextMaNhanVien();
+    String getNextCode();
     boolean isEmailExist(String email, Integer excludeId);
     boolean isPhoneExist(String phone, Integer excludeId);
-    boolean isMaNhanVienExist(String maNhanVien, Integer excludeId);
+    boolean isCodeExist(String code, Integer excludeId);
     Employee login(String email, String password);
 }

@@ -40,9 +40,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             emp.setPassword("123456");
         }
 
-        // 3. Tự sinh mã nhân viên (ma_nhan_vien) tuần tự
-        if (emp.getMaNhanVien() == null || emp.getMaNhanVien().isEmpty()) {
-            emp.setMaNhanVien(employeeRepo.getNextMaNhanVien());
+        // 3. Tự sinh mã nhân viên (code) tuần tự
+        if (emp.getCode() == null || emp.getCode().isEmpty()) {
+            emp.setCode(employeeRepo.getNextCode());
         }
 
         // 4. Gọi Repo lưu dữ liệu vào bảng nhan_vien
