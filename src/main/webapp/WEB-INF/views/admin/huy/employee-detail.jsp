@@ -156,6 +156,7 @@
                     </h1>
                 </div>
 
+                <% if (employee != null) { %>
                 <div class="form-card">
                     <div class="form-card-title">
                         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -170,7 +171,7 @@
                             <!-- THÔNG TIN CÁ NHÂN -->
                             <div class="form-group">
                                 <span class="form-label">Họ và tên</span>
-                                <span class="info-value"><%= employee.getFullName() %></span>
+                                <span class="info-value"><%= employee.getFullName() != null ? employee.getFullName() : "" %></span>
                             </div>
 
                             <div class="form-group">
@@ -200,7 +201,7 @@
 
                             <div class="form-group">
                                 <span class="form-label">Email</span>
-                                <span class="info-value"><%= employee.getEmail() %></span>
+                                <span class="info-value"><%= employee.getEmail() != null ? employee.getEmail() : "" %></span>
                             </div>
 
                             <!-- BỘ ĐỊA CHỈ TRONG CÙNG GRID -->
@@ -218,9 +219,9 @@
                             </div>
                             <div class="form-group" style="grid-column: span 2;">
                                 <span class="form-label">Địa chỉ tổng hợp (Số nhà, đường...)</span>
-                                <span class="info-value" id="display-street"><%= employee.getAddress() != null && !employee.getAddress().isEmpty() ? employee.getAddress() : "Chưa cập nhật" %></span>
+                                <span class="info-value" id="display-street"><%= !employee.getFullAddressString().isEmpty() ? employee.getFullAddressString() : "Chưa cập nhật" %></span>
                             </div>
-                            <input type="hidden" id="fullAddress" value="<%= employee.getAddress() != null ? employee.getAddress() : "" %>">
+                            <input type="hidden" id="fullAddress" value="<%= employee.getFullAddressString() %>">
                         </div>
                     </div>
                 </div>
@@ -239,15 +240,16 @@
                     </a>
                     <% } %>
                 </div>
+                <% } %>
             </div>
         </main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const fullAddr = document.getElementById('fullAddress').value.trim();
+            const fullAddrInput = document.getElementById('fullAddress');
+            const fullAddr = fullAddrInput ? fullAddrInput.value.trim() : '';
             if (fullAddr) {
-                // Address format: Street, Ward, District, Province
                 const parts = fullAddr.split(',').map(s => s.trim());
                 if (parts.length >= 4) {
                     document.getElementById('display-street').textContent = parts.slice(0, parts.length - 3).join(', ');

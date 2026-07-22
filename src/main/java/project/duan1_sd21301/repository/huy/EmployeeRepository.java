@@ -13,5 +13,6 @@ public interface EmployeeRepository extends BaseRepository<Employee, Integer> {
     boolean isEmailExist(String email, Integer excludeId);
     boolean isPhoneExist(String phone, Integer excludeId);
     boolean isCodeExist(String code, Integer excludeId);
+    boolean isCccdExist(String cccd, Integer excludeId);
     Employee login(String email, String password);
 }

@@ -47,14 +47,14 @@
                                 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                                 <script>
                                     window.onerror = function(msg, url, line, col, error) {
-                                        alert("Lỗi JS: " + msg + "\nDòng: " + line);
+                                        console.error("Lỗi JS: ", msg, url, line);
                                         return false;
                                     };
                                     window.addEventListener('unhandledrejection', function(event) {
-                                        alert("Lỗi Promise: " + (event.reason ? event.reason.message : event.reason));
+                                        console.error("Lỗi Promise: ", event.reason);
                                     });
                                 </script>
-                                                                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+                                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
                                 <style>
                                     .form-card {
                                         background: #ffffff;
@@ -112,6 +112,14 @@
                                         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
                                     }
 
+                                    .invalid-feedback {
+                                        color: #ef4444;
+                                        font-size: 11px;
+                                        margin-top: 4px;
+                                        font-weight: 500;
+                                        display: none;
+                                    }
+
                                     .form-card-body {
                                         padding: 24px;
                                     }
@@ -150,42 +158,6 @@
 
                                     .form-group.full-width {
                                         grid-column: 1 / -1;
-                                    }
-
-                                    .form-label {
-                                        font-size: 12px;
-                                        font-weight: 600;
-                                        color: #475569;
-                                        text-transform: uppercase;
-                                        letter-spacing: 0.5px;
-                                    }
-
-                                    .form-input,
-                                    .form-select,
-                                    .form-textarea {
-                                        width: 100%;
-                                        border: 1px solid #cbd5e1;
-                                        border-radius: 8px;
-                                        padding: 10px 14px;
-                                        font-size: 13px;
-                                        color: #1e293b;
-                                        font-family: inherit;
-                                        outline: none;
-                                        transition: all 0.2s ease;
-                                        background-color: #ffffff;
-                                        box-sizing: border-box;
-                                    }
-
-                                    .form-input:focus,
-                                    .form-select:focus,
-                                    .form-textarea:focus {
-                                        border-color: #0f172a;
-                                        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.15);
-                                    }
-
-                                    .form-textarea {
-                                        resize: vertical;
-                                        min-height: 80px;
                                     }
 
                                     .btn-submit {
@@ -266,17 +238,16 @@
                                             </div>
 
                                             <form action="${pageContext.request.contextPath}/admin/employees"
-                                                method="post" id="employeeForm">
+                                                method="post" id="employeeForm" novalidate>
                                                 <input type="hidden" name="action" value="<%= isEdit ? "update" : "create" %>">
-                                                <% if (isEdit) { %>
+                                                <% if (isEdit && emp != null) { %>
                                                     <input type="hidden" name="id" value="<%= emp.getId() %>">
                                                     <% } %>
 
                                                         <!-- Hidden fields -->
                                                         <input type="hidden" name="avatar" id="avatar"
-                                                            value="<%= isEdit && emp.getAvatar() != null ? emp.getAvatar() : "" %>">
+                                                            value="<%= isEdit && emp != null && emp.getAvatar() != null ? emp.getAvatar() : "" %>">
 
-                                                        <!-- ALL IN ONE FORM CARD -->
                                                         <% if (session.getAttribute("errorMsg") != null) { %>
                                                             <div style="background-color: #fee2e2; color: #dc2626; padding: 12px 20px; border-radius: 8px; margin-bottom: 24px; font-weight: 500; border: 1px solid #fca5a5; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(220,38,38,0.1);">
                                                                 <svg style="margin-right: 12px;" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -285,6 +256,7 @@
                                                                 <span><%= session.getAttribute("errorMsg") %></span>
                                                             </div>
                                                         <% } %>
+
                                                         <div class="form-card">
                                                             <div class="form-card-title">
                                                                 <svg viewBox="0 0 24 24" width="18" height="18"
@@ -302,28 +274,29 @@
                                                                     <div class="form-group">
                                                                         <label class="form-label">Họ và tên <span
                                                                                 style="color:#ef4444;">*</span></label>
-                                                                        <input type="text" name="fullName"
+                                                                        <input type="text" name="fullName" id="fullNameInput"
                                                                             class="form-input" required
-                                                                            value="<%= isEdit && emp.getFullName() != null ? emp.getFullName() : "" %>">
+                                                                            placeholder="Nhập họ và tên đầy đủ"
+                                                                            value="<%= isEdit && emp != null && emp.getFullName() != null ? emp.getFullName() : "" %>">
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <div class="form-group">
                                                                         <label class="form-label">Vai trò <span
                                                                                 style="color:#ef4444;">*</span></label>
-                                                                        <select name="roleId" class="form-select"
+                                                                        <select name="roleId" id="roleSelect" class="form-select"
                                                                             required>
                                                                             <option value="">-- Chọn vai trò --</option>
                                                                             <% if (listRoles !=null) { for
-                                                                                (project.duan1_sd21301.model.huy.Role
-                                                                                role : listRoles) { %>
+                                                                                (Role role : listRoles) { %>
                                                                                 <option value="<%= role.getId() %>"
-                                                                                    <%=(isEdit &&
-                                                                                    emp.getRoleId()==role.getId())
+                                                                                    <%=(isEdit && emp != null && emp.getRoleId()==role.getId())
                                                                                     ? "selected" : "" %>>
                                                                                     <%= role.getRoleName() %>
                                                                                 </option>
                                                                                 <% } } %>
                                                                         </select>
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <div class="form-group">
@@ -332,16 +305,17 @@
                                                                         <div style="display: flex; gap: 8px;">
                                                                             <input type="text" name="cccd" id="cccdInput"
                                                                                 class="form-input" required style="flex: 1;"
-                                                                                value="<%= isEdit && emp.getCccd() != null ? emp.getCccd() : "" %>"
-                                                                                pattern="\d{12}" title="Vui lòng nhập đúng 12 chữ số CCCD"
+                                                                                placeholder="12 chữ số"
+                                                                                value="<%= isEdit && emp != null && emp.getCccd() != null ? emp.getCccd() : "" %>"
                                                                                 maxlength="12">
-                                                                            <button type="button" id="btnScanCccd" onclick="handleScanBtnClick()" style="padding: 0 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #334155; font-weight: 500; white-space: nowrap;">
+                                                                            <button type="button" id="btnScanCccdCamera" onclick="startCameraScan()" style="padding: 0 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #334155; font-weight: 500; white-space: nowrap;">
                                                                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                    <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
+                                                                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>
                                                                                 </svg>
-                                                                                Quét ảnh
+                                                                                Quét Camera
                                                                             </button>
                                                                         </div>
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <div class="form-group">
@@ -352,14 +326,14 @@
                                                                                 style="display: flex; align-items: center; gap: 4px; font-size: 13px;">
                                                                                 <input type="radio" name="gender"
                                                                                     value="1" <%=(!isEdit ||
-                                                                                    (emp.getGender() !=null &&
+                                                                                    (emp != null && emp.getGender() !=null &&
                                                                                     emp.getGender())) ? "checked" : ""
                                                                                     %>> Nam
                                                                             </label>
                                                                             <label
                                                                                 style="display: flex; align-items: center; gap: 4px; font-size: 13px;">
                                                                                 <input type="radio" name="gender"
-                                                                                    value="0" <%=(isEdit &&
+                                                                                    value="0" <%=(isEdit && emp != null &&
                                                                                     emp.getGender() !=null &&
                                                                                     !emp.getGender()) ? "checked" : ""
                                                                                     %>> Nữ
@@ -369,67 +343,71 @@
 
                                                                     <div class="form-group">
                                                                         <label class="form-label">Ngày sinh</label>
-                                                                        <input type="date" name="birthday"
+                                                                        <input type="date" name="birthday" id="birthdayInput"
                                                                             class="form-input"
-                                                                            value="<%= isEdit && emp.getBirthday() != null ? df.format(emp.getBirthday()) : "" %>">
+                                                                            value="<%= isEdit && emp != null && emp.getBirthday() != null ? df.format(emp.getBirthday()) : "" %>">
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <div class="form-group">
                                                                         <label class="form-label">Số điện thoại <span
                                                                                 style="color:#ef4444;">*</span></label>
-                                                                        <input type="text" name="phoneNumber"
+                                                                        <input type="text" name="phoneNumber" id="phoneInput"
                                                                             class="form-input" required
-                                                                            pattern="^(03|05|07|08|09)\d{8}$"
-                                                                            title="Vui lòng nhập đúng số điện thoại (10 số, bắt đầu bằng 03/05/07/08/09)"
                                                                             placeholder="VD: 0912345678"
-                                                                            value="<%= isEdit && emp.getPhoneNumber() != null ? emp.getPhoneNumber() : "" %>">
+                                                                            value="<%= isEdit && emp != null && emp.getPhoneNumber() != null ? emp.getPhoneNumber() : "" %>">
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <div class="form-group">
                                                                         <label class="form-label">Email <span
                                                                                 style="color:#ef4444;">*</span></label>
-                                                                        <input type="email" name="email"
+                                                                        <input type="email" name="email" id="emailInput"
                                                                             class="form-input" required
                                                                             placeholder="VD: abc@gmail.com"
-                                                                            value="<%= isEdit && emp.getEmail() != null ? emp.getEmail() : "" %>">
+                                                                            value="<%= isEdit && emp != null && emp.getEmail() != null ? emp.getEmail() : "" %>">
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <!-- BỘ ĐỊA CHỈ TRONG CÙNG GRID -->
                                                                     <div class="form-group">
-                                                                        <label class="form-label">Tỉnh / Thành
-                                                                            phố</label>
+                                                                        <label class="form-label">Tỉnh / Thành phố <span style="color:#ef4444;">*</span></label>
                                                                         <select id="province" class="form-select">
-                                                                            <option value="">-- Tỉnh/Thành phố --
-                                                                            </option>
+                                                                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
                                                                         </select>
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
                                                                     <div class="form-group">
-                                                                        <label class="form-label">Quận / Huyện</label>
-                                                                        <select id="district" class="form-select"
-                                                                            disabled>
-                                                                            <option value="">-- Quận/Huyện --</option>
+                                                                        <label class="form-label">Quận / Huyện <span style="color:#ef4444;">*</span></label>
+                                                                        <select id="district" class="form-select" disabled>
+                                                                            <option value="">-- Chọn Quận/Huyện --</option>
                                                                         </select>
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
                                                                     <div class="form-group">
-                                                                        <label class="form-label">Phường / Xã</label>
+                                                                        <label class="form-label">Phường / Xã <span style="color:#ef4444;">*</span></label>
                                                                         <select id="ward" class="form-select" disabled>
-                                                                            <option value="">-- Phường/Xã/Đặc khu --
-                                                                            </option>
+                                                                            <option value="">-- Chọn Phường/Xã --</option>
                                                                         </select>
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
-                                                                    <div class="form-group"
-                                                                        style="grid-column: span 2;">
-                                                                        <label class="form-label">Địa chỉ tổng hợp (Số
-                                                                            nhà,
-                                                                            đường...)</label>
+
+                                                                    <!-- Trường Địa chỉ chi tiết (Tổ, Thôn, Xóm, Số nhà...) -->
+                                                                    <div class="form-group" style="grid-column: span 2;">
+                                                                        <label class="form-label">Địa chỉ <span style="color:#ef4444;">*</span></label>
                                                                         <input type="text" name="detailAddress"
                                                                             id="detailAddress" class="form-input"
-                                                                            required
-                                                                            placeholder="VD: Số 123, Đường Lê Lợi">
+                                                                            placeholder="Nhập Tổ, Thôn, Xóm, Số nhà, Tên đường...">
+                                                                        <div class="invalid-feedback"></div>
                                                                     </div>
-                                                                    <!-- Input ẩn lưu chuỗi address đầy đủ -->
+
+                                                                    <!-- Các input ẩn hỗ trợ truyền thông tin về Backend -->
+                                                                    <input type="hidden" name="province" id="hiddenProvinceName">
+                                                                    <input type="hidden" name="district" id="hiddenDistrictName">
+                                                                    <input type="hidden" name="ward" id="hiddenWardName">
+                                                                    <input type="hidden" name="detailedAddress" id="hiddenDetailedAddress">
                                                                     <input type="hidden" name="address" id="fullAddress"
-                                                                        value="<%= isEdit && emp.getAddress() != null ? emp.getAddress() : "" %>">
+                                                                        value="<%= isEdit && emp != null ? emp.getFullAddressString() : "" %>">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -459,47 +437,66 @@
                                         </div>
                                     </main>
                                 </div>
+                                
 
                                 <script>
                                     window.CONTEXT_PATH = '${pageContext.request.contextPath}';
 
-                                    // === ĐỊA CHỈ: tự gọi thẳng API ngoài, không qua proxy ===
                                     let _pCache = null;
                                     let _dCache = {};
                                     let _wCache = {};
 
                                     async function geoFetch(path) {
-                                        const direct = 'https://provinces.open-api.vn' + path;
-                                        try {
-                                            const r = await fetch(direct, {signal: AbortSignal.timeout(15000)});
-                                            if (r.ok) return await r.json();
-                                        } catch(e) { console.error('[Geo] error:', e.message); }
+                                        const urls = [
+                                            'https://provinces.open-api.vn/api' + path,
+                                            'https://provinces.open-api.vn/api/v1' + path
+                                        ];
+                                        for (const url of urls) {
+                                            try {
+                                                const r = await fetch(url, {signal: AbortSignal.timeout(8000)});
+                                                if (r.ok) {
+                                                    const d = await r.json();
+                                                    if (d) return d;
+                                                }
+                                            } catch(e) {}
+                                        }
                                         return null;
                                     }
 
                                     async function loadProvinces() {
                                         if (_pCache) return _pCache;
-                                        const d = await geoFetch('/api/v1/p');
+                                        const d = await geoFetch('/p/');
                                         if (Array.isArray(d) && d.length > 0) { _pCache = d; return d; }
                                         return [];
                                     }
 
                                     async function loadDistricts(pCode) {
+                                        if (!pCode) return [];
                                         if (_dCache[pCode]) return _dCache[pCode];
-                                        const d = await geoFetch('/api/v1/p/' + pCode + '?depth=2');
-                                        if (d && d.districts) { _dCache[pCode] = d.districts; return d.districts; }
+                                        const d = await geoFetch('/p/' + pCode + '?depth=2');
+                                        if (d && (d.districts || Array.isArray(d))) {
+                                            const list = d.districts || d;
+                                            _dCache[pCode] = list;
+                                            return list;
+                                        }
                                         return [];
                                     }
 
                                     async function loadWards(dCode) {
+                                        if (!dCode) return [];
                                         if (_wCache[dCode]) return _wCache[dCode];
-                                        const d = await geoFetch('/api/v1/d/' + dCode + '?depth=2');
-                                        if (d && d.wards) { _wCache[dCode] = d.wards; return d.wards; }
+                                        const d = await geoFetch('/d/' + dCode + '?depth=2');
+                                        if (d && (d.wards || Array.isArray(d))) {
+                                            const list = d.wards || d;
+                                            _wCache[dCode] = list;
+                                            return list;
+                                        }
                                         return [];
                                     }
 
                                     function buildOptions(sel, items, placeholder) {
                                         sel.innerHTML = '<option value="">' + placeholder + '</option>';
+                                        if (!items || !Array.isArray(items)) return;
                                         items.forEach(function(item) {
                                             var o = document.createElement('option');
                                             o.value = item.code;
@@ -508,19 +505,175 @@
                                         });
                                     }
 
+                                    function removeVietnameseTones(str) {
+                                        if (!str) return '';
+                                        str = str.normalize("NFC");
+                                        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+                                        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+                                        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+                                        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+                                        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+                                        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+                                        str = str.replace(/đ/g, "d");
+                                        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+                                        str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+                                        str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+                                        str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+                                        str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+                                        str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+                                        str = str.replace(/Đ/g, "D");
+                                        return str;
+                                    }
+
+                                    function cleanGeoSlug(str) {
+                                        if (!str) return '';
+                                        let s = removeVietnameseTones(str).toLowerCase();
+                                        s = s.replace(/^(tinh|thanh pho|tp|quan|huyen|thi xa|thi tran|phuong|xa)\s+/g, '');
+                                        s = s.replace(/[^a-z0-9\s]/g, ' ');
+                                        return s.replace(/\s+/g, ' ').trim();
+                                    }
+
+                                    function geoMatch(target, candidate) {
+                                        if (!target || !candidate) return false;
+                                        let t = cleanGeoSlug(target);
+                                        let c = cleanGeoSlug(candidate);
+                                        if (!t || !c) return false;
+                                        return t === c || t.includes(c) || c.includes(t);
+                                    }
+
                                     function syncFullAddress() {
                                         var pSel = document.getElementById('province');
                                         var dSel = document.getElementById('district');
                                         var wSel = document.getElementById('ward');
                                         var street = document.getElementById('detailAddress');
-                                        var hidden = document.getElementById('fullAddress');
-                                        if (!hidden) return;
+                                        
+                                        var hiddenProv = document.getElementById('hiddenProvinceName');
+                                        var hiddenDist = document.getElementById('hiddenDistrictName');
+                                        var hiddenWard = document.getElementById('hiddenWardName');
+                                        var hiddenDetail = document.getElementById('hiddenDetailedAddress');
+                                        var hiddenFull = document.getElementById('fullAddress');
+
                                         var pt = pSel && pSel.selectedIndex > 0 ? pSel.options[pSel.selectedIndex].text : '';
                                         var dt = dSel && dSel.selectedIndex > 0 ? dSel.options[dSel.selectedIndex].text : '';
                                         var wt = wSel && wSel.selectedIndex > 0 ? wSel.options[wSel.selectedIndex].text : '';
                                         var s  = street ? street.value.trim() : '';
+
+                                        if (hiddenProv) hiddenProv.value = pt;
+                                        if (hiddenDist) hiddenDist.value = dt;
+                                        if (hiddenWard) hiddenWard.value = wt;
+                                        if (hiddenDetail) hiddenDetail.value = s;
+
                                         var parts = [s, wt, dt, pt].filter(function(x){ return x; });
-                                        hidden.value = parts.join(', ');
+                                        if (hiddenFull) hiddenFull.value = parts.join(', ');
+                                    }
+
+                                    async function setAddressCascading(addressString) {
+                                        if (!addressString) return;
+                                        var provSel = document.getElementById('province');
+                                        var distSel = document.getElementById('district');
+                                        var wardSel = document.getElementById('ward');
+                                        var streetIn = document.getElementById('detailAddress');
+
+                                        var parts = addressString.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+                                        if (parts.length === 0) return;
+
+                                        if (streetIn) streetIn.value = addressString;
+
+                                        if (parts.length < 2) {
+                                            syncFullAddress();
+                                            return;
+                                        }
+
+                                        var pName = parts[parts.length - 1];
+                                        var provinces = await loadProvinces();
+                                        if (!provSel) return;
+                                        buildOptions(provSel, provinces, '-- Chọn Tỉnh/Thành phố --');
+                                        provSel.disabled = false;
+
+                                        var selectedPCode = null;
+                                        for (var i = 0; i < provSel.options.length; i++) {
+                                            if (geoMatch(pName, provSel.options[i].text)) {
+                                                provSel.selectedIndex = i;
+                                                selectedPCode = provSel.options[i].value;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!selectedPCode) {
+                                            syncFullAddress();
+                                            return;
+                                        }
+
+                                        distSel.innerHTML = '<option value="">Đang tải Quận/Huyện...</option>';
+                                        distSel.disabled = true;
+                                        var dists = await loadDistricts(selectedPCode);
+                                        buildOptions(distSel, dists, '-- Chọn Quận/Huyện --');
+                                        distSel.disabled = false;
+
+                                        var dName = parts.length >= 2 ? parts[parts.length - 2] : '';
+                                        var selectedDCode = null;
+                                        var matchedDIndex = -1;
+
+                                        for (var j = 0; j < distSel.options.length; j++) {
+                                            if (geoMatch(dName, distSel.options[j].text)) {
+                                                matchedDIndex = j;
+                                                selectedDCode = distSel.options[j].value;
+                                                break;
+                                            }
+                                        }
+
+                                        var wName = '';
+                                        var streetParts = [];
+
+                                        if (matchedDIndex > 0) {
+                                            distSel.selectedIndex = matchedDIndex;
+                                            wName = parts.length >= 3 ? parts[parts.length - 3] : '';
+                                            streetParts = parts.slice(0, parts.length - 3);
+                                        } else {
+                                            for (var idx = parts.length - 2; idx >= 0; idx--) {
+                                                for (var j = 0; j < distSel.options.length; j++) {
+                                                    if (geoMatch(parts[idx], distSel.options[j].text)) {
+                                                        distSel.selectedIndex = j;
+                                                        selectedDCode = distSel.options[j].value;
+                                                        wName = idx > 0 ? parts[idx - 1] : '';
+                                                        streetParts = parts.slice(0, idx - 1);
+                                                        break;
+                                                    }
+                                                }
+                                                if (selectedDCode) break;
+                                            }
+                                        }
+
+                                        var detailText = streetParts.join(', ').trim();
+                                        if (streetIn) {
+                                            if (detailText) {
+                                                streetIn.value = detailText;
+                                            } else if (matchedDIndex > 0 && parts.length > 3) {
+                                                streetIn.value = parts.slice(0, parts.length - 3).join(', ');
+                                            } else if (parts.length > 2) {
+                                                streetIn.value = parts.slice(0, parts.length - 2).join(', ');
+                                            }
+                                        }
+
+                                        if (selectedDCode) {
+                                            wardSel.innerHTML = '<option value="">Đang tải Phường/Xã...</option>';
+                                            wardSel.disabled = true;
+                                            var wards = await loadWards(selectedDCode);
+                                            buildOptions(wardSel, wards, '-- Chọn Phường/Xã --');
+                                            wardSel.disabled = (wards.length === 0);
+
+                                            if (wName) {
+                                                for (var k = 0; k < wardSel.options.length; k++) {
+                                                    if (geoMatch(wName, wardSel.options[k].text)) {
+                                                        wardSel.selectedIndex = k;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        syncFullAddress();
+                                        validateAllFieldsLive();
                                     }
 
                                     document.addEventListener('DOMContentLoaded', async function() {
@@ -532,189 +685,237 @@
 
                                         if (!provSel) return;
 
-                                        // Load tỉnh thành
-                                        provSel.innerHTML = '<option value="">Đang tải...</option>';
+                                        provSel.innerHTML = '<option value="">Đang tải Tỉnh/Thành...</option>';
                                         provSel.disabled = true;
                                         var provinces = await loadProvinces();
-                                        buildOptions(provSel, provinces, '-- Chọn Tỉnh/Thành --');
+                                        buildOptions(provSel, provinces, '-- Chọn Tỉnh/Thành phố --');
                                         provSel.disabled = false;
 
-                                        // Sự kiện chọn Tỉnh
                                         provSel.addEventListener('change', async function() {
-                                            distSel.innerHTML = '<option value="">Đang tải...</option>';
+                                            var pCode = this.value;
+                                            if (!pCode) {
+                                                distSel.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+                                                distSel.disabled = true;
+                                                wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                                                wardSel.disabled = true;
+                                                syncFullAddress();
+                                                validateField('province');
+                                                return;
+                                            }
+                                            distSel.innerHTML = '<option value="">Đang tải Quận/Huyện...</option>';
                                             distSel.disabled = true;
                                             wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
                                             wardSel.disabled = true;
-                                            var dists = await loadDistricts(this.value);
+                                            var dists = await loadDistricts(pCode);
                                             buildOptions(distSel, dists, '-- Chọn Quận/Huyện --');
                                             distSel.disabled = false;
                                             syncFullAddress();
+                                            validateField('province');
                                         });
 
-                                        // Sự kiện chọn Quận
                                         distSel.addEventListener('change', async function() {
-                                            wardSel.innerHTML = '<option value="">Đang tải...</option>';
+                                            var dCode = this.value;
+                                            if (!dCode) {
+                                                wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                                                wardSel.disabled = true;
+                                                syncFullAddress();
+                                                validateField('district');
+                                                return;
+                                            }
+                                            wardSel.innerHTML = '<option value="">Đang tải Phường/Xã...</option>';
                                             wardSel.disabled = true;
-                                            var wards = await loadWards(this.value);
+                                            var wards = await loadWards(dCode);
                                             buildOptions(wardSel, wards, '-- Chọn Phường/Xã --');
                                             wardSel.disabled = (wards.length === 0);
                                             syncFullAddress();
+                                            validateField('district');
                                         });
 
-                                        wardSel.addEventListener('change', syncFullAddress);
-                                        if (streetIn) streetIn.addEventListener('input', syncFullAddress);
+                                        wardSel.addEventListener('change', function() {
+                                            syncFullAddress();
+                                            validateField('ward');
+                                        });
+                                        if (streetIn) streetIn.addEventListener('input', function() {
+                                            syncFullAddress();
+                                            validateField('detailAddress');
+                                        });
 
-                                        // Edit mode: phục hồi giá trị cũ
                                         var existing = hidden ? hidden.value.trim() : '';
                                         if (existing) {
-                                            var parts = existing.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s; });
-                                            if (parts.length >= 4) {
-                                                var pName = parts[parts.length - 1];
-                                                var dName = parts[parts.length - 2];
-                                                var wName = parts[parts.length - 3];
-                                                var street2 = parts.slice(0, parts.length - 3).join(', ');
-                                                if (streetIn) streetIn.value = street2;
-                                                var pm = provinces.find(function(x){ return x.name.trim() === pName; });
-                                                if (pm) {
-                                                    provSel.value = pm.code;
-                                                    var dists2 = await loadDistricts(pm.code);
-                                                    buildOptions(distSel, dists2, '-- Chọn Quận/Huyện --');
-                                                    distSel.disabled = false;
-                                                    var dm = dists2.find(function(x){ return x.name.trim() === dName; });
-                                                    if (dm) {
-                                                        distSel.value = dm.code;
-                                                        var wards2 = await loadWards(dm.code);
-                                                        buildOptions(wardSel, wards2, '-- Chọn Phường/Xã --');
-                                                        wardSel.disabled = false;
-                                                        for (var i = 0; i < wardSel.options.length; i++) {
-                                                            if (wardSel.options[i].text.trim() === wName) { wardSel.selectedIndex = i; break; }
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            await setAddressCascading(existing);
                                         }
+
+                                        setupLiveValidation();
                                     });
                                 </script>
+
+                                <div id="qrCameraModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+                                    <div style="background: white; padding: 24px; border-radius: 12px; width: 440px; max-width: 95%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4);">
+                                        <h3 style="margin-top: 0; font-size: 18px; color: #0f172a;">📷 Quét mã QR CCCD</h3>
+                                        <div style="background: #fefce8; border: 1px solid #fde047; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: #713f12; text-align: left;">
+                                            💡 <strong>Mẹo quét thẻ vật lý:</strong><br>
+                                            • Đặt thẻ cách webcam <strong>15–25cm</strong><br>
+                                            • Hướng thẻ về phía có nguồn đèn (cửa sổ, đèn trần)<br>
+                                            • Tránh góc đặt khiến mã QR bị phản sáng<br>
+                                            • Giữ thẻ thật yên, không rung
+                                        </div>
+                                        <div id="qrReader" style="width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 16px;"></div>
+                                        <div style="display: flex; gap: 8px; justify-content: center;">
+                                            <button type="button" id="btnToggleTorch" onclick="toggleTorch()" style="display:none; padding: 10px 20px; background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; color: #713f12; font-weight: 600; cursor: pointer; font-size: 13px;">
+                                                🔦 Bật Đèn
+                                            </button>
+                                            <button type="button" onclick="stopCameraScan()" style="padding: 10px 28px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; font-weight: 600; cursor: pointer; font-size: 14px;">
+                                                ✕ Đóng Camera
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                <script src="${pageContext.request.contextPath}/assets/js/admin.js"></script>
+
                                 <script>
-                                    // Xử lý ảnh base64
-                                    const avatarFileInput = document.getElementById('avatarFile');
-                                    if (avatarFileInput) {
-                                        avatarFileInput.addEventListener('change', function (e) {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                                document.getElementById('fileName').innerText = file.name;
-                                                const reader = new FileReader();
-                                                reader.onload = function (evt) {
-                                                    const base64Str = evt.target.result;
-                                                    document.getElementById('avatar').value = base64Str;
-                                                    document.getElementById('avatarPreview').innerHTML = `<img src="${base64Str}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                                                };
-                                                reader.readAsDataURL(file);
+                                    // Hàm hiển thị / ẩn thông báo lỗi trực tiếp bên dưới ô input (Real-time Validation)
+                                    function setFieldError(el, message) {
+                                        if (!el) return;
+                                        let parent = el.closest('.form-group') || el.parentElement;
+                                        let errBox = parent ? parent.querySelector('.invalid-feedback') : null;
+
+                                        if (message) {
+                                            el.style.borderColor = '#ef4444';
+                                            el.style.boxShadow = '0 0 0 2px rgba(239, 68, 68, 0.15)';
+                                            if (errBox) {
+                                                errBox.textContent = message;
+                                                errBox.style.display = 'block';
                                             }
-                                        });
+                                        } else {
+                                            el.style.borderColor = '';
+                                            el.style.boxShadow = '';
+                                            if (errBox) {
+                                                errBox.textContent = '';
+                                                errBox.style.display = 'none';
+                                            }
+                                        }
                                     }
 
-                                    document.addEventListener('DOMContentLoaded', () => {
-                                        // (Phần khởi tạo block địa chỉ đã được xử lý ở script phía trên)
+                                    function validateField(fieldIdOrName) {
+                                        const form = document.getElementById('employeeForm');
+                                        if (!form) return true;
 
-                                        // Auto-fill CCCD từ URL hoặc sessionStorage
-                                        let cccdData = null;
-                                        const urlParams = new URLSearchParams(window.location.search);
-                                        if (urlParams.get('cccd')) {
-                                            cccdData = { cccd: urlParams.get('cccd') };
-                                        } else if (sessionStorage.getItem('scannedCccdData')) {
-                                            cccdData = JSON.parse(sessionStorage.getItem('scannedCccdData'));
-                                            sessionStorage.removeItem('scannedCccdData'); // Xóa sau khi dùng
+                                        let el = document.getElementById(fieldIdOrName) || form.querySelector('[name="' + fieldIdOrName + '"]');
+                                        if (!el) return true;
+
+                                        let val = el.value ? el.value.trim() : '';
+
+                                        if (fieldIdOrName === 'fullName' || fieldIdOrName === 'fullNameInput') {
+                                            if (!val) { setFieldError(el, 'Họ và tên không được để trống.'); return false; }
+                                            if (val.length < 2) { setFieldError(el, 'Họ và tên phải gồm ít nhất 2 ký tự.'); return false; }
+                                            setFieldError(el, null); return true;
                                         }
 
-                                        if (cccdData) {
-                                            fillFormWithCccdData(cccdData);
+                                        if (fieldIdOrName === 'roleId' || fieldIdOrName === 'roleSelect') {
+                                            if (!val || val === '0') { setFieldError(el, 'Vui lòng chọn vai trò làm việc.'); return false; }
+                                            setFieldError(el, null); return true;
                                         }
-                                    });
 
-                                    // Helper hàm để điền data vào form
-                                    function fillFormWithCccdData(data) {
-                                        let debugMsg = "Data nhận được:\nCCCD: " + data.cccd + "\nTên: " + data.fullName + "\nDOB: " + data.dob + "\nGiới tính: " + data.gender;
-                                        // Hiển thị thông báo để người dùng thấy rõ nội dung đã quét
-                                        Swal.fire({
-                                            icon: 'info',
-                                            title: 'Debug Data',
-                                            text: debugMsg
+                                        if (fieldIdOrName === 'cccd' || fieldIdOrName === 'cccdInput') {
+                                            if (!val) { setFieldError(el, 'Số CCCD không được để trống.'); return false; }
+                                            if (!/^\d{12}$/.test(val)) { setFieldError(el, 'Số CCCD phải gồm đúng 12 chữ số.'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+
+                                        if (fieldIdOrName === 'phoneNumber' || fieldIdOrName === 'phoneInput') {
+                                            if (!val) { setFieldError(el, 'Số điện thoại không được để trống.'); return false; }
+                                            if (!/^(03|05|07|08|09)\d{8}$/.test(val)) { setFieldError(el, 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 03, 05, 07, 08, 09).'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+
+                                        if (fieldIdOrName === 'email' || fieldIdOrName === 'emailInput') {
+                                            if (!val) { setFieldError(el, 'Email không được để trống.'); return false; }
+                                            if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val)) { setFieldError(el, 'Email không đúng định dạng chuẩn.'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+
+                                        if (fieldIdOrName === 'birthday' || fieldIdOrName === 'birthdayInput') {
+                                            if (val) {
+                                                const dob = new Date(val);
+                                                const today = new Date();
+                                                let age = today.getFullYear() - dob.getFullYear();
+                                                const m = today.getMonth() - dob.getMonth();
+                                                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+                                                if (age < 18) { setFieldError(el, 'Nhân viên phải từ 18 tuổi trở lên.'); return false; }
+                                            }
+                                            setFieldError(el, null); return true;
+                                        }
+
+                                        if (fieldIdOrName === 'province') {
+                                            if (!val) { setFieldError(el, 'Vui lòng chọn Tỉnh / Thành phố.'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+                                        if (fieldIdOrName === 'district') {
+                                            if (!val) { setFieldError(el, 'Vui lòng chọn Quận / Huyện.'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+                                        if (fieldIdOrName === 'ward') {
+                                            if (!val) { setFieldError(el, 'Vui lòng chọn Phường / Xã.'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+                                        if (fieldIdOrName === 'detailAddress') {
+                                            if (!val) { setFieldError(el, 'Vui lòng nhập chi tiết Địa chỉ (Tổ, Thôn, Xóm, Số nhà...).'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+
+                                        return true;
+                                    }
+
+                                    function validateAllFieldsLive() {
+                                        const fields = ['fullNameInput', 'roleSelect', 'cccdInput', 'phoneInput', 'emailInput', 'birthdayInput', 'province', 'district', 'ward', 'detailAddress'];
+                                        let isValid = true;
+                                        let firstErrorEl = null;
+
+                                        fields.forEach(function(fId) {
+                                            let pass = validateField(fId);
+                                            if (!pass && !firstErrorEl) {
+                                                firstErrorEl = document.getElementById(fId) || document.querySelector('[name="' + fId + '"]');
+                                            }
+                                            if (!pass) isValid = false;
                                         });
 
-                                        const cccdInput = document.getElementById('cccdInput');
-                                        if (cccdInput && data.cccd) {
-                                            cccdInput.value = data.cccd;
-                                            cccdInput.readOnly = true;
-                                            cccdInput.setAttribute('readonly', 'readonly');
-                                            cccdInput.style.backgroundColor = '#f1f5f9';
-                                            cccdInput.style.color = '#94a3b8';
-                                            cccdInput.style.cursor = 'not-allowed';
-                                            cccdInput.style.pointerEvents = 'none';
+                                        if (!isValid && firstErrorEl) {
+                                            firstErrorEl.focus();
                                         }
-                                        
-                                        if (data.fullName) {
-                                            const fullNameEl = document.querySelector('input[name="fullName"]');
-                                            if (fullNameEl) fullNameEl.value = data.fullName;
-                                        }
-                                        
-                                        if (data.dob) {
-                                            const dobEl = document.querySelector('input[name="birthday"]');
-                                            if (dobEl) dobEl.value = data.dob;
-                                        }
-                                        
-                                        if (data.gender) {
-                                            const genderEl = document.querySelector(`input[name="gender"][value="${data.gender}"]`);
-                                            if (genderEl) genderEl.checked = true;
-                                        }
-                                        
-                                        if (data.address) {
-                                            const streetEl = document.getElementById('detailAddress');
-                                            if (streetEl) streetEl.value = data.address;
-                                            const addressHidden = document.getElementById('fullAddress');
-                                            if (addressHidden) addressHidden.value = data.address;
-                                            
-                                            // Trigger sync if the function exists
-                                            if (typeof syncFullAddress === 'function') syncFullAddress();
-                                        }
+                                        return isValid;
                                     }
-                                     // Toast is now handled by layout/toast.jsp
-                                    function handleScanBtnClick() {
-                                        Swal.fire({
-                                            title: 'Tải ảnh CCCD',
-                                            html: '<input type="file" id="cccdScanFile" accept="image/*" style="margin-top:10px;width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">',
-                                            showCancelButton: true,
-                                            confirmButtonText: 'Xử lý & Quét',
-                                            cancelButtonText: 'Hủy',
-                                            confirmButtonColor: '#3B82F6',
-                                            cancelButtonColor: '#94A3B8',
-                                            preConfirm: () => {
-                                                const file = document.getElementById('cccdScanFile').files[0];
-                                                if (!file) { Swal.showValidationMessage('Vui lòng chọn ảnh CCCD'); }
-                                                return file;
-                                            }
-                                        }).then(async (result) => {
-                                            if (result.isConfirmed) {
-                                                const file = result.value;
-                                                Swal.fire({ title: 'Đang giải mã QR...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                                                try {
-                                                    const qrText = await decodeQR(file);
-                                                    const cccdData = parseCccdString(qrText);
-                                                    
-                                                    fillFormWithCccdData(cccdData);
-                                                    
-                                                    // Swal.fire({ icon: 'success', title: 'Quét thành công!', text: 'Đã điền thông tin tự động.', showConfirmButton: false, timer: 1500 });
-                                                } catch (err) {
-                                                    Swal.fire({ icon: 'error', title: 'Lỗi quét QR', text: err.message || "Không thể giải mã mã QR" });
-                                                }
+
+                                    function setupLiveValidation() {
+                                        const fields = [
+                                            { id: 'fullNameInput', ev: ['input', 'blur'] },
+                                            { id: 'roleSelect', ev: ['change', 'blur'] },
+                                            { id: 'cccdInput', ev: ['input', 'blur'] },
+                                            { id: 'phoneInput', ev: ['input', 'blur'] },
+                                            { id: 'emailInput', ev: ['input', 'blur'] },
+                                            { id: 'birthdayInput', ev: ['change', 'blur'] },
+                                            { id: 'province', ev: ['change'] },
+                                            { id: 'district', ev: ['change'] },
+                                            { id: 'ward', ev: ['change'] },
+                                            { id: 'detailAddress', ev: ['input', 'blur'] }
+                                        ];
+
+                                        fields.forEach(function(item) {
+                                            let el = document.getElementById(item.id) || document.querySelector('[name="' + item.id + '"]');
+                                            if (el) {
+                                                item.ev.forEach(function(eventName) {
+                                                    el.addEventListener(eventName, function() {
+                                                        validateField(item.id);
+                                                    });
+                                                });
                                             }
                                         });
                                     }
 
                                     function confirmSave(btn) {
-                                        const form = btn.closest('form');
-                                        if (!form.checkValidity()) {
-                                            form.reportValidity(); // This will show the browser's default validation UI
+                                        const form = document.getElementById('employeeForm');
+                                        if (!validateAllFieldsLive()) {
                                             return;
                                         }
                                         Swal.fire({
@@ -728,77 +929,133 @@
                                             cancelButtonText: 'Hủy'
                                         }).then((result) => {
                                             if (result.isConfirmed) {
-                                                // Sync địa chỉ tổng hợp trước khi submit
                                                 if (typeof syncFullAddress === 'function') syncFullAddress();
                                                 form.submit();
                                             }
                                         });
                                     }
-
                                 </script>
-                                <script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    const form = document.querySelector('form');
-    if (form) {
-
-        form.addEventListener('submit', function(e) {
-            document.querySelectorAll('.error-msg').forEach(el => el.remove());
-            let isValid = true;
-                const nameInput = document.querySelector('input[name="fullName"]');
-
-                const nameRegex = /^[\p{L}\s]{2,}$/u;
-                if (nameInput && (!nameInput.value || !nameRegex.test(nameInput.value.trim()))) {
-                    showError(nameInput, 'Họ và tên tối thiểu 2 ký tự và không chứa số hoặc ký tự đặc biệt.');
-                    isValid = false;
-                }
-
-                const phoneInput = document.querySelector('input[name="phoneNumber"]');
-
-                const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
-                if (phoneInput && (!phoneInput.value || !phoneRegex.test(phoneInput.value.trim()))) {
-                    showError(phoneInput, 'Số điện thoại phải 10 chữ số và bắt đầu bằng 03, 05, 07, 08, hoặc 09.');
-                    isValid = false;
-                }
-
-                const emailInput = document.querySelector('input[name="email"]');
-
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (emailInput && (!emailInput.value || !emailRegex.test(emailInput.value.trim()))) {
-                    showError(emailInput, 'Email không hợp lệ.');
-                    isValid = false;
-                }
-
-            if (!isValid) {
-                e.preventDefault();
-            } else {
-                // Form hợp lệ, hiển thị hộp thoại xác nhận
-                const isEdit = form.getAttribute('data-is-edit') === 'true';
-                const msg = isEdit ? "Bạn có chắc chắn muốn cập nhật nhân viên này không?" : "Bạn có chắc chắn muốn thêm nhân viên này không?";
-                if (!confirm(msg)) {
-                    e.preventDefault(); // Hủy submit nếu người dùng chọn Cancel
-                }
-            }
-        });
-    }
-
-    function showError(input, message) {
-        // Tạo một thẻ <div> mới
-        const error = document.createElement('div');
-        error.className = 'error-msg';
-        error.style.color = '#EF4444'; // Màu đỏ
-        error.style.fontSize = '12px';
-        error.style.marginTop = '4px';
-        error.style.fontWeight = '500';
-        error.innerText = message; // Đặt nội dung lỗi
-        
-        input.parentNode.appendChild(error);
-        input.focus();
-    }
-});
-                                </script>
-                                <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+                                <script src="https://unpkg.com/html5-qrcode"></script>
                                 <script src="${pageContext.request.contextPath}/assets/js/qr-scanner.js"></script>
+                                
+                                <script>
+                                    let html5QrCode = null;
+                                    let isScannerRunning = false;
+
+                                    function startCameraScan() {
+                                        if (isScannerRunning) return;
+
+                                        const modal = document.getElementById('qrCameraModal');
+                                        modal.style.display = 'flex';
+
+                                        html5QrCode = new Html5Qrcode("qrReader");
+                                        
+                                        const config = {
+                                            fps: 30,
+                                            qrbox: { width: 300, height: 300 },
+                                            aspectRatio: 1.0,
+                                            experimentalFeatures: {
+                                                useBarCodeDetectorIfSupported: true
+                                            },
+                                            rememberLastUsedCamera: false
+                                        };
+
+                                        const onScanSuccess = (decodedText) => {
+                                            stopCameraScan();
+                                            handleScannedData(decodedText);
+                                        };
+
+                                        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+                                        .then(() => {
+                                            isScannerRunning = true;
+                                        })
+                                        .catch(() => {
+                                            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {})
+                                            .then(() => {
+                                                isScannerRunning = true;
+                                            })
+                                            .catch((err2) => {
+                                                console.error("Không mở được camera:", err2);
+                                                modal.style.display = 'none';
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Không thể mở Camera',
+                                                    html: 'Vui lòng:<br>• Cho phép trình duyệt truy cập camera<br>• Kiểm tra camera có đang dùng bởi app khác không<br>• Thử tải lại trang (F5)',
+                                                    confirmButtonColor: '#3b82f6'
+                                                });
+                                            });
+                                        });
+                                    }
+
+                                    let torchOn = false;
+                                    async function toggleTorch() {
+                                        if (!html5QrCode) return;
+                                        try {
+                                            torchOn = !torchOn;
+                                            await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+                                            const btn = document.getElementById('btnToggleTorch');
+                                            btn.textContent = torchOn ? '🔦 Tắt Đèn' : '🔦 Bật Đèn';
+                                            btn.style.background = torchOn ? '#fde047' : '#fef9c3';
+                                        } catch(e) { console.log('Torch not supported'); }
+                                    }
+
+                                    function stopCameraScan() {
+                                        const modal = document.getElementById('qrCameraModal');
+                                        modal.style.display = 'none';
+                                        isScannerRunning = false;
+
+                                        if (html5QrCode) {
+                                            const instance = html5QrCode;
+                                            html5QrCode = null;
+                                            instance.stop()
+                                            .then(() => instance.clear())
+                                            .catch(() => {
+                                                try { instance.clear(); } catch(e) {}
+                                            });
+                                        }
+                                    }
+
+                                    async function handleScannedData(qrText) {
+                                        try {
+                                            const cccdData = typeof parseCccdString === 'function' ? parseCccdString(qrText) : { cccd: qrText };
+                                            await fillCccdData(cccdData);
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: '✅ Thành công!',
+                                                text: 'Đã quét và điền thông tin CCCD.',
+                                                timer: 2000,
+                                                showConfirmButton: false
+                                            });
+                                        } catch (e) {
+                                            console.error(e);
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'QR không hợp lệ',
+                                                text: 'Mã QR không đúng định dạng CCCD Việt Nam. Vui lòng thử lại.',
+                                                confirmButtonColor: '#3b82f6'
+                                            });
+                                        }
+                                    }
+
+                                    async function fillCccdData(data) {
+                                        if (!data) return;
+                                        const safeSet = (selector, value, byId) => {
+                                            const el = byId ? document.getElementById(selector) : document.querySelector(selector);
+                                            if (el && value !== undefined && value !== null) el.value = value;
+                                        };
+                                        if (data.cccd) safeSet('cccdInput', data.cccd, true);
+                                        if (data.fullName) safeSet('input[name="fullName"]', data.fullName);
+                                        if (data.dob) safeSet('input[name="birthday"]', data.dob);
+                                        if (data.gender !== undefined && data.gender !== null) {
+                                            const radio = document.querySelector('input[name="gender"][value="' + data.gender + '"]');
+                                            if (radio) radio.checked = true;
+                                        }
+                                        if (data.address) {
+                                            await setAddressCascading(data.address);
+                                        }
+                                        validateAllFieldsLive();
+                                    }
+                                </script>
                             </body>
 
                             <%-- Toast thông báo dùng chung --%>

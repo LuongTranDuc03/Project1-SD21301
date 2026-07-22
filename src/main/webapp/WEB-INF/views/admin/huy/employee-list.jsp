@@ -107,25 +107,6 @@
                                                                                 <div class="subtitle">Tổng ${totalAll != null ? totalAll : 0} nhân sự</div>
                                                                             </div>
                                                                             <div style="display: flex; gap: 8px;">
-                                                                                <% if (isAdmin) { %>
-                                                                                    <button onclick="exportToCSV()" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                                                        <span>Xuất Excel</span>
-                                                                                    </button>
-                                                                                    <button type="button" id="btnScanList" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
-                                                                                            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
-                                                                                        </svg>
-                                                                                        <span>Quét CCCD</span>
-                                                                                    </button>
-                                                                                    <a href="${pageContext.request.contextPath}/admin/employees?action=add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
-                                                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                                                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                                                                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                                                                        </svg>
-                                                                                        <span>Thêm nhân viên</span>
-                                                                                    </a>
-                                                                                    <% } %>
                                                                             </div>
                                                                         </div>
 
@@ -230,7 +211,7 @@
                                                                                         <div
                                                                                             style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
                                                                                             <label
-                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
                                                                                                 <input type="radio"
                                                                                                     name="statusFilter"
                                                                                                     value="all"
@@ -238,7 +219,7 @@
                                                                                                     checked> Tất cả
                                                                                             </label>
                                                                                             <label
-                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
                                                                                                 <input type="radio"
                                                                                                     name="statusFilter"
                                                                                                     value="1"
@@ -246,7 +227,7 @@
                                                                                                 Đang hoạt động
                                                                                             </label>
                                                                                             <label
-                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                                                                style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
                                                                                                 <input type="radio"
                                                                                                     name="statusFilter"
                                                                                                     value="0"
@@ -279,6 +260,22 @@
 
                                                                                 </div>
                                                                             </div>
+                                                                        </div>
+
+                                                                        <div class="toolbar" style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 16px;">
+                                                                            <% if (isAdmin) { %>
+                                                                                <button onclick="exportToCSV()" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                                                                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                                                    <span>Xuất Excel</span>
+                                                                                </button>
+                                                                                <a href="${pageContext.request.contextPath}/admin/employees?action=add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
+                                                                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                                                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                                                                    </svg>
+                                                                                    <span>Thêm nhân viên</span>
+                                                                                </a>
+                                                                            <% } %>
                                                                         </div>
 
                                                                         <div class="custom-card">
@@ -333,11 +330,12 @@
                                                                                             int stt = 1;
                                                                                             for (Employee emp : listEmp)
                                                                                             {
+                                                                                            String fullAddr = emp.getFullAddressString();
                                                                                             %>
                                                                                             <tr data-role="<%= emp.getRoleName() %>"
                                                                                                 data-gender="<%= emp.getGender() != null ? emp.getGender() : "" %>"
                                                                                                 data-status="<%= emp.getStatus() %>"
-                                                                                                data-address="<%= emp.getFullAddressString() != null ? emp.getFullAddressString().toLowerCase() : "" %>"
+                                                                                                data-address="<%= fullAddr.toLowerCase() %>"
                                                                                                 data-id="<%= emp.getId() %>"
                                                                                                 onmouseover="this.style.backgroundColor='#F8FAFC'"
                                                                                                 onmouseout="this.style.backgroundColor='transparent'">
@@ -369,7 +367,7 @@
                                                                                                 </td>
                                                                                                 <td
                                                                                                     style="padding: 14px 16px;">
-                                                                                                    <%= emp.getPhoneNumber()
+                                                                                                    <%= emp.getPhoneNumber() != null ? emp.getPhoneNumber() : ""
                                                                                                         %>
                                                                                                 </td>
                                                                                                 <td
@@ -378,12 +376,10 @@
                                                                                                         %>
                                                                                                 </td>
                                                                                                 <td style="padding: 14px 16px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                                                                                    title="<%= emp.getFullAddressString() != null ? emp.getFullAddressString() : "" %>">
-                                                                                                    <%= emp.getFullAddressString()
-                                                                                                        !=null &&
-                                                                                                        !emp.getFullAddressString().isEmpty()
+                                                                                                    title="<%= fullAddr %>">
+                                                                                                    <%= !fullAddr.isEmpty()
                                                                                                         ?
-                                                                                                        emp.getFullAddressString()
+                                                                                                        fullAddr
                                                                                                         : "-" %>
                                                                                                 </td>
                                                                                                 <td
@@ -451,8 +447,6 @@
                                             });
                                         }
 
-                                        // script logic for toast is handled by toast.jsp
-
                                         // ====== Tìm kiếm & Lọc ======
                                         const searchInput = document.getElementById('empSearch');
                                         const roleFilter = document.getElementById('roleFilter');
@@ -480,7 +474,7 @@
 
                                             let visibleRows = [];
                                             tableRows.forEach(row => {
-                                                if (row.children.length === 1) return; // Bỏ qua dòng trống
+                                                if (row.children.length === 1) return;
 
                                                 const rowText = row.innerText.toLowerCase();
                                                 const rowRole = (row.getAttribute('data-role') || '').trim();
@@ -512,11 +506,9 @@
                                             const startIndex = (currentPage - 1) * itemsPerPage;
                                             const endIndex = startIndex + itemsPerPage;
 
-                                            // Display only rows for the current page
                                             visibleRows.forEach((row, idx) => {
                                                 if (idx >= startIndex && idx < endIndex) {
                                                     row.style.display = '';
-                                                    // Update STT based on overall filtered index
                                                     const sttCell = row.querySelector('td:first-child');
                                                     if (sttCell) {
                                                         sttCell.textContent = (idx + 1) + '';
@@ -542,10 +534,9 @@
                                             container.innerHTML = '';
                                             
                                             if (totalItems === 0 || totalPages <= 1) {
-                                                return; // No pagination needed
+                                                return;
                                             }
 
-                                            // Previous button
                                             const prevBtn = document.createElement('button');
                                             prevBtn.className = 'page-btn';
                                             prevBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>';
@@ -553,7 +544,6 @@
                                             prevBtn.onclick = () => { currentPage--; filterTable(); };
                                             container.appendChild(prevBtn);
 
-                                            // Page buttons
                                             for (let i = 1; i <= totalPages; i++) {
                                                 if (totalPages > 7) {
                                                     if (i !== 1 && i !== totalPages && Math.abs(i - currentPage) > 1) {
@@ -575,7 +565,6 @@
                                                 container.appendChild(pageBtn);
                                             }
 
-                                            // Next button
                                             const nextBtn = document.createElement('button');
                                             nextBtn.className = 'page-btn';
                                             nextBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>';
@@ -587,90 +576,28 @@
                                         let currentPage = 1;
                                         const itemsPerPage = 10;
 
-                                        // Chạy lần đầu khi trang được tải xong
                                         if (searchInput) searchInput.addEventListener('keyup', () => { currentPage = 1; filterTable(); });
                                         document.addEventListener("DOMContentLoaded", function() {
                                             filterTable();
                                         });
 
-                                        // ====== Real Scan CCCD ======
-                                        const btnScanList = document.getElementById('btnScanList');
-                                        if (btnScanList) {
-                                            btnScanList.addEventListener('click', function () {
-                                                Swal.fire({
-                                                    title: 'Tải ảnh CCCD',
-                                                    html: '<input type="file" id="cccdImage" accept="image/*" style="margin-top: 10px; width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">',
-                                                    showCancelButton: true,
-                                                    confirmButtonText: 'Xử lý & Quét',
-                                                    cancelButtonText: 'Hủy',
-                                                    confirmButtonColor: '#3B82F6',
-                                                    cancelButtonColor: '#94A3B8',
-                                                    preConfirm: () => {
-                                                        const file = document.getElementById('cccdImage').files[0];
-                                                        if (!file) {
-                                                            Swal.showValidationMessage('Vui lòng chọn ảnh CCCD');
-                                                        }
-                                                        return file;
-                                                    }
-                                                }).then(async (result) => {
-                                                    if (result.isConfirmed) {
-                                                        const file = result.value;
-                                                        Swal.fire({
-                                                            title: 'Đang giải mã ảnh QR...',
-                                                            allowOutsideClick: false,
-                                                            didOpen: () => { Swal.showLoading(); }
-                                                        });
-                                                        try {
-                                                            const qrText = await decodeQR(file);
-                                                            const cccdData = parseCccdString(qrText);
-                                                            
-                                                            sessionStorage.setItem('scannedCccdData', JSON.stringify(cccdData));
-                                                            
-                                                            Swal.fire({ icon: 'success', title: 'Giải mã thành công!', text: 'Đang chuyển hướng...', showConfirmButton: false, timer: 1500 });
-                                                            setTimeout(() => {
-                                                                window.location.href = "${pageContext.request.contextPath}/admin/employees?action=add";
-                                                            }, 1500);
-                                                        } catch (err) {
-                                                            Swal.fire({ icon: 'error', title: 'Lỗi', text: err.message || "Không thể giải mã QR" });
-                                                        }
-                                                    }
-                                                });
-                                            });
-                                        }
-
-                                        // ====== Xuất Excel (CSV) ======
-                                        // Hàm xuất bảng dữ liệu hiện tại (những dòng đang hiển thị) ra file Excel đuôi CSV
                                         function exportToCSV() {
                                             let csv = [];
                                             let rows = document.querySelectorAll("table tr");
-                                            // Duyệt qua tất cả các dòng <tr> của bảng
                                             for (let i = 0; i < rows.length; i++) {
-                                                // Bỏ qua những dòng đang bị ẩn bởi bộ lọc tìm kiếm
                                                 if (rows[i].style.display === 'none') continue;
-
                                                 let row = [], cols = rows[i].querySelectorAll("td, th");
-
-                                                // Duyệt qua từng cột <td> hoặc <th> của dòng đó
                                                 for (let j = 0; j < cols.length; j++) {
-                                                    // Kiểm tra xem cột này có phải cột "Hành động" (chứa các nút Sửa/Chi tiết) không. 
-                                                    // Nếu phải thì bỏ qua, không xuất ra file CSV.
                                                     const isActionCol = (i === 0 && cols[j].innerText.indexOf('Hành động') > -1) ||
                                                         (i > 0 && rows[0].querySelectorAll("th")[j] && rows[0].querySelectorAll("th")[j].innerText.indexOf('Hành động') > -1);
                                                     if (isActionCol) continue;
-
-                                                    // Xóa các ký tự xuống dòng (\n) và làm sạch khoảng trắng
                                                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
-                                                    // Mã hóa dấu ngoặc kép " để không làm hỏng định dạng file CSV
                                                     data = data.replace(/"/g, '""');
                                                     row.push('"' + data + '"');
                                                 }
-                                                // Nối các cột bằng dấu phẩy (chuẩn định dạng CSV: Comma-Separated Values)
                                                 csv.push(row.join(","));
                                             }
-                                            // Thêm \uFEFF vào đầu file để đánh dấu chuẩn BOM của UTF-8 (giúp Excel đọc được tiếng Việt có dấu)
                                             let csvFile = new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8;" });
-
-                                            // Mẹo: Tạo một thẻ <a> ẩn để giả lập hành động Tải xuống (Download) file vừa tạo
                                             let downloadLink = document.createElement("a");
                                             downloadLink.download = "danh_sach_nhan_vien.csv";
                                             downloadLink.href = window.URL.createObjectURL(csvFile);
@@ -679,8 +606,6 @@
                                             downloadLink.click();
                                             document.body.removeChild(downloadLink);
                                         }
-
-
                                     </script>
                                     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
                                     <script src="${pageContext.request.contextPath}/assets/js/qr-scanner.js"></script>
