@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class Employee {
     private int id;
-    private String maNhanVien;  // ma_nhan_vien: mã hiển thị (NV001...)
+    private String code;        // code: mã hiển thị (NV001...)
     private String fullName;    // ho_ten
     private String email;
     private String password;    // mat_khau
@@ -24,11 +24,11 @@ public class Employee {
 
     public Employee() {}
 
-    public Employee(int id, String maNhanVien, String fullName, String email, String password,
+    public Employee(int id, String code, String fullName, String email, String password,
                     String phoneNumber, Date birthday, Boolean gender,
                     String avatar, int status, String address, String cccd, Role role) {
         this.id = id;
-        this.maNhanVien = maNhanVien;
+        this.code = code;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
@@ -47,8 +47,13 @@ public class Employee {
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
-    public String getMaNhanVien() { return maNhanVien; }
-    public void setMaNhanVien(String maNhanVien) { this.maNhanVien = maNhanVien; }
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
+
+    @Deprecated
+    public String getMaNhanVien() { return code; }
+    @Deprecated
+    public void setMaNhanVien(String maNhanVien) { this.code = maNhanVien; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }

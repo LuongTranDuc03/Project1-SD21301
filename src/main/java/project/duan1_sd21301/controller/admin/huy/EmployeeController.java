@@ -258,10 +258,10 @@ public class EmployeeController extends HttpServlet {
             return;
         }
 
-        // Check Ma Nhan Vien Duplicate
-        if (emp.getMaNhanVien() != null && !emp.getMaNhanVien().isEmpty()) {
-            boolean maNvExists = repository.isMaNhanVienExist(emp.getMaNhanVien(), null)
-                    || EmployeeMockData.isMaNhanVienExist(emp.getMaNhanVien(), null);
+        // Check Code Duplicate
+        if (emp.getCode() != null && !emp.getCode().isEmpty()) {
+            boolean maNvExists = repository.isCodeExist(emp.getCode(), null)
+                    || EmployeeMockData.isCodeExist(emp.getCode(), null);
             if (maNvExists) {
                 request.getSession().setAttribute("toastMessage", "Mã nhân viên đã tồn tại trong hệ thống!");
                 request.getSession().setAttribute("toastType", "error");
@@ -269,9 +269,9 @@ public class EmployeeController extends HttpServlet {
                 return;
             }
         } else {
-            emp.setMaNhanVien(repository.getNextMaNhanVien());
-            if ("NV001".equals(emp.getMaNhanVien())) {
-                emp.setMaNhanVien(EmployeeMockData.getNextMaNhanVien());
+            emp.setCode(repository.getNextCode());
+            if ("NV001".equals(emp.getCode())) {
+                emp.setCode(EmployeeMockData.getNextCode());
             }
         }
 
@@ -326,9 +326,9 @@ public class EmployeeController extends HttpServlet {
             return;
         }
 
-        if (emp.getMaNhanVien() != null && !emp.getMaNhanVien().isEmpty()) {
-            boolean maNvExists = repository.isMaNhanVienExist(emp.getMaNhanVien(), emp.getId())
-                    || EmployeeMockData.isMaNhanVienExist(emp.getMaNhanVien(), emp.getId());
+        if (emp.getCode() != null && !emp.getCode().isEmpty()) {
+            boolean maNvExists = repository.isCodeExist(emp.getCode(), emp.getId())
+                    || EmployeeMockData.isCodeExist(emp.getCode(), emp.getId());
             if (maNvExists) {
                 request.getSession().setAttribute("toastMessage", "Mã nhân viên đã tồn tại trong hệ thống!");
                 request.getSession().setAttribute("toastType", "error");
@@ -336,12 +336,12 @@ public class EmployeeController extends HttpServlet {
                 return;
             }
         } else {
-            // Keep old maNhanVien if empty on update
+            // Keep old code if empty on update
             Employee oldEmp = repository.findById(emp.getId());
             if (oldEmp == null)
                 oldEmp = EmployeeMockData.findById(emp.getId());
             if (oldEmp != null) {
-                emp.setMaNhanVien(oldEmp.getMaNhanVien());
+                emp.setCode(oldEmp.getCode());
             }
         }
 
@@ -519,9 +519,12 @@ public class EmployeeController extends HttpServlet {
             emp.setId(Integer.parseInt(idStr));
         }
 
-        String maNV = req.getParameter("maNhanVien");
+        String maNV = req.getParameter("code");
+        if (maNV == null || maNV.trim().isEmpty()) {
+            maNV = req.getParameter("maNhanVien");
+        }
         if (maNV != null && !maNV.trim().isEmpty()) {
-            emp.setMaNhanVien(maNV.trim());
+            emp.setCode(maNV.trim());
         }
         emp.setFullName(req.getParameter("fullName"));
         emp.setEmail(req.getParameter("email"));
