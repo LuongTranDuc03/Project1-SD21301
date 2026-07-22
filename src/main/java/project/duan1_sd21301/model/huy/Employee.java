@@ -14,8 +14,7 @@ public class Employee {
     private Boolean gender;     // gioi_tinh: true=Nam, false=Nữ
     private String avatar;      // anh_dai_dien
     private int status;         // trang_thai: 1=Đang làm, 0=Nghỉ việc
-    private Address addressObj; // Đối tượng DiaChi (bảng dia_chi 3NF)
-    private String address;     // chuỗi địa chỉ tổng hợp
+    private Address address;    // Đối tượng Address (bảng dia_chi 3NF)
     private String cccd;        // can_cuoc_cong_dan
     private Role role;
 
@@ -23,28 +22,7 @@ public class Employee {
 
     public Employee(int id, String code, String fullName, String email, String password,
                     String phoneNumber, Date birthday, Boolean gender,
-                    String avatar, int status, Address addressObj, String cccd, Role role) {
-        this.id = id;
-        this.code = code;
-        this.fullName = fullName;
-        this.email = email;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-        this.birthday = birthday;
-        this.gender = gender;
-        this.avatar = avatar;
-        this.status = status;
-        this.addressObj = addressObj;
-        this.cccd = cccd;
-        this.role = role;
-        if (addressObj != null) {
-            this.address = addressObj.getFormattedAddress();
-        }
-    }
-
-    public Employee(int id, String code, String fullName, String email, String password,
-                    String phoneNumber, Date birthday, Boolean gender,
-                    String avatar, int status, String address, String cccd, Role role) {
+                    String avatar, int status, Address address, String cccd, Role role) {
         this.id = id;
         this.code = code;
         this.fullName = fullName;
@@ -92,21 +70,15 @@ public class Employee {
     public int getStatus() { return status; }
     public void setStatus(int status) { this.status = status; }
 
-    public Address getAddressObj() { return addressObj; }
-    public void setAddressObj(Address addressObj) {
-        this.addressObj = addressObj;
-        if (addressObj != null) {
-            this.address = addressObj.getFormattedAddress();
-        }
-    }
+    public Address getAddress() { return address; }
+    public void setAddress(Address address) { this.address = address; }
 
-    public String getAddress() {
-        if (addressObj != null) {
-            return addressObj.getFormattedAddress();
-        }
-        return address;
+    /**
+     * Lấy chuỗi địa chỉ đầy đủ ghép từ các trường trong đối tượng Address để hiển thị UI
+     */
+    public String getFullAddressString() {
+        return (address != null) ? address.getFormattedAddress() : "";
     }
-    public void setAddress(String address) { this.address = address; }
 
     public String getCccd() { return cccd; }
     public void setCccd(String cccd) { this.cccd = cccd; }
