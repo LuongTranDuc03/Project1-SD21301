@@ -2,6 +2,7 @@
 <%-- Import các Model và lớp tiện ích phục vụ xử lý trên Form --%>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
 <%@ page import="project.duan1_sd21301.model.Address" %>
+<%@ page import="project.duan1_sd21301.model.ha.CustomerAddress" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.text.SimpleDateFormat" %>
@@ -343,7 +344,7 @@
                 </div>
 
                 <%
-                    Address defAddr = (c != null) ? c.getDefaultAddress() : null;
+                    CustomerAddress defAddr = (c != null) ? c.getDefaultAddress() : null;
                 %>
                 <!-- 2. Địa chỉ mặc định -->
                 <div class="form-card">
@@ -353,6 +354,8 @@
                     </div>
                     <div class="form-card-body">
                     <input type="hidden" name="defaultAddressCode" value="<%= defAddr != null ? defAddr.getCode() : "" %>">
+                    <input type="hidden" name="customerDefaultAddress" id="customerDefaultAddress" value="<%= defAddr != null && defAddr.getFormattedAddress() != null ? defAddr.getFormattedAddress() : "" %>">
+                    <input type="hidden" id="customerDefaultAddressSync" value="<%= defAddr != null && defAddr.getFormattedAddress() != null ? defAddr.getFormattedAddress() : "" %>">
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label class="form-label">Tên người nhận<span class="required">*</span></label>
@@ -369,21 +372,24 @@
                     <div class="form-grid" style="margin-top:16px;">
                         <div class="form-group">
                             <label class="form-label">Tỉnh / Thành phố<span class="required">*</span></label>
-                            <select id="defaultProvince" name="defaultProvince" class="form-select" required>
+                            <select id="defaultProvince" data-name="defaultProvince" class="form-select" required>
                                 <option value="">-- Chọn Tỉnh/Thành --</option>
                             </select>
+                            <input type="hidden" name="defaultProvince" class="submit-province" value="<%= defAddr != null && defAddr.getProvince() != null ? defAddr.getProvince() : "" %>">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Quận / Huyện<span class="required">*</span></label>
-                            <select id="defaultDistrict" name="defaultDistrict" class="form-select" required disabled>
+                            <select id="defaultDistrict" data-name="defaultDistrict" class="form-select" required disabled>
                                 <option value="">-- Chọn Quận/Huyện --</option>
                             </select>
+                            <input type="hidden" name="defaultDistrict" class="submit-district" value="<%= defAddr != null && defAddr.getDistrict() != null ? defAddr.getDistrict() : "" %>">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Phường / Xã<span class="required">*</span></label>
-                            <select id="defaultWard" name="defaultWard" class="form-select" required disabled>
+                            <select id="defaultWard" data-name="defaultWard" class="form-select" required disabled>
                                 <option value="">-- Chọn Phường/Xã --</option>
                             </select>
+                            <input type="hidden" name="defaultWard" class="submit-ward" value="<%= defAddr != null && defAddr.getWard() != null ? defAddr.getWard() : "" %>">
                         </div>
                         <div class="form-group" style="grid-column: 1 / -1;">
                             <label class="form-label">Số nhà, tên đường<span class="required">*</span></label>
@@ -417,7 +423,7 @@
                     <div id="otherAddressesContainer">
                         <%
                             if (c != null && c.getOtherAddresses() != null) {
-                                for (Address addr : c.getOtherAddresses()) {
+                                for (CustomerAddress addr : c.getOtherAddresses()) {
                         %>
                         <div class="address-card-row">
                             <input type="hidden" name="otherAddressCode" value="<%= addr.getCode() %>">
@@ -441,25 +447,26 @@
                                     <input type="text" name="otherPhoneNumber" class="form-input" placeholder="Số điện thoại" value="<%= addr.getPhoneNumber() != null ? addr.getPhoneNumber() : "" %>">
                                 </div>
                             </div>
-                            <input type="hidden" name="otherProvinceHidden" class="other-province-hidden" value="<%= addr.getProvince() != null ? addr.getProvince() : "" %>">
-                            <input type="hidden" name="otherDistrictHidden" class="other-district-hidden" value="<%= addr.getDistrict() != null ? addr.getDistrict() : "" %>">
-                            <input type="hidden" name="otherWardHidden" class="other-ward-hidden" value="<%= addr.getWard() != null ? addr.getWard() : "" %>">
+                            <input type="hidden" name="otherProvince" class="submit-province" value="<%= addr.getProvince() != null ? addr.getProvince() : "" %>">
+                            <input type="hidden" name="otherDistrict" class="submit-district" value="<%= addr.getDistrict() != null ? addr.getDistrict() : "" %>">
+                            <input type="hidden" name="otherWard" class="submit-ward" value="<%= addr.getWard() != null ? addr.getWard() : "" %>">
+                            <input type="hidden" name="otherAddressHidden" class="other-address-hidden" value="<%= addr.getFormattedAddress() != null ? addr.getFormattedAddress() : "" %>">
                             <div class="form-grid" style="margin-top: 16px;">
                                 <div class="form-group">
                                     <label class="form-label">Tỉnh / Thành phố</label>
-                                    <select name="otherProvince" class="other-province form-select">
+                                    <select data-name="otherProvince" class="other-province form-select">
                                         <option value="">-- Chọn Tỉnh/Thành --</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Quận / Huyện</label>
-                                    <select name="otherDistrict" class="other-district form-select" disabled>
+                                    <select data-name="otherDistrict" class="other-district form-select" disabled>
                                         <option value="">-- Chọn Quận/Huyện --</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Phường / Xã</label>
-                                    <select name="otherWard" class="other-ward form-select" disabled>
+                                    <select data-name="otherWard" class="other-ward form-select" disabled>
                                         <option value="">-- Chọn Phường/Xã --</option>
                                     </select>
                                 </div>
@@ -690,34 +697,18 @@
                         wardSel.appendChild(o);
                     });
                 } else {
-                    // Bước 2: Gọi trực tiếp qua proxy nội bộ
-                    const proxyUrl = CONTEXT_PATH + '/api/v1/d/' + dCode + '?depth=2';
-                    console.log('[Ward] Proxy call:', proxyUrl);
-                    try {
-                        const r = await fetch(proxyUrl, {signal: AbortSignal.timeout(20000)});
-                        console.log('[Ward] HTTP Status:', r.status);
-                        if (r.ok) {
-                            const data = await r.json();
-                            console.log('[Ward] data.code:', data?.code,
-                                '| data.wards:', data?.wards?.length ?? 'UNDEFINED');
-                            wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-                            if (Array.isArray(data?.wards) && data.wards.length > 0) {
-                                data.wards.forEach(w => {
-                                    const o = document.createElement('option');
-                                    o.value = w.code; o.textContent = w.name;
-                                    wardSel.appendChild(o);
-                                });
-                                console.log('[Ward] Loaded', data.wards.length, 'phường/xã ✅');
-                            } else {
-                                console.warn('[Ward] wards array rỗng hoặc không có!');
-                            }
-                        } else {
-                            console.error('[Ward] Proxy lỗi HTTP', r.status);
-                            wardSel.innerHTML = '<option value="">-- Lỗi tải (HTTP ' + r.status + ') --</option>';
-                        }
-                    } catch(e) {
-                        console.error('[Ward] Exception:', e.message);
-                        wardSel.innerHTML = '<option value="">-- Lỗi kết nối --</option>';
+                    // Bước 2: Gọi trực tiếp qua geoGet (có fallback)
+                    const data = await geoGet('/api/v1/d/' + dCode + '?depth=2');
+                    wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                    if (data && Array.isArray(data.wards) && data.wards.length > 0) {
+                        data.wards.forEach(w => {
+                            const o = document.createElement('option');
+                            o.value = w.code; o.textContent = w.name;
+                            wardSel.appendChild(o);
+                        });
+                        console.log('[Ward] Loaded', data.wards.length, 'phường/xã ✅');
+                    } else {
+                        console.warn('[Ward] wards array rỗng hoặc không có!');
                     }
                 }
                 wardSel.disabled = false;
@@ -826,14 +817,17 @@
             <div class="form-grid-2">
                 <div class="form-group">
                     <label class="form-label">Tên người nhận</label>
-                    <input type="text" name="diaChiKhacTen" class="form-input" placeholder="Tên người nhận" value="${ten}">
+                    <input type="text" name="otherRecipientName" class="form-input" placeholder="Tên người nhận" value="${ten}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">SĐT người nhận</label>
-                    <input type="text" name="diaChiKhacSdt" class="form-input" placeholder="Số điện thoại" value="${sdt}">
+                    <input type="text" name="otherPhoneNumber" class="form-input" placeholder="Số điện thoại" value="${sdt}">
                 </div>
             </div>
-            <input type="hidden" name="diaChiKhac" class="other-address-hidden" value="${detail}">
+            <input type="hidden" name="otherProvince" class="submit-province" value="">
+            <input type="hidden" name="otherDistrict" class="submit-district" value="">
+            <input type="hidden" name="otherWard" class="submit-ward" value="">
+            <input type="hidden" class="other-address-hidden" value="${detail}">
             <div class="form-grid" style="margin-top: 16px;">
                 <div class="form-group">
                     <label class="form-label">Tỉnh / Thành phố</label>
@@ -855,7 +849,11 @@
                 </div>
                 <div class="form-group full-width">
                     <label class="form-label">Số nhà, tên đường</label>
-                    <input type="text" class="other-detail-input form-input" placeholder="Số nhà, tên đường, ngõ ngách...">
+                    <input type="text" name="otherDetailedAddress" class="other-detail-input form-input" placeholder="Số nhà, tên đường, ngõ ngách...">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Ghi chú</label>
+                    <input type="text" name="otherNote" class="form-input" placeholder="Ghi chú (tuỳ chọn)">
                 </div>
             </div>
         `;
@@ -978,6 +976,16 @@
         if (dText) parts.push(dText);
         if (pText) parts.push(pText);
         hidden.value = parts.join(', ');
+
+        const container = hidden.closest('.form-card-body') || hidden.closest('.address-card-row');
+        if (container) {
+            const hP = container.querySelector('.submit-province');
+            const hD = container.querySelector('.submit-district');
+            const hW = container.querySelector('.submit-ward');
+            if (hP) hP.value = pText;
+            if (hD) hD.value = dText;
+            if (hW) hW.value = wText;
+        }
     }
 </script>
 
