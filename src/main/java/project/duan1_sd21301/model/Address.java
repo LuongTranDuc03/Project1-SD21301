@@ -1,4 +1,4 @@
-package project.duan1_sd21301.model.ha;
+package project.duan1_sd21301.model;
 
 public class Address {
     private int id;

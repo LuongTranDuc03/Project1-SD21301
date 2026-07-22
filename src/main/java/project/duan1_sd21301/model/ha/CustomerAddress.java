@@ -1,5 +1,7 @@
 package project.duan1_sd21301.model.ha;
 
+import project.duan1_sd21301.model.Address;
+
 public class CustomerAddress {
     private int id;
     private Customer customer;

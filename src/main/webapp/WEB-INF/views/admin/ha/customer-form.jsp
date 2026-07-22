@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%-- Import các Model và lớp tiện ích phục vụ xử lý trên Form --%>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
-<%@ page import="project.duan1_sd21301.model.ha.Address" %>
+<%@ page import="project.duan1_sd21301.model.Address" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.text.SimpleDateFormat" %>

@@ -1,6 +1,6 @@
 package project.duan1_sd21301.model.huy;
 
-import project.duan1_sd21301.model.ha.Address;
+import project.duan1_sd21301.model.Address;
 import java.util.Date;
 
 public class Employee {

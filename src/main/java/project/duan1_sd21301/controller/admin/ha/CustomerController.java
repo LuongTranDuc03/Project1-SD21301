@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
-import project.duan1_sd21301.model.ha.Address;
+import project.duan1_sd21301.model.Address;
 import project.duan1_sd21301.model.ha.Customer;
 
 import java.io.File;
