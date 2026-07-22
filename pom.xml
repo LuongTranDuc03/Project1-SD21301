@@ -60,6 +60,17 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>12.6.1.jre11</version>
         </dependency>
+        <!-- JPA API & Hibernate Core -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.4.4.Final</version>
+        </dependency>
         <!-- Google API Client – dùng xác thực Google ID Token (Sign-In) -->
         <dependency>
             <groupId>com.google.api-client</groupId>

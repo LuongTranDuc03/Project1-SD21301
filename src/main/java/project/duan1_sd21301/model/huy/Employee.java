@@ -1,95 +1,85 @@
 package project.duan1_sd21301.model.huy;
 
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import project.duan1_sd21301.model.Address;
+
 import java.util.Date;
 
+@Entity
+@Table(name = "nhan_vien")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Employee {
-    private int id;
-    private String code;        // code: mã hiển thị (NV001...)
-    private String fullName;    // ho_ten
-    private String email;
-    private String password;    // mat_khau
-    private String phoneNumber; // so_dien_thoai
-    private Date birthday;      // ngay_sinh
-    private Boolean gender;     // gioi_tinh: true=Nam, false=Nữ
-    private String avatar;      // anh_dai_dien
-    private int status;         // trang_thai: 1=Đang làm, 0=Nghỉ việc
-    private Address address;    // Đối tượng Address (bảng dia_chi 3NF)
-    private String cccd;        // can_cuoc_cong_dan
-    private Role role;
 
-    public Employee() {}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
 
-    public Employee(int id, String code, String fullName, String email, String password,
-                    String phoneNumber, Date birthday, Boolean gender,
-                    String avatar, int status, Address address, String cccd, Role role) {
-        this.id = id;
-        this.code = code;
-        this.fullName = fullName;
-        this.email = email;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-        this.birthday = birthday;
-        this.gender = gender;
-        this.avatar = avatar;
-        this.status = status;
-        this.address = address;
-        this.cccd = cccd;
-        this.role = role;
+    @Column(name = "nhan_vien_code", length = 50, nullable = false, unique = true)
+    String code;
+
+    @Column(name = "ten_nhan_vien", length = 150, nullable = false, columnDefinition = "NVARCHAR(150)")
+    String fullName;
+
+    @Column(name = "email", length = 200, nullable = false, unique = true, columnDefinition = "NVARCHAR(200)")
+    String email;
+
+    @Column(name = "mat_khau", length = 255)
+    String password;
+
+    @Column(name = "so_dien_thoai", length = 20, columnDefinition = "NVARCHAR(20)")
+    String phoneNumber;
+
+    @Column(name = "ngay_sinh")
+    Date birthday;
+
+    @Column(name = "gioi_tinh")
+    Boolean gender;
+
+    @Column(name = "anh_dai_dien", length = 500, columnDefinition = "NVARCHAR(500)")
+    String avatar;
+
+    @Column(name = "trang_thai")
+    @Builder.Default
+    Integer status = 1;
+
+    @Column(name = "cccd", length = 20)
+    String cccd;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dia_chi")
+    Address address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_vai_tro")
+    Role role;
+
+    @Transient
+    public void setAddress(String addressStr) {
+        if (addressStr != null && !addressStr.trim().isEmpty()) {
+            this.address = Address.builder().detailedAddress(addressStr.trim()).build();
+        } else {
+            this.address = null;
+        }
     }
 
-    // ---- Getters & Setters ----
-
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
-    public Date getBirthday() { return birthday; }
-    public void setBirthday(Date birthday) { this.birthday = birthday; }
-
-    public Boolean getGender() { return gender; }
-    public void setGender(Boolean gender) { this.gender = gender; }
-
-    public String getAvatar() { return avatar; }
-    public void setAvatar(String avatar) { this.avatar = avatar; }
-
-    public int getStatus() { return status; }
-    public void setStatus(int status) { this.status = status; }
-
-    public Address getAddress() { return address; }
-    public void setAddress(Address address) { this.address = address; }
-
-    /**
-     * Lấy chuỗi địa chỉ đầy đủ ghép từ các trường trong đối tượng Address để hiển thị UI
-     */
+    @Transient
     public String getFullAddressString() {
         return (address != null) ? address.getFormattedAddress() : "";
     }
 
-    public String getCccd() { return cccd; }
-    public void setCccd(String cccd) { this.cccd = cccd; }
-
-    public Role getRole() { return role; }
-    public void setRole(Role role) { this.role = role; }
-
+    @Transient
     public int getRoleId() {
         return (role != null) ? role.getId() : 0;
     }
 
+    @Transient
     public String getRoleName() {
         return (role != null && role.getRoleName() != null) ? role.getRoleName() : "";
     }

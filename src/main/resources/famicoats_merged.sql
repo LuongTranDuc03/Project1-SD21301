@@ -531,24 +531,24 @@ VALUES
 GO
 
 -- 15. HÌNH ẢNH
-INSERT INTO hinh_anh (hinh_anh_code, id_chi_tiet_san_pham, duong_dan, anh_chinh, thu_tu)
+INSERT INTO hinh_anh (hinh_anh_code, id_chi_tiet_san_pham, anh_chinh, thu_tu)
 VALUES
-('IMG001',  1, 'https://picsum.photos/400?random=1',  1, 1),
-('IMG002',  1, 'https://picsum.photos/400?random=2',  0, 2),
-('IMG003',  2, 'https://picsum.photos/400?random=3',  1, 1),
-('IMG004',  3, 'https://picsum.photos/400?random=4',  1, 1),
-('IMG005',  4, 'https://picsum.photos/400?random=5',  1, 1),
-('IMG006',  5, 'https://picsum.photos/400?random=6',  1, 1),
-('IMG007',  6, 'https://picsum.photos/400?random=7',  1, 1),
-('IMG008',  7, 'https://picsum.photos/400?random=8',  1, 1),
-('IMG009',  8, 'https://picsum.photos/400?random=9',  1, 1),
-('IMG010',  9, 'https://picsum.photos/400?random=10', 1, 1),
-('IMG011', 10, 'https://picsum.photos/400?random=11', 1, 1),
-('IMG012', 11, 'https://picsum.photos/400?random=12', 1, 1),
-('IMG013', 12, 'https://picsum.photos/400?random=13', 1, 1),
-('IMG014', 13, 'https://picsum.photos/400?random=14', 1, 1),
-('IMG015', 14, 'https://picsum.photos/400?random=15', 1, 1),
-('IMG016', 15, 'https://picsum.photos/400?random=16', 1, 1);
+('IMG001',  1, 1, 1),
+('IMG002',  1, 0, 2),
+('IMG003',  2, 1, 1),
+('IMG004',  3, 1, 1),
+('IMG005',  4, 1, 1),
+('IMG006',  5, 1, 1),
+('IMG007',  6, 1, 1),
+('IMG008',  7, 1, 1),
+('IMG009',  8, 1, 1),
+('IMG010',  9, 1, 1),
+('IMG011', 10, 1, 1),
+('IMG012', 11, 1, 1),
+('IMG013', 12, 1, 1),
+('IMG014', 13, 1, 1),
+('IMG015', 14, 1, 1),
+('IMG016', 15, 1, 1);
 GO
 
 -- 16. PHIẾU GIẢM GIÁ

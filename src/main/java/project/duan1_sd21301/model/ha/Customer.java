@@ -1,45 +1,60 @@
 package project.duan1_sd21301.model.ha;
 
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 
+@Entity
+@Table(name = "khach_hang")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Customer {
-    private int id;
-    private String code;
-    private String fullName;
-    private String email;
-    private String password;
-    private String phoneNumber;
-    private Date dateOfBirth;
-    private String gender;
-    private String avatar;
-    private String status;
 
-    // Danh sách tất cả địa chỉ của khách hàng (bảng trung gian khach_hang_dia_chi)
-    private List<CustomerAddress> addresses;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
 
-    public Customer() {
-        this.addresses = new ArrayList<>();
-    }
+    @Column(name = "khach_hang_code", length = 50, nullable = false, unique = true)
+    String code;
 
-    public Customer(int id, String code, String fullName, String email, String password,
-                    String phoneNumber, Date dateOfBirth, String gender,
-                    String avatar, String status, List<CustomerAddress> addresses) {
-        this.id = id;
-        this.code = code;
-        this.fullName = fullName;
-        this.email = email;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-        this.dateOfBirth = dateOfBirth;
-        this.gender = gender;
-        this.avatar = avatar;
-        this.status = status;
-        this.addresses = addresses != null ? addresses : new ArrayList<>();
-    }
+    @Column(name = "ho_ten", length = 100, nullable = false, columnDefinition = "NVARCHAR(100)")
+    String fullName;
 
-    // Helper: lấy địa chỉ mặc định
+    @Column(name = "email", length = 200, nullable = false, unique = true, columnDefinition = "NVARCHAR(200)")
+    String email;
+
+    @Column(name = "mat_khau", length = 255)
+    String password;
+
+    @Column(name = "so_dien_thoai", length = 20, nullable = false, columnDefinition = "NVARCHAR(20)")
+    String phoneNumber;
+
+    @Column(name = "ngay_sinh")
+    Date dateOfBirth;
+
+    @Column(name = "gioi_tinh", length = 10, columnDefinition = "NVARCHAR(10)")
+    String gender;
+
+    @Column(name = "anh_dai_dien", length = 500, columnDefinition = "NVARCHAR(500)")
+    String avatar;
+
+    @Column(name = "trang_thai", length = 50, columnDefinition = "NVARCHAR(50)")
+    @Builder.Default
+    String status = "Hoạt động";
+
+    @Transient
+    @Builder.Default
+    List<CustomerAddress> addresses = new ArrayList<>();
+
+    @Transient
     public CustomerAddress getDefaultAddress() {
         if (addresses == null) return null;
         for (CustomerAddress a : addresses) {
@@ -48,7 +63,7 @@ public class Customer {
         return addresses.isEmpty() ? null : addresses.get(0);
     }
 
-    // Helper: lấy danh sách địa chỉ phụ
+    @Transient
     public List<CustomerAddress> getOtherAddresses() {
         List<CustomerAddress> others = new ArrayList<>();
         if (addresses == null) return others;
@@ -57,77 +72,5 @@ public class Customer {
             if (a != def) others.add(a);
         }
         return others;
-    }
-
-    // Getters & Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
-    public Date getDateOfBirth() { return dateOfBirth; }
-    public void setDateOfBirth(Date dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
-
-    public String getAvatar() { return avatar; }
-    public void setAvatar(String avatar) { this.avatar = avatar; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public List<CustomerAddress> getAddresses() { return addresses; }
-    public void setAddresses(List<CustomerAddress> addresses) {
-        this.addresses = addresses != null ? addresses : new ArrayList<>();
-    }
-
-    // Builder Pattern
-    public static CustomerBuilder builder() {
-        return new CustomerBuilder();
-    }
-
-    public static class CustomerBuilder {
-        private int id;
-        private String code;
-        private String fullName;
-        private String email;
-        private String password;
-        private String phoneNumber;
-        private Date dateOfBirth;
-        private String gender;
-        private String avatar;
-        private String status;
-        private List<CustomerAddress> addresses;
-
-        public CustomerBuilder id(int id) { this.id = id; return this; }
-        public CustomerBuilder code(String code) { this.code = code; return this; }
-        public CustomerBuilder fullName(String fullName) { this.fullName = fullName; return this; }
-        public CustomerBuilder email(String email) { this.email = email; return this; }
-        public CustomerBuilder password(String password) { this.password = password; return this; }
-        public CustomerBuilder phoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; return this; }
-        public CustomerBuilder dateOfBirth(Date dateOfBirth) { this.dateOfBirth = dateOfBirth; return this; }
-        public CustomerBuilder gender(String gender) { this.gender = gender; return this; }
-        public CustomerBuilder avatar(String avatar) { this.avatar = avatar; return this; }
-        public CustomerBuilder status(String status) { this.status = status; return this; }
-        public CustomerBuilder addresses(List<CustomerAddress> addresses) { this.addresses = addresses; return this; }
-
-        public Customer build() {
-            return new Customer(id, code, fullName, email, password, phoneNumber,
-                    dateOfBirth, gender, avatar, status, addresses);
-        }
     }
 }

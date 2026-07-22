@@ -1,33 +1,66 @@
 package project.duan1_sd21301.model.luong;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
+@Entity
+@Table(name = "san_pham")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product {
-    private int id;
-    private String code;
-    private String category;
-    private String name;
-    private double price;
-    private int sold;
 
-    private String brand;
-    private String description;
-    private String origin;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
 
-    private String careInstructions;
-    private String status; // AVAILABLE (Còn hàng), OUT_OF_STOCK (Hết hàng)
-    private List<ProductDetail> details; // Danh sách chi tiết sản phẩm (biến thể)
+    @Column(name = "san_pham_code", length = 50, nullable = false, unique = true)
+    String code;
 
-    // Tính tổng stock từ các biến thể
+    @Column(name = "ten_san_pham", length = 255, nullable = false, columnDefinition = "NVARCHAR(255)")
+    String name;
+
+    @Column(name = "mo_ta", columnDefinition = "NVARCHAR(MAX)")
+    String description;
+
+    @Column(name = "doi_tuong", length = 50, columnDefinition = "NVARCHAR(50)")
+    String targetGender;
+
+    @Column(name = "xuat_xu", length = 100, columnDefinition = "NVARCHAR(100)")
+    String origin;
+
+    @Column(name = "huong_dan_bao_quan", columnDefinition = "NVARCHAR(MAX)")
+    String careInstructions;
+
+    @Column(name = "gia_ban")
+    @Builder.Default
+    double price = 0.0;
+
+    @Column(name = "da_ban")
+    @Builder.Default
+    int sold = 0;
+
+    @Column(name = "trang_thai", length = 50)
+    @Builder.Default
+    String status = "AVAILABLE";
+
+    @Transient
+    String category;
+
+    @Transient
+    String brand;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    List<ProductDetail> details;
+
+    @Transient
     public int getStock() {
         if (details == null || details.isEmpty())
             return 0;
@@ -37,6 +70,7 @@ public class Product {
         return total;
     }
 
+    @Transient
     public String getPriceRangeFormatted() {
         if (details == null || details.isEmpty()) {
             return String.format("%,.0fđ", price).replace(",", ".");

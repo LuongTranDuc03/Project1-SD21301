@@ -1,56 +1,36 @@
 package project.duan1_sd21301.model.huy;
 
-public class Role {
-    private int id;
-    private String code;
-    private String roleName;
-    private int status; // 1: Active, 0: Inactive
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
-    public Role() {
-    }
+@Entity
+@Table(name = "vai_tro")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class Role {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
+
+    @Column(name = "code", length = 50, nullable = false, unique = true)
+    String code;
+
+    @Column(name = "ten_vai_tro", length = 100, nullable = false, columnDefinition = "NVARCHAR(100)")
+    String roleName;
+
+    @Column(name = "trang_thai")
+    @Builder.Default
+    Integer status = 1;
 
     public Role(int id, String roleName, int status) {
         this.id = id;
         this.roleName = roleName;
-        this.status = status;
-    }
-
-    public Role(int id, String code, String roleName, int status) {
-        this.id = id;
-        this.code = code;
-        this.roleName = roleName;
-        this.status = status;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
         this.status = status;
     }
 }

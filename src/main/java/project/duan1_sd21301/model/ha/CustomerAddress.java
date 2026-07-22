@@ -1,85 +1,58 @@
 package project.duan1_sd21301.model.ha;
 
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import project.duan1_sd21301.model.Address;
 
+@Entity
+@Table(name = "khach_hang_dia_chi")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerAddress {
-    private int id;
-    private Customer customer;
-    private Address address;
-    private String recipientName;
-    private String phoneNumber;
-    private boolean isDefault;
-    private String note;
 
-    public CustomerAddress() {
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
 
-    public CustomerAddress(int id, Customer customer, Address address, String recipientName, String phoneNumber, boolean isDefault, String note) {
-        this.id = id;
-        this.customer = customer;
-        this.address = address;
-        this.recipientName = recipientName;
-        this.phoneNumber = phoneNumber;
-        this.isDefault = isDefault;
-        this.note = note;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_khach_hang", nullable = false)
+    Customer customer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dia_chi", nullable = false)
+    Address address;
+
+    @Column(name = "nguoi_nhan", length = 150, columnDefinition = "NVARCHAR(150)")
+    String recipientName;
+
+    @Column(name = "so_dien_thoai", length = 20, columnDefinition = "NVARCHAR(20)")
+    String phoneNumber;
+
+    @Column(name = "mac_dinh")
+    @Builder.Default
+    boolean isDefault = false;
+
+    @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
+    String note;
+
+    @Transient
     public String getFormattedAddress() {
         return address != null ? address.getFormattedAddress() : "";
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
-
-    public Address getAddress() { return address; }
-    public void setAddress(Address address) { this.address = address; }
-
-    public String getRecipientName() { return recipientName; }
-    public void setRecipientName(String recipientName) { this.recipientName = recipientName; }
-
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
-
-    public boolean isDefault() { return isDefault; }
-    public void setDefault(boolean isDefault) { this.isDefault = isDefault; }
-
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
-
-    // Convenience getters for backwards compatibility
+    @Transient
     public String getProvince() { return address != null ? address.getProvince() : null; }
+    @Transient
     public String getDistrict() { return address != null ? address.getDistrict() : null; }
+    @Transient
     public String getWard() { return address != null ? address.getWard() : null; }
+    @Transient
     public String getDetailedAddress() { return address != null ? address.getDetailedAddress() : null; }
+    @Transient
     public String getCode() { return address != null ? address.getCode() : null; }
-
-    // Builder
-    public static CustomerAddressBuilder builder() {
-        return new CustomerAddressBuilder();
-    }
-
-    public static class CustomerAddressBuilder {
-        private int id;
-        private Customer customer;
-        private Address address;
-        private String recipientName;
-        private String phoneNumber;
-        private boolean isDefault;
-        private String note;
-
-        public CustomerAddressBuilder id(int id) { this.id = id; return this; }
-        public CustomerAddressBuilder customer(Customer customer) { this.customer = customer; return this; }
-        public CustomerAddressBuilder address(Address address) { this.address = address; return this; }
-        public CustomerAddressBuilder recipientName(String recipientName) { this.recipientName = recipientName; return this; }
-        public CustomerAddressBuilder phoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; return this; }
-        public CustomerAddressBuilder isDefault(boolean isDefault) { this.isDefault = isDefault; return this; }
-        public CustomerAddressBuilder note(String note) { this.note = note; return this; }
-
-        public CustomerAddress build() {
-            return new CustomerAddress(id, customer, address, recipientName, phoneNumber, isDefault, note);
-        }
-    }
 }

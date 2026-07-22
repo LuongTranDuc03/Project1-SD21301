@@ -1,29 +1,69 @@
 package project.duan1_sd21301.model.luong;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
 import java.util.List;
 
-@Data
+@Entity
+@Table(name = "chi_tiet_san_pham")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductDetail {
-    private int id;
-    private String code;
-    private Product product;
-    private String size;
-    private String color;
-    private String style;
-    private double price;
 
-    private int stock;
-    private double weight;
-    private double length;
-    private double width;
-    private double thickness;
-    private String status;
-    private List<String> images; // Danh sách hình ảnh nối với chi tiết sản phẩm này
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
+
+    @Column(name = "chi_tiet_san_pham_code", length = 50, nullable = false, unique = true)
+    String code;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_san_pham", nullable = false)
+    Product product;
+
+    @Column(name = "gia_ban")
+    @Builder.Default
+    double price = 0.0;
+
+    @Column(name = "so_luong")
+    @Builder.Default
+    int stock = 0;
+
+    @Column(name = "trong_luong")
+    @Builder.Default
+    double weight = 0.0;
+
+    @Column(name = "chieu_dai")
+    @Builder.Default
+    double length = 0.0;
+
+    @Column(name = "chieu_rong")
+    @Builder.Default
+    double width = 0.0;
+
+    @Column(name = "do_day")
+    @Builder.Default
+    double thickness = 0.0;
+
+    @Column(name = "trang_thai", length = 50)
+    @Builder.Default
+    String status = "AVAILABLE";
+
+    @Transient
+    String size;
+
+    @Transient
+    String color;
+
+    @Transient
+    String style;
+
+    @Transient
+    List<String> images;
 }
