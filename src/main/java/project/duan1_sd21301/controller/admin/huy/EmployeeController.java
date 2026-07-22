@@ -6,11 +6,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import project.duan1_sd21301.model.huy.Employee;
-import project.duan1_sd21301.repository.huy.EmployeeRepository;
-import project.duan1_sd21301.repository.huy.EmployeeRepositoryImpl;
 import project.duan1_sd21301.model.huy.Role;
+import project.duan1_sd21301.service.huy.EmployeeService;
+import project.duan1_sd21301.service.huy.EmployeeServiceImpl;
 import project.duan1_sd21301.util.EmailUtil;
-import project.duan1_sd21301.util.huy.EmployeeMockData;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -22,7 +21,7 @@ import java.util.List;
         "/admin/change-password" })
 public class EmployeeController extends HttpServlet {
 
-    private final EmployeeRepository repository = new EmployeeRepositoryImpl();
+    private final EmployeeService employeeService = new EmployeeServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -104,50 +103,23 @@ public class EmployeeController extends HttpServlet {
 
     private void listEmployees(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        List<Employee> employees = repository.findAll();
-        List<Role> roles = repository.findAllRoles();
+        // Lấy danh sách nhân viên từ CSDL qua Service
+        List<Employee> employees = employeeService.getAllEmployees();
+        List<Role> roles = employeeService.getAllRoles();
 
-        // Load mock data
-        List<Employee> mockEmployees = EmployeeMockData.loadAll();
-        List<Role> mockRoles = EmployeeMockData.loadAllRoles();
-
-        // Merge: Mock data sẽ đè lên DB data nếu trùng ID (để xử lý trường hợp update
-        // DB lỗi nhưng update mock thành công)
-        java.util.Map<Integer, Employee> mergedMap = new java.util.LinkedHashMap<>();
-
-        // 1. Nạp data từ DB trước
-        if (employees != null) {
-            for (Employee e : employees) {
-                mergedMap.put(e.getId(), e);
-            }
+        if (roles != null) {
+            roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
+                    .collect(java.util.stream.Collectors.toList());
         }
 
-        // 2. Ghi đè hoặc thêm mới từ Mock data
-        if (mockEmployees != null) {
-            for (Employee me : mockEmployees) {
-                mergedMap.put(me.getId(), me);
-            }
-        }
+        long totalActive = employees != null ? employees.stream().filter(emp -> emp.getStatus() == 1).count() : 0;
+        long totalInactive = employees != null ? employees.stream().filter(emp -> emp.getStatus() == 0).count() : 0;
 
-        // Cập nhật lại danh sách employees
-        employees = new java.util.ArrayList<>(mergedMap.values());
-        // Sắp xếp giảm dần theo ID để nhân viên mới nhất (hoặc vừa sửa) lên đầu
-        employees.sort((e1, e2) -> Integer.compare(e2.getId(), e1.getId()));
-
-        if (roles == null || roles.isEmpty()) {
-            roles = mockRoles != null ? mockRoles : new java.util.ArrayList<>();
-        }
-        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
-                .collect(java.util.stream.Collectors.toList());
-
-        long totalActive = employees.stream().filter(emp -> emp.getStatus() == 1).count();
-        long totalInactive = employees.stream().filter(emp -> emp.getStatus() == 0).count();
-
-        request.setAttribute("employees", employees);
-        request.setAttribute("roles", roles);
+        request.setAttribute("employees", employees != null ? employees : new java.util.ArrayList<>());
+        request.setAttribute("roles", roles != null ? roles : new java.util.ArrayList<>());
         request.setAttribute("totalActive", totalActive);
         request.setAttribute("totalInactive", totalInactive);
-        request.setAttribute("totalAll", employees.size());
+        request.setAttribute("totalAll", employees != null ? employees.size() : 0);
 
         String toastMessage = (String) request.getSession().getAttribute("toastMessage");
         if (toastMessage != null) {
@@ -168,12 +140,7 @@ public class EmployeeController extends HttpServlet {
             return;
         }
         int id = Integer.parseInt(idStr);
-        Employee employee = repository.findById(id);
-
-        // Fallback mock data
-        if (employee == null) {
-            employee = EmployeeMockData.findById(id);
-        }
+        Employee employee = employeeService.getEmployeeById(id);
 
         if (employee == null) {
             response.sendRedirect(request.getContextPath() + "/admin/employees");
@@ -188,13 +155,12 @@ public class EmployeeController extends HttpServlet {
             boolean isEdit) throws ServletException, IOException {
         request.setAttribute("employee", employee);
         request.setAttribute("isEdit", isEdit);
-        List<Role> roles = repository.findAllRoles();
-        if (roles == null || roles.isEmpty()) {
-            roles = EmployeeMockData.loadAllRoles();
+        List<Role> roles = employeeService.getAllRoles();
+        if (roles != null) {
+            roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
+                    .collect(java.util.stream.Collectors.toList());
         }
-        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
-                .collect(java.util.stream.Collectors.toList());
-        request.setAttribute("roles", roles);
+        request.setAttribute("roles", roles != null ? roles : new java.util.ArrayList<>());
 
         String toastMessage = (String) request.getSession().getAttribute("toastMessage");
         if (toastMessage != null) {
@@ -214,10 +180,7 @@ public class EmployeeController extends HttpServlet {
         boolean isEdit = false;
         if (idStr != null && !idStr.isEmpty()) {
             int id = Integer.parseInt(idStr);
-            employee = repository.findById(id);
-            if (employee == null) {
-                employee = EmployeeMockData.findById(id);
-            }
+            employee = employeeService.getEmployeeById(id);
             isEdit = true;
         }
         forwardToForm(request, response, employee, isEdit);
@@ -237,46 +200,8 @@ public class EmployeeController extends HttpServlet {
             return;
         }
 
-        // Check Duplicates
-        boolean emailExists = repository.isEmailExist(emp.getEmail(), null)
-                || EmployeeMockData.isEmailExist(emp.getEmail(), null);
-        if (emailExists) {
-            request.getSession().setAttribute("toastMessage", "Email đã tồn tại trong hệ thống!");
-            request.getSession().setAttribute("toastType", "error");
-            forwardToForm(request, response, emp, false);
-            return;
-        }
-        boolean phoneExists = (emp.getPhoneNumber() != null && !emp.getPhoneNumber().isEmpty()) &&
-                (repository.isPhoneExist(emp.getPhoneNumber(), null)
-                        || EmployeeMockData.isPhoneExist(emp.getPhoneNumber(), null));
-        if (phoneExists) {
-            request.getSession().setAttribute("toastMessage", "Số điện thoại đã tồn tại trong hệ thống!");
-            request.getSession().setAttribute("toastType", "error");
-            forwardToForm(request, response, emp, false);
-            return;
-        }
-
-        // Check Code Duplicate
-        if (emp.getCode() != null && !emp.getCode().isEmpty()) {
-            boolean codeExists = repository.isCodeExist(emp.getCode(), null)
-                    || EmployeeMockData.isCodeExist(emp.getCode(), null);
-            if (codeExists) {
-                request.getSession().setAttribute("toastMessage", "Mã nhân viên đã tồn tại trong hệ thống!");
-                request.getSession().setAttribute("toastType", "error");
-                forwardToForm(request, response, emp, false);
-                return;
-            }
-        } else {
-            emp.setCode(repository.getNextCode());
-            if ("NV001".equals(emp.getCode())) {
-                emp.setCode(EmployeeMockData.getNextCode());
-            }
-        }
-
-        boolean success = repository.insert(emp);
-        if (!success) {
-            success = EmployeeMockData.insert(emp);
-        }
+        // Check Duplicates qua CSDL
+        boolean success = employeeService.addEmployee(emp);
 
         if (success) {
             try {
@@ -320,10 +245,10 @@ public class EmployeeController extends HttpServlet {
                 request.getSession().setAttribute("toastType", "error");
             }
         } else {
-            request.getSession().setAttribute("toastMessage", "Thêm nhân viên thất bại từ Database!");
+            request.getSession().setAttribute("toastMessage",
+                    "Thêm nhân viên thất bại (Email đã tồn tại hoặc lỗi CSDL)!");
             request.getSession().setAttribute("toastType", "error");
         }
-        // Remove old existing duplicate block
         response.sendRedirect(request.getContextPath() + "/admin/employees");
     }
 
@@ -331,10 +256,9 @@ public class EmployeeController extends HttpServlet {
             throws ServletException, IOException {
         Employee emp = buildEmployeeFromRequest(request, false);
 
-        // Validate with EmployeeValidator
+        // Validate với EmployeeValidator
         java.util.Map<String, String> errors = EmployeeValidator.validate(emp);
         if (!errors.isEmpty()) {
-            // Get first error to display
             String firstError = errors.values().iterator().next();
             request.getSession().setAttribute("toastMessage", firstError);
             request.getSession().setAttribute("toastType", "error");
@@ -342,48 +266,7 @@ public class EmployeeController extends HttpServlet {
             return;
         }
 
-        // Check Duplicates
-        boolean emailExists = repository.isEmailExist(emp.getEmail(), emp.getId())
-                || EmployeeMockData.isEmailExist(emp.getEmail(), emp.getId());
-        if (emailExists) {
-            request.getSession().setAttribute("toastMessage", "Email đã tồn tại trong hệ thống!");
-            request.getSession().setAttribute("toastType", "error");
-            forwardToForm(request, response, emp, true);
-            return;
-        }
-        boolean phoneExists = (emp.getPhoneNumber() != null && !emp.getPhoneNumber().isEmpty()) &&
-                (repository.isPhoneExist(emp.getPhoneNumber(), emp.getId())
-                        || EmployeeMockData.isPhoneExist(emp.getPhoneNumber(), emp.getId()));
-        if (phoneExists) {
-            request.getSession().setAttribute("toastMessage", "Số điện thoại đã tồn tại trong hệ thống!");
-            request.getSession().setAttribute("toastType", "error");
-            forwardToForm(request, response, emp, true);
-            return;
-        }
-
-        if (emp.getCode() != null && !emp.getCode().isEmpty()) {
-            boolean codeExists = repository.isCodeExist(emp.getCode(), emp.getId())
-                    || EmployeeMockData.isCodeExist(emp.getCode(), emp.getId());
-            if (codeExists) {
-                request.getSession().setAttribute("toastMessage", "Mã nhân viên đã tồn tại trong hệ thống!");
-                request.getSession().setAttribute("toastType", "error");
-                forwardToForm(request, response, emp, true);
-                return;
-            }
-        } else {
-            // Keep old code if empty on update
-            Employee oldEmp = repository.findById(emp.getId());
-            if (oldEmp == null)
-                oldEmp = EmployeeMockData.findById(emp.getId());
-            if (oldEmp != null) {
-                emp.setCode(oldEmp.getCode());
-            }
-        }
-
-        boolean success = repository.update(emp);
-        if (!success) {
-            success = EmployeeMockData.update(emp);
-        }
+        boolean success = employeeService.updateEmployee(emp);
         if (success) {
             request.getSession().setAttribute("toastMessage", "Cập nhật thành công!");
             request.getSession().setAttribute("toastType", "success");
@@ -404,10 +287,7 @@ public class EmployeeController extends HttpServlet {
         int id = Integer.parseInt(idStr);
         String statusStr = request.getParameter("status");
 
-        Employee employee = repository.findById(id);
-        if (employee == null) {
-            employee = EmployeeMockData.findById(id);
-        }
+        Employee employee = employeeService.getEmployeeById(id);
 
         if (employee != null) {
             int newStatus;
@@ -418,10 +298,7 @@ public class EmployeeController extends HttpServlet {
             }
 
             employee.setStatus(newStatus);
-            boolean success = repository.update(employee);
-            if (!success) {
-                success = EmployeeMockData.update(employee);
-            }
+            boolean success = employeeService.updateEmployee(employee);
 
             String msg = success
                     ? (newStatus == 1 ? "Da kich hoat tai khoan nhan vien!" : "Da chuyen trang thai nghi viec!")
@@ -467,22 +344,24 @@ public class EmployeeController extends HttpServlet {
         String from = "pdhuy190107@gmail.com";
         EmailUtil emailUtil = new EmailUtil(host, port, username, password, from);
 
-        List<Employee> employees = repository.findAll();
-        for (Employee emp : employees) {
-            if (emp.getStatus() != 1)
-                continue;
-            String to = emp.getEmail();
-            String subject = "Thong tin tai khoan FamiCoats";
-            String html = "<p>Xin chao " + emp.getFullName() + ",</p>"
-                    + "<p>Day la thong tin dang nhap he thong:</p>"
-                    + "<ul><li>Email: " + emp.getEmail() + "</li>"
-                    + "<li>Mat khau: " + emp.getPassword() + "</li></ul>"
-                    + "<p>Vui long dang nhap va doi mat khau ngay.</p>"
-                    + "<p>Tran trong,<br/>Team FamiCoats</p>";
-            try {
-                emailUtil.sendHtmlMail(to, subject, html);
-            } catch (Exception ex) {
-                ex.printStackTrace();
+        List<Employee> employees = employeeService.getAllEmployees();
+        if (employees != null) {
+            for (Employee emp : employees) {
+                if (emp.getStatus() != 1)
+                    continue;
+                String to = emp.getEmail();
+                String subject = "Thong tin tai khoan FamiCoats";
+                String html = "<p>Xin chao " + emp.getFullName() + ",</p>"
+                        + "<p>Day la thong tin dang nhap he thong:</p>"
+                        + "<ul><li>Email: " + emp.getEmail() + "</li>"
+                        + "<li>Mat khau: " + emp.getPassword() + "</li></ul>"
+                        + "<p>Vui long dang nhap va doi mat khau ngay.</p>"
+                        + "<p>Tran trong,<br/>Team FamiCoats</p>";
+                try {
+                    emailUtil.sendHtmlMail(to, subject, html);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
         request.getSession().setAttribute("successMsg", "Gui mail thanh cong toi cac nhan vien hoat dong.");
@@ -497,7 +376,7 @@ public class EmployeeController extends HttpServlet {
         }
         int employeeId = Integer.parseInt(employeeIdStr);
 
-        Employee emp = repository.findById(employeeId);
+        Employee emp = employeeService.getEmployeeById(employeeId);
 
         if (emp == null) {
             request.getSession().setAttribute("errorMsg", "Khong tim thay nhan vien!");
@@ -567,7 +446,7 @@ public class EmployeeController extends HttpServlet {
 
         String combinedAddress = req.getParameter("address");
         if (combinedAddress != null && !combinedAddress.isEmpty()) {
-            emp.setAddress(combinedAddress);
+            emp.setAddressString(combinedAddress);
         }
 
         emp.setCccd(req.getParameter("cccd"));
@@ -575,16 +454,14 @@ public class EmployeeController extends HttpServlet {
         String roleIdStr = req.getParameter("roleId");
         int roleId = roleIdStr != null && !roleIdStr.isEmpty() ? Integer.parseInt(roleIdStr) : 0;
 
-        List<Role> roles = repository.findAllRoles();
-        if (roles == null || roles.isEmpty()) {
-            roles = EmployeeMockData.loadAllRoles();
+        List<Role> roles = employeeService.getAllRoles();
+        if (roles != null) {
+            roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
+                    .collect(java.util.stream.Collectors.toList());
         }
-        roles = roles.stream().filter(r -> !"Admin".equals(r.getRoleName()))
-                .collect(java.util.stream.Collectors.toList());
 
-        // Xây dựng Role object và gán vào Employee
-        Role selectedRole = roles.stream().filter(r -> r.getId() == roleId).findFirst()
-                .orElse(new Role(roleId, "", 1));
+        Role selectedRole = roles != null ? roles.stream().filter(r -> r.getId() == roleId).findFirst()
+                .orElse(new Role(roleId, "", 1)) : new Role(roleId, "", 1);
         emp.setRole(selectedRole);
 
         String pwd = req.getParameter("password");
@@ -592,11 +469,9 @@ public class EmployeeController extends HttpServlet {
             emp.setPassword("123456");
         } else {
             if (pwd == null || pwd.trim().isEmpty()) {
-                Employee oldEmp = (idStr != null && !idStr.isEmpty()) ? repository.findById(Integer.parseInt(idStr))
+                Employee oldEmp = (idStr != null && !idStr.isEmpty())
+                        ? employeeService.getEmployeeById(Integer.parseInt(idStr))
                         : null;
-                if (oldEmp == null && idStr != null && !idStr.isEmpty()) {
-                    oldEmp = EmployeeMockData.findById(Integer.parseInt(idStr));
-                }
                 emp.setPassword(oldEmp != null ? oldEmp.getPassword() : "123456");
             } else {
                 emp.setPassword(pwd);
@@ -631,15 +506,11 @@ public class EmployeeController extends HttpServlet {
             throws ServletException, IOException {
         String currentUserIdStr = (String) request.getSession().getAttribute("currentUserId");
         if (currentUserIdStr == null) {
-            currentUserIdStr = "1"; // Default or redirect
+            currentUserIdStr = "1";
         }
 
         int currentUserId = Integer.parseInt(currentUserIdStr);
-        Employee employee = repository.findById(currentUserId);
-
-        if (employee == null) {
-            employee = EmployeeMockData.findById(currentUserId);
-        }
+        Employee employee = employeeService.getEmployeeById(currentUserId);
 
         request.setAttribute("employee", employee);
         request.getRequestDispatcher("/WEB-INF/views/admin/huy/profile.jsp").forward(request, response);
@@ -653,23 +524,17 @@ public class EmployeeController extends HttpServlet {
         }
         int currentUserId = Integer.parseInt(currentUserIdStr);
 
-        Employee employee = repository.findById(currentUserId);
-        if (employee == null) {
-            employee = EmployeeMockData.findById(currentUserId);
-        }
+        Employee employee = employeeService.getEmployeeById(currentUserId);
 
         if (employee != null) {
             employee.setPhoneNumber(request.getParameter("phoneNumber"));
-            employee.setAddress(request.getParameter("address"));
+            employee.setAddressString(request.getParameter("address"));
             String avatar = request.getParameter("avatar");
             if (avatar != null && !avatar.trim().isEmpty()) {
                 employee.setAvatar(avatar);
             }
 
-            boolean success = repository.update(employee);
-            if (!success) {
-                success = EmployeeMockData.update(employee);
-            }
+            boolean success = employeeService.updateEmployee(employee);
 
             request.getSession().setAttribute("currentUserName", employee.getFullName());
             request.getSession().setAttribute("currentUserEmail", employee.getEmail());
@@ -694,10 +559,7 @@ public class EmployeeController extends HttpServlet {
         }
         int currentUserId = Integer.parseInt(currentUserIdStr);
 
-        Employee employee = repository.findById(currentUserId);
-        if (employee == null) {
-            employee = EmployeeMockData.findById(currentUserId);
-        }
+        Employee employee = employeeService.getEmployeeById(currentUserId);
 
         String currentPwd = request.getParameter("currentPassword");
         String newPwd = request.getParameter("newPassword");
@@ -711,10 +573,7 @@ public class EmployeeController extends HttpServlet {
             request.getSession().setAttribute("errorMsg", "Mat khau moi va xac nhan mat khau khong trung khop!");
         } else {
             employee.setPassword(newPwd);
-            boolean success = repository.update(employee);
-            if (!success) {
-                success = EmployeeMockData.update(employee);
-            }
+            boolean success = employeeService.updateEmployee(employee);
             request.getSession().setAttribute("successMsg", "Doi mat khau thanh cong!");
         }
 

@@ -61,7 +61,7 @@ public class Employee {
     Role role;
 
     @Transient
-    public void setAddress(String addressStr) {
+    public void setAddressString(String addressStr) {
         if (addressStr != null && !addressStr.trim().isEmpty()) {
             this.address = Address.builder().detailedAddress(addressStr.trim()).build();
         } else {

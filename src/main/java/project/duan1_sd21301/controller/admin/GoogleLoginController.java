@@ -9,7 +9,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import project.duan1_sd21301.model.huy.Employee;
 import project.duan1_sd21301.repository.huy.EmployeeRepository;
 import project.duan1_sd21301.repository.huy.EmployeeRepositoryImpl;
-import project.duan1_sd21301.util.huy.EmployeeMockData;
+
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -98,16 +98,6 @@ public class GoogleLoginController extends HttpServlet {
 
         // Tìm nhân viên theo email trong DB
         Employee employee = employeeRepository.findByEmail(email);
-
-        // Fallback sang mock data
-        if (employee == null) {
-            for (Employee e : EmployeeMockData.loadAll()) {
-                if (email.equalsIgnoreCase(e.getEmail())) {
-                    employee = e;
-                    break;
-                }
-            }
-        }
 
         if (employee == null) {
             request.setAttribute("error",

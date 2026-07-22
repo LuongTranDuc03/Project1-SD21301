@@ -10,6 +10,9 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import project.duan1_sd21301.model.Address;
 import project.duan1_sd21301.model.ha.Customer;
+import project.duan1_sd21301.model.ha.CustomerAddress;
+import project.duan1_sd21301.service.ha.CustomerService;
+import project.duan1_sd21301.service.ha.CustomerServiceImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,31 +24,32 @@ import java.util.Date;
 import java.util.List;
 
 @WebServlet(name = "CustomerController", value = "/admin/customers")
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 2,
-        maxFileSize = 1024 * 1024 * 10,
-        maxRequestSize = 1024 * 1024 * 50
-)
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
 public class CustomerController extends HttpServlet {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private final CustomerService customerService = new CustomerServiceImpl();
 
     @Override
     public void init() throws ServletException {
+        // Tải dữ liệu thực tế trực tiếp từ SQL Server Database [FamiCoats] qua Service
+        List<Customer> dbCustomers = customerService.getAllCustomers();
+        if (dbCustomers != null && !dbCustomers.isEmpty()) {
+            getServletContext().setAttribute("customers", dbCustomers);
+            return;
+        }
         if (getServletContext().getAttribute("customers") == null) {
             List<Customer> customers = new ArrayList<>();
             try {
                 // KH001
-                Address addr1a = Address.builder()
-                        .id(1).code("DC001").recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321")
-                        .province("TP. Hồ Chí Minh").district("Quận 1").ward("Phường Bến Nghé")
-                        .detailedAddress("123 Nguyễn Trãi").isDefault(true).note("").build();
-                Address addr1b = Address.builder()
-                        .id(2).code("DC002").recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321")
-                        .province("TP. Hồ Chí Minh").district("Bình Thạnh").ward("Phường 25")
-                        .detailedAddress("345 Điện Biên Phủ").isDefault(false).note("").build();
-                addr1a.setCustomer(null); // sẽ set sau khi build customer
-                addr1b.setCustomer(null);
+                CustomerAddress addr1a = CustomerAddress.builder()
+                        .id(1).recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321").isDefault(true).note("")
+                        .address(Address.builder().id(1).code("DC001").province("TP. Hồ Chí Minh").district("Quận 1").ward("Phường Bến Nghé").detailedAddress("123 Nguyễn Trãi").build())
+                        .build();
+                CustomerAddress addr1b = CustomerAddress.builder()
+                        .id(2).recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321").isDefault(false).note("")
+                        .address(Address.builder().id(2).code("DC002").province("TP. Hồ Chí Minh").district("Bình Thạnh").ward("Phường 25").detailedAddress("345 Điện Biên Phủ").build())
+                        .build();
                 Customer c1 = Customer.builder()
                         .id(1).code("KH001").fullName("Nguyễn Anh Tuấn").email("anhtuan.nguyen@gmail.com")
                         .password("tuannh123").phoneNumber("0987654321")
@@ -56,18 +60,18 @@ public class CustomerController extends HttpServlet {
                 customers.add(c1);
 
                 // KH002
-                Address addr2a = Address.builder()
-                        .id(3).code("DC003").recipientName("Trần Thị Mai").phoneNumber("0912345678")
-                        .province("Đà Nẵng").district("Quận Hải Châu").ward("Phường Hải Châu I")
-                        .detailedAddress("456 Lê Lợi").isDefault(true).note("").build();
-                Address addr2b = Address.builder()
-                        .id(4).code("DC004").recipientName("Trần Thị Mai").phoneNumber("0912345678")
-                        .province("Đà Nẵng").district("Quận Thanh Khê").ward("Phường Thanh Khê Tây")
-                        .detailedAddress("12 Nguyễn Văn Linh").isDefault(false).note("").build();
-                Address addr2c = Address.builder()
-                        .id(5).code("DC005").recipientName("Trần Thị Mai").phoneNumber("0912345678")
-                        .province("Đà Nẵng").district("Quận Sơn Trà").ward("Phường An Hải Bắc")
-                        .detailedAddress("78 Trần Hưng Đạo").isDefault(false).note("").build();
+                CustomerAddress addr2a = CustomerAddress.builder()
+                        .id(3).recipientName("Trần Thị Mai").phoneNumber("0912345678").isDefault(true).note("")
+                        .address(Address.builder().id(3).code("DC003").province("Đà Nẵng").district("Quận Hải Châu").ward("Phường Hải Châu I").detailedAddress("456 Lê Lợi").build())
+                        .build();
+                CustomerAddress addr2b = CustomerAddress.builder()
+                        .id(4).recipientName("Trần Thị Mai").phoneNumber("0912345678").isDefault(false).note("")
+                        .address(Address.builder().id(4).code("DC004").province("Đà Nẵng").district("Quận Thanh Khê").ward("Phường Thanh Khê Tây").detailedAddress("12 Nguyễn Văn Linh").build())
+                        .build();
+                CustomerAddress addr2c = CustomerAddress.builder()
+                        .id(5).recipientName("Trần Thị Mai").phoneNumber("0912345678").isDefault(false).note("")
+                        .address(Address.builder().id(5).code("DC005").province("Đà Nẵng").district("Quận Sơn Trà").ward("Phường An Hải Bắc").detailedAddress("78 Trần Hưng Đạo").build())
+                        .build();
                 Customer c2 = Customer.builder()
                         .id(2).code("KH002").fullName("Trần Thị Mai").email("maitran98@gmail.com")
                         .password("maipassword").phoneNumber("0912345678")
@@ -78,10 +82,10 @@ public class CustomerController extends HttpServlet {
                 customers.add(c2);
 
                 // KH003
-                Address addr3a = Address.builder()
-                        .id(6).code("DC006").recipientName("Lê Minh Hoàng").phoneNumber("0909090909")
-                        .province("Hà Nội").district("Quận Cầu Giấy").ward("Phường Dịch Vọng")
-                        .detailedAddress("789 Cầu Giấy").isDefault(true).note("").build();
+                CustomerAddress addr3a = CustomerAddress.builder()
+                        .id(6).recipientName("Lê Minh Hoàng").phoneNumber("0909090909").isDefault(true).note("")
+                        .address(Address.builder().id(6).code("DC006").province("Hà Nội").district("Quận Cầu Giấy").ward("Phường Dịch Vọng").detailedAddress("789 Cầu Giấy").build())
+                        .build();
                 Customer c3 = Customer.builder()
                         .id(3).code("KH003").fullName("Lê Minh Hoàng").email("hoangleminh@yahoo.com")
                         .password("hoang1992").phoneNumber("0909090909")
@@ -92,14 +96,14 @@ public class CustomerController extends HttpServlet {
                 customers.add(c3);
 
                 // KH004
-                Address addr4a = Address.builder()
-                        .id(7).code("DC007").recipientName("Phạm Khánh Vy").phoneNumber("0977777777")
-                        .province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Tân An")
-                        .detailedAddress("321 Trần Hưng Đạo").isDefault(true).note("").build();
-                Address addr4b = Address.builder()
-                        .id(8).code("DC008").recipientName("Phạm Khánh Vy").phoneNumber("0977777777")
-                        .province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Xuân Khánh")
-                        .detailedAddress("56 Mậu Thân").isDefault(false).note("").build();
+                CustomerAddress addr4a = CustomerAddress.builder()
+                        .id(7).recipientName("Phạm Khánh Vy").phoneNumber("0977777777").isDefault(true).note("")
+                        .address(Address.builder().id(7).code("DC007").province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Tân An").detailedAddress("321 Trần Hưng Đạo").build())
+                        .build();
+                CustomerAddress addr4b = CustomerAddress.builder()
+                        .id(8).recipientName("Phạm Khánh Vy").phoneNumber("0977777777").isDefault(false).note("")
+                        .address(Address.builder().id(8).code("DC008").province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Xuân Khánh").detailedAddress("56 Mậu Thân").build())
+                        .build();
                 Customer c4 = Customer.builder()
                         .id(4).code("KH004").fullName("Phạm Khánh Vy").email("vypham.khanh@hotmail.com")
                         .password("vycute99").phoneNumber("0977777777")
@@ -131,7 +135,8 @@ public class CustomerController extends HttpServlet {
         }
 
         List<Customer> allCustomers = (List<Customer>) getServletContext().getAttribute("customers");
-        if (allCustomers == null) allCustomers = new ArrayList<>();
+        if (allCustomers == null)
+            allCustomers = new ArrayList<>();
 
         String action = request.getParameter("action");
 
@@ -173,14 +178,15 @@ public class CustomerController extends HttpServlet {
             if (customerCode != null && addressCode != null) {
                 Customer cust = findByCode(allCustomers, customerCode);
                 if (cust != null && cust.getAddresses() != null) {
-                    for (Address a : cust.getAddresses()) {
-                        a.setDefault(a.getCode().equals(addressCode));
+                    for (CustomerAddress a : cust.getAddresses()) {
+                        a.setDefault(a.getCode() != null && a.getCode().equals(addressCode));
                     }
                     session.setAttribute("toastMessage", "Thiết lập địa chỉ mặc định thành công!");
                     session.setAttribute("toastType", "success");
                 }
             }
-            response.sendRedirect(request.getContextPath() + "/admin/customers?action=details&code=" + request.getParameter("code"));
+            response.sendRedirect(
+                    request.getContextPath() + "/admin/customers?action=details&code=" + request.getParameter("code"));
             return;
         }
 
@@ -211,9 +217,12 @@ public class CustomerController extends HttpServlet {
                 String addrKw = filterAddress.toLowerCase().trim();
                 boolean found = false;
                 if (c.getAddresses() != null) {
-                    for (Address a : c.getAddresses()) {
+                    for (CustomerAddress a : c.getAddresses()) {
                         String full = buildFullAddress(a).toLowerCase();
-                        if (full.contains(addrKw)) { found = true; break; }
+                        if (full.contains(addrKw)) {
+                            found = true;
+                            break;
+                        }
                     }
                 }
                 matches = found;
@@ -224,7 +233,8 @@ public class CustomerController extends HttpServlet {
                 matches = filterStatus.equalsIgnoreCase(c.getStatus());
             }
 
-            if (matches) filteredCustomers.add(c);
+            if (matches)
+                filteredCustomers.add(c);
         }
 
         // Export CSV
@@ -264,7 +274,10 @@ public class CustomerController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
         List<Customer> customers = (List<Customer>) getServletContext().getAttribute("customers");
-        if (customers == null) { customers = new ArrayList<>(); getServletContext().setAttribute("customers", customers); }
+        if (customers == null) {
+            customers = new ArrayList<>();
+            getServletContext().setAttribute("customers", customers);
+        }
         HttpSession session = request.getSession();
 
         if ("add".equals(action) || "edit".equals(action)) {
@@ -289,61 +302,70 @@ public class CustomerController extends HttpServlet {
                 Part filePart = request.getPart("anhDaiDienFile");
                 if (filePart != null && filePart.getSize() > 0) {
                     File uploadDir = new File(getServletContext().getRealPath("/"), "uploads");
-                    if (!uploadDir.exists()) uploadDir.mkdirs();
+                    if (!uploadDir.exists())
+                        uploadDir.mkdirs();
                     String uniqueFileName = System.currentTimeMillis() + "_" + filePart.getSubmittedFileName();
                     filePart.write(new File(uploadDir, uniqueFileName).getAbsolutePath());
                     anhDaiDien = request.getContextPath() + "/uploads/" + uniqueFileName;
                 }
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             if ("add".equals(action) && (anhDaiDien == null || anhDaiDien.trim().isEmpty())) {
-                anhDaiDien = "https://i.pravatar.cc/150?img=" + (int)(Math.random() * 70);
+                anhDaiDien = "https://i.pravatar.cc/150?img=" + (int) (Math.random() * 70);
             }
 
             Date ngaySinh = null;
             try {
-                if (ngaySinhStr != null && !ngaySinhStr.isEmpty()) ngaySinh = dateFormat.parse(ngaySinhStr);
-            } catch (ParseException e) { ngaySinh = new Date(); }
+                if (ngaySinhStr != null && !ngaySinhStr.isEmpty())
+                    ngaySinh = dateFormat.parse(ngaySinhStr);
+            } catch (ParseException e) {
+                ngaySinh = new Date();
+            }
 
             // Xây dựng danh sách địa chỉ từ form
             // Địa chỉ mặc định
             String defaultRecipient = request.getParameter("defaultRecipientName");
-            String defaultPhone     = request.getParameter("defaultPhoneNumber");
-            String defaultProvince  = request.getParameter("defaultProvince");
-            String defaultDistrict  = request.getParameter("defaultDistrict");
-            String defaultWard      = request.getParameter("defaultWard");
-            String defaultDetail    = request.getParameter("defaultDetailedAddress");
-            String defaultNote      = request.getParameter("defaultNote");
-            String defaultAddrCode  = request.getParameter("defaultAddressCode");
+            String defaultPhone = request.getParameter("defaultPhoneNumber");
+            String defaultProvince = request.getParameter("defaultProvince");
+            String defaultDistrict = request.getParameter("defaultDistrict");
+            String defaultWard = request.getParameter("defaultWard");
+            String defaultDetail = request.getParameter("defaultDetailedAddress");
+            String defaultNote = request.getParameter("defaultNote");
+            String defaultAddrCode = request.getParameter("defaultAddressCode");
 
             // Các địa chỉ phụ
-            String[] otherCodes      = request.getParameterValues("otherAddressCode");
+            String[] otherCodes = request.getParameterValues("otherAddressCode");
             String[] otherRecipients = request.getParameterValues("otherRecipientName");
-            String[] otherPhones     = request.getParameterValues("otherPhoneNumber");
-            String[] otherProvinces  = request.getParameterValues("otherProvince");
-            String[] otherDistricts  = request.getParameterValues("otherDistrict");
-            String[] otherWards      = request.getParameterValues("otherWard");
-            String[] otherDetails    = request.getParameterValues("otherDetailedAddress");
-            String[] otherNotes      = request.getParameterValues("otherNote");
+            String[] otherPhones = request.getParameterValues("otherPhoneNumber");
+            String[] otherProvinces = request.getParameterValues("otherProvince");
+            String[] otherDistricts = request.getParameterValues("otherDistrict");
+            String[] otherWards = request.getParameterValues("otherWard");
+            String[] otherDetails = request.getParameterValues("otherDetailedAddress");
+            String[] otherNotes = request.getParameterValues("otherNote");
 
-            List<Address> addresses = new ArrayList<>();
+            List<CustomerAddress> addresses = new ArrayList<>();
 
             // Địa chỉ mặc định
             // Lấy nextAddressId
             int nextAddrId = getNextAddressId(customers);
             String resolvedDefaultCode = (defaultAddrCode != null && !defaultAddrCode.trim().isEmpty())
-                    ? defaultAddrCode.trim() : generateNextAddressCode(customers, 0);
-            Address defaultAddr = Address.builder()
+                    ? defaultAddrCode.trim()
+                    : generateNextAddressCode(customers, 0);
+            CustomerAddress defaultAddr = CustomerAddress.builder()
                     .id(nextAddrId++)
-                    .code(resolvedDefaultCode)
                     .recipientName(defaultRecipient != null ? defaultRecipient.trim() : "")
                     .phoneNumber(defaultPhone != null ? defaultPhone.trim() : "")
-                    .province(defaultProvince != null ? defaultProvince.trim() : "")
-                    .district(defaultDistrict != null ? defaultDistrict.trim() : "")
-                    .ward(defaultWard != null ? defaultWard.trim() : "")
-                    .detailedAddress(defaultDetail != null ? defaultDetail.trim() : "")
                     .isDefault(true)
                     .note(defaultNote != null ? defaultNote.trim() : "")
+                    .address(Address.builder()
+                            .code(resolvedDefaultCode)
+                            .province(defaultProvince != null ? defaultProvince.trim() : "")
+                            .district(defaultDistrict != null ? defaultDistrict.trim() : "")
+                            .ward(defaultWard != null ? defaultWard.trim() : "")
+                            .detailedAddress(defaultDetail != null ? defaultDetail.trim() : "")
+                            .build())
                     .build();
             addresses.add(defaultAddr);
 
@@ -351,20 +373,25 @@ public class CustomerController extends HttpServlet {
             if (otherDetails != null) {
                 for (int i = 0; i < otherDetails.length; i++) {
                     String detail = otherDetails[i];
-                    if (detail == null || detail.trim().isEmpty()) continue;
-                    String oCode = (otherCodes != null && otherCodes.length > i && otherCodes[i] != null && !otherCodes[i].trim().isEmpty())
-                            ? otherCodes[i].trim() : generateNextAddressCode(customers, addresses.size());
-                    Address otherAddr = Address.builder()
+                    if (detail == null || detail.trim().isEmpty())
+                        continue;
+                    String oCode = (otherCodes != null && otherCodes.length > i && otherCodes[i] != null
+                            && !otherCodes[i].trim().isEmpty())
+                                    ? otherCodes[i].trim()
+                                    : generateNextAddressCode(customers, addresses.size());
+                    CustomerAddress otherAddr = CustomerAddress.builder()
                             .id(nextAddrId++)
-                            .code(oCode)
                             .recipientName(safe(otherRecipients, i))
                             .phoneNumber(safe(otherPhones, i))
-                            .province(safe(otherProvinces, i))
-                            .district(safe(otherDistricts, i))
-                            .ward(safe(otherWards, i))
-                            .detailedAddress(detail.trim())
                             .isDefault(false)
                             .note(safe(otherNotes, i))
+                            .address(Address.builder()
+                                    .code(oCode)
+                                    .province(safe(otherProvinces, i))
+                                    .district(safe(otherDistricts, i))
+                                    .ward(safe(otherWards, i))
+                                    .detailedAddress(detail.trim())
+                                    .build())
                             .build();
                     addresses.add(otherAddr);
                 }
@@ -373,7 +400,8 @@ public class CustomerController extends HttpServlet {
             // Validate
             boolean isEdit = "edit".equals(action);
             String defaultFullAddr = buildFullAddress(defaultAddr);
-            List<String> errors = CustomerValidator.validate(code, hoTen, email, soDienThoai, ngaySinh, gioiTinh, trangThai, defaultFullAddr, customers, isEdit);
+            List<String> errors = CustomerValidator.validate(code, hoTen, email, soDienThoai, ngaySinh, gioiTinh,
+                    trangThai, defaultFullAddr, customers, isEdit);
 
             if (!errors.isEmpty()) {
                 request.setAttribute("errors", errors);
@@ -382,7 +410,8 @@ public class CustomerController extends HttpServlet {
                         .code(code).fullName(hoTen).email(email).phoneNumber(soDienThoai)
                         .dateOfBirth(ngaySinh).gender(gioiTinh).status(trangThai).avatar(anhDaiDien)
                         .addresses(addresses).build();
-                for (Address a : preview.getAddresses()) a.setCustomer(preview);
+                for (CustomerAddress a : preview.getAddresses())
+                    a.setCustomer(preview);
                 request.setAttribute("customer", preview);
                 request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-form.jsp").forward(request, response);
                 return;
@@ -390,23 +419,35 @@ public class CustomerController extends HttpServlet {
 
             if ("add".equals(action)) {
                 int nextId = 1;
-                for (Customer c : customers) { if (c.getId() >= nextId) nextId = c.getId() + 1; }
+                for (Customer c : customers) {
+                    if (c.getId() >= nextId)
+                        nextId = c.getId() + 1;
+                }
                 Customer newC = Customer.builder()
                         .id(nextId).code(code).fullName(hoTen).email(email).phoneNumber(soDienThoai)
                         .dateOfBirth(ngaySinh).gender(gioiTinh).avatar(anhDaiDien).status(trangThai)
                         .addresses(addresses).build();
-                for (Address a : newC.getAddresses()) a.setCustomer(newC);
+                
+                // Lưu vào SQL Server qua Service
+                customerService.addCustomer(newC);
+
                 customers.add(0, newC);
                 session.setAttribute("toastMessage", "Thêm mới khách hàng thành công!");
                 session.setAttribute("toastType", "success");
             } else {
                 Customer found = findByCode(customers, code);
                 if (found != null) {
-                    found.setFullName(hoTen); found.setEmail(email); found.setPhoneNumber(soDienThoai);
-                    found.setDateOfBirth(ngaySinh); found.setGender(gioiTinh);
-                    found.setAvatar(anhDaiDien); found.setStatus(trangThai);
+                    found.setFullName(hoTen);
+                    found.setEmail(email);
+                    found.setPhoneNumber(soDienThoai);
+                    found.setDateOfBirth(ngaySinh);
+                    found.setGender(gioiTinh);
+                    found.setAvatar(anhDaiDien);
+                    found.setStatus(trangThai);
                     found.setAddresses(addresses);
-                    for (Address a : found.getAddresses()) a.setCustomer(found);
+
+                    // Cập nhật vào SQL Server qua Service
+                    customerService.updateCustomer(found);
                 }
                 session.setAttribute("toastMessage", "Cập nhật khách hàng thành công!");
                 session.setAttribute("toastType", "success");
@@ -414,7 +455,7 @@ public class CustomerController extends HttpServlet {
 
         } else if ("delete-address".equals(action)) {
             String customerCode = request.getParameter("code");
-            String addressCode  = request.getParameter("addressCode");
+            String addressCode = request.getParameter("addressCode");
             Customer cust = findByCode((List<Customer>) getServletContext().getAttribute("customers"), customerCode);
             if (cust != null && addressCode != null) {
                 cust.getAddresses().removeIf(a -> addressCode.equals(a.getCode()));
@@ -446,19 +487,25 @@ public class CustomerController extends HttpServlet {
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private Customer findByCode(List<Customer> list, String code) {
-        if (list == null || code == null) return null;
-        for (Customer c : list) { if (code.equals(c.getCode())) return c; }
+        if (list == null || code == null)
+            return null;
+        for (Customer c : list) {
+            if (code.equals(c.getCode()))
+                return c;
+        }
         return null;
     }
 
+    private String buildFullAddress(CustomerAddress ca) {
+        if (ca == null)
+            return "";
+        return ca.getFormattedAddress();
+    }
+
     private String buildFullAddress(Address a) {
-        if (a == null) return "";
-        List<String> parts = new ArrayList<>();
-        if (a.getDetailedAddress() != null && !a.getDetailedAddress().isEmpty()) parts.add(a.getDetailedAddress());
-        if (a.getWard() != null && !a.getWard().isEmpty()) parts.add(a.getWard());
-        if (a.getDistrict() != null && !a.getDistrict().isEmpty()) parts.add(a.getDistrict());
-        if (a.getProvince() != null && !a.getProvince().isEmpty()) parts.add(a.getProvince());
-        return String.join(", ", parts);
+        if (a == null)
+            return "";
+        return a.getFormattedAddress();
     }
 
     private String safe(String[] arr, int i) {
@@ -471,8 +518,12 @@ public class CustomerController extends HttpServlet {
             for (Customer c : customers) {
                 String code = c.getCode();
                 if (code != null && code.startsWith("KH")) {
-                    try { int n = Integer.parseInt(code.substring(2)); if (n > max) max = n; }
-                    catch (NumberFormatException ignored) {}
+                    try {
+                        int n = Integer.parseInt(code.substring(2));
+                        if (n > max)
+                            max = n;
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
             }
         }
@@ -483,12 +534,17 @@ public class CustomerController extends HttpServlet {
         int max = 0;
         if (customers != null) {
             for (Customer c : customers) {
-                if (c.getAddresses() == null) continue;
-                for (Address a : c.getAddresses()) {
+                if (c.getAddresses() == null)
+                    continue;
+                for (CustomerAddress a : c.getAddresses()) {
                     String code = a.getCode();
                     if (code != null && code.startsWith("DC")) {
-                        try { int n = Integer.parseInt(code.substring(2)); if (n > max) max = n; }
-                        catch (NumberFormatException ignored) {}
+                        try {
+                            int n = Integer.parseInt(code.substring(2));
+                            if (n > max)
+                                max = n;
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                 }
             }
@@ -500,8 +556,12 @@ public class CustomerController extends HttpServlet {
         int max = 0;
         if (customers != null) {
             for (Customer c : customers) {
-                if (c.getAddresses() == null) continue;
-                for (Address a : c.getAddresses()) { if (a.getId() > max) max = a.getId(); }
+                if (c.getAddresses() == null)
+                    continue;
+                for (CustomerAddress a : c.getAddresses()) {
+                    if (a.getId() > max)
+                        max = a.getId();
+                }
             }
         }
         return max + 1;

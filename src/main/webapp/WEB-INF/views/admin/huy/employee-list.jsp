@@ -337,7 +337,7 @@
                                                                                             <tr data-role="<%= emp.getRoleName() %>"
                                                                                                 data-gender="<%= emp.getGender() != null ? emp.getGender() : "" %>"
                                                                                                 data-status="<%= emp.getStatus() %>"
-                                                                                                data-address="<%= emp.getAddress() != null ? emp.getAddress().toLowerCase() : "" %>"
+                                                                                                data-address="<%= emp.getFullAddressString() != null ? emp.getFullAddressString().toLowerCase() : "" %>"
                                                                                                 data-id="<%= emp.getId() %>"
                                                                                                 onmouseover="this.style.backgroundColor='#F8FAFC'"
                                                                                                 onmouseout="this.style.backgroundColor='transparent'">
@@ -378,12 +378,12 @@
                                                                                                         %>
                                                                                                 </td>
                                                                                                 <td style="padding: 14px 16px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                                                                                    title="<%= emp.getAddress() != null ? emp.getAddress() : "" %>">
-                                                                                                    <%= emp.getAddress()
+                                                                                                    title="<%= emp.getFullAddressString() != null ? emp.getFullAddressString() : "" %>">
+                                                                                                    <%= emp.getFullAddressString()
                                                                                                         !=null &&
-                                                                                                        !emp.getAddress().isEmpty()
+                                                                                                        !emp.getFullAddressString().isEmpty()
                                                                                                         ?
-                                                                                                        emp.getAddress()
+                                                                                                        emp.getFullAddressString()
                                                                                                         : "-" %>
                                                                                                 </td>
                                                                                                 <td

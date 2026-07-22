@@ -12,10 +12,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
     public List<Employee> findAll() {
+        seedSampleDataIfEmpty();
         List<Employee> list = new ArrayList<>();
         String sql = "SELECT nv.*, vt.ten_vai_tro FROM nhan_vien nv " +
                 "LEFT JOIN vai_tro vt ON nv.id_vai_tro = vt.id " +
-                "ORDER BY nv.id DESC";
+                "ORDER BY nv.code DESC";
 
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -28,6 +29,39 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             e.printStackTrace();
         }
         return list;
+    }
+
+    private void seedSampleDataIfEmpty() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (conn == null) return;
+            // 1. Seed vai_tro if empty
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM vai_tro")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    stmt.executeUpdate("INSERT INTO vai_tro (ten_vai_tro, trang_thai) VALUES (N'Quản lý', 1), (N'Nhân viên bán hàng', 1), (N'Thu ngân', 1)");
+                }
+            } catch (SQLException ignored) {}
+
+            // 2. Seed nhan_vien if empty
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM nhan_vien")) {
+                if (rs.next() && rs.getInt(1) == 0) {
+                    int roleId = 1;
+                    try (Statement stmtRole = conn.createStatement();
+                         ResultSet rsRole = stmtRole.executeQuery("SELECT TOP 1 id FROM vai_tro")) {
+                        if (rsRole.next()) roleId = rsRole.getInt(1);
+                    }
+                    String sqlInsert = "INSERT INTO nhan_vien (code, id_vai_tro, ho_ten, email, mat_khau, so_dien_thoai, ngay_sinh, gioi_tinh, trang_thai, dia_chi) VALUES " +
+                            "('NV001', " + roleId + ", N'Trần Văn Lượng', 'tranluong11103@gmail.com', '123456', '0987654321', '2003-10-11', 1, 1, N'Hà Nội'), " +
+                            "('NV002', " + roleId + ", N'Phạm Đức Huy', 'pdhuy190107@gmail.com', '123456', '0987654322', '2000-01-01', 1, 1, N'Hà Nội'), " +
+                            "('NV003', " + roleId + ", N'Trần Văn Nam', 'namtv@gmail.com', '123456', '0912345678', '1998-05-15', 1, 1, N'Cầu Giấy, Hà Nội'), " +
+                            "('NV004', " + roleId + ", N'Nguyễn Thị Mai', 'maintt@gmail.com', '123456', '0934567890', '1999-08-20', 0, 1, N'Hải Phòng')";
+                    stmt.executeUpdate(sqlInsert);
+                }
+            } catch (SQLException ignored) {}
+        } catch (SQLException e) {
+            System.err.println("Seed employee DB error: " + e.getMessage());
+        }
     }
 
     @Override
@@ -53,14 +87,17 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
     @Override
     public Employee findByEmail(String email) {
+        if (email == null) return null;
+        seedSampleDataIfEmpty();
+
         String sql = "SELECT nv.*, vt.ten_vai_tro FROM nhan_vien nv " +
                 "LEFT JOIN vai_tro vt ON nv.id_vai_tro = vt.id " +
-                "WHERE nv.email = ?";
+                "WHERE LOWER(LTRIM(RTRIM(nv.email))) = LOWER(LTRIM(RTRIM(?)))";
 
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, email);
+            ps.setString(1, email.trim());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToEmployee(rs);
@@ -69,6 +106,20 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        // Fallback query without JOIN
+        String fallbackSql = "SELECT * FROM nhan_vien WHERE LOWER(LTRIM(RTRIM(email))) = LOWER(LTRIM(RTRIM(?)))";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
+            ps.setString(1, email.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+
         return null;
     }
 
@@ -105,37 +156,42 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                 if (ma != null && ma.startsWith("NV")) {
                     try {
                         int num = Integer.parseInt(ma.substring(2));
-                        if (num > max) max = num;
-                    } catch (Exception ignored) {}
+                        if (num > max)
+                            max = num;
+                    } catch (Exception ignored) {
+                    }
                 }
             }
         } catch (SQLException e) {
             // Fallback try ma_nhan_vien column
             try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement ps = conn.prepareStatement("SELECT ma_nhan_vien FROM nhan_vien");
-                 ResultSet rs = ps.executeQuery()) {
+                    PreparedStatement ps = conn.prepareStatement("SELECT ma_nhan_vien FROM nhan_vien");
+                    ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String ma = rs.getString("ma_nhan_vien");
                     if (ma != null && ma.startsWith("NV")) {
                         try {
                             int num = Integer.parseInt(ma.substring(2));
-                            if (num > max) max = num;
-                        } catch (Exception ignored) {}
+                            if (num > max)
+                                max = num;
+                        } catch (Exception ignored) {
+                        }
                     }
                 }
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
         }
         return "NV" + String.format("%03d", max + 1);
     }
 
     @Override
     public boolean isCodeExist(String code, Integer excludeId) {
-        String sql = "SELECT 1 FROM nhan_vien WHERE (code = ? OR ma_nhan_vien = ?)";
+        String sql = "SELECT 1 FROM nhan_vien WHERE code = ?";
         if (excludeId != null) {
             sql += " AND id != ?";
         }
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
             ps.setString(2, code);
             if (excludeId != null) {
@@ -147,13 +203,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         } catch (SQLException e) {
             // Fallback for single column
             String fallbackSql = "SELECT 1 FROM nhan_vien WHERE code = ?";
-            if (excludeId != null) fallbackSql += " AND id != ?";
+            if (excludeId != null)
+                fallbackSql += " AND id != ?";
             try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
+                    PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
                 ps.setString(1, code);
-                if (excludeId != null) ps.setInt(2, excludeId);
-                try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
-            } catch (SQLException ignored) {}
+                if (excludeId != null)
+                    ps.setInt(2, excludeId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
+                }
+            } catch (SQLException ignored) {
+            }
         }
         return false;
     }
@@ -169,7 +230,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             sql += " AND id != ?";
         }
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             if (excludeId != null) {
                 ps.setInt(2, excludeId);
@@ -190,7 +251,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             sql += " AND id != ?";
         }
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, phone);
             if (excludeId != null) {
                 ps.setInt(2, excludeId);
@@ -245,7 +306,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             ps.setString(9, entity.getAvatar());
             ps.setString(10, entity.getCccd());
             ps.setInt(11, entity.getStatus());
-            ps.setString(12, entity.getAddress());
+            ps.setString(12, entity.getFullAddressString());
 
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -284,7 +345,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             ps.setString(8, entity.getAvatar());
             ps.setString(9, entity.getCccd());
             ps.setInt(10, entity.getStatus());
-            ps.setString(11, entity.getAddress());
+            ps.setString(11, entity.getFullAddressString());
             ps.setInt(12, entity.getId());
 
             return ps.executeUpdate() > 0;
@@ -314,7 +375,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         try {
             emp.setCode(rs.getString("code"));
         } catch (SQLException e) {
-            try { emp.setCode(rs.getString("ma_nhan_vien")); } catch (SQLException ignored) {}
+            try {
+                emp.setCode(rs.getString("ma_nhan_vien"));
+            } catch (SQLException ignored) {
+            }
         }
         emp.setFullName(rs.getString("ho_ten"));
         emp.setEmail(rs.getString("email"));
@@ -335,12 +399,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         emp.setStatus(rs.getInt("trang_thai"));
 
         // Map địa chỉ tổng hợp (thử từng cột, bỏ qua nếu cột không tồn tại)
-        try { emp.setAddress(rs.getString("dia_chi")); } catch (SQLException ignored) {}
+        try {
+            emp.setAddressString(rs.getString("dia_chi"));
+        } catch (SQLException ignored) {
+        }
 
         // Xây dựng Role object từ kết quả JOIN
         Role role = new Role();
         role.setId(rs.getInt("id_vai_tro"));
-        try { role.setRoleName(rs.getString("ten_vai_tro")); } catch (SQLException ignored) {}
+        try {
+            role.setRoleName(rs.getString("ten_vai_tro"));
+        } catch (SQLException ignored) {
+        }
         emp.setRole(role);
 
         return emp;
@@ -353,7 +423,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                 "WHERE nv.email = ? AND nv.mat_khau = ? AND nv.trang_thai = 1";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {

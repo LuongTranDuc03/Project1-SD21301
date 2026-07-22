@@ -490,7 +490,7 @@
 
         // ===== Dev Login =====
         function triggerDevLogin() {
-            const email = prompt("TÍNH NĂNG DEV: Nhập email muốn giả lập đăng nhập (Hệ thống sẽ tự cấp quyền Quản lý):", "admin@famicoats.vn");
+            const email = prompt("DEV MODE: Nhập Email nhân viên trong CSDL SQL Server để đăng nhập:", "tranluong11103@gmail.com");
             if (email && email.trim() !== '') {
                 const form = document.createElement('form');
                 form.method = 'POST';

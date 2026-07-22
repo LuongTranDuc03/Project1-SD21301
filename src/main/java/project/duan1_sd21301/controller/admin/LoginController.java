@@ -3,7 +3,6 @@ package project.duan1_sd21301.controller.admin;
 import project.duan1_sd21301.model.huy.Employee;
 import project.duan1_sd21301.repository.huy.EmployeeRepository;
 import project.duan1_sd21301.repository.huy.EmployeeRepositoryImpl;
-import project.duan1_sd21301.util.huy.EmployeeMockData;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -46,9 +45,6 @@ public class LoginController extends HttpServlet {
         }
 
         Employee employee = employeeRepository.login(email.trim(), password);
-        if (employee == null) {
-            employee = EmployeeMockData.login(email.trim(), password);
-        }
 
         if (employee != null) {
             HttpSession session = request.getSession();

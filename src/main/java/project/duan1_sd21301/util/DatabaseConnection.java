@@ -12,7 +12,7 @@ public class DatabaseConnection {
     // --- CẤU HÌNH SQL SERVER ---
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     // loginTimeout=3 → chỉ chờ tối đa 3 giây, nếu không kết nối được thì thất bại nhanh (fast-fail)
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDB;encrypt=true;trustServerCertificate=true;loginTimeout=3;";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoats;encrypt=true;trustServerCertificate=true;loginTimeout=3;";
     private static final String USER = "sa";
     private static final String PASS = "123456";
 

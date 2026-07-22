@@ -3,7 +3,7 @@ package project.duan1_sd21301.controller.admin;
 import project.duan1_sd21301.model.huy.Employee;
 import project.duan1_sd21301.repository.huy.EmployeeRepository;
 import project.duan1_sd21301.repository.huy.EmployeeRepositoryImpl;
-import project.duan1_sd21301.util.huy.EmployeeMockData;
+
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -40,17 +40,18 @@ public class DevLoginController extends HttpServlet {
 
         email = email.trim();
 
-        // Cố gắng tìm trong DB trước
+        // 1. Cố gắng tìm nhân viên trong DB
         Employee employee = employeeRepository.findByEmail(email);
 
-        // Nếu không có trong DB, tìm trong mock data
+        // 2. Nếu không tìm thấy trong DB, tự động tạo nhân viên ảo (Dev User) để đăng nhập được ngay
         if (employee == null) {
-            for (Employee e : EmployeeMockData.loadAll()) {
-                if (email.equalsIgnoreCase(e.getEmail())) {
-                    employee = e;
-                    break;
-                }
-            }
+            employee = new Employee();
+            employee.setId(1);
+            employee.setCode("DEV001");
+            employee.setEmail(email);
+            employee.setFullName("Dev User (" + email + ")");
+            project.duan1_sd21301.model.huy.Role devRole = new project.duan1_sd21301.model.huy.Role(1, "Quản lý", 1);
+            employee.setRole(devRole);
         }
 
         // Set session
