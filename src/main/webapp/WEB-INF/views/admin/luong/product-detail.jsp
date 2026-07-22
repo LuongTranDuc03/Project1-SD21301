@@ -67,7 +67,7 @@
     String statusClass = "";
     String statusLabel = "";
     if (prod != null) {
-        if ("AVAILABLE".equals(prod.getStatus())) {
+        if ("AVAILABLE".equals(prod.getEffectiveStatus())) {
             statusLabel = "Còn hàng";
             statusClass = "available";
         } else {

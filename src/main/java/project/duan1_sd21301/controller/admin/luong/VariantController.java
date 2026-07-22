@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import project.duan1_sd21301.model.luong.Product;
 import project.duan1_sd21301.model.luong.ProductDetail;
+import project.duan1_sd21301.service.luong.ProductService;
+import project.duan1_sd21301.service.luong.ProductServiceImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,25 +17,19 @@ import java.util.List;
 @WebServlet(name = "VariantController", value = "/admin/variants")
 public class VariantController extends HttpServlet {
 
+    private final ProductService productService = new ProductServiceImpl();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        jakarta.servlet.http.HttpSession session = request.getSession();
-        @SuppressWarnings("unchecked")
-        List<Product> products = (List<Product>) session.getAttribute("products");
-
-        if (products == null) {
-            // Redirect to products to initialize the data first
-            response.sendRedirect(request.getContextPath() + "/admin/products");
-            return;
-        }
-
+        
+        List<Product> products = productService.getAllProducts();
         String filterProductCode = request.getParameter("productCode");
 
         List<ProductDetail> allVariants = new ArrayList<>();
         for (Product product : products) {
             if (filterProductCode != null && !filterProductCode.trim().isEmpty()) {
-                if (!product.getCode().equals(filterProductCode)) {
+                if (!product.getCode().equalsIgnoreCase(filterProductCode.trim())) {
                     continue;
                 }
             }
@@ -75,6 +71,7 @@ public class VariantController extends HttpServlet {
             return;
         }
 
+        jakarta.servlet.http.HttpSession session = request.getSession();
         String toastMessage = (String) session.getAttribute("toastMessage");
         if (toastMessage != null) {
             request.setAttribute("toastMessage", toastMessage);
@@ -93,6 +90,7 @@ public class VariantController extends HttpServlet {
             throws ServletException, IOException {
         String action = request.getParameter("action");
         if ("edit".equals(action)) {
+            String variantIdStr = request.getParameter("variantId");
             String productCode = request.getParameter("productCode");
             String color = request.getParameter("color");
             String size = request.getParameter("size");
@@ -105,66 +103,62 @@ public class VariantController extends HttpServlet {
             String widthStr = request.getParameter("width");
             String thicknessStr = request.getParameter("thickness");
 
-            jakarta.servlet.http.HttpSession session = request.getSession();
-            @SuppressWarnings("unchecked")
-            List<Product> products = (List<Product>) session.getAttribute("products");
+            ProductDetail detail = null;
+            if (variantIdStr != null && !variantIdStr.trim().isEmpty()) {
+                try {
+                    detail = productService.getDetailById(Integer.parseInt(variantIdStr));
+                } catch (Exception ignored) {}
+            }
 
-            if (products != null && productCode != null && color != null && size != null) {
-                for (Product p : products) {
-                    if (productCode.equals(p.getCode()) && p.getDetails() != null) {
-                        for (ProductDetail d : p.getDetails()) {
-                            if (color.equals(d.getColor()) && size.equals(d.getSize())) {
-                                d.setStyle(style);
-                                try {
-                                    if (priceStr != null && !priceStr.isEmpty())
-                                        d.setPrice(Double.parseDouble(priceStr.replace(",", "")));
-                                    if (stockStr != null && !stockStr.isEmpty())
-                                        d.setStock(Integer.parseInt(stockStr.replace(",", "")));
-                                    if (weightStr != null && !weightStr.isEmpty())
-                                        d.setWeight(Double.parseDouble(weightStr.replace(",", "")));
-                                    if (lengthStr != null && !lengthStr.isEmpty())
-                                        d.setLength(Double.parseDouble(lengthStr.replace(",", "")));
-                                    if (widthStr != null && !widthStr.isEmpty())
-                                        d.setWidth(Double.parseDouble(widthStr.replace(",", "")));
-                                    if (thicknessStr != null && !thicknessStr.isEmpty())
-                                        d.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
-                                } catch (NumberFormatException ignored) {
-                                }
-
-                                // Cập nhật trạng thái sản phẩm cha dựa trên stock tính từ biến thể
-                                p.setStatus(p.getStock() > 0 ? "AVAILABLE" : "OUT_OF_STOCK");
-                                session.setAttribute("toastMessage", "Cập nhật biến thể thành công!");
-                                session.setAttribute("toastType", "success");
-
-                                break;
-                            }
+            if (detail == null && productCode != null) {
+                Product p = productService.getProductByCode(productCode);
+                if (p != null && p.getDetails() != null) {
+                    for (ProductDetail d : p.getDetails()) {
+                        if (color != null && color.equals(d.getColor()) && size != null && size.equals(d.getSize())) {
+                            detail = d;
+                            break;
                         }
-                        break;
                     }
                 }
             }
+
+            if (detail != null) {
+                if (color != null) detail.setColor(color);
+                if (size != null) detail.setSize(size);
+                if (style != null) detail.setStyle(style);
+                try {
+                    if (priceStr != null && !priceStr.isEmpty())
+                        detail.setPrice(Double.parseDouble(priceStr.replace(",", "")));
+                    if (stockStr != null && !stockStr.isEmpty())
+                        detail.setStock(Integer.parseInt(stockStr.replace(",", "")));
+                    if (weightStr != null && !weightStr.isEmpty())
+                        detail.setWeight(Double.parseDouble(weightStr.replace(",", "")));
+                    if (lengthStr != null && !lengthStr.isEmpty())
+                        detail.setLength(Double.parseDouble(lengthStr.replace(",", "")));
+                    if (widthStr != null && !widthStr.isEmpty())
+                        detail.setWidth(Double.parseDouble(widthStr.replace(",", "")));
+                    if (thicknessStr != null && !thicknessStr.isEmpty())
+                        detail.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
+                } catch (NumberFormatException ignored) {}
+
+                productService.updateProductDetail(detail);
+
+                jakarta.servlet.http.HttpSession session = request.getSession();
+                session.setAttribute("toastMessage", "Cập nhật biến thể thành công!");
+                session.setAttribute("toastType", "success");
+            }
         } else if ("toggleStatus".equals(action)) {
-            String productCode = request.getParameter("productCode");
-            String color = request.getParameter("color");
-            String size = request.getParameter("size");
+            String variantIdStr = request.getParameter("variantId");
             String status = request.getParameter("status");
 
-            jakarta.servlet.http.HttpSession session = request.getSession();
-            @SuppressWarnings("unchecked")
-            List<Product> products = (List<Product>) session.getAttribute("products");
-
-            if (products != null && productCode != null && color != null && size != null && status != null) {
-                for (Product p : products) {
-                    if (productCode.equals(p.getCode()) && p.getDetails() != null) {
-                        for (ProductDetail d : p.getDetails()) {
-                            if (color.equals(d.getColor()) && size.equals(d.getSize())) {
-                                d.setStatus(status);
-                                break;
-                            }
-                        }
-                        break;
+            if (variantIdStr != null && !variantIdStr.trim().isEmpty()) {
+                try {
+                    ProductDetail detail = productService.getDetailById(Integer.parseInt(variantIdStr));
+                    if (detail != null) {
+                        detail.setStatus(status);
+                        productService.updateProductDetail(detail);
                     }
-                }
+                } catch (Exception ignored) {}
             }
             response.setStatus(HttpServletResponse.SC_OK);
             return;
