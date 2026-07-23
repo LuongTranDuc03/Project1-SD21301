@@ -319,13 +319,13 @@ public class ProductController extends HttpServlet {
                 double th = 0.0;
 
                 try {
-                    if (prices != null && prices[i] != null)
-                        p = Double.parseDouble(prices[i].replace(",", ""));
+                    if (prices != null && prices[i] != null && !prices[i].trim().isEmpty())
+                        p = Double.parseDouble(prices[i].replaceAll("[^0-9.]", ""));
                 } catch (Exception ignored) {
                 }
                 try {
-                    if (stocks != null && stocks[i] != null)
-                        st = Integer.parseInt(stocks[i].replace(",", ""));
+                    if (stocks != null && stocks[i] != null && !stocks[i].trim().isEmpty())
+                        st = Integer.parseInt(stocks[i].replaceAll("[^0-9]", ""));
                 } catch (Exception ignored) {
                 }
                 try {
@@ -442,9 +442,14 @@ public class ProductController extends HttpServlet {
                     .details(details)
                     .build();
 
-            productService.addProduct(newProduct);
-            request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thành công!");
-            request.getSession().setAttribute("toastType", "success");
+            boolean success = productService.addProduct(newProduct);
+            if (success) {
+                request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thành công!");
+                request.getSession().setAttribute("toastType", "success");
+            } else {
+                request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thất bại! Vui lòng kiểm tra lại kết nối CSDL hoặc dữ liệu.");
+                request.getSession().setAttribute("toastType", "error");
+            }
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/products");
