@@ -365,14 +365,6 @@
                                                                         <div class="invalid-feedback"></div>
                                                                     </div>
 
-                                                                    <div class="form-group">
-                                                                        <label class="form-label">Mật khẩu <%= isEdit ? "" : "<span style=\"color:#ef4444;\">*</span>" %></label>
-                                                                        <input type="password" name="password" id="passwordInput"
-                                                                            class="form-input"
-                                                                            placeholder="<%= isEdit ? "Để trống nếu giữ nguyên mật khẩu" : "Nhập mật khẩu (Mặc định: 123456)" %>"
-                                                                            value="">
-                                                                        <div class="invalid-feedback"></div>
-                                                                    </div>
 
                                                                     <!-- BỘ ĐỊA CHỈ TRONG CÙNG GRID -->
                                                                     <div class="form-group">
@@ -841,10 +833,6 @@
                                             setFieldError(el, null); return true;
                                         }
 
-                                        if (fieldIdOrName === 'password' || fieldIdOrName === 'passwordInput') {
-                                            if (val && val.length < 6) { setFieldError(el, 'Mật khẩu phải từ 6 ký tự trở lên.'); return false; }
-                                            setFieldError(el, null); return true;
-                                        }
 
                                         if (fieldIdOrName === 'birthday' || fieldIdOrName === 'birthdayInput') {
                                             if (val) {
