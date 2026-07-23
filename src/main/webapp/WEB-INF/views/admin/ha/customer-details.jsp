@@ -218,7 +218,7 @@
                                                         <div>
                                                             <h1>Hồ sơ: <%= c.getFullName() %>
                                                             </h1>
-                                                            <div class="subtitle">Mã số: <%= c.getId() %>
+                                                            <div class="subtitle">Mã số: <%= c.getCode() %>
                                                             </div>
                                                         </div>
                                                         <div style="display: flex; gap: 12px;">
@@ -274,7 +274,7 @@
                                                                     <span class="info-label">Mã khách hàng</span>
                                                                     <span class="info-value"
                                                                         style="font-weight: 700; color: #1e293b;">
-                                                                        <%= c.getId() %>
+                                                                        <%= c.getCode() %>
                                                                     </span>
                                                                 </div>
                                                                 <div class="info-item">
@@ -350,15 +350,15 @@
                                                                         <div
                                                                             style="font-size: 13px; color: #475569; line-height: 1.5; margin-top: 2px;">
                                                                             <%= (c.getDefaultAddress() !=null &&
-                                                                                c.getDefaultAddress().getDetailedAddress()
+                                                                                c.getDefaultAddress().getFormattedAddress()
                                                                                 !=null) ?
-                                                                                c.getDefaultAddress().getDetailedAddress()
+                                                                                c.getDefaultAddress().getFormattedAddress()
                                                                                 : "Chưa đăng ký địa chỉ mặc định." %>
                                                                         </div>
                                                                         <% if (c.getDefaultAddress() !=null &&
-                                                                            c.getDefaultAddress().getDetailedAddress()
+                                                                            c.getDefaultAddress().getFormattedAddress()
                                                                             !=null &&
-                                                                            !c.getDefaultAddress().getDetailedAddress().trim().isEmpty())
+                                                                            !c.getDefaultAddress().getFormattedAddress().trim().isEmpty())
                                                                             { %>
                                                                             <div>
                                                                                 <span
@@ -378,7 +378,7 @@
                                                                 <!-- 2. Các địa chỉ khác -->
                                                                 <% if (c.getOtherAddresses() !=null &&
                                                                     !c.getOtherAddresses().isEmpty()) { for (int i=0; i
-                                                                    < c.getOtherAddresses().size(); i++) { Address
+                                                                    < c.getOtherAddresses().size(); i++) { project.duan1_sd21301.model.ha.CustomerAddress
                                                                     otherAddr=c.getOtherAddresses().get(i); boolean
                                                                     isLast=(i==c.getOtherAddresses().size() - 1); %>
                                                                     <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 20px;<%= isLast ? "" : "border-bottom: 1px solid #f1f5f9;" %>">
@@ -403,7 +403,7 @@
                                                                             </div>
                                                                             <div
                                                                                 style="font-size: 13px; color: #475569; line-height: 1.5; margin-top: 2px;">
-                                                                                <%= otherAddr.getDetailedAddress() %>
+                                                                                <%= otherAddr.getFormattedAddress() %>
                                                                             </div>
                                                                         </div>
                                                                         <div

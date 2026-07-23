@@ -48,6 +48,15 @@ public class CustomerValidator {
             errors.add("Email không được để trống.");
         } else if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             errors.add("Email không đúng định dạng.");
+        } else if (customers != null) {
+            for (Customer c : customers) {
+                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
+                    if (c.getEmail().equalsIgnoreCase(email.trim())) {
+                        errors.add("Email đã được sử dụng cho một khách hàng khác.");
+                        break;
+                    }
+                }
+            }
         }
 
         // 4. Số điện thoại

@@ -75,7 +75,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             ps.setString(1, customer.getCode());
             ps.setString(2, customer.getFullName());
             ps.setString(3, customer.getEmail());
-            ps.setString(4, customer.getPassword());
+            if (customer.getPassword() != null && !customer.getPassword().trim().isEmpty()) {
+                ps.setString(4, customer.getPassword());
+            } else {
+                ps.setNull(4, Types.VARCHAR);
+            }
             ps.setString(5, customer.getPhoneNumber());
             if (customer.getDateOfBirth() != null) {
                 ps.setDate(6, new java.sql.Date(customer.getDateOfBirth().getTime()));
@@ -115,7 +119,11 @@ public class CustomerRepositoryImpl implements CustomerRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customer.getFullName());
             ps.setString(2, customer.getEmail());
-            ps.setString(3, customer.getPassword());
+            if (customer.getPassword() != null && !customer.getPassword().trim().isEmpty()) {
+                ps.setString(3, customer.getPassword());
+            } else {
+                ps.setNull(3, Types.VARCHAR);
+            }
             ps.setString(4, customer.getPhoneNumber());
             if (customer.getDateOfBirth() != null) {
                 ps.setDate(5, new java.sql.Date(customer.getDateOfBirth().getTime()));
@@ -129,10 +137,16 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
             boolean updated = ps.executeUpdate() > 0;
             if (updated && customer.getId() > 0 && customer.getAddresses() != null) {
+                // Xoá liên kết địa chỉ cũ để ghi đè địa chỉ mới
+                String delSql = "DELETE FROM khach_hang_dia_chi WHERE id_khach_hang = ?";
+                try (PreparedStatement psDel = conn.prepareStatement(delSql)) {
+                    psDel.setInt(1, customer.getId());
+                    psDel.executeUpdate();
+                }
+                
+                // Lưu danh sách địa chỉ mới
                 for (CustomerAddress ca : customer.getAddresses()) {
-                    if (ca.getId() == 0) {
-                        saveAddressAndLinkToCustomer(customer.getId(), ca, conn);
-                    }
+                    saveAddressAndLinkToCustomer(customer.getId(), ca, conn);
                 }
             }
             return updated;
@@ -161,12 +175,34 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             int addressId = 0;
             if (ca.getAddress() != null) {
                 Address a = ca.getAddress();
-                if (a.getId() > 0) {
-                    addressId = a.getId();
+                String code = (a.getCode() != null && !a.getCode().trim().isEmpty()) ? a.getCode().trim() : "DC" + System.currentTimeMillis();
+                
+                // Kiểm tra xem địa chỉ đã tồn tại chưa (dựa vào code)
+                String checkSql = "SELECT id FROM dia_chi WHERE dia_chi_code = ?";
+                try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
+                    psCheck.setString(1, code);
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        if (rs.next()) {
+                            addressId = rs.getInt("id");
+                        }
+                    }
+                }
+                
+                if (addressId > 0) {
+                    // Update nếu đã tồn tại
+                    String sqlUpdate = "UPDATE dia_chi SET tinh=?, huyen=?, xa=?, dia_chi_chi_tiet=? WHERE id=?";
+                    try (PreparedStatement psUpdate = conn.prepareStatement(sqlUpdate)) {
+                        psUpdate.setString(1, a.getProvince());
+                        psUpdate.setString(2, a.getDistrict());
+                        psUpdate.setString(3, a.getWard());
+                        psUpdate.setString(4, a.getDetailedAddress());
+                        psUpdate.setInt(5, addressId);
+                        psUpdate.executeUpdate();
+                    }
                 } else {
+                    // Insert nếu chưa tồn tại
                     String sqlAddr = "INSERT INTO dia_chi (dia_chi_code, tinh, huyen, xa, dia_chi_chi_tiet) VALUES (?, ?, ?, ?, ?)";
                     try (PreparedStatement psAddr = conn.prepareStatement(sqlAddr, Statement.RETURN_GENERATED_KEYS)) {
-                        String code = a.getCode() != null ? a.getCode() : "DC" + System.currentTimeMillis();
                         psAddr.setString(1, code);
                         psAddr.setString(2, a.getProvince());
                         psAddr.setString(3, a.getDistrict());
