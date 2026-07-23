@@ -423,12 +423,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllCategories() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_danh_muc FROM danh_muc WHERE trang_thai = N'Hoạt động' ORDER BY id ASC";
+        String sql = "SELECT ten_danh_muc FROM danh_muc ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_danh_muc"));
+                if (rs.getString("ten_danh_muc") != null && !rs.getString("ten_danh_muc").trim().isEmpty()) {
+                    list.add(rs.getString("ten_danh_muc"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -438,12 +440,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllBrands() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_thuong_hieu FROM thuong_hieu WHERE trang_thai = N'Hoạt động' ORDER BY id ASC";
+        String sql = "SELECT ten_thuong_hieu FROM thuong_hieu ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_thuong_hieu"));
+                if (rs.getString("ten_thuong_hieu") != null && !rs.getString("ten_thuong_hieu").trim().isEmpty()) {
+                    list.add(rs.getString("ten_thuong_hieu"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -453,12 +457,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllColors() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_mau FROM mau_sac WHERE trang_thai = N'Hoạt động' ORDER BY id ASC";
+        String sql = "SELECT ten_mau FROM mau_sac ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_mau"));
+                if (rs.getString("ten_mau") != null && !rs.getString("ten_mau").trim().isEmpty()) {
+                    list.add(rs.getString("ten_mau"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -468,12 +474,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllSizes() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_kich_thuoc FROM kich_thuoc WHERE trang_thai = N'Hoạt động' ORDER BY id ASC";
+        String sql = "SELECT ten_kich_thuoc FROM kich_thuoc ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_kich_thuoc"));
+                if (rs.getString("ten_kich_thuoc") != null && !rs.getString("ten_kich_thuoc").trim().isEmpty()) {
+                    list.add(rs.getString("ten_kich_thuoc"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -483,14 +491,44 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllStyles() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_kieu_dang FROM kieu_dang WHERE trang_thai = N'Hoạt động' ORDER BY id ASC";
+        String sql = "SELECT ten_kieu_dang FROM kieu_dang ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_kieu_dang"));
+                if (rs.getString("ten_kieu_dang") != null && !rs.getString("ten_kieu_dang").trim().isEmpty()) {
+                    list.add(rs.getString("ten_kieu_dang"));
+                }
             }
         } catch (SQLException ignored) {
+        }
+        return list;
+    }
+
+    @Override
+    public List<String> findAllOrigins() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT ten_xuat_xu FROM xuat_xu ORDER BY id ASC";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                if (rs.getString("ten_xuat_xu") != null && !rs.getString("ten_xuat_xu").trim().isEmpty()) {
+                    list.add(rs.getString("ten_xuat_xu"));
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        if (list.isEmpty()) {
+            String sqlFallback = "SELECT DISTINCT xuat_xu FROM san_pham WHERE xuat_xu IS NOT NULL AND LTRIM(RTRIM(xuat_xu)) <> '' ORDER BY xuat_xu ASC";
+            try (Connection conn = DatabaseConnection.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sqlFallback);
+                    ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("xuat_xu"));
+                }
+            } catch (SQLException ignored) {
+            }
         }
         return list;
     }

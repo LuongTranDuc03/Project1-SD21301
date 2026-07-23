@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
+<%@ page import="java.util.List" %>
 <%
     Product product = (Product) request.getAttribute("product");
     boolean isEdit = (product != null && !"true".equals(request.getAttribute("isValidationAddError")));
@@ -8,6 +9,18 @@
     if (pageTitleStr == null) {
         pageTitleStr = isEdit ? "Chỉnh sửa sản phẩm " + product.getCode() : "Thêm sản phẩm mới";
     }
+
+    List<String> categories = (List<String>) request.getAttribute("categories");
+    List<String> brands = (List<String>) request.getAttribute("brands");
+    List<String> colors = (List<String>) request.getAttribute("colors");
+    List<String> sizes = (List<String>) request.getAttribute("sizes");
+    List<String> origins = (List<String>) request.getAttribute("origins");
+
+    if (categories == null) categories = java.util.Collections.emptyList();
+    if (brands == null) brands = java.util.Collections.emptyList();
+    if (colors == null) colors = java.util.Collections.emptyList();
+    if (sizes == null) sizes = java.util.Collections.emptyList();
+    if (origins == null) origins = java.util.Collections.emptyList();
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -577,12 +590,10 @@
                             <div class="form-group">
                                 <label class="form-label" for="category">Danh mục</label>
                                 <select id="category" name="category" class="form-select" required>
-                                    <option value="Áo khoác da" <%= product != null && "Áo khoác da".equals(product.getCategory()) ? "selected" : "" %>>Áo khoác da</option>
-                                    <option value="Áo bomber" <%= product != null && "Áo bomber".equals(product.getCategory()) ? "selected" : "" %>>Áo bomber</option>
-                                    <option value="Áo denim" <%= product != null && "Áo denim".equals(product.getCategory()) ? "selected" : "" %>>Áo denim</option>
-                                    <option value="Áo phao" <%= product != null && "Áo phao".equals(product.getCategory()) ? "selected" : "" %>>Áo phao</option>
-                                    <option value="Áo gió" <%= product != null && "Áo gió".equals(product.getCategory()) ? "selected" : "" %>>Áo gió</option>
-                                    <option value="Áo len" <%= product != null && "Áo len".equals(product.getCategory()) ? "selected" : "" %>>Áo len</option>
+                                    <option value="">-- Chọn Danh mục --</option>
+                                    <% for (String cat : categories) { %>
+                                        <option value="<%= cat %>" <%= product != null && cat.equalsIgnoreCase(product.getCategory()) ? "selected" : "" %>><%= cat %></option>
+                                    <% } %>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -590,8 +601,8 @@
                                 <div class="custom-select-wrapper" id="brand-select-wrapper" style="position: relative; width: 100%;">
                                     <div class="custom-select-trigger form-select" onclick="toggleBrandSelect(event)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; height: 41.6px;">
                                         <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
-                                            <span id="brand-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= product != null && product.getBrand() != null && !product.getBrand().isEmpty() ? product.getBrand() : "FamiCoats" %></span>
-                                            <input type="hidden" name="brand" id="brand" value="<%= product != null && product.getBrand() != null && !product.getBrand().isEmpty() ? product.getBrand() : "FamiCoats" %>">
+                                            <span id="brand-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= product != null && product.getBrand() != null && !product.getBrand().isEmpty() ? product.getBrand() : (brands.isEmpty() ? "" : brands.get(0)) %></span>
+                                            <input type="hidden" name="brand" id="brand" value="<%= product != null && product.getBrand() != null && !product.getBrand().isEmpty() ? product.getBrand() : (brands.isEmpty() ? "" : brands.get(0)) %>">
                                         </div>
                                         <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#475569" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                     </div>
@@ -600,12 +611,9 @@
                                             <input type="text" id="brand-search" placeholder="Tìm kiếm hoặc thêm mới..." style="width: 100%; padding: 4px; border: none; outline: none; font-size: 13px; font-family: inherit;" oninput="filterBrandOptions(this.value)" onclick="event.stopPropagation()">
                                         </div>
                                         <div id="brand-list">
-                                            <div class="basic-select-option" data-value="FamiCoats" onclick="selectBrandOption('FamiCoats')" style="padding: 4px; font-size: 13px; cursor: pointer;">FamiCoats</div>
-                                            <div class="basic-select-option" data-value="Zara" onclick="selectBrandOption('Zara')" style="padding: 4px; font-size: 13px; cursor: pointer;">Zara</div>
-                                            <div class="basic-select-option" data-value="H&M" onclick="selectBrandOption('H&M')" style="padding: 4px; font-size: 13px; cursor: pointer;">H&M</div>
-                                            <div class="basic-select-option" data-value="Uniqlo" onclick="selectBrandOption('Uniqlo')" style="padding: 4px; font-size: 13px; cursor: pointer;">Uniqlo</div>
-                                            <div class="basic-select-option" data-value="Gucci" onclick="selectBrandOption('Gucci')" style="padding: 4px; font-size: 13px; cursor: pointer;">Gucci</div>
-                                            <div class="basic-select-option" data-value="Dior" onclick="selectBrandOption('Dior')" style="padding: 4px; font-size: 13px; cursor: pointer;">Dior</div>
+                                            <% for (String br : brands) { %>
+                                                <div class="basic-select-option" data-value="<%= br %>" onclick="selectBrandOption('<%= br.replace("'", "\\'") %>')" style="padding: 4px; font-size: 13px; cursor: pointer;"><%= br %></div>
+                                            <% } %>
                                         </div>
                                         <div id="brand-no-result" style="display: none; padding: 4px; font-size: 13px;">
                                             No results found / <a href="javascript:void(0)" onclick="addNewBrand()" style="color: blue; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Add new</a>
@@ -618,8 +626,8 @@
                                 <div class="custom-select-wrapper" id="origin-select-wrapper" style="position: relative; width: 100%;">
                                     <div class="custom-select-trigger form-select" onclick="toggleOriginSelect(event)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; height: 41.6px;">
                                         <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
-                                            <span id="origin-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= product != null && product.getOrigin() != null && !product.getOrigin().isEmpty() ? product.getOrigin() : "Việt Nam" %></span>
-                                            <input type="hidden" name="origin" id="origin" value="<%= product != null && product.getOrigin() != null && !product.getOrigin().isEmpty() ? product.getOrigin() : "Việt Nam" %>">
+                                            <span id="origin-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= product != null && product.getOrigin() != null && !product.getOrigin().isEmpty() ? product.getOrigin() : (origins.isEmpty() ? "" : origins.get(0)) %></span>
+                                            <input type="hidden" name="origin" id="origin" value="<%= product != null && product.getOrigin() != null && !product.getOrigin().isEmpty() ? product.getOrigin() : (origins.isEmpty() ? "" : origins.get(0)) %>">
                                         </div>
                                         <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#475569" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                     </div>
@@ -628,14 +636,9 @@
                                             <input type="text" id="origin-search" placeholder="Tìm kiếm hoặc thêm mới..." style="width: 100%; padding: 4px; border: none; outline: none; font-size: 13px; font-family: inherit;" oninput="filterOriginOptions(this.value)" onclick="event.stopPropagation()">
                                         </div>
                                         <div id="origin-list">
-                                            <div class="basic-select-option" data-value="Việt Nam" onclick="selectOriginOption('Việt Nam')" style="padding: 4px; font-size: 13px; cursor: pointer;">Việt Nam</div>
-                                            <div class="basic-select-option" data-value="Trung Quốc" onclick="selectOriginOption('Trung Quốc')" style="padding: 4px; font-size: 13px; cursor: pointer;">Trung Quốc</div>
-                                            <div class="basic-select-option" data-value="Hàn Quốc" onclick="selectOriginOption('Hàn Quốc')" style="padding: 4px; font-size: 13px; cursor: pointer;">Hàn Quốc</div>
-                                            <div class="basic-select-option" data-value="Nhật Bản" onclick="selectOriginOption('Nhật Bản')" style="padding: 4px; font-size: 13px; cursor: pointer;">Nhật Bản</div>
-                                            <div class="basic-select-option" data-value="Mỹ" onclick="selectOriginOption('Mỹ')" style="padding: 4px; font-size: 13px; cursor: pointer;">Mỹ</div>
-                                            <div class="basic-select-option" data-value="Thái Lan" onclick="selectOriginOption('Thái Lan')" style="padding: 4px; font-size: 13px; cursor: pointer;">Thái Lan</div>
-                                            <div class="basic-select-option" data-value="Ý" onclick="selectOriginOption('Ý')" style="padding: 4px; font-size: 13px; cursor: pointer;">Ý</div>
-                                            <div class="basic-select-option" data-value="Pháp" onclick="selectOriginOption('Pháp')" style="padding: 4px; font-size: 13px; cursor: pointer;">Pháp</div>
+                                            <% for (String ori : origins) { %>
+                                                <div class="basic-select-option" data-value="<%= ori %>" onclick="selectOriginOption('<%= ori.replace("'", "\\'") %>')" style="padding: 4px; font-size: 13px; cursor: pointer;"><%= ori %></div>
+                                            <% } %>
                                         </div>
                                         <div id="origin-no-result" style="display: none; padding: 4px; font-size: 13px;">
                                             No results found / <a href="javascript:void(0)" onclick="addNewOrigin()" style="color: blue; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Add new</a>
@@ -669,24 +672,22 @@
                                         <input type="text" id="color-input" autocomplete="off" placeholder="Tìm và chọn màu sắc" style="border: none; outline: none; flex: 1; min-width: 180px; font-size: 13px;" onfocus="openTagDropdown('color-options')" oninput="filterTagDropdown('color-options', this.value)" onclick="event.stopPropagation()">
                                     </div>
                                     <div class="custom-select-options tag-dropdown-menu" id="color-options" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100; max-height: 200px; overflow-y: auto;">
-                                        <div class="tag-option" data-val="Đen" onclick="selectTagOption('Đen', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #000000; display: inline-block;"></span>Đen
-                                        </div>
-                                        <div class="tag-option" data-val="Trắng" onclick="selectTagOption('Trắng', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #FFFFFF; border: 1px solid #cbd5e1; display: inline-block;"></span>Trắng
-                                        </div>
-                                        <div class="tag-option" data-val="Navy" onclick="selectTagOption('Navy', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #1B365D; display: inline-block;"></span>Navy
-                                        </div>
-                                        <div class="tag-option" data-val="Be" onclick="selectTagOption('Be', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #E6D7C3; display: inline-block;"></span>Be
-                                        </div>
-                                        <div class="tag-option" data-val="Xám" onclick="selectTagOption('Xám', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #808080; display: inline-block;"></span>Xám
-                                        </div>
-                                        <div class="tag-option" data-val="Đỏ đô" onclick="selectTagOption('Đỏ đô', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #8B0000; display: inline-block;"></span>Đỏ đô
-                                        </div>
+                                        <% for (String cl : colors) { 
+                                            String dotColor = "#808080";
+                                            String clLower = cl.toLowerCase();
+                                            if (clLower.contains("đen") || clLower.contains("black")) dotColor = "#000000";
+                                            else if (clLower.contains("trắng") || clLower.contains("white")) dotColor = "#FFFFFF";
+                                            else if (clLower.contains("navy") || clLower.contains("xanh dương")) dotColor = "#1B365D";
+                                            else if (clLower.contains("be") || clLower.contains("beige")) dotColor = "#E6D7C3";
+                                            else if (clLower.contains("xám") || clLower.contains("grey")) dotColor = "#808080";
+                                            else if (clLower.contains("đỏ") || clLower.contains("red")) dotColor = "#8B0000";
+                                            else if (clLower.contains("vàng") || clLower.contains("yellow")) dotColor = "#EAB308";
+                                            else if (clLower.contains("xanh lá") || clLower.contains("green")) dotColor = "#22C55E";
+                                        %>
+                                            <div class="tag-option" data-val="<%= cl %>" onclick="selectTagOption('<%= cl.replace("'", "\\'") %>', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                                <span style="width: 12px; height: 12px; border-radius: 50%; background-color: <%= dotColor %>; <%= "#FFFFFF".equals(dotColor) ? "border: 1px solid #cbd5e1;" : "" %> display: inline-block;"></span><%= cl %>
+                                            </div>
+                                        <% } %>
                                     </div>
                                 </div>
                                 <div style="flex: 1; min-width: 250px; position: relative;">
@@ -695,13 +696,9 @@
                                         <input type="text" id="size-input" autocomplete="off" placeholder="Tìm và chọn kích cỡ" style="border: none; outline: none; flex: 1; min-width: 180px; font-size: 13px;" onfocus="openTagDropdown('size-options')" oninput="filterTagDropdown('size-options', this.value)" onclick="event.stopPropagation()">
                                     </div>
                                     <div class="custom-select-options tag-dropdown-menu" id="size-options" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100; max-height: 200px; overflow-y: auto;">
-                                        <div class="tag-option" data-val="S" onclick="selectTagOption('S', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">S</div>
-                                        <div class="tag-option" data-val="M" onclick="selectTagOption('M', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">M</div>
-                                        <div class="tag-option" data-val="L" onclick="selectTagOption('L', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">L</div>
-                                        <div class="tag-option" data-val="XL" onclick="selectTagOption('XL', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">XL</div>
-                                        <div class="tag-option" data-val="XXL" onclick="selectTagOption('XXL', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">XXL</div>
-                                        <div class="tag-option" data-val="3XL" onclick="selectTagOption('3XL', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">3XL</div>
-                                        <div class="tag-option" data-val="Free size" onclick="selectTagOption('Free size', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;">Free size</div>
+                                        <% for (String sz : sizes) { %>
+                                            <div class="tag-option" data-val="<%= sz %>" onclick="selectTagOption('<%= sz.replace("'", "\\'") %>', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;"><%= sz %></div>
+                                        <% } %>
                                     </div>
                                 </div>
                             </div>

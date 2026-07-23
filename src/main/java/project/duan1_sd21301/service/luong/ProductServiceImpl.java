@@ -90,4 +90,9 @@ public class ProductServiceImpl implements ProductService {
     public List<String> getAllStyles() {
         return productRepo.findAllStyles();
     }
+
+    @Override
+    public List<String> getAllOrigins() {
+        return productRepo.findAllOrigins();
+    }
 }

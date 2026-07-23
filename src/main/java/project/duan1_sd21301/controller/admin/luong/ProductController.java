@@ -63,6 +63,7 @@ public class ProductController extends HttpServlet {
             request.setAttribute("colors", productService.getAllColors());
             request.setAttribute("sizes", productService.getAllSizes());
             request.setAttribute("styles", productService.getAllStyles());
+            request.setAttribute("origins", productService.getAllOrigins());
             request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
             return;
         } else if ("edit".equals(action)) {
@@ -77,7 +78,9 @@ public class ProductController extends HttpServlet {
                     request.setAttribute("colors", productService.getAllColors());
                     request.setAttribute("sizes", productService.getAllSizes());
                     request.setAttribute("styles", productService.getAllStyles());
-                    request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
+                    request.setAttribute("origins", productService.getAllOrigins());
+                    request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request,
+                            response);
                     return;
                 }
             }
@@ -89,7 +92,8 @@ public class ProductController extends HttpServlet {
             if (targetProduct != null) {
                 request.setAttribute("pageTitle", "Chi tiết sản phẩm " + productCode);
                 request.setAttribute("product", targetProduct);
-                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request,
+                        response);
                 return;
             }
         }
@@ -148,12 +152,30 @@ public class ProductController extends HttpServlet {
                         detail.setSize(request.getParameter("size"));
                         detail.setStyle(request.getParameter("style"));
 
-                        try { detail.setPrice(Double.parseDouble(request.getParameter("price"))); } catch (Exception ignored) {}
-                        try { detail.setStock(Integer.parseInt(request.getParameter("stock"))); } catch (Exception ignored) {}
-                        try { detail.setWeight(Double.parseDouble(request.getParameter("weight"))); } catch (Exception ignored) {}
-                        try { detail.setLength(Double.parseDouble(request.getParameter("length"))); } catch (Exception ignored) {}
-                        try { detail.setWidth(Double.parseDouble(request.getParameter("width"))); } catch (Exception ignored) {}
-                        try { detail.setThickness(Double.parseDouble(request.getParameter("thickness"))); } catch (Exception ignored) {}
+                        try {
+                            detail.setPrice(Double.parseDouble(request.getParameter("price")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setStock(Integer.parseInt(request.getParameter("stock")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setWeight(Double.parseDouble(request.getParameter("weight")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setLength(Double.parseDouble(request.getParameter("length")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setWidth(Double.parseDouble(request.getParameter("width")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
+                        } catch (Exception ignored) {
+                        }
                         detail.setStatus(request.getParameter("status"));
 
                         String imagesParam = request.getParameter("images");
@@ -202,12 +224,30 @@ public class ProductController extends HttpServlet {
                             .status(request.getParameter("status"))
                             .build();
 
-                    try { detail.setPrice(Double.parseDouble(request.getParameter("price"))); } catch (Exception ignored) {}
-                    try { detail.setStock(Integer.parseInt(request.getParameter("stock"))); } catch (Exception ignored) {}
-                    try { detail.setWeight(Double.parseDouble(request.getParameter("weight"))); } catch (Exception ignored) {}
-                    try { detail.setLength(Double.parseDouble(request.getParameter("length"))); } catch (Exception ignored) {}
-                    try { detail.setWidth(Double.parseDouble(request.getParameter("width"))); } catch (Exception ignored) {}
-                    try { detail.setThickness(Double.parseDouble(request.getParameter("thickness"))); } catch (Exception ignored) {}
+                    try {
+                        detail.setPrice(Double.parseDouble(request.getParameter("price")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setStock(Integer.parseInt(request.getParameter("stock")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setWeight(Double.parseDouble(request.getParameter("weight")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setLength(Double.parseDouble(request.getParameter("length")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setWidth(Double.parseDouble(request.getParameter("width")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
+                    } catch (Exception ignored) {
+                    }
 
                     String imagesParam = request.getParameter("images");
                     if (imagesParam != null && !imagesParam.trim().isEmpty()) {
@@ -278,23 +318,51 @@ public class ProductController extends HttpServlet {
                 double wd = 0.0;
                 double th = 0.0;
 
-                try { if (prices != null && prices[i] != null) p = Double.parseDouble(prices[i].replace(",", "")); } catch (Exception ignored) {}
-                try { if (stocks != null && stocks[i] != null) st = Integer.parseInt(stocks[i].replace(",", "")); } catch (Exception ignored) {}
-                try { if (weights != null && weights[i] != null) w = Double.parseDouble(weights[i]); } catch (Exception ignored) {}
-                try { if (lengths != null && lengths[i] != null) l = Double.parseDouble(lengths[i]); } catch (Exception ignored) {}
-                try { if (widths != null && widths[i] != null) wd = Double.parseDouble(widths[i]); } catch (Exception ignored) {}
-                try { if (thicknesses != null && thicknesses[i] != null) th = Double.parseDouble(thicknesses[i]); } catch (Exception ignored) {}
+                try {
+                    if (prices != null && prices[i] != null)
+                        p = Double.parseDouble(prices[i].replace(",", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (stocks != null && stocks[i] != null)
+                        st = Integer.parseInt(stocks[i].replace(",", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (weights != null && weights[i] != null)
+                        w = Double.parseDouble(weights[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (lengths != null && lengths[i] != null)
+                        l = Double.parseDouble(lengths[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (widths != null && widths[i] != null)
+                        wd = Double.parseDouble(widths[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (thicknesses != null && thicknesses[i] != null)
+                        th = Double.parseDouble(thicknesses[i]);
+                } catch (Exception ignored) {
+                }
 
-                if (p < minPrice) minPrice = p;
+                if (p < minPrice)
+                    minPrice = p;
 
-                String imgStr = (variantImages != null && variantImages.length > i) ? variantImages[i] : "anh-default.png";
+                String imgStr = (variantImages != null && variantImages.length > i) ? variantImages[i]
+                        : "anh-default.png";
                 List<String> imgList = new ArrayList<>();
                 if (imgStr != null && !imgStr.trim().isEmpty()) {
                     for (String s : imgStr.split(",")) {
-                        if (!s.trim().isEmpty()) imgList.add(s.trim());
+                        if (!s.trim().isEmpty())
+                            imgList.add(s.trim());
                     }
                 }
-                if (imgList.isEmpty()) imgList.add("anh-default.png");
+                if (imgList.isEmpty())
+                    imgList.add("anh-default.png");
 
                 ProductDetail detail = ProductDetail.builder()
                         .size(sizes[i])
@@ -313,8 +381,10 @@ public class ProductController extends HttpServlet {
             }
         }
 
-        if (minPrice == Double.MAX_VALUE) minPrice = 0.0;
-        String computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? "OUT_OF_STOCK" : "AVAILABLE";
+        if (minPrice == Double.MAX_VALUE)
+            minPrice = 0.0;
+        String computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? "OUT_OF_STOCK"
+                : "AVAILABLE";
 
         if (isEdit) {
             Product existingProduct = productService.getProductByCode(code);
@@ -347,6 +417,12 @@ public class ProductController extends HttpServlet {
                         .details(details)
                         .build();
                 request.setAttribute("product", temp);
+                request.setAttribute("categories", productService.getAllCategories());
+                request.setAttribute("brands", productService.getAllBrands());
+                request.setAttribute("colors", productService.getAllColors());
+                request.setAttribute("sizes", productService.getAllSizes());
+                request.setAttribute("styles", productService.getAllStyles());
+                request.setAttribute("origins", productService.getAllOrigins());
                 request.setAttribute("isValidationAddError", "true");
                 request.setAttribute("pageTitle", "Thêm sản phẩm mới");
                 request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
