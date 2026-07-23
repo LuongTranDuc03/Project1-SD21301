@@ -968,6 +968,7 @@
                         newGenerated[color].push({ 
                             size: size, 
                             stock: 10, 
+                            importPrice: 0,
                             price: 0,
                             style: '',
                             weight: 0.5,
@@ -1040,13 +1041,16 @@
                                     </div>
                                 </div>
                             </td>
+                            <td style="width: 11%;">
+                                <input type="text" name="variantImportPrice" class="form-input import-price-input-\${cIdx}" value="\${(v.importPrice || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'importPrice')">
+                            </td>
+                            <td style="width: 11%;">
+                                <input type="text" name="variantPrice" class="form-input price-input-\${cIdx}" value="\${(v.price || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'price')">
+                            </td>
+                            <td style="width: 10%;">
+                                <input type="text" name="variantStock" class="form-input stock-input-\${cIdx}" value="\${(v.stock || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'stock')">
+                            </td>
                             <td style="width: 13%;">
-                                <input type="text" name="variantPrice" class="form-input price-input-\${cIdx}" value="\${(v.price || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'price')">
-                            </td>
-                            <td style="width: 12%;">
-                                <input type="text" name="variantStock" class="form-input stock-input-\${cIdx}" value="\${(v.stock || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'stock')">
-                            </td>
-                            <td style="width: 15%;">
                                 <select name="variantStatus" class="form-select status-input-\${cIdx}" style="padding: 6px; font-size: 12px;" onchange="updateVariantData('\${color}', '\${v.size}', 'status', this.value)">
                                     <option value="Còn hàng" \${v.status === 'Còn hàng' || v.status === 'Hoạt động' ? 'selected' : ''}>Còn hàng</option>
                                     <option value="Hết hàng" \${v.status === 'Hết hàng' || v.status === 'Ngừng hoạt động' ? 'selected' : ''}>Hết hàng</option>
@@ -1080,7 +1084,8 @@
                                     <th>Kích cỡ</th>
                                     <th>Kiểu dáng</th>
                                     <th>Thông số (cm, kg)</th>
-                                    <th>Đơn giá</th>
+                                    <th>Giá nhập</th>
+                                    <th>Giá bán</th>
                                     <th>Số lượng</th>
                                     <th>Trạng thái</th>
                                     <th></th>
@@ -1153,7 +1158,7 @@
             if (generatedVariants[color]) {
                 const variant = generatedVariants[color].find(v => v.size === size);
                 if (variant) {
-                    if (['length', 'width', 'thickness', 'weight', 'price', 'stock'].includes(field)) {
+                    if (['length', 'width', 'thickness', 'weight', 'importPrice', 'price', 'stock'].includes(field)) {
                         if (parseFloat(value) < 0) value = 0;
                     }
                     variant[field] = value;
@@ -1187,6 +1192,7 @@
                         const targetVar = generatedVariants[targetColor].find(v => v.size === size);
                         if (targetVar) {
                             targetVar.stock = sourceVar.stock;
+                            targetVar.importPrice = sourceVar.importPrice;
                             targetVar.price = sourceVar.price;
                             targetVar.style = sourceVar.style;
                             targetVar.length = sourceVar.length;
@@ -1544,6 +1550,7 @@
                 generatedVariants[c].push({
                     size: s,
                     style: "<%= d.getStyle() != null ? d.getStyle().replace("\"", "\\\"") : "" %>",
+                    importPrice: <%= d.getImportPrice() %>,
                     price: <%= d.getPrice() %>,
                     stock: <%= d.getStock() %>,
                     weight: <%= d.getWeight() %>,

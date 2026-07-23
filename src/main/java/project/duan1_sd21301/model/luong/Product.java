@@ -28,9 +28,6 @@ public class Product {
     @Column(name = "mo_ta", columnDefinition = "NVARCHAR(MAX)")
     String description;
 
-    @Column(name = "doi_tuong", length = 50, columnDefinition = "NVARCHAR(50)")
-    String targetGender;
-
     @Column(name = "xuat_xu", length = 100, columnDefinition = "NVARCHAR(100)")
     String origin;
 
