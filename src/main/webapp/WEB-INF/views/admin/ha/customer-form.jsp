@@ -395,10 +395,7 @@
                             <label class="form-label">Số nhà, tên đường<span class="required">*</span></label>
                             <input type="text" id="defaultAddressDetailInput" name="defaultDetailedAddress" class="form-input" placeholder="Số nhà, tên đường, ngõ ngách..." required value="<%= defAddr != null && defAddr.getDetailedAddress() != null ? defAddr.getDetailedAddress() : "" %>">
                         </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label class="form-label">Ghi chú</label>
-                            <input type="text" name="defaultNote" class="form-input" placeholder="Ghi chú (tuỳ chọn)" value="<%= defAddr != null && defAddr.getNote() != null ? defAddr.getNote() : "" %>">
-                        </div>
+
                     </div>
                     </div>
                 </div>
@@ -474,10 +471,7 @@
                                     <label class="form-label">Số nhà, tên đường</label>
                                     <input type="text" name="otherDetailedAddress" class="other-detail-input form-input" placeholder="Số nhà, tên đường, ngõ ngách..." value="<%= addr.getDetailedAddress() != null ? addr.getDetailedAddress() : "" %>">
                                 </div>
-                                <div class="form-group full-width">
-                                    <label class="form-label">Ghi chú</label>
-                                    <input type="text" name="otherNote" class="form-input" placeholder="Ghi chú" value="<%= addr.getNote() != null ? addr.getNote() : "" %>">
-                                </div>
+
                             </div>
                         </div>
                         <%
@@ -851,10 +845,7 @@
                     <label class="form-label">Số nhà, tên đường</label>
                     <input type="text" name="otherDetailedAddress" class="other-detail-input form-input" placeholder="Số nhà, tên đường, ngõ ngách...">
                 </div>
-                <div class="form-group full-width">
-                    <label class="form-label">Ghi chú</label>
-                    <input type="text" name="otherNote" class="form-input" placeholder="Ghi chú (tuỳ chọn)">
-                </div>
+
             </div>
         `;
         container.appendChild(div);
