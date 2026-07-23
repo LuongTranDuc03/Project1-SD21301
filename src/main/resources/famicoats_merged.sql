@@ -200,7 +200,6 @@ CREATE TABLE san_pham (
     id_xuat_xu         INT                REFERENCES xuat_xu(id),
     mo_ta              NVARCHAR(MAX),
     doi_tuong          NVARCHAR(50),      -- 'Nam' / 'Nữ' / 'Unisex'
-    xuat_xu            NVARCHAR(100),
     huong_dan_bao_quan NVARCHAR(MAX),
     gia_ban            FLOAT              DEFAULT 0,
     da_ban             INT                DEFAULT 0,
@@ -510,24 +509,24 @@ GO
 -- 13. SẢN PHẨM
 INSERT INTO san_pham
     (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, id_xuat_xu,
-     mo_ta, doi_tuong, xuat_xu, huong_dan_bao_quan,
+     mo_ta, doi_tuong, huong_dan_bao_quan,
      gia_ban, da_ban, trang_thai)
 VALUES
-('SP001', N'Áo khoác da nam cao cấp',         1, 1, 1, N'Chất liệu da thật cao cấp, lót lông ấm',            N'Nam',    N'Việt Nam', N'Chỉ giặt khô',    1850000, 120, 'AVAILABLE'),
-('SP002', N'Áo khoác denim nữ thời trang',    3, 1, 1, N'Denim nhập khẩu, form rộng thoải mái',              N'Nữ',     N'Việt Nam', N'Giặt riêng màu',   750000,  95,  'AVAILABLE'),
-('SP003', N'Áo khoác bomber unisex',           2, 1, 1, N'Kiểu dáng bomber năng động, chống gió',             N'Unisex', N'Việt Nam', N'Giặt máy nhẹ',    1200000, 78,  'AVAILABLE'),
-('SP004', N'Áo khoác len nữ công sở',          5, 1, 1, N'Len cao cấp, thiết kế thanh lịch',                  N'Nữ',     N'Việt Nam', N'Giặt khô',        2100000, 45,  'AVAILABLE'),
-('SP005', N'Áo khoác gió nam thể thao',        6, 1, 1, N'Chống gió, chống mưa nhẹ, trọng lượng nhẹ',        N'Nam',    N'Việt Nam', N'Giặt máy thường',  650000,  210, 'AVAILABLE'),
-('SP006', N'Áo khoác lông vũ nữ giữ nhiệt',   4, 1, 2, N'Lông vũ thiên nhiên, giữ ấm tối ưu',               N'Nữ',     N'Nhật Bản', N'Giặt máy nhẹ',    1650000, 88,  'AVAILABLE'),
-('SP007', N'Áo khoác trench coat nữ',          7, 1, 1, N'Trench coat cổ điển, thích hợp công sở',            N'Nữ',     N'Việt Nam', N'Giặt khô',        1900000, 55,  'AVAILABLE'),
-('SP008', N'Áo khoác hoodie nam thường ngày',  8, 1, 1, N'Nỉ bông dày dặn, nón liền kiểu dáng trẻ trung',    N'Nam',    N'Việt Nam', N'Giặt máy thường',  550000,  320, 'AVAILABLE'),
-('SP009', N'Áo khoác parka nam đông',          1, 1, 7, N'Parka cao cấp, chịu lạnh cực tốt',                  N'Nam',    N'Nhập khẩu', N'Giặt khô',       2800000, 32,  'OUT_OF_STOCK'),
-('SP010', N'Áo khoác varsity unisex phối màu', 2, 1, 1, N'Varsity jacket phong cách retro',                   N'Unisex', N'Việt Nam', N'Giặt máy nhẹ',     980000, 140, 'AVAILABLE'),
-('SP011', N'Áo khoác blazer nữ thanh lịch',   5, 1, 1, N'Blazer form slim, phù hợp công sở và dạo phố',     N'Nữ',     N'Việt Nam', N'Giặt khô',        1450000, 68,  'AVAILABLE'),
-('SP012', N'Áo khoác jean nam wash cũ',        3, 1, 1, N'Denim wash cũ phong cách vintage',                  N'Nam',    N'Việt Nam', N'Giặt riêng màu',   820000, 180, 'AVAILABLE'),
-('SP013', N'Áo khoác lông cừu nữ mùa đông',   4, 1, 1, N'Lông cừu giả mềm mịn, cực ấm mùa đông',           N'Nữ',     N'Việt Nam', N'Giặt máy nhẹ',    1350000, 95,  'AVAILABLE'),
-('SP014', N'Áo khoác military nam',            6, 1, 1, N'Phong cách military cá tính, nhiều túi tiện dụng', N'Nam',    N'Việt Nam', N'Giặt máy thường', 1100000, 75,  'AVAILABLE'),
-('SP015', N'Áo khoác cape nữ sang trọng',      7, 1, 7, N'Cape coat da cao cấp, dáng độc đáo',               N'Nữ',     N'Nhập khẩu', N'Chỉ giặt khô',   2500000, 18,  'OUT_OF_STOCK');
+('SP001', N'Áo khoác da nam cao cấp',         1, 1, 1, N'Chất liệu da thật cao cấp, lót lông ấm',            N'Nam',    N'Chỉ giặt khô',    1850000, 120, 'AVAILABLE'),
+('SP002', N'Áo khoác denim nữ thời trang',    3, 1, 1, N'Denim nhập khẩu, form rộng thoải mái',              N'Nữ',     N'Giặt riêng màu',   750000,  95,  'AVAILABLE'),
+('SP003', N'Áo khoác bomber unisex',           2, 1, 1, N'Kiểu dáng bomber năng động, chống gió',             N'Unisex', N'Giặt máy nhẹ',    1200000, 78,  'AVAILABLE'),
+('SP004', N'Áo khoác len nữ công sở',          5, 1, 1, N'Len cao cấp, thiết kế thanh lịch',                  N'Nữ',     N'Giặt khô',        2100000, 45,  'AVAILABLE'),
+('SP005', N'Áo khoác gió nam thể thao',        6, 1, 1, N'Chống gió, chống mưa nhẹ, trọng lượng nhẹ',        N'Nam',    N'Giặt máy thường',  650000,  210, 'AVAILABLE'),
+('SP006', N'Áo khoác lông vũ nữ giữ nhiệt',   4, 1, 2, N'Lông vũ thiên nhiên, giữ ấm tối ưu',               N'Nữ',     N'Giặt máy nhẹ',    1650000, 88,  'AVAILABLE'),
+('SP007', N'Áo khoác trench coat nữ',          7, 1, 1, N'Trench coat cổ điển, thích hợp công sở',            N'Nữ',     N'Giặt khô',        1900000, 55,  'AVAILABLE'),
+('SP008', N'Áo khoác hoodie nam thường ngày',  8, 1, 1, N'Nỉ bông dày dặn, nón liền kiểu dáng trẻ trung',    N'Nam',    N'Giặt máy thường',  550000,  320, 'AVAILABLE'),
+('SP009', N'Áo khoác parka nam đông',          1, 1, 7, N'Parka cao cấp, chịu lạnh cực tốt',                  N'Nam',    N'Giặt khô',       2800000, 32,  'OUT_OF_STOCK'),
+('SP010', N'Áo khoác varsity unisex phối màu', 2, 1, 1, N'Varsity jacket phong cách retro',                   N'Unisex', N'Giặt máy nhẹ',     980000, 140, 'AVAILABLE'),
+('SP011', N'Áo khoác blazer nữ thanh lịch',   5, 1, 1, N'Blazer form slim, phù hợp công sở và dạo phố',     N'Nữ',     N'Giặt khô',        1450000, 68,  'AVAILABLE'),
+('SP012', N'Áo khoác jean nam wash cũ',        3, 1, 1, N'Denim wash cũ phong cách vintage',                  N'Nam',    N'Giặt riêng màu',   820000, 180, 'AVAILABLE'),
+('SP013', N'Áo khoác lông cừu nữ mùa đông',   4, 1, 1, N'Lông cừu giả mềm mịn, cực ấm mùa đông',           N'Nữ',     N'Giặt máy nhẹ',    1350000, 95,  'AVAILABLE'),
+('SP014', N'Áo khoác military nam',            6, 1, 1, N'Phong cách military cá tính, nhiều túi tiện dụng', N'Nam',    N'Giặt máy thường', 1100000, 75,  'AVAILABLE'),
+('SP015', N'Áo khoác cape nữ sang trọng',      7, 1, 7, N'Cape coat da cao cấp, dáng độc đáo',               N'Nữ',     N'Chỉ giặt khô',   2500000, 18,  'OUT_OF_STOCK');
 GO
 
 -- 14. CHI TIẾT SẢN PHẨM
