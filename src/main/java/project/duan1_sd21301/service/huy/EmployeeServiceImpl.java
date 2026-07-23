@@ -48,25 +48,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 4. Gọi Repo lưu dữ liệu vào bảng nhan_vien
         boolean isInserted = employeeRepo.insert(emp);
 
-        // 4. Khi lưu thành công, kích hoạt luồng phụ (Thread) chạy độc lập để gửi Email
-        if (isInserted) {
-            final String recipientEmail = emp.getEmail();
-            final String rawPassword = emp.getPassword();
-
-            new Thread(() -> {
-                try {
-                    // TODO: Nhúng class gửi mail thực tế của nhóm bạn tại đây khi hoàn thiện công nghệ
-                    System.out.println("====== LUỒNG TỰ ĐỘNG GỬI MAIL NHÂN VIÊN MỚI ======");
-                    System.out.println("Gửi tới địa chỉ email: " + recipientEmail);
-                    System.out.println("Tài khoản đăng nhập: " + recipientEmail);
-                    System.out.println("Mật khẩu truy cập hệ thống: " + rawPassword);
-                    System.out.println("=================================================");
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }).start();
-        }
-
         return isInserted;
     }
 
