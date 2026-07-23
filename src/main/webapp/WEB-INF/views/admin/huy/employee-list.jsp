@@ -396,7 +396,7 @@
                                                                                                 <% if (isAdmin) { %>
                                                                                                     <td style="padding: 14px 16px; text-align: center;">
                                                                                                         <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=view&id=<%= emp.getId() %>"
+                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=detail&id=<%= emp.getId() %>"
                                                                                                                 class="action-icon-btn details-btn" title="Chi tiết">
                                                                                                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                                                                                             </a>

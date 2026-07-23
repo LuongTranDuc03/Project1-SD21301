@@ -63,10 +63,14 @@ public class EmployeeController extends HttpServlet {
                 showForm(request, response);
                 break;
             case "detail":
+            case "view":
                 showDetail(request, response);
                 break;
             case "delete":
                 deleteEmployee(request, response);
+                break;
+            case "toggleStatus":
+                toggleEmployeeStatus(request, response);
                 break;
             default:
                 listEmployees(request, response);
