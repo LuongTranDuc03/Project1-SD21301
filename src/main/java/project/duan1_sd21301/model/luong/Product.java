@@ -71,6 +71,14 @@ public class Product {
     }
 
     @Transient
+    public String getEffectiveStatus() {
+        if (getStock() <= 0) {
+            return "OUT_OF_STOCK";
+        }
+        return (status != null && !status.trim().isEmpty()) ? status : "AVAILABLE";
+    }
+
+    @Transient
     public String getPriceRangeFormatted() {
         if (details == null || details.isEmpty()) {
             return String.format("%,.0fđ", price).replace(",", ".");

@@ -537,22 +537,6 @@
                     <h1>Quản lý sản phẩm</h1>
                     <div class="subtitle">Tổng <%= totalProducts %> sản phẩm</div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
-                            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
-                        </svg>
-                        <span>Mã QR</span>
-                    </button>
-                    <a href="${pageContext.request.contextPath}/admin/products?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        <span>Xuất Excel</span>
-                    </a>
-                    <a href="${pageContext.request.contextPath}/admin/products?action=add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        <span>Thêm sản phẩm</span>
-                    </a>
-                </div>
             </div>
 
             <!-- Bộ lọc & tìm kiếm -->
@@ -627,6 +611,24 @@
                 </div>
             </div>
 
+            <!-- Thanh nút thao tác (Mã QR, Xuất Excel, Thêm mới) đặt giữa Bộ lọc và Bảng dữ liệu -->
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
+                <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
+                    </svg>
+                    <span>Mã QR</span>
+                </button>
+                <a href="${pageContext.request.contextPath}/admin/products?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Xuất Excel</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/products?action=add" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Thêm sản phẩm</span>
+                </a>
+            </div>
+
             <!-- Bảng danh sách sản phẩm (Table layout) -->
             <div class="custom-card">
                 <div class="card-header-bar">
@@ -654,14 +656,11 @@
                                 for (Product prod : products) {
                                     String statusLabel = "";
                                     String statusClass = "";
-                                    String pStatus = prod.getStatus();
-                                    if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
-                                        pStatus = prod.getStock() > 0 ? "AVAILABLE" : "OUT_OF_STOCK";
-                                    }
+                                    String pStatus = prod.getEffectiveStatus();
                                     if ("AVAILABLE".equals(pStatus)) {
                                         statusLabel = "Còn hàng";
                                         statusClass = "available";
-                                    } else if ("OUT_OF_STOCK".equals(pStatus)) {
+                                    } else {
                                         statusLabel = "Hết hàng";
                                         statusClass = "out_of_stock";
                                     }
@@ -674,7 +673,7 @@
                                         }
                                     }
                         %>
-                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= prod.getStatus() != null ? prod.getStatus() : "" %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
+                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= pStatus %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td>
                                 <span class="product-id-text"><%= prod.getCode() %></span>
@@ -708,10 +707,11 @@
                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     </a>
                                     <!-- Toggle status -->
-                                    <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
-                                        <input type="checkbox" <%= !"OUT_OF_STOCK".equals(prod.getStatus()) ? "checked" : "" %>
+                                    <label class="switch" title="<%= prod.getStock() <= 0 ? "Sản phẩm có số lượng bằng 0, không thể chuyển trạng thái" : "Chuyển trạng thái" %>" style="margin-left: 4px; <%= prod.getStock() <= 0 ? "opacity: 0.5; cursor: not-allowed;" : "" %>">
+                                        <input type="checkbox" <%= !"OUT_OF_STOCK".equals(prod.getEffectiveStatus()) ? "checked" : "" %>
+                                               <%= prod.getStock() <= 0 ? "disabled" : "" %>
                                                onchange="toggleProductStatus('<%= prod.getCode() %>', this)">
-                                        <span class="slider"></span>
+                                        <span class="slider" style="<%= prod.getStock() <= 0 ? "cursor: not-allowed;" : "" %>"></span>
                                     </label>
                                 </div>
                             </td>
@@ -747,6 +747,22 @@
     // ===== TOGGLE STATUS =====
     window.toggleProductStatus = function(productId, checkboxEl) {
         const row = document.querySelector('#productTbody tr[data-id="' + productId + '"]');
+        const stock = row ? parseInt(row.dataset.stock || '0') : 0;
+
+        if (stock <= 0) {
+            alert('Sản phẩm có tổng số lượng bằng 0 (hết hàng), không thể thay đổi trạng thái!');
+            checkboxEl.checked = false;
+            return;
+        }
+
+        const isChecked = checkboxEl.checked;
+        const targetStatusText = isChecked ? 'còn hàng' : 'hết hàng';
+        const confirmChange = confirm('Bạn có muốn thay đổi trạng thái của sản phẩm thành ' + targetStatusText + ' hay không?');
+        if (!confirmChange) {
+            checkboxEl.checked = !isChecked; // Rollback toggle state
+            return;
+        }
+
         const badge = row ? row.querySelector('.badge-status') : null;
 
         // Store old state for rollback
@@ -764,7 +780,6 @@
         }
 
         // Optimistically update the UI immediately
-        const isChecked = checkboxEl.checked;
         const optStatus = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
         const optText = isChecked ? 'Còn hàng' : 'Hết hàng';
         const optClass = isChecked ? 'available' : 'out_of_stock';

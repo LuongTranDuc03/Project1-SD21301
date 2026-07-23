@@ -277,24 +277,6 @@
                         <%= (filterProductId != null && !filterProductId.trim().isEmpty()) ? " của sản phẩm <strong>" + filterProductId + "</strong>" : " trên toàn hệ thống" %>
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <% if (filterProductId != null && !filterProductId.trim().isEmpty()) { %>
-                        <a href="${pageContext.request.contextPath}/admin/variants" class="btn-export" style="background-color: #64748b; border: 1px solid #64748b; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                            <span>Xem tất cả biến thể</span>
-                        </a>
-                    <% } %>
-                    <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
-                            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
-                        </svg>
-                        <span>Mã QR</span>
-                    </button>
-                    <a href="${pageContext.request.contextPath}/admin/variants?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                        <span>Xuất Excel</span>
-                    </a>
-                </div>
             </div>
 
             <!-- Bộ lọc & tìm kiếm -->
@@ -359,6 +341,26 @@
                 </div>
             </div>
 
+            <!-- Thanh thao tác (Xem tất cả, Mã QR, Xuất Excel) nằm giữa Bộ lọc và Bảng dữ liệu -->
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
+                <% if (filterProductId != null && !filterProductId.trim().isEmpty()) { %>
+                    <a href="${pageContext.request.contextPath}/admin/variants" class="btn-export" style="background-color: #64748b; border: 1px solid #64748b; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span>Xem tất cả biến thể</span>
+                    </a>
+                <% } %>
+                <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
+                        <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
+                    </svg>
+                    <span>Mã QR</span>
+                </button>
+                <a href="${pageContext.request.contextPath}/admin/variants?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Xuất Excel</span>
+                </a>
+            </div>
+
             <!-- Bảng danh sách biến thể -->
             <div class="custom-card">
                 <div class="card-header-bar">
@@ -384,14 +386,11 @@
                             if (variants != null && !variants.isEmpty()) {
                                 int stt = 1;
                                 for (ProductDetail v : variants) {
-                                    String pStatus = v.getStatus();
-                                    if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
-                                        pStatus = v.getStock() > 0 ? "Còn hàng" : "Hết hàng";
-                                    }
-                                    String statusClass = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "available" : "out_of_stock";
-                                    String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng" : "Hết hàng";
+                                     boolean isAvailable = (v.getStock() > 0) && !"OUT_OF_STOCK".equalsIgnoreCase(v.getStatus());
+                                     String statusClass = isAvailable ? "available" : "out_of_stock";
+                                     String statusLabel = isAvailable ? "Còn hàng" : "Hết hàng";
                         %>
-                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= statusClass.equals("available") ? "AVAILABLE" : "OUT_OF_STOCK" %>">
+                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
                                 <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
