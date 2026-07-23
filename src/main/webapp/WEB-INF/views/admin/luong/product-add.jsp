@@ -745,10 +745,12 @@
         let isFormDirty = false;
         
         function validateForm() {
-            var id = document.getElementById("id").value;
-            var name = document.getElementById("name").value;
+            var codeElem = document.getElementById("code");
+            var code = codeElem ? codeElem.value : "";
+            var nameElem = document.getElementById("name");
+            var name = nameElem ? nameElem.value : "";
             
-            if (!id || id.trim() === "") {
+            if (!code || code.trim() === "") {
                 alert("Vui lòng nhập Mã sản phẩm.");
                 return false;
             }
