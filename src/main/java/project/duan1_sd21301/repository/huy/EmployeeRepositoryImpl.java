@@ -501,10 +501,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
         emp.setAddress(addr);
 
         Role role = new Role();
-        role.setId(rs.getInt("id_vai_tro"));
+        int roleId = rs.getInt("id_vai_tro");
+        role.setId(roleId);
         try {
-            role.setRoleName(rs.getString("ten_vai_tro"));
+            String roleName = rs.getString("ten_vai_tro");
+            if (roleName != null && !roleName.trim().isEmpty()) {
+                role.setRoleName(roleName.trim());
+            }
         } catch (SQLException ignored) {
+        }
+        if (role.getRoleName() == null || role.getRoleName().trim().isEmpty()) {
+            if (roleId == 1) role.setRoleName("Quản lý");
+            else role.setRoleName("Nhân viên");
         }
         emp.setRole(role);
 

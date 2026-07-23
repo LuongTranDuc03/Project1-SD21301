@@ -148,11 +148,10 @@
                 </li>
                 <%
                     Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
-                    boolean isAdmin = (loggedInUser != null && 
-                                       (loggedInUser.getRoleId() == 2 || loggedInUser.getRoleId() == 1 ||
-                                       (loggedInUser.getRoleName() != null && 
-                                       (loggedInUser.getRoleName().equalsIgnoreCase("Admin") || loggedInUser.getRoleName().equalsIgnoreCase("Quản lý")))));
-                    if (isAdmin) {
+                    String userRole = (loggedInUser != null && loggedInUser.getRole() != null && loggedInUser.getRole().getRoleName() != null)
+                                      ? loggedInUser.getRole().getRoleName() : "";
+                    boolean canManageEmployees = "Admin".equalsIgnoreCase(userRole) || "Quản lý".equalsIgnoreCase(userRole);
+                    if (canManageEmployees) {
                 %>
                 <!-- Quản lý nhân viên -->
                 <li class="<%= uri.endsWith("/admin/employees") ? "active" : "" %>">

@@ -57,6 +57,9 @@ public class DevLoginController extends HttpServlet {
         // Set session
         HttpSession session = request.getSession();
         session.setAttribute("loggedInUser", employee);
+        String roleName = (employee.getRole() != null && employee.getRole().getRoleName() != null)
+                ? employee.getRole().getRoleName() : "Quản lý";
+        session.setAttribute("currentUserRole", roleName);
         response.sendRedirect(request.getContextPath() + "/admin/dashboard");
     }
 }

@@ -7,10 +7,10 @@ public class TestDB {
     public static void main(String[] args) {
         CustomerRepositoryImpl repo = new CustomerRepositoryImpl();
         Customer c = Customer.builder()
-            .code("KHTEST99")
+            .code("KHTEST98")
             .fullName("Test Khach Hang")
-            .email("test99@gmail.com")
-            .phoneNumber("0999999999")
+            .email("test98@gmail.com")
+            .phoneNumber("0999999998")
             .status("Hoạt động")
             .build();
         

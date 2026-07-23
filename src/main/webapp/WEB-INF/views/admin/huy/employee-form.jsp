@@ -4,17 +4,13 @@
             <%@ page import="java.util.List" %>
                 <%@ page import="java.text.SimpleDateFormat" %>
 <% 
-    String currentUserRole = (String) session.getAttribute("currentUserRole"); 
-    boolean isManager = "Quản lý".equals(currentUserRole);
-    boolean isStaff = "Nhân viên".equals(currentUserRole);
-    boolean isSysAdmin = "Admin".equals(currentUserRole);
-
-    if (currentUserRole == null || (!isManager && !isStaff && !isSysAdmin)) { 
-        currentUserRole = "Quản lý"; 
-        session.setAttribute("currentUserRole", currentUserRole); 
-    } 
+    Employee loggedInEmpForm = (Employee) session.getAttribute("loggedInUser");
+    String currentUserRole = (loggedInEmpForm != null && loggedInEmpForm.getRole() != null && loggedInEmpForm.getRole().getRoleName() != null)
+                              ? loggedInEmpForm.getRole().getRoleName() 
+                              : (String) session.getAttribute("currentUserRole");
+    if (currentUserRole == null) currentUserRole = "Nhân viên";
     
-    boolean isAdmin = "Admin".equals(currentUserRole) || "Quản lý".equals(currentUserRole); 
+    boolean isAdmin = "Admin".equalsIgnoreCase(currentUserRole) || "Quản lý".equalsIgnoreCase(currentUserRole); 
     List<Role> listRoles = (List<Role>) request.getAttribute("roles");
     Boolean isEdit = (Boolean) request.getAttribute("isEdit");
     if (isEdit == null) {
@@ -366,6 +362,15 @@
                                                                             class="form-input" required
                                                                             placeholder="VD: abc@gmail.com"
                                                                             value="<%= isEdit && emp != null && emp.getEmail() != null ? emp.getEmail() : "" %>">
+                                                                        <div class="invalid-feedback"></div>
+                                                                    </div>
+
+                                                                    <div class="form-group">
+                                                                        <label class="form-label">Mật khẩu <%= isEdit ? "" : "<span style=\"color:#ef4444;\">*</span>" %></label>
+                                                                        <input type="password" name="password" id="passwordInput"
+                                                                            class="form-input"
+                                                                            placeholder="<%= isEdit ? "Để trống nếu giữ nguyên mật khẩu" : "Nhập mật khẩu (Mặc định: 123456)" %>"
+                                                                            value="">
                                                                         <div class="invalid-feedback"></div>
                                                                     </div>
 
@@ -833,6 +838,11 @@
                                         if (fieldIdOrName === 'email' || fieldIdOrName === 'emailInput') {
                                             if (!val) { setFieldError(el, 'Email không được để trống.'); return false; }
                                             if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val)) { setFieldError(el, 'Email không đúng định dạng chuẩn.'); return false; }
+                                            setFieldError(el, null); return true;
+                                        }
+
+                                        if (fieldIdOrName === 'password' || fieldIdOrName === 'passwordInput') {
+                                            if (val && val.length < 6) { setFieldError(el, 'Mật khẩu phải từ 6 ký tự trở lên.'); return false; }
                                             setFieldError(el, null); return true;
                                         }
 

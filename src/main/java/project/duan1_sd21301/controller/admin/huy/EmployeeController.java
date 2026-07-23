@@ -42,6 +42,13 @@ public class EmployeeController extends HttpServlet {
             return;
         }
 
+        if (!isManagerOrAdmin(request)) {
+            request.getSession().setAttribute("toastMessage", "Bạn không có quyền truy cập quản lý nhân viên!");
+            request.getSession().setAttribute("toastType", "error");
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+            return;
+        }
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -78,6 +85,13 @@ public class EmployeeController extends HttpServlet {
         }
         if (uri.contains("/change-password")) {
             updateChangePassword(request, response);
+            return;
+        }
+
+        if (!isManagerOrAdmin(request)) {
+            request.getSession().setAttribute("toastMessage", "Bạn không có quyền truy cập quản lý nhân viên!");
+            request.getSession().setAttribute("toastType", "error");
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return;
         }
 
@@ -168,7 +182,7 @@ public class EmployeeController extends HttpServlet {
             request.getSession().removeAttribute("toastType");
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-add.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-form.jsp").forward(request, response);
     }
 
     private void showForm(HttpServletRequest request, HttpServletResponse response)
@@ -477,13 +491,17 @@ public class EmployeeController extends HttpServlet {
 
         String pwd = req.getParameter("password");
         if (isCreate) {
-            emp.setPassword("123456");
+            if (pwd != null && !pwd.trim().isEmpty()) {
+                emp.setPassword(pwd.trim());
+            } else {
+                emp.setPassword("123456");
+            }
         } else {
             if (pwd == null || pwd.trim().isEmpty()) {
                 Employee oldEmp = (idStr != null && !idStr.isEmpty()) ? employeeService.getEmployeeById(Integer.parseInt(idStr)) : null;
                 emp.setPassword(oldEmp != null ? oldEmp.getPassword() : "123456");
             } else {
-                emp.setPassword(pwd);
+                emp.setPassword(pwd.trim());
             }
         }
 
@@ -609,5 +627,15 @@ public class EmployeeController extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/change-password");
+    }
+
+    private boolean isManagerOrAdmin(HttpServletRequest request) {
+        Employee loggedInUser = (Employee) request.getSession().getAttribute("loggedInUser");
+        if (loggedInUser == null) return false;
+        if (loggedInUser.getRole() != null && loggedInUser.getRole().getRoleName() != null) {
+            String roleName = loggedInUser.getRole().getRoleName();
+            return "Admin".equalsIgnoreCase(roleName) || "Quản lý".equalsIgnoreCase(roleName);
+        }
+        return false;
     }
 }

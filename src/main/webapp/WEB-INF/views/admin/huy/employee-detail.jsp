@@ -4,8 +4,11 @@
 <% 
     Employee employee = (Employee) request.getAttribute("employee"); 
     SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy"); 
-    String currentUserRole = (String) session.getAttribute("currentUserRole");
-    boolean isAdmin = "Admin".equals(currentUserRole) || "Quản lý".equals(currentUserRole); 
+    Employee loggedInUserDetail = (Employee) session.getAttribute("loggedInUser");
+    String currentUserRole = (loggedInUserDetail != null && loggedInUserDetail.getRole() != null && loggedInUserDetail.getRole().getRoleName() != null)
+                              ? loggedInUserDetail.getRole().getRoleName() 
+                              : (String) session.getAttribute("currentUserRole");
+    boolean isAdmin = "Admin".equalsIgnoreCase(currentUserRole) || "Quản lý".equalsIgnoreCase(currentUserRole); 
 %>
 <!DOCTYPE html>
 <html lang="vi">

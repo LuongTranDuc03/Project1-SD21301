@@ -49,6 +49,9 @@ public class LoginController extends HttpServlet {
         if (employee != null) {
             HttpSession session = request.getSession();
             session.setAttribute("loggedInUser", employee);
+            String roleName = (employee.getRole() != null && employee.getRole().getRoleName() != null)
+                    ? employee.getRole().getRoleName() : "Nhân viên";
+            session.setAttribute("currentUserRole", roleName);
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");
         } else {
             request.setAttribute("error", "Email hoặc mật khẩu không chính xác, hoặc tài khoản đã bị khóa.");

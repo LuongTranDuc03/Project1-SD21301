@@ -4,9 +4,13 @@
             <%@ page import="java.util.List" %>
                 <%@ page import="java.util.Date" %>
                     <%@ page import="java.text.SimpleDateFormat" %>
-                        <% String currentUserRole="Admin" ; session.setAttribute("currentUserRole", currentUserRole);
-                            boolean isAdmin=true; List<Role> listRoles = (List<Role>) request.getAttribute("roles");
-                                %>
+<% 
+    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+    String currentUserRole = (loggedInUser != null && loggedInUser.getRole() != null && loggedInUser.getRole().getRoleName() != null) 
+                              ? loggedInUser.getRole().getRoleName() : "Nhân viên";
+    boolean isAdmin = "Admin".equalsIgnoreCase(currentUserRole) || "Quản lý".equalsIgnoreCase(currentUserRole); 
+    List<Role> listRoles = (List<Role>) request.getAttribute("roles");
+%>
                                 <!DOCTYPE html>
                                 <html lang="vi">
 

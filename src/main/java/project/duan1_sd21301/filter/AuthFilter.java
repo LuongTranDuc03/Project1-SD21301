@@ -41,14 +41,17 @@ public class AuthFilter implements Filter {
         // --- Role-Based Authorization ---
         Employee user = (Employee) session.getAttribute("loggedInUser");
         
-        // Màn Quản lý nhân viên chỉ dành cho Admin hoặc Quản lý (id = 1 hoặc 2)
-        boolean isAdmin = (user.getRoleId() == 2 || user.getRoleId() == 1) || 
-                          (user.getRoleName() != null && 
-                          (user.getRoleName().equalsIgnoreCase("Admin") || user.getRoleName().equalsIgnoreCase("Quản lý")));
+        // Màn Quản lý nhân viên chỉ dành cho Admin hoặc Quản lý (Nhân viên tuyệt đối không được truy cập)
+        String roleName = user.getRoleName();
+        boolean isStaff = "Nhân viên".equalsIgnoreCase(roleName);
+        boolean isAdminOrManager = !isStaff && (
+            (user.getRole() != null && user.getRoleId() == 1) ||
+            (roleName != null && (roleName.equalsIgnoreCase("Admin") || roleName.equalsIgnoreCase("Quản lý")))
+        );
         
-        if (path.contains("/admin/employees") && !isAdmin) {
+        if (path.contains("/admin/employees") && !isAdminOrManager) {
             // Không có quyền, chuyển về trang chủ (dashboard)
-            session.setAttribute("toastMessage", "Bạn không có quyền truy cập vào Quản lý nhân viên!");
+            session.setAttribute("toastMessage", "Tài khoản Nhân viên không có quyền truy cập vào Quản lý nhân viên!");
             session.setAttribute("toastType", "error");
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return;
