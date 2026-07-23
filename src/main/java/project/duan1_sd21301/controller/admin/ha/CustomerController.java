@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -36,80 +35,7 @@ public class CustomerController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        if (getServletContext().getAttribute("customers") == null) {
-            List<Customer> customers = new ArrayList<>();
-            try {
-                // KH001
-                CustomerAddress addr1a = CustomerAddress.builder()
-                        .id(1).recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321").isDefault(true).note("")
-                        .address(Address.builder().code("DC001").province("TP. Hồ Chí Minh").district("Quận 1").ward("Phường Bến Nghé").detailedAddress("123 Nguyễn Trãi").build()).build();
-                CustomerAddress addr1b = CustomerAddress.builder()
-                        .id(2).recipientName("Nguyễn Anh Tuấn").phoneNumber("0987654321").isDefault(false).note("")
-                        .address(Address.builder().code("DC002").province("TP. Hồ Chí Minh").district("Bình Thạnh").ward("Phường 25").detailedAddress("345 Điện Biên Phủ").build()).build();
-                addr1a.setCustomer(null); // sẽ set sau khi build customer
-                addr1b.setCustomer(null);
-                Customer c1 = Customer.builder()
-                        .id(1).code("KH001").fullName("Nguyễn Anh Tuấn").email("anhtuan.nguyen@gmail.com")
-                        .password("tuannh123").phoneNumber("0987654321")
-                        .dateOfBirth(dateFormat.parse("1995-05-12")).gender("Nam")
-                        .avatar("https://i.pravatar.cc/150?img=11").status("Hoạt động")
-                        .addresses(new ArrayList<>(Arrays.asList(addr1a, addr1b))).build();
-                addr1a.setCustomer(c1); addr1b.setCustomer(c1);
-                customers.add(c1);
-
-                // KH002
-                CustomerAddress addr2a = CustomerAddress.builder()
-                        .id(3).recipientName("Trần Thị Mai").phoneNumber("0912345678").isDefault(true).note("")
-                        .address(Address.builder().code("DC003").province("Đà Nẵng").district("Quận Hải Châu").ward("Phường Hải Châu I").detailedAddress("456 Lê Lợi").build()).build();
-                CustomerAddress addr2b = CustomerAddress.builder()
-                        .id(4).recipientName("Trần Thị Mai").phoneNumber("0912345678").isDefault(false).note("")
-                        .address(Address.builder().code("DC004").province("Đà Nẵng").district("Quận Thanh Khê").ward("Phường Thanh Khê Tây").detailedAddress("12 Nguyễn Văn Linh").build()).build();
-                CustomerAddress addr2c = CustomerAddress.builder()
-                        .id(5).recipientName("Trần Thị Mai").phoneNumber("0912345678").isDefault(false).note("")
-                        .address(Address.builder().code("DC005").province("Đà Nẵng").district("Quận Sơn Trà").ward("Phường An Hải Bắc").detailedAddress("78 Trần Hưng Đạo").build()).build();
-                Customer c2 = Customer.builder()
-                        .id(2).code("KH002").fullName("Trần Thị Mai").email("maitran98@gmail.com")
-                        .password("maipassword").phoneNumber("0912345678")
-                        .dateOfBirth(dateFormat.parse("1998-09-20")).gender("Nữ")
-                        .avatar("https://i.pravatar.cc/150?img=47").status("Hoạt động")
-                        .addresses(new ArrayList<>(Arrays.asList(addr2a, addr2b, addr2c))).build();
-                addr2a.setCustomer(c2); addr2b.setCustomer(c2); addr2c.setCustomer(c2);
-                customers.add(c2);
-
-                // KH003
-                CustomerAddress addr3a = CustomerAddress.builder()
-                        .id(6).recipientName("Lê Minh Hoàng").phoneNumber("0909090909").isDefault(true).note("")
-                        .address(Address.builder().code("DC006").province("Hà Nội").district("Quận Cầu Giấy").ward("Phường Dịch Vọng").detailedAddress("789 Cầu Giấy").build()).build();
-                Customer c3 = Customer.builder()
-                        .id(3).code("KH003").fullName("Lê Minh Hoàng").email("hoangleminh@yahoo.com")
-                        .password("hoang1992").phoneNumber("0909090909")
-                        .dateOfBirth(dateFormat.parse("1992-12-30")).gender("Nam")
-                        .avatar("https://i.pravatar.cc/150?img=12").status("Khóa")
-                        .addresses(new ArrayList<>(Arrays.asList(addr3a))).build();
-                addr3a.setCustomer(c3);
-                customers.add(c3);
-
-                // KH004
-                CustomerAddress addr4a = CustomerAddress.builder()
-                        .id(7).recipientName("Phạm Khánh Vy").phoneNumber("0977777777").isDefault(true).note("")
-                        .address(Address.builder().code("DC007").province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Tân An").detailedAddress("321 Trần Hưng Đạo").build()).build();
-                CustomerAddress addr4b = CustomerAddress.builder()
-                        .id(8).recipientName("Phạm Khánh Vy").phoneNumber("0977777777").isDefault(false).note("")
-                        .address(Address.builder().code("DC008").province("Cần Thơ").district("Quận Ninh Kiều").ward("Phường Xuân Khánh").detailedAddress("56 Mậu Thân").build()).build();
-                Customer c4 = Customer.builder()
-                        .id(4).code("KH004").fullName("Phạm Khánh Vy").email("vypham.khanh@hotmail.com")
-                        .password("vycute99").phoneNumber("0977777777")
-                        .dateOfBirth(dateFormat.parse("1999-03-15")).gender("Nữ")
-                        .avatar("https://i.pravatar.cc/150?img=49").status("Hoạt động")
-                        .addresses(new ArrayList<>(Arrays.asList(addr4a, addr4b))).build();
-                addr4a.setCustomer(c4); addr4b.setCustomer(c4);
-                customers.add(c4);
-
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            getServletContext().setAttribute("customers", customers);
-        }
+        // Mock data setup removed - data is fetched directly from database via customerService
     }
 
     @Override
@@ -126,10 +52,7 @@ public class CustomerController extends HttpServlet {
             session.removeAttribute("toastType");
         }
 
-        List<Customer> dbCustomers = customerService.getAllCustomers();
-        List<Customer> allCustomers = (dbCustomers != null && !dbCustomers.isEmpty())
-                ? dbCustomers
-                : (List<Customer>) getServletContext().getAttribute("customers");
+        List<Customer> allCustomers = customerService.getAllCustomers();
         if (allCustomers == null) allCustomers = new ArrayList<>();
 
         String action = request.getParameter("action");
@@ -260,8 +183,8 @@ public class CustomerController extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
-        List<Customer> customers = (List<Customer>) getServletContext().getAttribute("customers");
-        if (customers == null) { customers = new ArrayList<>(); getServletContext().setAttribute("customers", customers); }
+        List<Customer> customers = customerService.getAllCustomers();
+        if (customers == null) { customers = new ArrayList<>(); }
         HttpSession session = request.getSession();
 
         if ("add".equals(action) || "edit".equals(action)) {
@@ -326,7 +249,6 @@ public class CustomerController extends HttpServlet {
             List<CustomerAddress> addresses = new ArrayList<>();
 
             // Địa chỉ mặc định
-            // Lấy nextAddressId
             int nextAddrId = getNextAddressId(customers);
             String resolvedDefaultCode = (defaultAddrCode != null && !defaultAddrCode.trim().isEmpty())
                     ? defaultAddrCode.trim() : generateNextAddressCode(customers, 0);
@@ -387,7 +309,6 @@ public class CustomerController extends HttpServlet {
                 for (CustomerAddress a : newC.getAddresses()) a.setCustomer(newC);
                 
                 if (customerService.addCustomer(newC)) {
-                    getServletContext().setAttribute("customers", customerService.getAllCustomers());
                     session.setAttribute("toastMessage", "Thêm mới khách hàng thành công!");
                     session.setAttribute("toastType", "success");
                 } else {
@@ -404,7 +325,6 @@ public class CustomerController extends HttpServlet {
                     for (CustomerAddress a : found.getAddresses()) a.setCustomer(found);
                     
                     if (customerService.updateCustomer(found)) {
-                        getServletContext().setAttribute("customers", customerService.getAllCustomers());
                         session.setAttribute("toastMessage", "Cập nhật khách hàng thành công!");
                         session.setAttribute("toastType", "success");
                     } else {
@@ -416,14 +336,13 @@ public class CustomerController extends HttpServlet {
 
         } else if ("delete-address".equals(action)) {
             String addressCode  = request.getParameter("addressCode");
-            Customer cust = findCustomer(request, (List<Customer>) getServletContext().getAttribute("customers"));
+            Customer cust = findCustomer(request, customers);
             if (cust != null && addressCode != null && cust.getAddresses() != null) {
                 for (CustomerAddress ca : cust.getAddresses()) {
                     if (addressCode.equals(ca.getCode()) && ca.getId() > 0) {
                         customerService.deleteCustomerAddress(ca.getId());
                     }
                 }
-                getServletContext().setAttribute("customers", customerService.getAllCustomers());
                 session.setAttribute("toastMessage", "Xóa địa chỉ thành công!");
                 session.setAttribute("toastType", "success");
             }
@@ -432,11 +351,10 @@ public class CustomerController extends HttpServlet {
             return;
 
         } else if ("toggle-status".equals(action)) {
-            Customer found = findCustomer(request, (List<Customer>) getServletContext().getAttribute("customers"));
+            Customer found = findCustomer(request, customers);
             if (found != null) {
                 found.setStatus("Hoạt động".equalsIgnoreCase(found.getStatus()) ? "Khóa" : "Hoạt động");
                 if (customerService.updateCustomer(found)) {
-                    getServletContext().setAttribute("customers", customerService.getAllCustomers());
                     session.setAttribute("toastMessage", "Cập nhật trạng thái thành công!");
                     session.setAttribute("toastType", "success");
                 }
@@ -446,7 +364,6 @@ public class CustomerController extends HttpServlet {
             Customer found = findCustomer(request, customers);
             if (found != null) {
                 if (customerService.deleteCustomer(found.getId())) {
-                    getServletContext().setAttribute("customers", customerService.getAllCustomers());
                     session.setAttribute("toastMessage", "Xóa khách hàng thành công!");
                     session.setAttribute("toastType", "success");
                 }

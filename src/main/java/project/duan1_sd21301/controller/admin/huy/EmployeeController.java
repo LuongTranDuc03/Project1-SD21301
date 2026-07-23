@@ -544,14 +544,20 @@ public class EmployeeController extends HttpServlet {
         return emp;
     }
 
+    private int getCurrentUserIdFromSessionOrParam(HttpServletRequest request) {
+        String idStr = request.getParameter("id");
+        if (idStr != null && !idStr.isEmpty()) {
+            try {
+                return Integer.parseInt(idStr);
+            } catch (NumberFormatException ignored) {}
+        }
+        Employee loggedInUser = (Employee) request.getSession().getAttribute("loggedInUser");
+        return (loggedInUser != null) ? loggedInUser.getId() : 1;
+    }
+
     private void showProfile(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String currentUserIdStr = request.getParameter("id");
-        if (currentUserIdStr == null || currentUserIdStr.isEmpty()) {
-            currentUserIdStr = "1";
-        }
-
-        int currentUserId = Integer.parseInt(currentUserIdStr);
+        int currentUserId = getCurrentUserIdFromSessionOrParam(request);
         Employee employee = employeeService.getEmployeeById(currentUserId);
 
         request.setAttribute("employee", employee);
@@ -560,12 +566,7 @@ public class EmployeeController extends HttpServlet {
 
     private void updateProfile(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String currentUserIdStr = request.getParameter("id");
-        if (currentUserIdStr == null || currentUserIdStr.isEmpty()) {
-            currentUserIdStr = "1";
-        }
-        int currentUserId = Integer.parseInt(currentUserIdStr);
-
+        int currentUserId = getCurrentUserIdFromSessionOrParam(request);
         Employee employee = employeeService.getEmployeeById(currentUserId);
 
         if (employee != null) {
@@ -602,12 +603,7 @@ public class EmployeeController extends HttpServlet {
 
     private void updateChangePassword(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String currentUserIdStr = request.getParameter("id");
-        if (currentUserIdStr == null || currentUserIdStr.isEmpty()) {
-            currentUserIdStr = "1";
-        }
-        int currentUserId = Integer.parseInt(currentUserIdStr);
-
+        int currentUserId = getCurrentUserIdFromSessionOrParam(request);
         Employee employee = employeeService.getEmployeeById(currentUserId);
 
         String currentPwd = request.getParameter("currentPassword");

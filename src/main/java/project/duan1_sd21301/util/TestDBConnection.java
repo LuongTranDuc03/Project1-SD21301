@@ -10,7 +10,7 @@ public class TestDBConnection {
         // Cấu hình thông tin kết nối Database
         String url = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoats;encrypt=true;trustServerCertificate=true;";
         String user = "sa";
-        String pass = "123456"; // Đổi lại mật khẩu sa của bạn nếu khác
+        String pass = "123"; // Đổi lại mật khẩu sa của bạn nếu khác
 
         System.out.println("==================================================");
         System.out.println("Đang kiểm tra kết nối tới CSDL SQL Server: FamiCoats...");
