@@ -495,8 +495,18 @@
                 List<Product> products = (List<Product>) request.getAttribute("products");
                 int totalProducts = (products != null) ? products.size() : 0;
 
+                List<String> reqCategories = (List<String>) request.getAttribute("categories");
+                List<String> reqBrands = (List<String>) request.getAttribute("brands");
+
                 java.util.Set<String> categories = new java.util.TreeSet<>();
+                if (reqCategories != null && !reqCategories.isEmpty()) {
+                    categories.addAll(reqCategories);
+                }
+
                 java.util.Set<String> brands = new java.util.TreeSet<>();
+                if (reqBrands != null && !reqBrands.isEmpty()) {
+                    brands.addAll(reqBrands);
+                }
 
                 // Tính giá thấp nhất / cao nhất theo biến thể trên toàn bộ sản phẩm
                 double globalMinPrice = Double.MAX_VALUE;

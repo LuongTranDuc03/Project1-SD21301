@@ -105,6 +105,8 @@ public class ProductController extends HttpServlet {
 
         request.setAttribute("pageTitle", "Quản lý sản phẩm");
         request.setAttribute("products", products);
+        request.setAttribute("categories", productService.getAllCategories());
+        request.setAttribute("brands", productService.getAllBrands());
         request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-list.jsp").forward(request, response);
     }
 
