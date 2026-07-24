@@ -21,8 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
  
-@WebServlet(name = "EmployeeController", urlPatterns = { "/admin/employees", "/admin/profile",
-        "/admin/change-password" })
+@WebServlet(name = "EmployeeController", urlPatterns = { "/admin/employees" })
 public class EmployeeController extends HttpServlet {
 
     private final EmployeeService employeeService = new EmployeeServiceImpl();
@@ -32,16 +31,6 @@ public class EmployeeController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String uri = request.getRequestURI();
-        if (uri.contains("/profile")) {
-            showProfile(request, response);
-            return;
-        }
-        if (uri.contains("/change-password")) {
-            showChangePassword(request, response);
-            return;
-        }
-
         if (!isManagerOrAdmin(request)) {
             request.getSession().setAttribute("toastMessage", "Bạn không có quyền truy cập quản lý nhân viên!");
             request.getSession().setAttribute("toastType", "error");
@@ -82,16 +71,6 @@ public class EmployeeController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        String uri = request.getRequestURI();
-        if (uri.contains("/profile")) {
-            updateProfile(request, response);
-            return;
-        }
-        if (uri.contains("/change-password")) {
-            updateChangePassword(request, response);
-            return;
-        }
-
         if (!isManagerOrAdmin(request)) {
             request.getSession().setAttribute("toastMessage", "Bạn không có quyền truy cập quản lý nhân viên!");
             request.getSession().setAttribute("toastType", "error");
@@ -542,91 +521,6 @@ public class EmployeeController extends HttpServlet {
         }
 
         return emp;
-    }
-
-    private int getCurrentUserIdFromSessionOrParam(HttpServletRequest request) {
-        String idStr = request.getParameter("id");
-        if (idStr != null && !idStr.isEmpty()) {
-            try {
-                return Integer.parseInt(idStr);
-            } catch (NumberFormatException ignored) {}
-        }
-        Employee loggedInUser = (Employee) request.getSession().getAttribute("loggedInUser");
-        return (loggedInUser != null) ? loggedInUser.getId() : 1;
-    }
-
-    private void showProfile(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int currentUserId = getCurrentUserIdFromSessionOrParam(request);
-        Employee employee = employeeService.getEmployeeById(currentUserId);
-
-        request.setAttribute("employee", employee);
-        request.getRequestDispatcher("/WEB-INF/views/admin/huy/profile.jsp").forward(request, response);
-    }
-
-    private void updateProfile(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int currentUserId = getCurrentUserIdFromSessionOrParam(request);
-        Employee employee = employeeService.getEmployeeById(currentUserId);
-
-        if (employee != null) {
-            employee.setPhoneNumber(request.getParameter("phoneNumber"));
-            Address addr = employee.getAddress();
-            if (addr == null) addr = new Address();
-            String combinedAddress = request.getParameter("address");
-            if (combinedAddress != null) addr.setDetailedAddress(combinedAddress);
-            employee.setAddress(addr);
-
-            String avatar = request.getParameter("avatar");
-            if (avatar != null && !avatar.trim().isEmpty()) {
-                employee.setAvatar(avatar);
-            }
-
-            employeeService.updateEmployee(employee);
-
-            request.getSession().setAttribute("currentUserName", employee.getFullName());
-            request.getSession().setAttribute("currentUserEmail", employee.getEmail());
-            request.getSession().setAttribute("toastMessage", "Cập nhật thông tin cá nhân thành công!");
-            request.getSession().setAttribute("toastType", "success");
-        } else {
-            request.getSession().setAttribute("toastMessage", "Không tìm thấy thông tin nhân viên!");
-            request.getSession().setAttribute("toastType", "error");
-        }
-
-        response.sendRedirect(request.getContextPath() + "/admin/profile");
-    }
-
-    private void showChangePassword(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/views/admin/huy/change-password.jsp").forward(request, response);
-    }
-
-    private void updateChangePassword(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        int currentUserId = getCurrentUserIdFromSessionOrParam(request);
-        Employee employee = employeeService.getEmployeeById(currentUserId);
-
-        String currentPwd = request.getParameter("currentPassword");
-        String newPwd = request.getParameter("newPassword");
-        String confirmPwd = request.getParameter("confirmPassword");
-
-        if (employee == null) {
-            request.getSession().setAttribute("toastMessage", "Không tìm thấy thông tin nhân viên!");
-            request.getSession().setAttribute("toastType", "error");
-        } else if (!employee.getPassword().equals(currentPwd)) {
-            request.getSession().setAttribute("toastMessage", "Mật khẩu hiện tại không chính xác!");
-            request.getSession().setAttribute("toastType", "error");
-        } else if (!newPwd.equals(confirmPwd)) {
-            request.getSession().setAttribute("toastMessage", "Mật khẩu mới và xác nhận mật khẩu không trùng khớp!");
-            request.getSession().setAttribute("toastType", "error");
-        } else {
-            employee.setPassword(newPwd);
-            employeeService.updateEmployee(employee);
-            request.getSession().setAttribute("toastMessage", "Đổi mật khẩu thành công!");
-            request.getSession().setAttribute("toastType", "success");
-        }
-
-        response.sendRedirect(request.getContextPath() + "/admin/change-password");
     }
 
     private boolean isManagerOrAdmin(HttpServletRequest request) {
