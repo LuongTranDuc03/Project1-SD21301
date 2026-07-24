@@ -197,6 +197,8 @@ public class EmployeeController extends HttpServlet {
             errors.add("Họ và tên không được để trống!");
         } else if (emp.getFullName().trim().length() < 2) {
             errors.add("Họ và tên phải gồm ít nhất 2 ký tự!");
+        } else if (!emp.getFullName().matches("^[a-zA-ZÀ-ỹ\\s]+$")) {
+            errors.add("Họ và tên không được chứa số hoặc ký tự đặc biệt!");
         }
 
         // 2. Vai trò

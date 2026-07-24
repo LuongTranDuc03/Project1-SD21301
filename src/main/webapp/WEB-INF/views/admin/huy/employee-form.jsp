@@ -242,7 +242,7 @@
 
                                                         <!-- Hidden fields -->
                                                         <input type="hidden" name="avatar" id="avatar"
-                                                            value="<%= isEdit && emp != null && emp.getAvatar() != null ? emp.getAvatar() : "" %>">
+                                                            value="<%= (emp != null && emp.getAvatar() != null) ? emp.getAvatar() : "" %>">
 
                                                         <% if (session.getAttribute("errorMsg") != null) { %>
                                                             <div style="background-color: #fee2e2; color: #dc2626; padding: 12px 20px; border-radius: 8px; margin-bottom: 24px; font-weight: 500; border: 1px solid #fca5a5; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(220,38,38,0.1);">
@@ -267,7 +267,7 @@
                                                             <div class="form-card-body">
                                                                 <!-- Khu vực upload ảnh đại diện -->
                                                                 <div class="avatar-upload-area" style="display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; margin-bottom: 24px; background-color: #f8fafc;">
-                                                                    <img src="<%= (isEdit && emp != null && emp.getAvatar() != null && !emp.getAvatar().isEmpty()) ? emp.getAvatar() : "https://i.pravatar.cc/150?img=0" %>" id="avatarPreview" class="preview-avatar" alt="avatar preview" onerror="this.src='https://i.pravatar.cc/150?img=0'" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; margin-bottom: 0;">
+                                                                    <img src="<%= (emp != null && emp.getAvatar() != null && !emp.getAvatar().isEmpty()) ? emp.getAvatar() : "https://i.pravatar.cc/150?img=0" %>" id="avatarPreview" class="preview-avatar" alt="avatar preview" onerror="this.src='https://i.pravatar.cc/150?img=0'" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; margin-bottom: 0;">
                                                                     <div>
                                                                         <input type="file" name="anhDaiDienFile" id="employeeAvatarFile" accept="image/*" onchange="previewImage(this)" style="display: none;">
                                                                         <button type="button" onclick="document.getElementById('employeeAvatarFile').click()" class="btn-cancel" style="padding: 8px 16px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); background-color: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center;">
@@ -286,7 +286,7 @@
                                                                         <input type="text" name="fullName" id="fullNameInput"
                                                                             class="form-input" required
                                                                             placeholder="Nhập họ và tên đầy đủ"
-                                                                            value="<%= isEdit && emp != null && emp.getFullName() != null ? emp.getFullName() : "" %>">
+                                                                            value="<%= (emp != null && emp.getFullName() != null) ? emp.getFullName() : "" %>">
                                                                         <div class="invalid-feedback"></div>
                                                                     </div>
 
@@ -299,7 +299,7 @@
                                                                             <% if (listRoles !=null) { for
                                                                                 (Role role : listRoles) { %>
                                                                                 <option value="<%= role.getId() %>"
-                                                                                    <%=(isEdit && emp != null && emp.getRoleId()==role.getId())
+                                                                                    <%=(emp != null && emp.getRoleId()==role.getId())
                                                                                     ? "selected" : "" %>>
                                                                                     <%= role.getRoleName() %>
                                                                                 </option>
@@ -315,7 +315,7 @@
                                                                             <input type="text" name="cccd" id="cccdInput"
                                                                                 class="form-input" required style="flex: 1;"
                                                                                 placeholder="12 chữ số"
-                                                                                value="<%= isEdit && emp != null && emp.getCccd() != null ? emp.getCccd() : "" %>"
+                                                                                value="<%= (emp != null && emp.getCccd() != null) ? emp.getCccd() : "" %>"
                                                                                 maxlength="12">
                                                                             <button type="button" id="btnScanCccdCamera" onclick="startCameraScan()" style="padding: 0 16px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #334155; font-weight: 500; white-space: nowrap;">
                                                                                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -334,15 +334,15 @@
                                                                             <label
                                                                                 style="display: flex; align-items: center; gap: 4px; font-size: 13px;">
                                                                                 <input type="radio" name="gender"
-                                                                                    value="1" <%=(!isEdit ||
-                                                                                    (emp != null && emp.getGender() !=null &&
+                                                                                    value="1" <%=(emp == null ||
+                                                                                    (emp.getGender() !=null &&
                                                                                     emp.getGender())) ? "checked" : ""
                                                                                     %>> Nam
                                                                             </label>
                                                                             <label
                                                                                 style="display: flex; align-items: center; gap: 4px; font-size: 13px;">
                                                                                 <input type="radio" name="gender"
-                                                                                    value="0" <%=(isEdit && emp != null &&
+                                                                                    value="0" <%=(emp != null &&
                                                                                     emp.getGender() !=null &&
                                                                                     !emp.getGender()) ? "checked" : ""
                                                                                     %>> Nữ
@@ -353,18 +353,18 @@
                                                                     <div class="form-group">
                                                                         <label class="form-label">Ngày sinh</label>
                                                                         <input type="date" name="birthday" id="birthdayInput"
-                                                                            class="form-input"
-                                                                            value="<%= isEdit && emp != null && emp.getBirthday() != null ? df.format(emp.getBirthday()) : "" %>">
+                                                                            class="form-input" required
+                                                                            value="<%= (emp != null && emp.getBirthday() != null) ? df.format(emp.getBirthday()) : "" %>">
                                                                         <div class="invalid-feedback"></div>
                                                                     </div>
 
                                                                     <div class="form-group">
                                                                         <label class="form-label">Số điện thoại <span
                                                                                 style="color:#ef4444;">*</span></label>
-                                                                        <input type="text" name="phoneNumber" id="phoneInput"
+                                                                        <input type="tel" name="phoneNumber" id="phoneInput"
                                                                             class="form-input" required
-                                                                            placeholder="VD: 0912345678"
-                                                                            value="<%= isEdit && emp != null && emp.getPhoneNumber() != null ? emp.getPhoneNumber() : "" %>">
+                                                                            placeholder="Ví dụ: 0987654321"
+                                                                            value="<%= (emp != null && emp.getPhoneNumber() != null) ? emp.getPhoneNumber() : "" %>">
                                                                         <div class="invalid-feedback"></div>
                                                                     </div>
 
@@ -373,8 +373,8 @@
                                                                                 style="color:#ef4444;">*</span></label>
                                                                         <input type="email" name="email" id="emailInput"
                                                                             class="form-input" required
-                                                                            placeholder="VD: abc@gmail.com"
-                                                                            value="<%= isEdit && emp != null && emp.getEmail() != null ? emp.getEmail() : "" %>">
+                                                                            placeholder="name@example.com"
+                                                                            value="<%= (emp != null && emp.getEmail() != null) ? emp.getEmail() : "" %>">
                                                                         <div class="invalid-feedback"></div>
                                                                     </div>
 
@@ -820,6 +820,7 @@
                                         if (fieldIdOrName === 'fullName' || fieldIdOrName === 'fullNameInput') {
                                             if (!val) { setFieldError(el, 'Họ và tên không được để trống.'); return false; }
                                             if (val.length < 2) { setFieldError(el, 'Họ và tên phải gồm ít nhất 2 ký tự.'); return false; }
+                                            if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(val)) { setFieldError(el, 'Họ và tên không được chứa số hoặc ký tự đặc biệt.'); return false; }
                                             setFieldError(el, null); return true;
                                         }
 
