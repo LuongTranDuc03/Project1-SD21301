@@ -11,7 +11,7 @@ public class TestDB {
             .fullName("Test Khach Hang")
             .email("test98@gmail.com")
             .phoneNumber("0999999998")
-            .status("Hoạt động")
+            .status(1)
             .build();
         
         System.out.println("Trying to add...");

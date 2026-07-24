@@ -28,7 +28,7 @@ public class Product {
     @Column(name = "mo_ta", columnDefinition = "NVARCHAR(MAX)")
     String description;
 
-    @Column(name = "xuat_xu", length = 100, columnDefinition = "NVARCHAR(100)")
+    @Transient
     String origin;
 
     @Column(name = "huong_dan_bao_quan", columnDefinition = "NVARCHAR(MAX)")
@@ -42,9 +42,14 @@ public class Product {
     @Builder.Default
     int sold = 0;
 
-    @Column(name = "trang_thai", length = 50)
+    @Column(name = "trang_thai")
     @Builder.Default
-    String status = "AVAILABLE";
+    Integer status = 1;
+
+    @Transient
+    public String getStatusText() {
+        return (status != null && status == 1) ? "Hoạt động" : "Đã nghỉ";
+    }
 
     @Transient
     String category;
@@ -72,7 +77,7 @@ public class Product {
         if (getStock() <= 0) {
             return "OUT_OF_STOCK";
         }
-        return (status != null && !status.trim().isEmpty()) ? status : "AVAILABLE";
+        return (status != null && status == 1) ? "AVAILABLE" : "OUT_OF_STOCK";
     }
 
     @Transient

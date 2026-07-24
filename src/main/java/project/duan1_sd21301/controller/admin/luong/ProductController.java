@@ -43,12 +43,12 @@ public class ProductController extends HttpServlet {
                     String priceRange = prod.getPriceRangeFormatted().replace("\"", "\"\"");
 
                     String statusLabel = "";
-                    if ("AVAILABLE".equals(prod.getStatus()))
+                    if (prod.getStatus() != null && prod.getStatus() == 1)
                         statusLabel = "Còn hàng";
-                    else if ("OUT_OF_STOCK".equals(prod.getStatus()))
+                    else if (prod.getStatus() != null && prod.getStatus() == 0)
                         statusLabel = "Hết hàng";
                     else
-                        statusLabel = prod.getStatus() != null ? prod.getStatus() : "";
+                        statusLabel = prod.getStatus() != null ? String.valueOf(prod.getStatus()) : "";
 
                     writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
                             stt++, prod.getCode(), name, category, brand, priceRange,
@@ -131,8 +131,8 @@ public class ProductController extends HttpServlet {
                 Product p = productService.getProductByCode(productCode.trim());
                 if (p != null) {
                     String currentEff = p.getEffectiveStatus();
-                    String newStatus = ("OUT_OF_STOCK".equalsIgnoreCase(currentEff)
-                            || "OUT_OF_STOCK".equalsIgnoreCase(p.getStatus())) ? "AVAILABLE" : "OUT_OF_STOCK";
+                    Integer newStatus = ("Hết hàng".equalsIgnoreCase(currentEff) || "OUT_OF_STOCK".equalsIgnoreCase(currentEff)
+                            || (p.getStatus() != null && p.getStatus() == 0)) ? 1 : 0;
                     p.setStatus(newStatus);
                     boolean ok = productService.updateProduct(p);
                     response.setContentType("application/json");
@@ -183,7 +183,12 @@ public class ProductController extends HttpServlet {
                             detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
                         } catch (Exception ignored) {
                         }
-                        detail.setStatus(request.getParameter("status"));
+                        String st = request.getParameter("status");
+                        if ("AVAILABLE".equals(st) || "Còn hàng".equals(st) || "1".equals(st) || "Hoạt động".equals(st)) {
+                            detail.setStatus(1);
+                        } else {
+                            detail.setStatus(0);
+                        }
 
                         String imagesParam = request.getParameter("images");
                         if (imagesParam != null) {
@@ -223,12 +228,14 @@ public class ProductController extends HttpServlet {
             if (productCode != null) {
                 Product targetProduct = productService.getProductByCode(productCode);
                 if (targetProduct != null) {
+                    String stParam = request.getParameter("status");
+                    Integer stat = ("AVAILABLE".equals(stParam) || "Còn hàng".equals(stParam) || "1".equals(stParam) || "Hoạt động".equals(stParam)) ? 1 : 0;
                     ProductDetail detail = ProductDetail.builder()
                             .product(targetProduct)
                             .color(request.getParameter("color"))
                             .size(request.getParameter("size"))
                             .style(request.getParameter("style"))
-                            .status(request.getParameter("status"))
+                            .status(stat)
                             .build();
 
                     try {
@@ -423,7 +430,7 @@ public class ProductController extends HttpServlet {
                         .length(l)
                         .width(wd)
                         .thickness(th)
-                        .status(st == 0 ? "OUT_OF_STOCK" : "AVAILABLE")
+                        .status(st == 0 ? 0 : 1)
                         .images(imgList)
                         .build();
                 details.add(detail);
@@ -432,8 +439,7 @@ public class ProductController extends HttpServlet {
 
         if (minPrice == Double.MAX_VALUE)
             minPrice = 0.0;
-        String computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? "OUT_OF_STOCK"
-                : "AVAILABLE";
+        Integer computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? 0 : 1;
 
         if (isEdit) {
             Product existingProduct = productService.getProductByCode(code);

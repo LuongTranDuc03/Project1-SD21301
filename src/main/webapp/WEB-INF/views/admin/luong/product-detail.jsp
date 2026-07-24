@@ -732,12 +732,10 @@
                                     if (prod.getDetails() != null && !prod.getDetails().isEmpty()) {
                                         int stt = 1;
                                         for (project.duan1_sd21301.model.luong.ProductDetail v : prod.getDetails()) {
-                                            String pStatus = v.getStatus();
-                                            if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
-                                                pStatus = v.getStock() > 0 ? "Còn hàng" : "Hết hàng";
-                                            }
-                                            String vStatusClass = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "available" : "out_of_stock";
-                                            String vStatusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng" : "Hết hàng";
+                                            Integer pStatus = v.getStatus();
+                                            boolean isAvail = (pStatus != null && pStatus == 1 && v.getStock() > 0);
+                                            String vStatusClass = isAvail ? "available" : "out_of_stock";
+                                            String vStatusLabel = isAvail ? "Còn hàng" : "Hết hàng";
                                 %>
                                 <tr>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: 500;"><%= stt++ %></td>

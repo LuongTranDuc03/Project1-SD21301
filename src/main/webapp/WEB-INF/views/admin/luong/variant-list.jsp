@@ -387,7 +387,7 @@
                             if (variants != null && !variants.isEmpty()) {
                                 int stt = 1;
                                 for (ProductDetail v : variants) {
-                                     boolean isAvailable = (v.getStock() > 0) && !"OUT_OF_STOCK".equalsIgnoreCase(v.getStatus());
+                                     boolean isAvailable = (v.getStock() > 0) && (v.getStatus() != null && v.getStatus() == 1);
                                      String statusClass = isAvailable ? "available" : "out_of_stock";
                                      String statusLabel = isAvailable ? "Còn hàng" : "Hết hàng";
                         %>

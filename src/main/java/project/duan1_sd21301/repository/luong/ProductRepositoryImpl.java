@@ -131,7 +131,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 ps.setString(7, product.getCareInstructions());
                 ps.setDouble(8, product.getPrice());
                 ps.setInt(9, product.getSold());
-                ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                ps.setInt(10, product.getStatus() != null ? product.getStatus() : 1);
 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
@@ -148,44 +148,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     }
                     return true;
                 }
-            } catch (SQLException ex1) {
-                String sqlFallback = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, xuat_xu, mo_ta, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                try (PreparedStatement ps = conn.prepareStatement(sqlFallback, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setString(1, product.getCode());
-                    ps.setString(2, product.getName());
-                    if (categoryId > 0)
-                        ps.setInt(3, categoryId);
-                    else
-                        ps.setNull(3, Types.INTEGER);
-                    if (brandId > 0)
-                        ps.setInt(4, brandId);
-                    else
-                        ps.setNull(4, Types.INTEGER);
-                    ps.setString(5, product.getOrigin());
-                    ps.setString(6, product.getDescription());
-                    ps.setString(7, product.getCareInstructions());
-                    ps.setDouble(8, product.getPrice());
-                    ps.setInt(9, product.getSold());
-                    ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
-
-                    int rows = ps.executeUpdate();
-                    if (rows > 0) {
-                        try (ResultSet rs = ps.getGeneratedKeys()) {
-                            if (rs.next()) {
-                                product.setId(rs.getInt(1));
-                            }
-                        }
-                        if (product.getDetails() != null) {
-                            for (ProductDetail detail : product.getDetails()) {
-                                detail.setProduct(product);
-                                insertDetailInternal(conn, detail);
-                            }
-                        }
-                        return true;
-                    }
                 }
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -225,7 +188,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 ps.setString(7, product.getCareInstructions());
                 ps.setDouble(8, product.getPrice());
                 ps.setInt(9, product.getSold());
-                ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                ps.setInt(10, product.getStatus() != null ? product.getStatus() : 1);
                 ps.setInt(11, product.getId());
 
                 boolean updated = ps.executeUpdate() > 0;
@@ -241,43 +204,6 @@ public class ProductRepositoryImpl implements ProductRepository {
                     }
                 }
                 return updated;
-            } catch (SQLException ex1) {
-                String sqlFallback = "UPDATE san_pham SET san_pham_code = ?, ten_san_pham = ?, id_danh_muc = ?, id_thuong_hieu = ?, id_xuat_xu = ?, "
-                        + "mo_ta = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
-                        + "WHERE id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
-                    ps.setString(1, product.getCode());
-                    ps.setString(2, product.getName());
-                    if (categoryId > 0)
-                        ps.setInt(3, categoryId);
-                    else
-                        ps.setNull(3, Types.INTEGER);
-                    if (brandId > 0)
-                        ps.setInt(4, brandId);
-                    else
-                        ps.setNull(4, Types.INTEGER);
-                    ps.setString(5, product.getOrigin());
-                    ps.setString(6, product.getDescription());
-                    ps.setString(7, product.getCareInstructions());
-                    ps.setDouble(8, product.getPrice());
-                    ps.setInt(9, product.getSold());
-                    ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
-                    ps.setInt(11, product.getId());
-
-                    boolean updatedFallback = ps.executeUpdate() > 0;
-                    if (updatedFallback && product.getDetails() != null) {
-                        syncDeletedDetails(conn, product.getId(), product.getDetails());
-                        for (ProductDetail detail : product.getDetails()) {
-                            detail.setProduct(product);
-                            if (detail.getId() > 0) {
-                                updateDetail(detail);
-                            } else {
-                                insertDetailInternal(conn, detail);
-                            }
-                        }
-                    }
-                    return updatedFallback;
-                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -410,7 +336,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             ps.setDouble(10, detail.getLength());
             ps.setDouble(11, detail.getWidth());
             ps.setDouble(12, detail.getThickness());
-            ps.setString(13, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+            ps.setInt(13, detail.getStatus() != null ? detail.getStatus() : 1);
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -445,7 +371,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 ps.setDouble(6, detail.getPrice());
                 ps.setInt(7, detail.getStock());
                 ps.setDouble(8, detail.getWeight());
-                ps.setString(9, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+                ps.setInt(9, detail.getStatus() != null ? detail.getStatus() : 1);
 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
@@ -511,7 +437,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 ps.setDouble(9, detail.getLength());
                 ps.setDouble(10, detail.getWidth());
                 ps.setDouble(11, detail.getThickness());
-                ps.setString(12, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+                ps.setInt(12, detail.getStatus() != null ? detail.getStatus() : 1);
                 ps.setInt(13, detail.getId());
 
                 boolean success = ps.executeUpdate() > 0;
@@ -748,17 +674,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             }
         } catch (SQLException ignored) {
         }
-        if (list.isEmpty()) {
-            String sqlFallback = "SELECT DISTINCT xuat_xu FROM san_pham WHERE xuat_xu IS NOT NULL AND LTRIM(RTRIM(xuat_xu)) <> '' ORDER BY xuat_xu ASC";
-            try (Connection conn = DatabaseConnection.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(sqlFallback);
-                    ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(rs.getString("xuat_xu"));
-                }
-            } catch (SQLException ignored) {
-            }
-        }
+
         return list;
     }
 
@@ -778,15 +694,8 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            String ori = rs.getString("ten_xuat_xu");
-            if (ori == null)
-                ori = rs.getString("xuat_xu");
-            p.setOrigin(ori);
+            p.setOrigin(rs.getString("ten_xuat_xu"));
         } catch (SQLException ignored) {
-            try {
-                p.setOrigin(rs.getString("xuat_xu"));
-            } catch (SQLException ignored2) {
-            }
         }
         try {
             p.setCareInstructions(rs.getString("huong_dan_bao_quan"));
@@ -801,7 +710,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            p.setStatus(rs.getString("trang_thai"));
+            p.setStatus(rs.getInt("trang_thai"));
         } catch (SQLException ignored) {
         }
         try {
@@ -851,7 +760,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            d.setStatus(rs.getString("trang_thai"));
+            d.setStatus(rs.getInt("trang_thai"));
         } catch (SQLException ignored) {
         }
         try {

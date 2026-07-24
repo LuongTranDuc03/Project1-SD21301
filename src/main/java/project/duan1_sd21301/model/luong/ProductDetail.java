@@ -55,9 +55,14 @@ public class ProductDetail {
     @Builder.Default
     double thickness = 0.0;
 
-    @Column(name = "trang_thai", length = 50)
+    @Column(name = "trang_thai")
     @Builder.Default
-    String status = "AVAILABLE";
+    Integer status = 1;
+
+    @Transient
+    public String getStatusText() {
+        return (status != null && status == 1) ? "Còn hàng" : "Hết hàng";
+    }
 
     @Transient
     String size;

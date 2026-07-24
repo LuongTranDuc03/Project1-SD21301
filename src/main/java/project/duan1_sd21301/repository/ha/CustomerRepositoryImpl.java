@@ -89,7 +89,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             }
             ps.setString(7, customer.getGender());
             ps.setString(8, customer.getAvatar());
-            ps.setString(9, customer.getStatus() != null ? customer.getStatus() : "Hoạt động");
+            ps.setInt(9, customer.getStatus() != null ? customer.getStatus() : 1);
             
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -133,7 +133,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             }
             ps.setString(6, customer.getGender());
             ps.setString(7, customer.getAvatar());
-            ps.setString(8, customer.getStatus());
+            ps.setInt(8, customer.getStatus() != null ? customer.getStatus() : 1);
             ps.setString(9, customer.getCode());
 
             boolean updated = ps.executeUpdate() > 0;
@@ -283,7 +283,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                 .dateOfBirth(rs.getDate("ngay_sinh"))
                 .gender(rs.getString("gioi_tinh"))
                 .avatar(rs.getString("anh_dai_dien"))
-                .status(rs.getString("trang_thai"))
+                .status(rs.getInt("trang_thai"))
                 .build();
     }
 }

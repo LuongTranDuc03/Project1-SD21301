@@ -142,7 +142,8 @@ public class CustomerController extends HttpServlet {
 
             if (matches && filterStatus != null && !filterStatus.trim().isEmpty()
                     && !"Tất cả".equalsIgnoreCase(filterStatus)) {
-                matches = filterStatus.equalsIgnoreCase(c.getStatus());
+                Integer statusFilterInt = ("Hoạt động".equalsIgnoreCase(filterStatus) || "1".equals(filterStatus)) ? 1 : 0;
+                matches = (c.getStatus() != null && c.getStatus().equals(statusFilterInt));
             }
 
             if (matches) filteredCustomers.add(c);
@@ -201,7 +202,13 @@ public class CustomerController extends HttpServlet {
             String soDienThoai = request.getParameter("soDienThoai");
             String ngaySinhStr = request.getParameter("ngaySinh");
             String gioiTinh = request.getParameter("gioiTinh");
-            String trangThai = request.getParameter("trangThai");
+            String trangThaiStr = request.getParameter("trangThai");
+            Integer trangThai = 1;
+            if ("Khóa".equalsIgnoreCase(trangThaiStr) || "Đã nghỉ".equalsIgnoreCase(trangThaiStr) || "0".equals(trangThaiStr)) {
+                trangThai = 0;
+            } else if ("Hoạt động".equalsIgnoreCase(trangThaiStr) || "1".equals(trangThaiStr)) {
+                trangThai = 1;
+            }
             String existingAvatar = request.getParameter("anhDaiDien");
 
             // Upload ảnh
@@ -353,7 +360,7 @@ public class CustomerController extends HttpServlet {
         } else if ("toggle-status".equals(action)) {
             Customer found = findCustomer(request, customers);
             if (found != null) {
-                found.setStatus("Hoạt động".equalsIgnoreCase(found.getStatus()) ? "Khóa" : "Hoạt động");
+                found.setStatus(found.getStatus() != null && found.getStatus() == 1 ? 0 : 1);
                 if (customerService.updateCustomer(found)) {
                     session.setAttribute("toastMessage", "Cập nhật trạng thái thành công!");
                     session.setAttribute("toastType", "success");

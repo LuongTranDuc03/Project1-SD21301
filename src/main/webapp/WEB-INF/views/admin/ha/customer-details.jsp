@@ -212,7 +212,7 @@
                                                         Quay lại danh sách
                                                     </a>
                                                 </div>
-                                                <% } else { String statusLabel=c.getStatus(); %>
+                                                <% } else { String statusLabel=(c.getStatus() != null && c.getStatus() == 1) ? "Hoạt động" : "Khóa"; %>
                                                     <!-- Thanh tiêu đề & nút điều hướng -->
                                                     <div class="page-header"
                                                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -253,8 +253,7 @@
                                                             <div class="profile-stat-box">
 
                                                                 <div class="stat-item">
-                                                                    <% if ("Hoạt động".equalsIgnoreCase(c.getStatus()))
-                                                                        { %>
+                                                                    <% if (c.getStatus() != null && c.getStatus() == 1) { %>
                                                                         <span class="stat-val"
                                                                             style="color: #16a34a;">Hoạt động</span>
                                                                         <% } else { %>

@@ -17,7 +17,7 @@ public class CustomerValidator {
             String phone,
             Date birthday,
             String gender,
-            String status,
+            Integer status,
             List<CustomerAddress> addresses,
             List<Customer> customers,
             boolean isEdit
@@ -90,7 +90,7 @@ public class CustomerValidator {
         }
 
         // 7. Trạng thái
-        if (status == null || status.trim().isEmpty()) {
+        if (status == null) {
             errors.add("Vui lòng chọn trạng thái.");
         }
 

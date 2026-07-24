@@ -47,9 +47,14 @@ public class Customer {
     @Column(name = "anh_dai_dien", length = 500, columnDefinition = "NVARCHAR(500)")
     String avatar;
 
-    @Column(name = "trang_thai", length = 50, columnDefinition = "NVARCHAR(50)")
+    @Column(name = "trang_thai")
     @Builder.Default
-    String status = "Hoạt động";
+    Integer status = 1;
+
+    @Transient
+    public String getStatusText() {
+        return (status != null && status == 1) ? "Hoạt động" : "Đã nghỉ";
+    }
 
     @Transient
     @Builder.Default

@@ -514,7 +514,7 @@
                                                                         %>
                                                                 </td>
                                                                 <td style="text-align: center;">
-                                                                    <% if ("Hoạt động".equalsIgnoreCase(c.getStatus())) { %>
+                                                                    <% if (c.getStatus() != null && c.getStatus() == 1) { %>
                                                                         <span class="badge-status available">Hoạt động</span>
                                                                     <% } else { %>
                                                                         <span class="badge-status out_of_stock">Khóa</span>
@@ -550,9 +550,9 @@
                                                                                 <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                                             </svg>
                                                                         </a>
-                                                                        <label class="switch" title="<%= "Hoạt động".equalsIgnoreCase(c.getStatus()) ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
+                                                                        <label class="switch" title="<%= (c.getStatus() != null && c.getStatus() == 1) ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
                                                                             <input type="checkbox"
-                                                                                <%= "Hoạt động".equalsIgnoreCase(c.getStatus()) ? "checked" : "" %>
+                                                                                <%= (c.getStatus() != null && c.getStatus() == 1) ? "checked" : "" %>
                                                                                 onchange="toggleCustomerStatus('<%= c.getId() %>')">
                                                                             <span class="slider"></span>
                                                                         </label>

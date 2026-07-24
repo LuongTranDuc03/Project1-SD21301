@@ -54,12 +54,8 @@ public class VariantController extends HttpServlet {
                 writer.write("STT,Mã Sản Phẩm,Màu Sắc,Kích Cỡ,Kiểu Dáng,Giá Nhập,Đơn Giá,Số Lượng,Trạng Thái\n");
                 int stt = 1;
                 for (ProductDetail v : allVariants) {
-                    String pStatus = v.getStatus();
-                    if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
-                        pStatus = v.getStock() > 0 ? "Còn hàng" : "Hết hàng";
-                    }
-                    String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng"
-                            : "Hết hàng";
+                    Integer pStatus = v.getStatus();
+                    String statusLabel = (pStatus != null && pStatus == 1) ? "Còn hàng" : "Hết hàng";
                     writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.0f,%.0f,%d,\"%s\"\n",
                             stt++,
                             (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "",
@@ -141,10 +137,15 @@ public class VariantController extends HttpServlet {
                     System.err.println("⚠️ Variant image upload error: " + e.getMessage());
                 }
 
-                productService.addProductDetail(detail);
+                boolean success = productService.addProductDetail(detail);
                 jakarta.servlet.http.HttpSession session = request.getSession();
-                session.setAttribute("toastMessage", "Thêm biến thể thành công!");
-                session.setAttribute("toastType", "success");
+                if (success) {
+                    session.setAttribute("toastMessage", "Thêm biến thể thành công!");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMessage", "Thêm thất bại! Biến thể này có thể đã tồn tại.");
+                    session.setAttribute("toastType", "error");
+                }
             }
         } else if ("edit".equals(action)) {
             String variantIdStr = request.getParameter("variantId");
@@ -217,11 +218,16 @@ public class VariantController extends HttpServlet {
                     System.err.println("⚠️ Variant image upload error: " + e.getMessage());
                 }
 
-                productService.updateProductDetail(detail);
+                boolean success = productService.updateProductDetail(detail);
 
                 jakarta.servlet.http.HttpSession session = request.getSession();
-                session.setAttribute("toastMessage", "Cập nhật biến thể thành công!");
-                session.setAttribute("toastType", "success");
+                if (success) {
+                    session.setAttribute("toastMessage", "Cập nhật biến thể thành công!");
+                    session.setAttribute("toastType", "success");
+                } else {
+                    session.setAttribute("toastMessage", "Cập nhật thất bại! Biến thể trùng lặp hoặc lỗi hệ thống.");
+                    session.setAttribute("toastType", "error");
+                }
             }
         } else if ("toggleStatus".equals(action)) {
             String variantIdStr = request.getParameter("variantId");
@@ -252,13 +258,11 @@ public class VariantController extends HttpServlet {
             }
 
             if (detail != null) {
-                String newDbStatus = "AVAILABLE";
-                if ("OUT_OF_STOCK".equalsIgnoreCase(status) || "Hết hàng".equalsIgnoreCase(status) || "Ngừng hoạt động".equalsIgnoreCase(status)) {
-                    newDbStatus = "OUT_OF_STOCK";
-                } else if ("AVAILABLE".equalsIgnoreCase(status) || "Còn hàng".equalsIgnoreCase(status) || "Hoạt động".equalsIgnoreCase(status)) {
-                    newDbStatus = "AVAILABLE";
-                } else if (status != null && !status.trim().isEmpty()) {
-                    newDbStatus = status;
+                Integer newDbStatus = 1;
+                if ("OUT_OF_STOCK".equalsIgnoreCase(status) || "Hết hàng".equalsIgnoreCase(status) || "Ngừng hoạt động".equalsIgnoreCase(status) || "0".equals(status)) {
+                    newDbStatus = 0;
+                } else if ("AVAILABLE".equalsIgnoreCase(status) || "Còn hàng".equalsIgnoreCase(status) || "Hoạt động".equalsIgnoreCase(status) || "1".equals(status)) {
+                    newDbStatus = 1;
                 }
                 detail.setStatus(newDbStatus);
                 boolean updated = productService.updateProductDetail(detail);
