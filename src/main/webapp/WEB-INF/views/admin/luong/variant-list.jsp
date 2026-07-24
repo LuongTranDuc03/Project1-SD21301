@@ -375,6 +375,7 @@
                             <th style="text-align: center;">Hình ảnh</th>
                             <th style="text-align: center;">Màu sắc</th>
                             <th style="text-align: center;">Kích cỡ</th>
+                            <th style="text-align: center;">Giá nhập</th>
                             <th style="text-align: center;">Đơn giá</th>
                             <th style="text-align: center;">Số lượng</th>
                             <th style="text-align: center;">Trạng thái</th>
@@ -390,7 +391,7 @@
                                      String statusClass = isAvailable ? "available" : "out_of_stock";
                                      String statusLabel = isAvailable ? "Còn hàng" : "Hết hàng";
                         %>
-                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
+                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-variantid="<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
                                 <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
@@ -411,6 +412,9 @@
                                 <span style="background-color: #f1f5f9; color: #475569; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: 600;"><%= v.getSize() != null ? v.getSize() : "" %></span>
                             </td>
                             <td style="text-align: center;">
+                                <span class="product-price" style="color: #059669;"><%= String.format("%,.0f", v.getImportPrice()) %> đ</span>
+                            </td>
+                            <td style="text-align: center;">
                                 <span class="product-price"><%= String.format("%,.0f", v.getPrice()) %> đ</span>
                             </td>
                             <td style="text-align: center;">
@@ -425,6 +429,7 @@
                                    data-color="<%= v.getColor() != null ? v.getColor() : "" %>"
                                    data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
                                    data-style="<%= v.getStyle() != null ? v.getStyle() : "" %>"
+                                   data-importprice="<%= String.format("%.0f", v.getImportPrice()) %>"
                                    data-price="<%= String.format("%.0f", v.getPrice()) %>"
 
                                    data-stock="<%= v.getStock() %>"
@@ -492,6 +497,10 @@
                         <input type="text" id="edit-size" name="size" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá Nhập (đ) <span style="color: red;">*</span></label>
+                        <input type="text" id="edit-importPrice" name="importPrice" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Đơn Giá (đ) <span style="color: red;">*</span></label>
                         <input type="text" id="edit-price" name="price" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
                     </div>
@@ -531,19 +540,21 @@
         var tr = checkbox.closest('tr');
         var statusBadge = tr.querySelector('.badge-status');
         
-        var newStatusLabel = checkbox.checked ? 'Còn hàng' : 'Hết hàng';
-        var newStatusData = checkbox.checked ? 'AVAILABLE' : 'OUT_OF_STOCK';
+        var isChecked = checkbox.checked;
+        var newStatusLabel = isChecked ? 'Còn hàng' : 'Hết hàng';
+        var newStatusData = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
+        var newBadgeClass = isChecked ? 'available' : 'out_of_stock';
 
-        if (checkbox.checked) {
-            statusBadge.className = 'badge-status available';
-            statusBadge.textContent = newStatusLabel;
-            tr.dataset.status = newStatusData;
-        } else {
-            statusBadge.className = 'badge-status out_of_stock';
-            statusBadge.textContent = newStatusLabel;
-            tr.dataset.status = newStatusData;
-        }
+        var oldChecked = !isChecked;
+        var oldStatusLabel = isChecked ? 'Hết hàng' : 'Còn hàng';
+        var oldStatusData = isChecked ? 'OUT_OF_STOCK' : 'AVAILABLE';
+        var oldBadgeClass = isChecked ? 'out_of_stock' : 'available';
+
+        statusBadge.className = 'badge-status ' + newBadgeClass;
+        statusBadge.textContent = newStatusLabel;
+        tr.dataset.status = newStatusData;
         
+        var variantId = tr.dataset.variantid || '';
         var productCode = tr.dataset.productcode || '';
         var color = tr.dataset.color || '';
         var size = tr.dataset.size || '';
@@ -556,16 +567,24 @@
                 if (xhr.status === 200) {
                     if (window.showToast) window.showToast('Cập nhật trạng thái biến thể thành công!', 'success');
                 } else {
+                    checkbox.checked = oldChecked;
+                    statusBadge.className = 'badge-status ' + oldBadgeClass;
+                    statusBadge.textContent = oldStatusLabel;
+                    tr.dataset.status = oldStatusData;
                     if (window.showToast) window.showToast('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
+                }
+                if (typeof applyFilters === 'function') {
+                    applyFilters();
                 }
             }
         };
-        xhr.send("action=toggleStatus&productCode=" + encodeURIComponent(productCode) + "&color=" + encodeURIComponent(color) + "&size=" + encodeURIComponent(size) + "&status=" + encodeURIComponent(newStatusLabel));
-
-        // Gọi lại hàm filter để đồng bộ nếu bộ lọc đang được áp dụng
-        if (typeof applyFilters === 'function') {
-            applyFilters();
-        }
+        var bodyData = "action=toggleStatus" +
+            "&variantId=" + encodeURIComponent(variantId) +
+            "&productCode=" + encodeURIComponent(productCode) +
+            "&color=" + encodeURIComponent(color) +
+            "&size=" + encodeURIComponent(size) +
+            "&status=" + encodeURIComponent(newStatusData);
+        xhr.send(bodyData);
     }
 
     function openEditVariantModal(btn) {
@@ -574,6 +593,9 @@
         document.getElementById('edit-size').value = btn.getAttribute('data-size');
         document.getElementById('edit-style').value = btn.getAttribute('data-style');
         
+        var rawImportPrice = btn.getAttribute('data-importprice');
+        document.getElementById('edit-importPrice').value = rawImportPrice ? rawImportPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+
         var rawPrice = btn.getAttribute('data-price');
         document.getElementById('edit-price').value = rawPrice ? rawPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
         

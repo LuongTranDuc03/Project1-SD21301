@@ -122,10 +122,14 @@ public class ProductController extends HttpServlet {
         String action = request.getParameter("action");
         if ("toggleStatus".equals(action)) {
             String productCode = request.getParameter("code");
-            if (productCode != null) {
-                Product p = productService.getProductByCode(productCode);
+            if (productCode == null || productCode.trim().isEmpty()) {
+                productCode = request.getParameter("id");
+            }
+            if (productCode != null && !productCode.trim().isEmpty()) {
+                Product p = productService.getProductByCode(productCode.trim());
                 if (p != null) {
-                    String newStatus = "OUT_OF_STOCK".equals(p.getStatus()) ? "AVAILABLE" : "OUT_OF_STOCK";
+                    String currentEff = p.getEffectiveStatus();
+                    String newStatus = ("OUT_OF_STOCK".equalsIgnoreCase(currentEff) || "OUT_OF_STOCK".equalsIgnoreCase(p.getStatus())) ? "AVAILABLE" : "OUT_OF_STOCK";
                     p.setStatus(newStatus);
                     boolean ok = productService.updateProduct(p);
                     response.setContentType("application/json");
@@ -298,6 +302,7 @@ public class ProductController extends HttpServlet {
         String[] sizes = request.getParameterValues("variantSize");
         String[] colors = request.getParameterValues("variantColor");
         String[] styles = request.getParameterValues("variantStyle");
+        String[] importPrices = request.getParameterValues("variantImportPrice");
         String[] prices = request.getParameterValues("variantPrice");
         String[] stocks = request.getParameterValues("variantStock");
         String[] weights = request.getParameterValues("variantWeight");
@@ -311,6 +316,7 @@ public class ProductController extends HttpServlet {
 
         if (sizes != null) {
             for (int i = 0; i < sizes.length; i++) {
+                double ip = 0.0;
                 double p = 0.0;
                 int st = 0;
                 double w = 0.0;
@@ -318,6 +324,11 @@ public class ProductController extends HttpServlet {
                 double wd = 0.0;
                 double th = 0.0;
 
+                try {
+                    if (importPrices != null && importPrices.length > i && importPrices[i] != null && !importPrices[i].trim().isEmpty())
+                        ip = Double.parseDouble(importPrices[i].replaceAll("[^0-9.]", ""));
+                } catch (Exception ignored) {
+                }
                 try {
                     if (prices != null && prices[i] != null && !prices[i].trim().isEmpty())
                         p = Double.parseDouble(prices[i].replaceAll("[^0-9.]", ""));
@@ -368,6 +379,7 @@ public class ProductController extends HttpServlet {
                         .size(sizes[i])
                         .color(colors[i])
                         .style(styles[i])
+                        .importPrice(ip)
                         .price(p)
                         .stock(st)
                         .weight(w)

@@ -104,8 +104,8 @@ public class ProductRepositoryImpl implements ProductRepository {
             int brandId = findOrCreateBrand(conn, product.getBrand());
             int originId = findOrCreateOrigin(conn, product.getOrigin());
 
-            String sql = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, id_xuat_xu, mo_ta, doi_tuong, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, id_xuat_xu, mo_ta, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, product.getCode());
@@ -114,11 +114,10 @@ public class ProductRepositoryImpl implements ProductRepository {
                 if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
                 if (originId > 0) ps.setInt(5, originId); else ps.setNull(5, Types.INTEGER);
                 ps.setString(6, product.getDescription());
-                ps.setString(7, product.getTargetGender());
-                ps.setString(8, product.getCareInstructions());
-                ps.setDouble(9, product.getPrice());
-                ps.setInt(10, product.getSold());
-                ps.setString(11, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                ps.setString(7, product.getCareInstructions());
+                ps.setDouble(8, product.getPrice());
+                ps.setInt(9, product.getSold());
+                ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
@@ -136,8 +135,8 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return true;
                 }
             } catch (SQLException ex1) {
-                String sqlFallback = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, xuat_xu, mo_ta, doi_tuong, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                String sqlFallback = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, xuat_xu, mo_ta, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setString(1, product.getCode());
                     ps.setString(2, product.getName());
@@ -145,11 +144,10 @@ public class ProductRepositoryImpl implements ProductRepository {
                     if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
                     ps.setString(5, product.getOrigin());
                     ps.setString(6, product.getDescription());
-                    ps.setString(7, product.getTargetGender());
-                    ps.setString(8, product.getCareInstructions());
-                    ps.setDouble(9, product.getPrice());
-                    ps.setInt(10, product.getSold());
-                    ps.setString(11, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                    ps.setString(7, product.getCareInstructions());
+                    ps.setDouble(8, product.getPrice());
+                    ps.setInt(9, product.getSold());
+                    ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
 
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
@@ -185,7 +183,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             int originId = findOrCreateOrigin(conn, product.getOrigin());
 
             String sql = "UPDATE san_pham SET san_pham_code = ?, ten_san_pham = ?, id_danh_muc = ?, id_thuong_hieu = ?, id_xuat_xu = ?, "
-                    + "mo_ta = ?, doi_tuong = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
+                    + "mo_ta = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
                     + "WHERE id = ?";
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -195,17 +193,16 @@ public class ProductRepositoryImpl implements ProductRepository {
                 if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
                 if (originId > 0) ps.setInt(5, originId); else ps.setNull(5, Types.INTEGER);
                 ps.setString(6, product.getDescription());
-                ps.setString(7, product.getTargetGender());
-                ps.setString(8, product.getCareInstructions());
-                ps.setDouble(9, product.getPrice());
-                ps.setInt(10, product.getSold());
-                ps.setString(11, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
-                ps.setInt(12, product.getId());
+                ps.setString(7, product.getCareInstructions());
+                ps.setDouble(8, product.getPrice());
+                ps.setInt(9, product.getSold());
+                ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                ps.setInt(11, product.getId());
 
                 return ps.executeUpdate() > 0;
             } catch (SQLException ex1) {
                 String sqlFallback = "UPDATE san_pham SET san_pham_code = ?, ten_san_pham = ?, id_danh_muc = ?, id_thuong_hieu = ?, xuat_xu = ?, "
-                        + "mo_ta = ?, doi_tuong = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
+                        + "mo_ta = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
                         + "WHERE id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
                     ps.setString(1, product.getCode());
@@ -214,12 +211,11 @@ public class ProductRepositoryImpl implements ProductRepository {
                     if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
                     ps.setString(5, product.getOrigin());
                     ps.setString(6, product.getDescription());
-                    ps.setString(7, product.getTargetGender());
-                    ps.setString(8, product.getCareInstructions());
-                    ps.setDouble(9, product.getPrice());
-                    ps.setInt(10, product.getSold());
-                    ps.setString(11, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
-                    ps.setInt(12, product.getId());
+                    ps.setString(7, product.getCareInstructions());
+                    ps.setDouble(8, product.getPrice());
+                    ps.setInt(9, product.getSold());
+                    ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                    ps.setInt(11, product.getId());
 
                     return ps.executeUpdate() > 0;
                 }
@@ -318,8 +314,8 @@ public class ProductRepositoryImpl implements ProductRepository {
         int colorId = findOrCreateColor(conn, detail.getColor());
         int styleId = findOrCreateStyle(conn, detail.getStyle());
 
-        String sql = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, detail.getCode());
@@ -327,13 +323,14 @@ public class ProductRepositoryImpl implements ProductRepository {
             if (sizeId > 0) ps.setInt(3, sizeId); else ps.setNull(3, Types.INTEGER);
             if (colorId > 0) ps.setInt(4, colorId); else ps.setNull(4, Types.INTEGER);
             if (styleId > 0) ps.setInt(5, styleId); else ps.setNull(5, Types.INTEGER);
-            ps.setDouble(6, detail.getPrice());
-            ps.setInt(7, detail.getStock());
-            ps.setDouble(8, detail.getWeight());
-            ps.setDouble(9, detail.getLength());
-            ps.setDouble(10, detail.getWidth());
-            ps.setDouble(11, detail.getThickness());
-            ps.setString(12, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+            ps.setDouble(6, detail.getImportPrice());
+            ps.setDouble(7, detail.getPrice());
+            ps.setInt(8, detail.getStock());
+            ps.setDouble(9, detail.getWeight());
+            ps.setDouble(10, detail.getLength());
+            ps.setDouble(11, detail.getWidth());
+            ps.setDouble(12, detail.getThickness());
+            ps.setString(13, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -348,17 +345,18 @@ public class ProductRepositoryImpl implements ProductRepository {
                 return true;
             }
         } catch (SQLException ex1) {
-            String sqlFallback = "INSERT INTO chi_tiet_san_pham (id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong_ton, trong_luong, trang_thai) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlFallback = "INSERT INTO chi_tiet_san_pham (id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong_ton, trong_luong, trang_thai) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlFallback, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, detail.getProduct() != null ? detail.getProduct().getId() : 0);
                 if (sizeId > 0) ps.setInt(2, sizeId); else ps.setNull(2, Types.INTEGER);
                 if (colorId > 0) ps.setInt(3, colorId); else ps.setNull(3, Types.INTEGER);
                 if (styleId > 0) ps.setInt(4, styleId); else ps.setNull(4, Types.INTEGER);
-                ps.setDouble(5, detail.getPrice());
-                ps.setInt(6, detail.getStock());
-                ps.setDouble(7, detail.getWeight());
-                ps.setString(8, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+                ps.setDouble(5, detail.getImportPrice());
+                ps.setDouble(6, detail.getPrice());
+                ps.setInt(7, detail.getStock());
+                ps.setDouble(8, detail.getWeight());
+                ps.setString(9, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
@@ -387,33 +385,23 @@ public class ProductRepositoryImpl implements ProductRepository {
             int styleId = findOrCreateStyle(conn, detail.getStyle());
 
             String sql = "UPDATE chi_tiet_san_pham SET chi_tiet_san_pham_code = ?, id_kich_thuoc = ?, id_mau_sac = ?, id_kieu_dang = ?, "
-                    +
-                    "gia_ban = ?, so_luong = ?, trong_luong = ?, chieu_dai = ?, chieu_rong = ?, do_day = ?, trang_thai = ? "
-                    +
-                    "WHERE id = ?";
+                    + "gia_nhap = ?, gia_ban = ?, so_luong = ?, trong_luong = ?, chieu_dai = ?, chieu_rong = ?, do_day = ?, trang_thai = ? "
+                    + "WHERE id = ?";
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, detail.getCode());
-                if (sizeId > 0)
-                    ps.setInt(2, sizeId);
-                else
-                    ps.setNull(2, Types.INTEGER);
-                if (colorId > 0)
-                    ps.setInt(3, colorId);
-                else
-                    ps.setNull(3, Types.INTEGER);
-                if (styleId > 0)
-                    ps.setInt(4, styleId);
-                else
-                    ps.setNull(4, Types.INTEGER);
-                ps.setDouble(5, detail.getPrice());
-                ps.setInt(6, detail.getStock());
-                ps.setDouble(7, detail.getWeight());
-                ps.setDouble(8, detail.getLength());
-                ps.setDouble(9, detail.getWidth());
-                ps.setDouble(10, detail.getThickness());
-                ps.setString(11, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
-                ps.setInt(12, detail.getId());
+                if (sizeId > 0) ps.setInt(2, sizeId); else ps.setNull(2, Types.INTEGER);
+                if (colorId > 0) ps.setInt(3, colorId); else ps.setNull(3, Types.INTEGER);
+                if (styleId > 0) ps.setInt(4, styleId); else ps.setNull(4, Types.INTEGER);
+                ps.setDouble(5, detail.getImportPrice());
+                ps.setDouble(6, detail.getPrice());
+                ps.setInt(7, detail.getStock());
+                ps.setDouble(8, detail.getWeight());
+                ps.setDouble(9, detail.getLength());
+                ps.setDouble(10, detail.getWidth());
+                ps.setDouble(11, detail.getThickness());
+                ps.setString(12, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+                ps.setInt(13, detail.getId());
 
                 boolean success = ps.executeUpdate() > 0;
                 if (success && detail.getImages() != null) {
@@ -605,10 +593,6 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            p.setTargetGender(rs.getString("doi_tuong"));
-        } catch (SQLException ignored) {
-        }
-        try {
             String ori = rs.getString("ten_xuat_xu");
             if (ori == null) ori = rs.getString("xuat_xu");
             p.setOrigin(ori);
@@ -650,6 +634,10 @@ public class ProductRepositoryImpl implements ProductRepository {
         d.setId(rs.getInt("id"));
         try {
             d.setCode(rs.getString("chi_tiet_san_pham_code"));
+        } catch (SQLException ignored) {
+        }
+        try {
+            d.setImportPrice(rs.getDouble("gia_nhap"));
         } catch (SQLException ignored) {
         }
         try {
@@ -892,10 +880,10 @@ public class ProductRepositoryImpl implements ProductRepository {
                     int kdVintage = findOrCreateStyle(conn, "Vintage");
 
                     // SP001
-                    String sqlSP1 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    String sqlSP1 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP001', N'Áo khoác da nam Premium', " + dmAoKhoacDa + ", " + thFamiCoats
-                            + ", N'Áo khoác da nam chất liệu da cừu tự nhiên cao cấp, bề mặt da mềm mịn.', N'Nam', N'Việt Nam', N'Chỉ giặt khô, không giặt máy.', 1850000, 324, 'AVAILABLE')";
+                            + ", N'Áo khoác da nam chất liệu da cừu tự nhiên cao cấp, bề mặt da mềm mịn.', N'Việt Nam', N'Chỉ giặt khô, không giặt máy.', 1850000, 324, 'AVAILABLE')";
                     stmt.executeUpdate(sqlSP1, Statement.RETURN_GENERATED_KEYS);
                     int sp1Id = 1;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -903,19 +891,19 @@ public class ProductRepositoryImpl implements ProductRepository {
                             sp1Id = keys.getInt(1);
                     }
 
-                    String sqlCT1 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
+                    String sqlCT1 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT001', " + sp1Id + ", " + ktM + ", " + msDen + ", " + kdSlim
-                            + ", 950000, 20, 0.8, 95, 48, 2.5, 'AVAILABLE'), " +
+                            + ", 600000, 950000, 20, 0.8, 95, 48, 2.5, 'AVAILABLE'), " +
                             "('CT002', " + sp1Id + ", " + ktL + ", " + msBe + ", " + kdOversize
-                            + ", 950000, 28, 0.85, 98, 50, 2.5, 'AVAILABLE')";
+                            + ", 600000, 950000, 28, 0.85, 98, 50, 2.5, 'AVAILABLE')";
                     stmt.executeUpdate(sqlCT1);
 
                     // SP002
-                    String sqlSP2 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    String sqlSP2 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP002', N'Bomber jacket oversize unisex', " + dmBomber + ", " + thZara
-                            + ", N'Áo bomber form rộng thời trang unisex thích hợp cho cả nam và nữ.', N'Unisex', N'Nhập khẩu', N'Giặt máy chế độ nhẹ với nước ấm.', 1290000, 287, 'AVAILABLE')";
+                            + ", N'Áo bomber form rộng thời trang unisex thích hợp cho cả nam và nữ.', N'Nhập khẩu', N'Giặt máy chế độ nhẹ với nước ấm.', 1290000, 287, 'AVAILABLE')";
                     stmt.executeUpdate(sqlSP2, Statement.RETURN_GENERATED_KEYS);
                     int sp2Id = 2;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -923,19 +911,19 @@ public class ProductRepositoryImpl implements ProductRepository {
                             sp2Id = keys.getInt(1);
                     }
 
-                    String sqlCT2 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
+                    String sqlCT2 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT003', " + sp2Id + ", " + ktL + ", " + msNavy + ", " + kdOversize
-                            + ", 799000, 18, 1.1, 75, 60, 5, 'AVAILABLE'), " +
+                            + ", 500000, 799000, 18, 1.1, 75, 60, 5, 'AVAILABLE'), " +
                             "('CT004', " + sp2Id + ", " + ktXL + ", " + msDen + ", " + kdOversize
-                            + ", 799000, 14, 1.2, 78, 62, 5, 'AVAILABLE')";
+                            + ", 500000, 799000, 14, 1.2, 78, 62, 5, 'AVAILABLE')";
                     stmt.executeUpdate(sqlCT2);
 
                     // SP003
-                    String sqlSP3 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    String sqlSP3 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP003', N'Áo denim wash nữ vintage', " + dmDenim + ", " + thLevis
-                            + ", N'Áo khoác bò denim dáng lửng phong cách retro vintage cho nữ.', N'Nữ', N'Việt Nam', N'Giặt riêng bằng tay hoặc máy chế độ thường.', 890000, 241, 'AVAILABLE')";
+                            + ", N'Áo khoác bò denim dáng lửng phong cách retro vintage cho nữ.', N'Việt Nam', N'Giặt riêng bằng tay hoặc máy chế độ thường.', 890000, 241, 'AVAILABLE')";
                     stmt.executeUpdate(sqlSP3, Statement.RETURN_GENERATED_KEYS);
                     int sp3Id = 3;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -943,12 +931,12 @@ public class ProductRepositoryImpl implements ProductRepository {
                             sp3Id = keys.getInt(1);
                     }
 
-                    String sqlCT3 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
+                    String sqlCT3 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT005', " + sp3Id + ", " + ktM + ", " + msDen + ", " + kdVintage
-                            + ", 1200000, 10, 0.9, 100, 52, 1.8, 'AVAILABLE'), " +
+                            + ", 750000, 1200000, 10, 0.9, 100, 52, 1.8, 'AVAILABLE'), " +
                             "('CT006', " + sp3Id + ", " + ktL + ", " + msNavy + ", " + kdVintage
-                            + ", 1200000, 5, 0.95, 103, 54, 1.8, 'AVAILABLE')";
+                            + ", 750000, 1200000, 5, 0.95, 103, 54, 1.8, 'AVAILABLE')";
                     stmt.executeUpdate(sqlCT3);
                 }
             } catch (SQLException ignored) {

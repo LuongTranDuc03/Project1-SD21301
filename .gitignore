@@ -46,3 +46,8 @@ build/
 ### Smart Tomcat ###
 .smarttomcat/
 .smarttomat/
+
+### Secret Configs ###
+src/main/resources/db.properties
+src/main/java/project/duan1_sd21301/util/DatabaseConnection.java
+src/main/java/project/duan1_sd21301/util/TestDBConnection.java

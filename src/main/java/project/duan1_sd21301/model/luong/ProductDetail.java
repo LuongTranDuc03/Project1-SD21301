@@ -27,6 +27,10 @@ public class ProductDetail {
     @JoinColumn(name = "id_san_pham", nullable = false)
     Product product;
 
+    @Column(name = "gia_nhap")
+    @Builder.Default
+    double importPrice = 0.0;
+
     @Column(name = "gia_ban")
     @Builder.Default
     double price = 0.0;

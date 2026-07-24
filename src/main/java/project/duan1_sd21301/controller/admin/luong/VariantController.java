@@ -46,7 +46,7 @@ public class VariantController extends HttpServlet {
             response.setHeader("Content-Disposition", "attachment; filename=\"DanhSachBienThe.csv\"");
             try (java.io.PrintWriter writer = response.getWriter()) {
                 writer.write("\ufeff"); // UTF-8 BOM cho Excel
-                writer.write("STT,Mã Sản Phẩm,Màu Sắc,Kích Cỡ,Kiểu Dáng,Đơn Giá,Số Lượng,Trạng Thái\n");
+                writer.write("STT,Mã Sản Phẩm,Màu Sắc,Kích Cỡ,Kiểu Dáng,Giá Nhập,Đơn Giá,Số Lượng,Trạng Thái\n");
                 int stt = 1;
                 for (ProductDetail v : allVariants) {
                     String pStatus = v.getStatus();
@@ -55,12 +55,13 @@ public class VariantController extends HttpServlet {
                     }
                     String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng"
                             : "Hết hàng";
-                    writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.0f,%d,\"%s\"\n",
+                    writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.0f,%.0f,%d,\"%s\"\n",
                             stt++,
                             (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "",
                             v.getColor() != null ? v.getColor() : "",
                             v.getSize() != null ? v.getSize() : "",
                             v.getStyle() != null ? v.getStyle() : "",
+                            v.getImportPrice(),
                             v.getPrice(),
                             v.getStock(),
                             statusLabel);
@@ -95,6 +96,7 @@ public class VariantController extends HttpServlet {
             String color = request.getParameter("color");
             String size = request.getParameter("size");
             String style = request.getParameter("style");
+            String importPriceStr = request.getParameter("importPrice");
             String priceStr = request.getParameter("price");
 
             String stockStr = request.getParameter("stock");
@@ -127,6 +129,8 @@ public class VariantController extends HttpServlet {
                 if (size != null) detail.setSize(size);
                 if (style != null) detail.setStyle(style);
                 try {
+                    if (importPriceStr != null && !importPriceStr.isEmpty())
+                        detail.setImportPrice(Double.parseDouble(importPriceStr.replace(",", "")));
                     if (priceStr != null && !priceStr.isEmpty())
                         detail.setPrice(Double.parseDouble(priceStr.replace(",", "")));
                     if (stockStr != null && !stockStr.isEmpty())
@@ -150,17 +154,48 @@ public class VariantController extends HttpServlet {
         } else if ("toggleStatus".equals(action)) {
             String variantIdStr = request.getParameter("variantId");
             String status = request.getParameter("status");
+            String productCode = request.getParameter("productCode");
+            String color = request.getParameter("color");
+            String size = request.getParameter("size");
 
+            ProductDetail detail = null;
             if (variantIdStr != null && !variantIdStr.trim().isEmpty()) {
                 try {
-                    ProductDetail detail = productService.getDetailById(Integer.parseInt(variantIdStr));
-                    if (detail != null) {
-                        detail.setStatus(status);
-                        productService.updateProductDetail(detail);
-                    }
+                    detail = productService.getDetailById(Integer.parseInt(variantIdStr.trim()));
                 } catch (Exception ignored) {}
             }
-            response.setStatus(HttpServletResponse.SC_OK);
+
+            if (detail == null && productCode != null && !productCode.trim().isEmpty()) {
+                Product p = productService.getProductByCode(productCode.trim());
+                if (p != null && p.getDetails() != null) {
+                    for (ProductDetail d : p.getDetails()) {
+                        boolean matchColor = (color == null || color.trim().isEmpty() || color.trim().equalsIgnoreCase(d.getColor()));
+                        boolean matchSize = (size == null || size.trim().isEmpty() || size.trim().equalsIgnoreCase(d.getSize()));
+                        if (matchColor && matchSize) {
+                            detail = d;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (detail != null) {
+                String newDbStatus = "AVAILABLE";
+                if ("OUT_OF_STOCK".equalsIgnoreCase(status) || "Hết hàng".equalsIgnoreCase(status) || "Ngừng hoạt động".equalsIgnoreCase(status)) {
+                    newDbStatus = "OUT_OF_STOCK";
+                } else if ("AVAILABLE".equalsIgnoreCase(status) || "Còn hàng".equalsIgnoreCase(status) || "Hoạt động".equalsIgnoreCase(status)) {
+                    newDbStatus = "AVAILABLE";
+                } else if (status != null && !status.trim().isEmpty()) {
+                    newDbStatus = status;
+                }
+                detail.setStatus(newDbStatus);
+                boolean updated = productService.updateProductDetail(detail);
+                if (updated) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    return;
+                }
+            }
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         }
         response.sendRedirect(request.getContextPath() + "/admin/variants");
