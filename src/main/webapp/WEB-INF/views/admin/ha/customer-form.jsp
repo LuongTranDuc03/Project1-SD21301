@@ -16,6 +16,7 @@
     SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd");
     String contextPath = request.getContextPath();
 %>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>

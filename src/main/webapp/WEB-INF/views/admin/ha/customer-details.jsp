@@ -69,6 +69,7 @@
                                         letter-spacing: -0.02em;
                                     }
 
+
                                     .profile-email-sub {
                                         font-size: 13px;
                                         color: #64748b;
