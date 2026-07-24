@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
@@ -188,7 +188,7 @@
                     <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                     <span class="notif-badge"></span>
                 </button>
-                <div class="date-pill">Thứ Ba, 30/06/2026</div>
+                <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span class="profile-avatar-mini">A</span>
                     <span>Admin</span>
@@ -819,3 +819,4 @@
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 </body>
 </html>
+

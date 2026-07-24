@@ -253,7 +253,10 @@ public class CouponController extends HttpServlet {
         String ref = request.getHeader("Referer");
         String redirectUrl = ref != null ? ref : request.getContextPath() + "/admin/coupons";
         if (redirectUrl.contains("?")) {
-            redirectUrl = redirectUrl.replaceAll("[&?]err=expired", "");
+            redirectUrl = redirectUrl.replaceAll("([&?])(?:err|msg)=[^&]*", "");
+            if (redirectUrl.contains("&") && !redirectUrl.contains("?")) {
+                redirectUrl = redirectUrl.replaceFirst("&", "?");
+            }
         }
 //
         if (id >= 0 && st != null) {
@@ -264,6 +267,7 @@ public class CouponController extends HttpServlet {
                 return;
             }
             repo.toggleStatus(id, st);
+            redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "msg=updated";
         }
         
         response.sendRedirect(redirectUrl);
