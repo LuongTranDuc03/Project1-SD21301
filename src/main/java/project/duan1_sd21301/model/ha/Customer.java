@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "khach_hang")
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Customer {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,10 +51,13 @@ public class Customer {
     @Builder.Default
     Integer status = 1;
 
-    @Transient
-    public String getStatusText() {
-        return (status != null && status == 1) ? "Hoạt động" : "Đã nghỉ";
-    }
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    @Builder.Default
+    LocalDateTime updatedAt = LocalDateTime.now();
 
     @Transient
     @Builder.Default
