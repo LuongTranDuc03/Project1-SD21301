@@ -58,6 +58,9 @@ public class ProductDetail {
     @Column(name = "trang_thai")
     @Builder.Default
     Integer status = 1;
+    
+    @Column(name = "ma_vach", length = 100)
+    String barcode;
 
     @Transient
     public String getStatusText() {

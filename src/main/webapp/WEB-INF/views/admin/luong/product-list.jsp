@@ -422,11 +422,11 @@
                 double globalMaxPrice = 0.0;
                 if (products != null) {
                     for (Product p : products) {
-                        if (p.getCategory() != null && p.getCategory().getName() != null && !p.getCategory().getName().trim().isEmpty()) {
-                            categories.add(p.getCategory().getName().trim());
+                        if (p.getCategory() != null && !p.getCategory().trim().isEmpty()) {
+                            categories.add(p.getCategory().trim());
                         }
-                        if (p.getBrand() != null && p.getBrand().getName() != null && !p.getBrand().getName().trim().isEmpty()) {
-                            brands.add(p.getBrand().getName().trim());
+                        if (p.getBrand() != null && !p.getBrand().trim().isEmpty()) {
+                            brands.add(p.getBrand().trim());
                         }
 
                         // Xác định giá min/max của sản phẩm này (dựa theo biến thể nếu có)
@@ -587,7 +587,7 @@
                                         }
                                     }
                         %>
-                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() != null ? prod.getCategory().getName() : "" %>" data-brand="<%= (prod.getBrand() != null && prod.getBrand().getName() != null) ? prod.getBrand().getName().toLowerCase() : "" %>" data-status="<%= pStatus %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
+                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() != null ? prod.getCategory() : "" %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= pStatus %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td>
                                 <span class="product-id-text"><%= prod.getCode() %></span>
@@ -596,10 +596,10 @@
                                 <span class="product-name-text"><%= prod.getName() != null ? prod.getName() : "" %></span>
                             </td>
                             <td>
-                                <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500;"><%= prod.getCategory() != null ? prod.getCategory().getName() : "" %></span>
+                                <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500;"><%= prod.getCategory() != null ? prod.getCategory() : "" %></span>
                             </td>
                             <td>
-                                <span style="color: #475569; font-weight: 500;"><%= prod.getBrand() != null ? prod.getBrand().getName() : "N/A" %></span>
+                                <span style="color: #475569; font-weight: 500;"><%= prod.getBrand() != null ? prod.getBrand() : "N/A" %></span>
                             </td>
                             <td>
                                 <span class="product-price-range"><%= prod.getPriceRangeFormatted() %></span>

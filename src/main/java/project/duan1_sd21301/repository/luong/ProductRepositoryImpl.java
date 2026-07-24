@@ -6,14 +6,20 @@ import project.duan1_sd21301.util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ProductRepositoryImpl implements ProductRepository {
 
-    private static final String BASE_SELECT_PRODUCT = "SELECT sp.*, dm.ten_danh_muc, th.ten_thuong_hieu " +
+    private static final String BASE_SELECT_PRODUCT = "SELECT sp.*, dm.ten_danh_muc, th.ten_thuong_hieu, xx.ten_xuat_xu "
+            +
             "FROM san_pham sp " +
             "LEFT JOIN danh_muc dm ON sp.id_danh_muc = dm.id " +
-            "LEFT JOIN thuong_hieu th ON sp.id_thuong_hieu = th.id ";
+            "LEFT JOIN thuong_hieu th ON sp.id_thuong_hieu = th.id " +
+            "LEFT JOIN xuat_xu xx ON sp.id_xuat_xu = xx.id ";
 
     @Override
     public List<Product> findAll() {
@@ -99,14 +105,12 @@ public class ProductRepositoryImpl implements ProductRepository {
             if (conn == null)
                 return false;
 
-            int categoryId = findOrCreateCategory(conn,
-                    product.getCategory() != null ? product.getCategory().getName() : null);
-            int brandId = findOrCreateBrand(conn, product.getBrand() != null ? product.getBrand().getName() : null);
-            int originId = findOrCreateOrigin(conn, product.getOrigin() != null ? product.getOrigin().getName() : null);
-
-            String sql = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, id_xuat_xu, huong_dan_bao_quan, gia_goc, gia_ban, da_ban, trang_thai) "
+            int categoryId = findOrCreateCategory(conn, product.getCategory());
+            int brandId = findOrCreateBrand(conn, product.getBrand());
+            int originId = findOrCreateOrigin(conn, product.getOrigin());
+            String sql = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, id_xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                     +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, product.getCode());
@@ -120,16 +124,15 @@ public class ProductRepositoryImpl implements ProductRepository {
                 else
                     ps.setNull(4, Types.INTEGER);
                 ps.setString(5, product.getDescription());
-                ps.setString(6, product.getTargetGender());
+                ps.setNull(6, Types.NVARCHAR); // doi_tuong
                 if (originId > 0)
                     ps.setInt(7, originId);
                 else
                     ps.setNull(7, Types.INTEGER);
                 ps.setString(8, product.getCareInstructions());
-                ps.setDouble(9, product.getCostPrice());
-                ps.setDouble(10, product.getPrice());
-                ps.setInt(11, product.getSold());
-                ps.setString(12, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
+                ps.setDouble(9, product.getPrice());
+                ps.setInt(10, product.getSold());
+                ps.setInt(11, product.getStatus() != null ? product.getStatus() : 1);
 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
@@ -146,7 +149,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     }
                     return true;
                 }
-            }
+                }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -159,14 +162,12 @@ public class ProductRepositoryImpl implements ProductRepository {
             if (conn == null)
                 return false;
 
-            int categoryId = findOrCreateCategory(conn,
-                    product.getCategory() != null ? product.getCategory().getName() : null);
-            int brandId = findOrCreateBrand(conn, product.getBrand() != null ? product.getBrand().getName() : null);
-            int originId = findOrCreateOrigin(conn, product.getOrigin() != null ? product.getOrigin().getName() : null);
-
+            int categoryId = findOrCreateCategory(conn, product.getCategory());
+            int brandId = findOrCreateBrand(conn, product.getBrand());
+            int originId = findOrCreateOrigin(conn, product.getOrigin());
             String sql = "UPDATE san_pham SET san_pham_code = ?, ten_san_pham = ?, id_danh_muc = ?, id_thuong_hieu = ?, "
                     +
-                    "mo_ta = ?, doi_tuong = ?, id_xuat_xu = ?, huong_dan_bao_quan = ?, gia_goc = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
+                    "mo_ta = ?, doi_tuong = ?, id_xuat_xu = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
                     +
                     "WHERE id = ?";
 
@@ -182,19 +183,30 @@ public class ProductRepositoryImpl implements ProductRepository {
                 else
                     ps.setNull(4, Types.INTEGER);
                 ps.setString(5, product.getDescription());
-                ps.setString(6, product.getTargetGender());
+                ps.setNull(6, Types.NVARCHAR); // doi_tuong
                 if (originId > 0)
                     ps.setInt(7, originId);
                 else
                     ps.setNull(7, Types.INTEGER);
                 ps.setString(8, product.getCareInstructions());
-                ps.setDouble(9, product.getCostPrice());
-                ps.setDouble(10, product.getPrice());
-                ps.setInt(11, product.getSold());
-                ps.setString(12, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
-                ps.setInt(13, product.getId());
+                ps.setDouble(9, product.getPrice());
+                ps.setInt(10, product.getSold());
+                ps.setInt(11, product.getStatus() != null ? product.getStatus() : 1);
+                ps.setInt(12, product.getId());
 
-                return ps.executeUpdate() > 0;
+                boolean updated = ps.executeUpdate() > 0;
+                if (updated && product.getDetails() != null) {
+                    syncDeletedDetails(conn, product.getId(), product.getDetails());
+                    for (ProductDetail detail : product.getDetails()) {
+                        detail.setProduct(product);
+                        if (detail.getId() > 0) {
+                            updateDetail(detail);
+                        } else {
+                            insertDetailInternal(conn, detail);
+                        }
+                    }
+                }
+                return updated;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -286,23 +298,27 @@ public class ProductRepositoryImpl implements ProductRepository {
         if (detail.getCode() == null || detail.getCode().trim().isEmpty()) {
             detail.setCode("CT" + System.currentTimeMillis() % 100000);
         }
-        if (detail.getBarcode() == null || detail.getBarcode().trim().isEmpty()) {
-            // Generate a 13-digit barcode (EAN-13 like) using timestamp and random number
-            long timePart = System.currentTimeMillis() % 10000000000L; // 10 digits
-            int randomPart = (int)(Math.random() * 900) + 100; // 3 digits
-            detail.setBarcode(timePart + "" + randomPart);
-        }
-        
-        int sizeId = findOrCreateSize(conn, detail.getSize() != null ? detail.getSize().getName() : null);
-        int colorId = findOrCreateColor(conn, detail.getColor() != null ? detail.getColor().getName() : null);
-        int styleId = findOrCreateStyle(conn, detail.getStyle() != null ? detail.getStyle().getName() : null);
+        int sizeId = findOrCreateSize(conn, detail.getSize());
+        int colorId = findOrCreateColor(conn, detail.getColor());
+        int styleId = findOrCreateStyle(conn, detail.getStyle());
 
-        String sql = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, ma_vach, gia_goc, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) "
-                +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, ma_vach, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String vCode = detail.getCode();
+        if (vCode == null || vCode.trim().isEmpty()) {
+            String pCode = (detail.getProduct() != null && detail.getProduct().getCode() != null)
+                    ? detail.getProduct().getCode()
+                    : "CTSP";
+            String color = detail.getColor() != null ? detail.getColor() : "";
+            String size = detail.getSize() != null ? detail.getSize() : "";
+            vCode = (pCode + "-" + color + "-" + size).replaceAll("\\s+", "");
+            if (vCode.length() > 50)
+                vCode = vCode.substring(0, 50);
+        }
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, detail.getCode());
+            ps.setString(1, vCode);
             ps.setInt(2, detail.getProduct() != null ? detail.getProduct().getId() : 0);
             if (sizeId > 0)
                 ps.setInt(3, sizeId);
@@ -317,14 +333,14 @@ public class ProductRepositoryImpl implements ProductRepository {
             else
                 ps.setNull(5, Types.INTEGER);
             ps.setString(6, detail.getBarcode());
-            ps.setDouble(7, detail.getCostPrice());
+            ps.setDouble(7, detail.getImportPrice());
             ps.setDouble(8, detail.getPrice());
             ps.setInt(9, detail.getStock());
             ps.setDouble(10, detail.getWeight());
             ps.setDouble(11, detail.getLength());
             ps.setDouble(12, detail.getWidth());
             ps.setDouble(13, detail.getThickness());
-            ps.setString(14, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+            ps.setInt(14, detail.getStatus() != null ? detail.getStatus() : 1);
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -338,6 +354,43 @@ public class ProductRepositoryImpl implements ProductRepository {
                 }
                 return true;
             }
+        } catch (SQLException ex1) {
+            String sqlFallback = "INSERT INTO chi_tiet_san_pham (id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong_ton, trong_luong, trang_thai) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(sqlFallback, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, detail.getProduct() != null ? detail.getProduct().getId() : 0);
+                if (sizeId > 0)
+                    ps.setInt(2, sizeId);
+                else
+                    ps.setNull(2, Types.INTEGER);
+                if (colorId > 0)
+                    ps.setInt(3, colorId);
+                else
+                    ps.setNull(3, Types.INTEGER);
+                if (styleId > 0)
+                    ps.setInt(4, styleId);
+                else
+                    ps.setNull(4, Types.INTEGER);
+                ps.setDouble(5, detail.getImportPrice());
+                ps.setDouble(6, detail.getPrice());
+                ps.setInt(7, detail.getStock());
+                ps.setDouble(8, detail.getWeight());
+                ps.setInt(9, detail.getStatus() != null ? detail.getStatus() : 1);
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            detail.setId(rs.getInt(1));
+                        }
+                    }
+                    if (detail.getImages() != null) {
+                        saveImages(conn, detail.getId(), detail.getImages());
+                    }
+                    return true;
+                }
+            } catch (SQLException ignored) {
+            }
         }
         return false;
     }
@@ -347,18 +400,28 @@ public class ProductRepositoryImpl implements ProductRepository {
         try (Connection conn = DatabaseConnection.getConnection()) {
             if (conn == null)
                 return false;
-            int sizeId = findOrCreateSize(conn, detail.getSize() != null ? detail.getSize().getName() : null);
-            int colorId = findOrCreateColor(conn, detail.getColor() != null ? detail.getColor().getName() : null);
-            int styleId = findOrCreateStyle(conn, detail.getStyle() != null ? detail.getStyle().getName() : null);
+            int sizeId = findOrCreateSize(conn, detail.getSize());
+            int colorId = findOrCreateColor(conn, detail.getColor());
+            int styleId = findOrCreateStyle(conn, detail.getStyle());
 
             String sql = "UPDATE chi_tiet_san_pham SET chi_tiet_san_pham_code = ?, id_kich_thuoc = ?, id_mau_sac = ?, id_kieu_dang = ?, "
-                    +
-                    "ma_vach = ?, gia_goc = ?, gia_ban = ?, so_luong = ?, trong_luong = ?, chieu_dai = ?, chieu_rong = ?, do_day = ?, trang_thai = ? "
-                    +
-                    "WHERE id = ?";
+                    + "ma_vach = ?, gia_nhap = ?, gia_ban = ?, so_luong = ?, trong_luong = ?, chieu_dai = ?, chieu_rong = ?, do_day = ?, trang_thai = ? "
+                    + "WHERE id = ?";
+
+            String vCode = detail.getCode();
+            if (vCode == null || vCode.trim().isEmpty()) {
+                String pCode = (detail.getProduct() != null && detail.getProduct().getCode() != null)
+                        ? detail.getProduct().getCode()
+                        : "CTSP";
+                String color = detail.getColor() != null ? detail.getColor() : "";
+                String size = detail.getSize() != null ? detail.getSize() : "";
+                vCode = (pCode + "-" + color + "-" + size).replaceAll("\\s+", "");
+                if (vCode.length() > 50)
+                    vCode = vCode.substring(0, 50);
+            }
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, detail.getCode());
+                ps.setString(1, vCode);
                 if (sizeId > 0)
                     ps.setInt(2, sizeId);
                 else
@@ -372,14 +435,14 @@ public class ProductRepositoryImpl implements ProductRepository {
                 else
                     ps.setNull(4, Types.INTEGER);
                 ps.setString(5, detail.getBarcode());
-                ps.setDouble(6, detail.getCostPrice());
+                ps.setDouble(6, detail.getImportPrice());
                 ps.setDouble(7, detail.getPrice());
                 ps.setInt(8, detail.getStock());
                 ps.setDouble(9, detail.getWeight());
                 ps.setDouble(10, detail.getLength());
                 ps.setDouble(11, detail.getWidth());
                 ps.setDouble(12, detail.getThickness());
-                ps.setString(13, detail.getStatus() != null ? detail.getStatus() : "AVAILABLE");
+                ps.setInt(13, detail.getStatus() != null ? detail.getStatus() : 1);
                 ps.setInt(14, detail.getId());
 
                 boolean success = ps.executeUpdate() > 0;
@@ -394,37 +457,108 @@ public class ProductRepositoryImpl implements ProductRepository {
         return false;
     }
 
+    private void syncDeletedDetails(Connection conn, int productId, List<ProductDetail> keptDetails) {
+        try {
+            Map<Integer, ProductDetail> dbVariantMap = new HashMap<>();
+            Map<String, Integer> dbKeyToIdMap = new HashMap<>();
+
+            String sql = "SELECT ct.id, kt.ten_kich_thuoc, ms.ten_mau_sac "
+                    + "FROM chi_tiet_san_pham ct "
+                    + "LEFT JOIN kich_thuoc kt ON ct.id_kich_thuoc = kt.id "
+                    + "LEFT JOIN mau_sac ms ON ct.id_mau_sac = ms.id "
+                    + "WHERE ct.id_san_pham = ?";
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, productId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int dbId = rs.getInt("id");
+                        String size = rs.getString("ten_kich_thuoc");
+                        String color = rs.getString("ten_mau_sac");
+                        if (size == null)
+                            size = "";
+                        if (color == null)
+                            color = "";
+                        String key = (color.trim() + "|" + size.trim()).toLowerCase();
+                        dbVariantMap.put(dbId, ProductDetail.builder().id(dbId).color(color).size(size).build());
+                        dbKeyToIdMap.put(key, dbId);
+                    }
+                }
+            }
+
+            Set<Integer> matchedDbIds = new HashSet<>();
+
+            if (keptDetails != null) {
+                for (ProductDetail d : keptDetails) {
+                    if (d.getId() > 0 && dbVariantMap.containsKey(d.getId())) {
+                        matchedDbIds.add(d.getId());
+                    } else {
+                        String c = d.getColor() != null ? d.getColor().trim() : "";
+                        String s = d.getSize() != null ? d.getSize().trim() : "";
+                        String key = (c + "|" + s).toLowerCase();
+                        if (dbKeyToIdMap.containsKey(key)) {
+                            int matchedId = dbKeyToIdMap.get(key);
+                            d.setId(matchedId);
+                            matchedDbIds.add(matchedId);
+                        }
+                    }
+                }
+            }
+
+            for (Integer dbId : dbVariantMap.keySet()) {
+                if (!matchedDbIds.contains(dbId)) {
+                    try (PreparedStatement psImg = conn
+                            .prepareStatement("DELETE FROM hinh_anh WHERE id_chi_tiet_san_pham = ?")) {
+                        psImg.setInt(1, dbId);
+                        psImg.executeUpdate();
+                    }
+                    try (PreparedStatement psDel = conn
+                            .prepareStatement("DELETE FROM chi_tiet_san_pham WHERE id = ?")) {
+                        psDel.setInt(1, dbId);
+                        psDel.executeUpdate();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("⚠️ Warning during syncDeletedDetails: " + e.getMessage());
+        }
+    }
+
     @Override
     public boolean deleteDetail(int detailId) {
-        String sql = "DELETE FROM chi_tiet_san_pham WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, detailId);
-            return ps.executeUpdate() > 0;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (conn == null)
+                return false;
+            try (PreparedStatement psImg = conn
+                    .prepareStatement("DELETE FROM hinh_anh WHERE id_chi_tiet_san_pham = ?")) {
+                psImg.setInt(1, detailId);
+                psImg.executeUpdate();
+            }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM chi_tiet_san_pham WHERE id = ?")) {
+                ps.setInt(1, detailId);
+                return ps.executeUpdate() > 0;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
 
-    private List<project.duan1_sd21301.model.luong.Image> findImagesByDetailId(Connection conn, int detailId)
-            throws SQLException {
-        List<project.duan1_sd21301.model.luong.Image> images = new ArrayList<>();
+    private List<String> findImagesByDetailId(Connection conn, int detailId) throws SQLException {
+        List<String> images = new ArrayList<>();
         String sql = "SELECT duong_dan FROM hinh_anh WHERE id_chi_tiet_san_pham = ? ORDER BY thu_tu ASC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, detailId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    images.add(
-                            project.duan1_sd21301.model.luong.Image.builder().url(rs.getString("duong_dan")).build());
+                    images.add(rs.getString("duong_dan"));
                 }
             }
         }
         return images;
     }
 
-    private void saveImages(Connection conn, int detailId, List<project.duan1_sd21301.model.luong.Image> images)
-            throws SQLException {
+    private void saveImages(Connection conn, int detailId, List<String> images) throws SQLException {
         try (PreparedStatement delPs = conn.prepareStatement("DELETE FROM hinh_anh WHERE id_chi_tiet_san_pham = ?")) {
             delPs.setInt(1, detailId);
             delPs.executeUpdate();
@@ -437,7 +571,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             for (int i = 0; i < images.size(); i++) {
                 ps.setString(1, "HA" + System.currentTimeMillis() % 100000 + "_" + i);
                 ps.setInt(2, detailId);
-                ps.setString(3, images.get(i).getUrl());
+                ps.setString(3, images.get(i));
                 ps.setBoolean(4, i == 0);
                 ps.setInt(5, i + 1);
                 ps.addBatch();
@@ -449,12 +583,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllCategories() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_danh_muc FROM danh_muc WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_danh_muc FROM danh_muc ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_danh_muc"));
+                if (rs.getString("ten_danh_muc") != null && !rs.getString("ten_danh_muc").trim().isEmpty()) {
+                    list.add(rs.getString("ten_danh_muc"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -464,12 +600,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllBrands() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_thuong_hieu FROM thuong_hieu WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_thuong_hieu FROM thuong_hieu ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_thuong_hieu"));
+                if (rs.getString("ten_thuong_hieu") != null && !rs.getString("ten_thuong_hieu").trim().isEmpty()) {
+                    list.add(rs.getString("ten_thuong_hieu"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -479,12 +617,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllColors() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_mau FROM mau_sac WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_mau FROM mau_sac ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_mau"));
+                if (rs.getString("ten_mau") != null && !rs.getString("ten_mau").trim().isEmpty()) {
+                    list.add(rs.getString("ten_mau"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -494,12 +634,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllSizes() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_kich_thuoc FROM kich_thuoc WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_kich_thuoc FROM kich_thuoc ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_kich_thuoc"));
+                if (rs.getString("ten_kich_thuoc") != null && !rs.getString("ten_kich_thuoc").trim().isEmpty()) {
+                    list.add(rs.getString("ten_kich_thuoc"));
+                }
             }
         } catch (SQLException ignored) {
         }
@@ -509,15 +651,35 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllStyles() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_kieu_dang FROM kieu_dang WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_kieu_dang FROM kieu_dang ORDER BY id ASC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(rs.getString("ten_kieu_dang"));
+                if (rs.getString("ten_kieu_dang") != null && !rs.getString("ten_kieu_dang").trim().isEmpty()) {
+                    list.add(rs.getString("ten_kieu_dang"));
+                }
             }
         } catch (SQLException ignored) {
         }
+        return list;
+    }
+
+    @Override
+    public List<String> findAllOrigins() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT ten_xuat_xu FROM xuat_xu ORDER BY id ASC";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                if (rs.getString("ten_xuat_xu") != null && !rs.getString("ten_xuat_xu").trim().isEmpty()) {
+                    list.add(rs.getString("ten_xuat_xu"));
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+
         return list;
     }
 
@@ -537,19 +699,11 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            p.setTargetGender(rs.getString("doi_tuong"));
-        } catch (SQLException ignored) {
-        }
-        try {
-            p.setOrigin(project.duan1_sd21301.model.luong.Origin.builder().name(rs.getString("ten_xuat_xu")).build());
+            p.setOrigin(rs.getString("ten_xuat_xu"));
         } catch (SQLException ignored) {
         }
         try {
             p.setCareInstructions(rs.getString("huong_dan_bao_quan"));
-        } catch (SQLException ignored) {
-        }
-        try {
-            p.setCostPrice(rs.getDouble("gia_goc"));
         } catch (SQLException ignored) {
         }
         try {
@@ -561,16 +715,15 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            p.setStatus(rs.getString("trang_thai"));
+            p.setStatus(rs.getInt("trang_thai"));
         } catch (SQLException ignored) {
         }
         try {
-            p.setCategory(
-                    project.duan1_sd21301.model.luong.Category.builder().name(rs.getString("ten_danh_muc")).build());
+            p.setCategory(rs.getString("ten_danh_muc"));
         } catch (SQLException ignored) {
         }
         try {
-            p.setBrand(project.duan1_sd21301.model.luong.Brand.builder().name(rs.getString("ten_thuong_hieu")).build());
+            p.setBrand(rs.getString("ten_thuong_hieu"));
         } catch (SQLException ignored) {
         }
         return p;
@@ -584,11 +737,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            d.setBarcode(rs.getString("ma_vach"));
-        } catch (SQLException ignored) {
-        }
-        try {
-            d.setCostPrice(rs.getDouble("gia_goc"));
+            d.setImportPrice(rs.getDouble("gia_nhap"));
         } catch (SQLException ignored) {
         }
         try {
@@ -616,19 +765,19 @@ public class ProductRepositoryImpl implements ProductRepository {
         } catch (SQLException ignored) {
         }
         try {
-            d.setStatus(rs.getString("trang_thai"));
+            d.setStatus(rs.getInt("trang_thai"));
         } catch (SQLException ignored) {
         }
         try {
-            d.setSize(project.duan1_sd21301.model.luong.Size.builder().name(rs.getString("ten_kich_thuoc")).build());
+            d.setSize(rs.getString("ten_kich_thuoc"));
         } catch (SQLException ignored) {
         }
         try {
-            d.setColor(project.duan1_sd21301.model.luong.Color.builder().name(rs.getString("ten_mau")).build());
+            d.setColor(rs.getString("ten_mau"));
         } catch (SQLException ignored) {
         }
         try {
-            d.setStyle(project.duan1_sd21301.model.luong.Style.builder().name(rs.getString("ten_kieu_dang")).build());
+            d.setStyle(rs.getString("ten_kieu_dang"));
         } catch (SQLException ignored) {
         }
         return d;
@@ -644,8 +793,9 @@ public class ProductRepositoryImpl implements ProductRepository {
                 if (rs.next())
                     return rs.getInt(1);
             }
+        } catch (SQLException ignored) {
         }
-        String sqlIns = "INSERT INTO xuat_xu (xuat_xu_code, ten_xuat_xu, trang_thai) VALUES (?, ?, 1)";
+        String sqlIns = "INSERT INTO xuat_xu (xuat_xu_code, ten_xuat_xu, trang_thai) VALUES (?, ?, N'Hoạt động')";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "XX" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -654,6 +804,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 if (rs.next())
                     return rs.getInt(1);
             }
+        } catch (SQLException ignored) {
         }
         return 0;
     }
@@ -669,7 +820,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO danh_muc (danh_muc_code, ten_danh_muc, trang_thai) VALUES (?, ?, 1)";
+        String sqlIns = "INSERT INTO danh_muc (danh_muc_code, ten_danh_muc, trang_thai) VALUES (?, ?, N'Hoạt động')";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "DM" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -693,7 +844,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO thuong_hieu (thuong_hieu_code, ten_thuong_hieu, trang_thai) VALUES (?, ?, 1)";
+        String sqlIns = "INSERT INTO thuong_hieu (thuong_hieu_code, ten_thuong_hieu, trang_thai) VALUES (?, ?, N'Hoạt động')";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "TH" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -717,7 +868,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO kich_thuoc (kich_thuoc_code, ten_kich_thuoc, trang_thai) VALUES (?, ?, 1)";
+        String sqlIns = "INSERT INTO kich_thuoc (kich_thuoc_code, ten_kich_thuoc, trang_thai) VALUES (?, ?, N'Hoạt động')";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "KT" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -741,7 +892,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO mau_sac (mau_sac_code, ten_mau, trang_thai) VALUES (?, ?, 1)";
+        String sqlIns = "INSERT INTO mau_sac (mau_sac_code, ten_mau, trang_thai) VALUES (?, ?, N'Hoạt động')";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "MS" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -765,7 +916,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO kieu_dang (kieu_dang_code, ten_kieu_dang, trang_thai) VALUES (?, ?, 1)";
+        String sqlIns = "INSERT INTO kieu_dang (kieu_dang_code, ten_kieu_dang, trang_thai) VALUES (?, ?, N'Hoạt động')";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "KD" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -829,13 +980,10 @@ public class ProductRepositoryImpl implements ProductRepository {
                     int kdVintage = findOrCreateStyle(conn, "Vintage");
 
                     // SP001
-                    int xuatXuVn = findOrCreateOrigin(conn, "Việt Nam");
-                    int xuatXuNk = findOrCreateOrigin(conn, "Nhập khẩu");
-
-                    String sqlSP1 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, id_xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    String sqlSP1 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP001', N'Áo khoác da nam Premium', " + dmAoKhoacDa + ", " + thFamiCoats
-                            + ", N'Áo khoác da nam chất liệu da cừu tự nhiên cao cấp, bề mặt da mềm mịn.', N'Nam', " + xuatXuVn + ", N'Chỉ giặt khô, không giặt máy.', 1850000, 324, 'AVAILABLE')";
+                            + ", N'Áo khoác da nam chất liệu da cừu tự nhiên cao cấp, bề mặt da mềm mịn.', N'Việt Nam', N'Chỉ giặt khô, không giặt máy.', 1850000, 324, 'AVAILABLE')";
                     stmt.executeUpdate(sqlSP1, Statement.RETURN_GENERATED_KEYS);
                     int sp1Id = 1;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -843,19 +991,19 @@ public class ProductRepositoryImpl implements ProductRepository {
                             sp1Id = keys.getInt(1);
                     }
 
-                    String sqlCT1 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
+                    String sqlCT1 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT001', " + sp1Id + ", " + ktM + ", " + msDen + ", " + kdSlim
-                            + ", 950000, 20, 0.8, 95, 48, 2.5, 'AVAILABLE'), " +
+                            + ", 600000, 950000, 20, 0.8, 95, 48, 2.5, 'AVAILABLE'), " +
                             "('CT002', " + sp1Id + ", " + ktL + ", " + msBe + ", " + kdOversize
-                            + ", 950000, 28, 0.85, 98, 50, 2.5, 'AVAILABLE')";
+                            + ", 600000, 950000, 28, 0.85, 98, 50, 2.5, 'AVAILABLE')";
                     stmt.executeUpdate(sqlCT1);
 
                     // SP002
-                    String sqlSP2 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, id_xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    String sqlSP2 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP002', N'Bomber jacket oversize unisex', " + dmBomber + ", " + thZara
-                            + ", N'Áo bomber form rộng thời trang unisex thích hợp cho cả nam và nữ.', N'Unisex', " + xuatXuNk + ", N'Giặt máy chế độ nhẹ với nước ấm.', 1290000, 287, 'AVAILABLE')";
+                            + ", N'Áo bomber form rộng thời trang unisex thích hợp cho cả nam và nữ.', N'Nhập khẩu', N'Giặt máy chế độ nhẹ với nước ấm.', 1290000, 287, 'AVAILABLE')";
                     stmt.executeUpdate(sqlSP2, Statement.RETURN_GENERATED_KEYS);
                     int sp2Id = 2;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -863,19 +1011,19 @@ public class ProductRepositoryImpl implements ProductRepository {
                             sp2Id = keys.getInt(1);
                     }
 
-                    String sqlCT2 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
+                    String sqlCT2 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT003', " + sp2Id + ", " + ktL + ", " + msNavy + ", " + kdOversize
-                            + ", 799000, 18, 1.1, 75, 60, 5, 'AVAILABLE'), " +
+                            + ", 500000, 799000, 18, 1.1, 75, 60, 5, 'AVAILABLE'), " +
                             "('CT004', " + sp2Id + ", " + ktXL + ", " + msDen + ", " + kdOversize
-                            + ", 799000, 14, 1.2, 78, 62, 5, 'AVAILABLE')";
+                            + ", 500000, 799000, 14, 1.2, 78, 62, 5, 'AVAILABLE')";
                     stmt.executeUpdate(sqlCT2);
 
                     // SP003
-                    String sqlSP3 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, doi_tuong, id_xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
+                    String sqlSP3 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP003', N'Áo denim wash nữ vintage', " + dmDenim + ", " + thLevis
-                            + ", N'Áo khoác bò denim dáng lửng phong cách retro vintage cho nữ.', N'Nữ', " + xuatXuVn + ", N'Giặt riêng bằng tay hoặc máy chế độ thường.', 890000, 241, 'AVAILABLE')";
+                            + ", N'Áo khoác bò denim dáng lửng phong cách retro vintage cho nữ.', N'Việt Nam', N'Giặt riêng bằng tay hoặc máy chế độ thường.', 890000, 241, 'AVAILABLE')";
                     stmt.executeUpdate(sqlSP3, Statement.RETURN_GENERATED_KEYS);
                     int sp3Id = 3;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -883,12 +1031,12 @@ public class ProductRepositoryImpl implements ProductRepository {
                             sp3Id = keys.getInt(1);
                     }
 
-                    String sqlCT3 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
+                    String sqlCT3 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT005', " + sp3Id + ", " + ktM + ", " + msDen + ", " + kdVintage
-                            + ", 1200000, 10, 0.9, 100, 52, 1.8, 'AVAILABLE'), " +
+                            + ", 750000, 1200000, 10, 0.9, 100, 52, 1.8, 'AVAILABLE'), " +
                             "('CT006', " + sp3Id + ", " + ktL + ", " + msNavy + ", " + kdVintage
-                            + ", 1200000, 5, 0.95, 103, 54, 1.8, 'AVAILABLE')";
+                            + ", 750000, 1200000, 5, 0.95, 103, 54, 1.8, 'AVAILABLE')";
                     stmt.executeUpdate(sqlCT3);
                 }
             } catch (SQLException ignored) {

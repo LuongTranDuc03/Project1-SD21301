@@ -138,8 +138,8 @@
                             String pName = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getName() : "Sản phẩm không xác định";
                             String pCode = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getCode() : "?";
                             String vCode = detail.getProductDetail().getCode();
-                            String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize().getName() : "";
-                            String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor().getName() : "";
+                            String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize() : "";
+                            String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor() : "";
                             
                             spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>";
                         } else {

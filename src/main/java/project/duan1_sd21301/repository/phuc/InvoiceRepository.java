@@ -26,7 +26,8 @@ public class InvoiceRepository {
         }
         String sql = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_ma_giam_gia, " +
                 "id_phuong_thuc_thanh_toan, id_dia_chi, ten_khach_nhan, sdt_khach_nhan, tam_tinh, " +
-                "tong_thanh_toan, ngay_dat_hang, trang_thai_don_hang, ghi_chu, ngay_giao_du_kien, ngay_hoan_thanh, dia_chi_snapshot) " +
+                "tong_thanh_toan, ngay_dat_hang, trang_thai_don_hang, ghi_chu, ngay_giao_du_kien, ngay_hoan_thanh, dia_chi_snapshot) "
+                +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -256,17 +257,17 @@ public class InvoiceRepository {
         Timestamp orderDate = rs.getTimestamp("ngay_dat_hang");
         if (orderDate != null)
             invoice.setOrderDate(orderDate.toLocalDateTime());
-        
+
         Timestamp expectedDeliveryDate = rs.getTimestamp("ngay_giao_du_kien");
         if (expectedDeliveryDate != null)
             invoice.setExpectedDeliveryDate(expectedDeliveryDate.toLocalDateTime());
-            
+
         Timestamp completionDate = rs.getTimestamp("ngay_hoan_thanh");
         if (completionDate != null)
             invoice.setCompletionDate(completionDate.toLocalDateTime());
-            
+
         invoice.setAddressSnapshot(rs.getString("dia_chi_snapshot"));
-        
+
         invoice.setOrderStatus(rs.getObject("trang_thai_don_hang") != null ? rs.getInt("trang_thai_don_hang") : 0);
         invoice.setOrderType(0);
         invoice.setNote(rs.getString("ghi_chu"));
@@ -383,21 +384,15 @@ public class InvoiceRepository {
                             p.setCode(rs.getString("p_code"));
                             pd.setProduct(p);
                         }
-                        
+
                         int szId = rs.getInt("sz_id");
                         if (!rs.wasNull()) {
-                            Size sz = new Size();
-                            sz.setId(szId);
-                            sz.setName(rs.getString("sz_name"));
-                            pd.setSize(sz);
+                            pd.setSize(rs.getString("sz_name"));
                         }
-                        
+
                         int cId = rs.getInt("c_id");
                         if (!rs.wasNull()) {
-                            Color c = new Color();
-                            c.setId(cId);
-                            c.setName(rs.getString("c_name"));
-                            pd.setColor(c);
+                            pd.setColor(rs.getString("c_name"));
                         }
 
                         detail.setProductDetail(pd);
