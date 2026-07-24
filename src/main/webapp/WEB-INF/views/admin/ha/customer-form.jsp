@@ -222,6 +222,49 @@
             margin-bottom: 20px;
             border-bottom: 1px dashed #e2e8f0;
         }
+
+        /* Dynamic Validation Styling (Bao khung đỏ mảnh, nền trắng, chữ đỏ mảnh) */
+        .form-input.is-invalid, .form-select.is-invalid, .form-textarea.is-invalid {
+            border: 1px solid #ef4444 !important;
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+        .invalid-feedback {
+            color: #ef4444;
+            font-size: 11px;
+            font-weight: 400;
+            margin-top: 4px;
+            display: block;
+            line-height: 1.4;
+        }
+        /* Error Banner Styling */
+        .error-banner {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.05);
+            animation: slideDown 0.3s ease-out;
+        }
+        .error-banner-title {
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: #7f1d1d;
+        }
+        .error-banner-list {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -268,16 +311,20 @@
                 List<String> errors = (List<String>) request.getAttribute("errors");
                 if (errors != null && !errors.isEmpty()) {
             %>
-            <div style="background-color: #fee2e2; border: 1px solid #f87171; color: #b91c1c; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
-                <ul style="margin: 0; padding-left: 20px;">
+            <div class="error-banner">
+                <div class="error-banner-title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:#dc2626;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span>Vui lòng kiểm tra và sửa lại các trường lỗi dưới đây:</span>
+                </div>
+                <ul class="error-banner-list">
                     <% for (String error : errors) { %>
-                    <li style="font-size: 13px; font-weight: 500;"><%= error %></li>
+                    <li><%= error %></li>
                     <% } %>
                 </ul>
             </div>
             <% } %>
 
-            <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" onsubmit="return syncAllAddressBeforeSubmit()">
+            <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" novalidate onsubmit="return syncAllAddressBeforeSubmit()">
                 <input type="hidden" name="action" value="<%= isEdit ? "edit" : "add" %>">
                 <!-- Trường ẩn giữ URL ảnh cũ khi chỉnh sửa và không upload tệp mới -->
                 <input type="hidden" name="anhDaiDien" value="<%= (c != null) ? c.getAvatar() : "" %>">
@@ -793,6 +840,25 @@
                 initAddressDropdowns(hidden, prov, dist, ward, street);
             }
         });
+
+        // Tự động khoanh đỏ và hiển thị lỗi dưới ô input khi Backend trả về lỗi
+        <% if (errors != null && !errors.isEmpty()) { %>
+            <% for (String err : errors) { %>
+                <% if (err.contains("Họ tên")) { %>
+                    showFieldError(document.getElementById('customerName'), '<%= err %>');
+                <% } else if (err.contains("Email")) { %>
+                    showFieldError(document.getElementById('customerEmail'), '<%= err %>');
+                <% } else if (err.contains("Số điện thoại") && !err.contains("người nhận")) { %>
+                    showFieldError(document.getElementById('customerPhone'), '<%= err %>');
+                <% } else if (err.contains("18 tuổi") || err.contains("Ngày sinh")) { %>
+                    showFieldError(document.getElementById('customerDob'), '<%= err %>');
+                <% } else if (err.contains("Địa chỉ mặc định") && err.contains("Tên người nhận")) { %>
+                    showFieldError(document.getElementById('defaultAddressTen'), '<%= err %>');
+                <% } else if (err.contains("Địa chỉ mặc định") && err.contains("Số điện thoại")) { %>
+                    showFieldError(document.getElementById('defaultAddressSdt'), '<%= err %>');
+                <% } %>
+            <% } %>
+        <% } %>
     });
 
     // Thêm địa chỉ phụ mới
@@ -919,17 +985,220 @@
         button.closest('.address-card-row').remove();
     }
 
+    // Helper hiển thị thông báo lỗi inline dưới ô input
+    function showFieldError(element, message) {
+        if (!element) return;
+        element.classList.add('is-invalid');
+        element.focus();
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const formGroup = element.closest('.form-group') || element.parentElement;
+        if (!formGroup) return;
+
+        // Xóa thông báo lỗi cũ nếu có
+        const oldFeedback = formGroup.querySelector('.invalid-feedback');
+        if (oldFeedback) oldFeedback.remove();
+
+        // Tạo phần tử hiển thị lỗi mới (khớp với ảnh mẫu)
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = message;
+        formGroup.appendChild(feedback);
+
+        // Lắng nghe sự kiện để xóa lỗi khi người dùng gõ/chọn lại
+        const clearErr = () => {
+            element.classList.remove('is-invalid');
+            if (feedback && feedback.parentElement) feedback.remove();
+            element.removeEventListener('input', clearErr);
+            element.removeEventListener('change', clearErr);
+        };
+        element.addEventListener('input', clearErr);
+        element.addEventListener('change', clearErr);
+    }
+
+    function clearAllFieldErrors() {
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    }
+
     // Sync tất cả hidden inputs của địa chỉ ngay trước khi submit form
-    // Trả về false nếu địa chỉ mặc định chưa hợp lệ → ngăn submit
+    // Trả về false nếu địa chỉ hoặc thông tin cá nhân chưa hợp lệ → ngăn submit
     function syncAllAddressBeforeSubmit() {
-        const defaultHidden = document.getElementById('customerDefaultAddress');
+        clearAllFieldErrors();
+
+        const nameRegex = /^[a-zA-ZàáảãạâầấẩẫậăằắẳẵặèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđÀÁẢÃẠÂẦẤẨẪẬĂẰẮẲẴẶÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ\s]+$/;
+        const phoneRegex = /^0\d{9}$/;
+        const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/;
+
+        // 1. Kiểm tra Họ và Tên Khách hàng
+        const nameInput = document.getElementById('customerName');
+        if (nameInput) {
+            const nameVal = nameInput.value.trim();
+            if (!nameVal) {
+                showFieldError(nameInput, 'Vui lòng nhập họ và tên khách hàng');
+                return false;
+            }
+            if (!nameRegex.test(nameVal)) {
+                showFieldError(nameInput, 'Họ tên khách hàng chỉ được chứa chữ cái và khoảng trắng, không chứa số/ký tự đặc biệt');
+                return false;
+            }
+        }
+
+        // 2. Kiểm tra Email liên hệ
+        const emailInput = document.getElementById('customerEmail');
+        if (emailInput) {
+            const emailVal = emailInput.value.trim();
+            if (!emailVal) {
+                showFieldError(emailInput, 'Vui lòng nhập email liên hệ');
+                return false;
+            }
+            if (!emailRegex.test(emailVal)) {
+                showFieldError(emailInput, 'Email không đúng định dạng (Ví dụ: example@gmail.com)');
+                return false;
+            }
+        }
+
+        // 3. Kiểm tra Số điện thoại chính
+        const phoneInput = document.getElementById('customerPhone');
+        if (phoneInput) {
+            const phoneVal = phoneInput.value.trim();
+            if (!phoneVal) {
+                showFieldError(phoneInput, 'Vui lòng nhập số điện thoại');
+                return false;
+            }
+            if (!phoneRegex.test(phoneVal)) {
+                showFieldError(phoneInput, 'Số điện thoại khách hàng phải gồm đúng 10 số và bắt đầu bằng 0');
+                return false;
+            }
+        }
+
+        // 4. Kiểm tra Ngày sinh (Phải đủ 18 tuổi)
+        const dobInput = document.getElementById('customerDob');
+        if (dobInput && dobInput.value) {
+            const dob = new Date(dobInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                showFieldError(dobInput, 'Khách hàng phải từ 18 tuổi trở lên');
+                return false;
+            }
+        } else if (dobInput) {
+            showFieldError(dobInput, 'Vui lòng chọn ngày sinh');
+            return false;
+        }
+
+        // 5. Kiểm tra Địa chỉ mặc định (Tên người nhận, SĐT, Tỉnh, Huyện, Xã, Số nhà)
+        const defTenInput   = document.getElementById('defaultAddressTen');
+        const defSdtInput   = document.getElementById('defaultAddressSdt');
         const defaultProv   = document.getElementById('defaultProvince');
         const defaultDist   = document.getElementById('defaultDistrict');
         const defaultWard   = document.getElementById('defaultWard');
         const defaultStreet = document.getElementById('defaultAddressDetailInput');
+
+        if (defTenInput) {
+            const ten = defTenInput.value.trim();
+            if (!ten) {
+                showFieldError(defTenInput, 'Vui lòng nhập Tên người nhận ở Địa chỉ mặc định');
+                return false;
+            }
+            if (!nameRegex.test(ten)) {
+                showFieldError(defTenInput, 'Tên người nhận ở Địa chỉ mặc định chỉ được chứa chữ cái và khoảng trắng');
+                return false;
+            }
+        }
+
+        if (defSdtInput) {
+            const sdt = defSdtInput.value.trim();
+            if (!sdt) {
+                showFieldError(defSdtInput, 'Vui lòng nhập SĐT người nhận ở Địa chỉ mặc định');
+                return false;
+            }
+            if (!phoneRegex.test(sdt)) {
+                showFieldError(defSdtInput, 'Số điện thoại người nhận phải gồm đúng 10 số và bắt đầu bằng số 0');
+                return false;
+            }
+        }
+
+        if (defaultProv && !defaultProv.value) {
+            showFieldError(defaultProv, 'Vui lòng chọn Tỉnh/Thành phố');
+            return false;
+        }
+        if (defaultDist && !defaultDist.value) {
+            showFieldError(defaultDist, 'Vui lòng chọn Quận/Huyện');
+            return false;
+        }
+        if (defaultWard && !defaultWard.value) {
+            showFieldError(defaultWard, 'Vui lòng chọn Phường/Xã');
+            return false;
+        }
+        if (defaultStreet && !defaultStreet.value.trim()) {
+            showFieldError(defaultStreet, 'Vui lòng nhập số nhà, tên đường');
+            return false;
+        }
+
+        // 6. Kiểm tra các Địa chỉ Phụ (Tên người nhận, SĐT, Tỉnh, Huyện, Xã, Số nhà)
+        const otherCards = document.querySelectorAll('.address-card-row');
+        for (let i = 0; i < otherCards.length; i++) {
+            const card = otherCards[i];
+            const cardTitle = `Địa chỉ phụ thứ ${i + 1}`;
+            const tenInput = card.querySelector('input[name="otherRecipientName"]');
+            const sdtInput = card.querySelector('input[name="otherPhoneNumber"]');
+            const provSel  = card.querySelector('.other-province');
+            const distSel  = card.querySelector('.other-district');
+            const wardSel  = card.querySelector('.other-ward');
+            const streetIn = card.querySelector('.other-detail-input');
+
+            if (tenInput) {
+                const ten = tenInput.value.trim();
+                if (!ten) {
+                    showFieldError(tenInput, `Vui lòng nhập Tên người nhận ở ${cardTitle}`);
+                    return false;
+                }
+                if (!nameRegex.test(ten)) {
+                    showFieldError(tenInput, `Tên người nhận ở ${cardTitle} chỉ được chứa chữ cái và khoảng trắng`);
+                    return false;
+                }
+            }
+
+            if (sdtInput) {
+                const sdt = sdtInput.value.trim();
+                if (!sdt) {
+                    showFieldError(sdtInput, `Vui lòng nhập SĐT người nhận ở ${cardTitle}`);
+                    return false;
+                }
+                if (!phoneRegex.test(sdt)) {
+                    showFieldError(sdtInput, `SĐT người nhận ở ${cardTitle} phải gồm đúng 10 số và bắt đầu bằng số 0`);
+                    return false;
+                }
+            }
+
+            if (provSel && !provSel.value) {
+                showFieldError(provSel, `Vui lòng chọn Tỉnh/Thành phố ở ${cardTitle}`);
+                return false;
+            }
+            if (distSel && !distSel.value) {
+                showFieldError(distSel, `Vui lòng chọn Quận/Huyện ở ${cardTitle}`);
+                return false;
+            }
+            if (wardSel && !wardSel.value) {
+                showFieldError(wardSel, `Vui lòng chọn Phường/Xã ở ${cardTitle}`);
+                return false;
+            }
+            if (streetIn && !streetIn.value.trim()) {
+                showFieldError(streetIn, `Vui lòng nhập số nhà, tên đường ở ${cardTitle}`);
+                return false;
+            }
+        }
+
+        // 7. Đồng bộ tất cả dữ liệu sang hidden input trước khi submit
+        const defaultHidden = document.getElementById('customerDefaultAddress');
         _syncOneBlock(defaultHidden, defaultProv, defaultDist, defaultWard, defaultStreet);
 
-        document.querySelectorAll('.address-card-row').forEach(card => {
+        otherCards.forEach(card => {
             const h = card.querySelector('.other-address-hidden');
             const p = card.querySelector('.other-province');
             const d = card.querySelector('.other-district');
@@ -938,18 +1207,6 @@
             _syncOneBlock(h, p, d, w, s);
         });
 
-        // Kiểm tra địa chỉ mặc định có hợp lệ không
-        // Kiểm tra địa chỉ mặc định có hợp lệ không
-        const finalAddr = defaultHidden ? defaultHidden.value.trim() : '';
-        const isValid = finalAddr && finalAddr.replace(/[,\s]/g, '').length > 0;
-        if (!isValid) {
-            const streetVal = defaultStreet ? defaultStreet.value.trim() : '';
-            if (!streetVal) {
-                alert('Vui lòng nhập số nhà/tên đường và chọn Tỉnh/Thành, Quận/Huyện, Phường/Xã!');
-                return false;
-            }
-            if (defaultHidden) defaultHidden.value = streetVal;
-        }
         return true;
     }
 

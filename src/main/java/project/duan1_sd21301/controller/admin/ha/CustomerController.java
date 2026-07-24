@@ -284,8 +284,7 @@ public class CustomerController extends HttpServlet {
 
             // Validate
             boolean isEdit = "edit".equals(action);
-            String defaultFullAddr = buildFullAddress(defaultAddr);
-            List<String> errors = CustomerValidator.validate(code, hoTen, email, soDienThoai, ngaySinh, gioiTinh, trangThai, defaultFullAddr, customers, isEdit);
+            List<String> errors = CustomerValidator.validate(code, hoTen, email, soDienThoai, ngaySinh, gioiTinh, trangThai, addresses, customers, isEdit);
 
             if (!errors.isEmpty()) {
                 request.setAttribute("errors", errors);
