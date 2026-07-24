@@ -2,7 +2,9 @@ package project.duan1_sd21301.model.ha;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import lombok.experimental.FieldDefaults;
+import java.time.LocalDateTime;
 import project.duan1_sd21301.model.Address;
 
 @Entity
@@ -19,11 +21,11 @@ public class CustomerAddress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_khach_hang", nullable = false)
     Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_dia_chi", nullable = false)
     Address address;
 
@@ -55,4 +57,9 @@ public class CustomerAddress {
     public String getDetailedAddress() { return address != null ? address.getDetailedAddress() : null; }
     @Transient
     public String getCode() { return address != null ? address.getCode() : null; }
+
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
 }
+

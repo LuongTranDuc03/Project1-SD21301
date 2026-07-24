@@ -2,6 +2,7 @@ package project.duan1_sd21301.model.huy;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import lombok.experimental.FieldDefaults;
 
 @Entity
@@ -33,4 +34,9 @@ public class Role {
         this.roleName = roleName;
         this.status = status;
     }
+
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
 }
+

@@ -22,7 +22,7 @@ public class VariantController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         List<Product> products = productService.getAllProducts();
         String filterProductCode = request.getParameter("productCode");
 
@@ -50,17 +50,18 @@ public class VariantController extends HttpServlet {
                 int stt = 1;
                 for (ProductDetail v : allVariants) {
                     String pStatus = v.getStatus();
-                    if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
+                    if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("AVAILABLE")) {
                         pStatus = v.getStock() > 0 ? "Còn hàng" : "Hết hàng";
                     }
                     String statusLabel = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "Còn hàng"
                             : "Hết hàng";
                     writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",%.0f,%d,\"%s\"\n",
                             stt++,
-                            (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "",
-                            v.getColor() != null ? v.getColor() : "",
-                            v.getSize() != null ? v.getSize() : "",
-                            v.getStyle() != null ? v.getStyle() : "",
+                            (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode()
+                                    : "",
+                            v.getColor() != null && v.getColor().getName() != null ? v.getColor().getName() : "",
+                            v.getSize() != null && v.getSize().getName() != null ? v.getSize().getName() : "",
+                            v.getStyle() != null && v.getStyle().getName() != null ? v.getStyle().getName() : "",
                             v.getPrice(),
                             v.getStock(),
                             statusLabel);
@@ -107,14 +108,16 @@ public class VariantController extends HttpServlet {
             if (variantIdStr != null && !variantIdStr.trim().isEmpty()) {
                 try {
                     detail = productService.getDetailById(Integer.parseInt(variantIdStr));
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
 
             if (detail == null && productCode != null) {
                 Product p = productService.getProductByCode(productCode);
                 if (p != null && p.getDetails() != null) {
                     for (ProductDetail d : p.getDetails()) {
-                        if (color != null && color.equals(d.getColor()) && size != null && size.equals(d.getSize())) {
+                        if (color != null && d.getColor() != null && color.equals(d.getColor().getName())
+                                && size != null && d.getSize() != null && size.equals(d.getSize().getName())) {
                             detail = d;
                             break;
                         }
@@ -123,9 +126,12 @@ public class VariantController extends HttpServlet {
             }
 
             if (detail != null) {
-                if (color != null) detail.setColor(color);
-                if (size != null) detail.setSize(size);
-                if (style != null) detail.setStyle(style);
+                if (color != null)
+                    detail.setColor(project.duan1_sd21301.model.luong.Color.builder().name(color).build());
+                if (size != null)
+                    detail.setSize(project.duan1_sd21301.model.luong.Size.builder().name(size).build());
+                if (style != null)
+                    detail.setStyle(project.duan1_sd21301.model.luong.Style.builder().name(style).build());
                 try {
                     if (priceStr != null && !priceStr.isEmpty())
                         detail.setPrice(Double.parseDouble(priceStr.replace(",", "")));
@@ -139,7 +145,8 @@ public class VariantController extends HttpServlet {
                         detail.setWidth(Double.parseDouble(widthStr.replace(",", "")));
                     if (thicknessStr != null && !thicknessStr.isEmpty())
                         detail.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
 
                 productService.updateProductDetail(detail);
 
@@ -158,7 +165,8 @@ public class VariantController extends HttpServlet {
                         detail.setStatus(status);
                         productService.updateProductDetail(detail);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
             response.setStatus(HttpServletResponse.SC_OK);
             return;

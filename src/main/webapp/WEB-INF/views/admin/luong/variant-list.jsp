@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Nhúng CSS Custom -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=1.1">
     <style>
         .invoice-table th, .invoice-table td {
             border-bottom: 1px solid #f1f5f9;
@@ -46,28 +46,7 @@
             background-color: #fef2f2;
             color: #991b1b;
         }
-        .custom-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px !important;
-            overflow: hidden !important;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-        .card-header-bar {
-            background-color: #12192D;
-            color: #ffffff;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .card-header-title {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
+
         .invoice-table th {
             white-space: nowrap !important;
             font-size: 12px !important;
@@ -114,33 +93,7 @@
         input:checked + .slider:before {
             transform: translateX(16px);
         }
-        .card-body-content {
-            padding: 20px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            max-height: 1000px;
-        }
-        .card-body-content.collapsed {
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            border: none;
-        }
-        .filter-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 16px 24px;
-        }
-        @media (max-width: 992px) { .filter-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 576px) { .filter-grid { grid-template-columns: 1fr; } }
-        .filter-field { display: flex; flex-direction: column; gap: 6px; }
-        .filter-field label { font-size: 12px; font-weight: 600; color: #475569; }
-        .filter-control {
-            width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1;
-            border-radius: 6px; font-size: 13px; font-family: inherit; color: #1e293b; background: #ffffff;
-            outline: none; transition: all 0.2s; box-sizing: border-box;
-        }
-        .filter-control:focus { border-color: #12192D; box-shadow: 0 0 0 3px rgba(18, 25, 45, 0.08); }
+
         .price-slider-container { position: relative; width: 100%; height: 20px; margin-top: 5px; }
         .price-slider-container input[type="range"] {
             position: absolute; width: 100%; height: 5px; top: 50%; transform: translateY(-50%);
@@ -255,8 +208,8 @@
                 double globalMaxPrice = 0.0;
                 if (variants != null) {
                     for (ProductDetail v : variants) {
-                        if (v.getSize() != null && !v.getSize().trim().isEmpty()) {
-                            sizes.add(v.getSize().trim());
+                        if (v.getSize() != null && v.getSize().getName() != null && !v.getSize().getName().trim().isEmpty()) {
+                            sizes.add(v.getSize().getName().trim());
                         }
                         if (v.getPrice() < globalMinPrice) globalMinPrice = v.getPrice();
                         if (v.getPrice() > globalMaxPrice) globalMaxPrice = v.getPrice();
@@ -349,12 +302,7 @@
                         <span>Xem tất cả biến thể</span>
                     </a>
                 <% } %>
-                <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
-                        <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
-                    </svg>
-                    <span>Mã QR</span>
-                </button>
+
                 <a href="${pageContext.request.contextPath}/admin/variants?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>Xuất Excel</span>
@@ -373,8 +321,10 @@
                             <th style="text-align: center;">STT</th>
                             <th style="text-align: center;">Mã Sản Phẩm</th>
                             <th style="text-align: center;">Hình ảnh</th>
+                            <th style="text-align: center;">Mã vạch</th>
                             <th style="text-align: center;">Màu sắc</th>
                             <th style="text-align: center;">Kích cỡ</th>
+                            <th style="text-align: center;">Giá gốc</th>
                             <th style="text-align: center;">Đơn giá</th>
                             <th style="text-align: center;">Số lượng</th>
                             <th style="text-align: center;">Trạng thái</th>
@@ -390,7 +340,7 @@
                                      String statusClass = isAvailable ? "available" : "out_of_stock";
                                      String statusLabel = isAvailable ? "Còn hàng" : "Hết hàng";
                         %>
-                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
+                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= (v.getColor() != null && v.getColor().getName() != null) ? v.getColor().getName().replace("\"", "&quot;") : "" %>" data-size="<%= (v.getSize() != null && v.getSize().getName() != null) ? v.getSize().getName().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
                                 <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
@@ -405,10 +355,16 @@
                                 <% } %>
                             </td>
                             <td style="text-align: center;">
-                                <span class="variant-attr-text"><%= v.getColor() != null ? v.getColor() : "" %></span>
+                                <span class="variant-attr-text"><%= v.getBarcode() != null ? v.getBarcode() : "N/A" %></span>
                             </td>
                             <td style="text-align: center;">
-                                <span style="background-color: #f1f5f9; color: #475569; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: 600;"><%= v.getSize() != null ? v.getSize() : "" %></span>
+                                <span class="variant-attr-text"><%= v.getColor() != null ? v.getColor().getName() : "" %></span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span style="background-color: #f1f5f9; color: #475569; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: 600;"><%= v.getSize() != null ? v.getSize().getName() : "" %></span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="product-price"><%= String.format("%,.0f", v.getCostPrice()) %> đ</span>
                             </td>
                             <td style="text-align: center;">
                                 <span class="product-price"><%= String.format("%,.0f", v.getPrice()) %> đ</span>
@@ -422,9 +378,11 @@
                             <td style="text-align: center;">
                                 <a href="javascript:void(0)" onclick="openEditVariantModal(this)" class="action-icon-btn edit-btn" title="Chỉnh sửa"
                                    data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "" %>"
-                                   data-color="<%= v.getColor() != null ? v.getColor() : "" %>"
-                                   data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
-                                   data-style="<%= v.getStyle() != null ? v.getStyle() : "" %>"
+                                   data-color="<%= v.getColor() != null ? v.getColor().getName() : "" %>"
+                                   data-size="<%= v.getSize() != null ? v.getSize().getName() : "" %>"
+                                   data-style="<%= v.getStyle() != null ? v.getStyle().getName() : "" %>"
+                                   data-barcode="<%= v.getBarcode() != null ? v.getBarcode() : "" %>"
+                                   data-costprice="<%= String.format("%.0f", v.getCostPrice()) %>"
                                    data-price="<%= String.format("%.0f", v.getPrice()) %>"
 
                                    data-stock="<%= v.getStock() %>"
@@ -446,7 +404,7 @@
                             } else {
                         %>
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 40px; color: #9ca3af;">Không có dữ liệu biến thể.</td>
+                            <td colspan="11" style="text-align: center; padding: 40px; color: #9ca3af;">Không có dữ liệu biến thể.</td>
                         </tr>
                         <%
                             }
@@ -490,6 +448,17 @@
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích cỡ</label>
                         <input type="text" id="edit-size" name="size" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã vạch (Auto)</label>
+                        <input type="text" id="edit-barcode" name="barcode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                        <div style="margin-top: 10px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px; background: white;">
+                            <svg id="barcode-svg" style="max-width: 100%; height: auto;"></svg>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá Gốc (đ) <span style="color: red;">*</span></label>
+                        <input type="text" id="edit-costPrice" name="costPrice" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Đơn Giá (đ) <span style="color: red;">*</span></label>
@@ -574,8 +543,27 @@
         document.getElementById('edit-size').value = btn.getAttribute('data-size');
         document.getElementById('edit-style').value = btn.getAttribute('data-style');
         
+        var barcodeVal = btn.getAttribute('data-barcode');
+        document.getElementById('edit-barcode').value = barcodeVal;
+        if (barcodeVal) {
+            JsBarcode("#barcode-svg", barcodeVal, {
+                format: "CODE128",
+                width: 2,
+                height: 40,
+                displayValue: true,
+                fontSize: 14
+            });
+            document.getElementById('barcode-svg').style.display = 'inline-block';
+        } else {
+            document.getElementById('barcode-svg').style.display = 'none';
+        }
+        
+        var rawCostPrice = btn.getAttribute('data-costprice');
+        document.getElementById('edit-costPrice').value = rawCostPrice ? rawCostPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+
         var rawPrice = btn.getAttribute('data-price');
         document.getElementById('edit-price').value = rawPrice ? rawPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+
         
 
         document.getElementById('edit-stock').value = btn.getAttribute('data-stock');
@@ -821,75 +809,12 @@
     });
 </script>
 
-<!-- Thư viện QRCode.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<!-- Modal hiển thị QR Code Biến Thể -->
-<div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
-        <div style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Mã QR Biến Thể</h3>
-            <button type="button" onclick="closeQRModal()" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; display: flex; align-items: center; justify-content: center;">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-        </div>
-        <div style="padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <div id="qrcode" style="margin-bottom: 16px; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;"></div>
-            <p style="text-align: center; color: #64748b; font-size: 13px; margin: 0;">Quét mã này để xem danh sách biến thể ngay trên điện thoại.</p>
-        </div>
-    </div>
-</div>
+<!-- Thư viện JsBarcode -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 
 <script>
     function removeAccents(str) {
         return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
-    }
-
-    function showQRModal() {
-        document.getElementById('qrModal').style.display = 'flex';
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = '';
-
-        // Lấy các dòng biến thể đang hiển thị trên bảng
-        const rows = document.querySelectorAll('#variantTbody tr');
-        let text = "DANH SACH BIEN THE\n\n";
-        let count = 0;
-
-        for (let i = 0; i < rows.length; i++) {
-            if (rows[i].style.display === 'none') continue;
-            const id   = rows[i].dataset.productid || '';
-            const size  = removeAccents(rows[i].dataset.size || '');
-            const color = removeAccents(rows[i].dataset.color || '');
-            const price = parseInt(rows[i].dataset.price || 0).toLocaleString('vi-VN');
-            const stock = rows[i].dataset.stock || '0';
-
-            text += "SP: " + id + " | " + size + " / " + color + "\n";
-            text += "Gia: " + price + "d | Ton: " + stock + "\n";
-            text += "------------------\n";
-            count++;
-            if (count >= 5) {
-                text += "(Hien " + count + " bien the dau)\n";
-                break;
-            }
-        }
-        if (count === 0) text += "Khong co bien the nao.";
-
-        try {
-            new QRCode(qrContainer, {
-                text: text,
-                width: 250,
-                height: 250,
-                colorDark: "#0f172a",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.M
-            });
-        } catch(e) {
-            qrContainer.innerHTML = '<p style="color:red;text-align:center">Lỗi tạo mã QR.</p>';
-        }
-    }
-
-    function closeQRModal() {
-        document.getElementById('qrModal').style.display = 'none';
     }
 </script>
 

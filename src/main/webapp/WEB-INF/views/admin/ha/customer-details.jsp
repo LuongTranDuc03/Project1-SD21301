@@ -211,7 +211,7 @@
                                                         Quay lại danh sách
                                                     </a>
                                                 </div>
-                                                <% } else { String statusLabel=c.getStatus(); %>
+                                                <% } else { %>
                                                     <!-- Thanh tiêu đề & nút điều hướng -->
                                                     <div class="page-header"
                                                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -252,14 +252,13 @@
                                                             <div class="profile-stat-box">
 
                                                                 <div class="stat-item">
-                                                                    <% if ("Hoạt động".equalsIgnoreCase(c.getStatus()))
-                                                                        { %>
-                                                                        <span class="stat-val"
-                                                                            style="color: #16a34a;">Hoạt động</span>
-                                                                        <% } else { %>
-                                                                            <span class="stat-val"
-                                                                                style="color: #dc2626;">Khóa</span>
-                                                                            <% } %>
+                                                                    <% if (c.getStatus() != null && c.getStatus() == 1) { %>
+                                            <span class="stat-val"
+                                                    style="color: #16a34a;">Hoạt động</span>
+                                        <% } else { %>
+                                            <span class="stat-val"
+                                                    style="color: #dc2626;">Bị khóa</span>
+                                        <% } %>
                                                                                 <span class="stat-lbl">Tài khoản</span>
                                                                 </div>
                                                             </div>

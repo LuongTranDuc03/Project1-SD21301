@@ -1,6 +1,7 @@
 package project.duan1_sd21301.controller.admin.huy;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
  
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
 @WebServlet(name = "EmployeeController", urlPatterns = { "/admin/employees", "/admin/profile",
         "/admin/change-password" })
 public class EmployeeController extends HttpServlet {
@@ -45,6 +47,11 @@ public class EmployeeController extends HttpServlet {
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
+        }
+
+        if ("toggleStatus".equals(action)) {
+            toggleEmployeeStatus(request, response);
+            return;
         }
 
         switch (action) {
@@ -168,7 +175,7 @@ public class EmployeeController extends HttpServlet {
             request.getSession().removeAttribute("toastType");
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-add.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-form.jsp").forward(request, response);
     }
 
     private void showForm(HttpServletRequest request, HttpServletResponse response)

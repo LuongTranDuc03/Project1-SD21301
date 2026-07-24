@@ -335,8 +335,8 @@
                         <div class="form-group">
                             <label class="form-label" for="customerStatus">Trạng thái</label>
                             <select name="trangThai" id="customerStatus" class="form-select">
-                                <option value="Hoạt động" <%= (c != null && "Hoạt động".equals(c.getStatus())) ? "selected" : "" %>>Hoạt động</option>
-                                <option value="Khóa" <%= (c != null && "Khóa".equals(c.getStatus())) ? "selected" : "" %>>Khóa</option>
+                                <option value="1" <%= (c != null && c.getStatus() != null && c.getStatus() == 1) ? "selected" : "" %>>Hoạt động</option>
+                                <option value="0" <%= (c != null && c.getStatus() != null && c.getStatus() == 0) ? "selected" : "" %>>Bị khóa</option>
                             </select>
                         </div>
                     </div>

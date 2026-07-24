@@ -1,0 +1,46 @@
+package project.duan1_sd21301.model.phuc;
+
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "lich_su_thanh_toan")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class PaymentHistory {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    int id;
+
+    @Column(name = "lich_su_thanh_toan_code", length = 50, nullable = false, unique = true)
+    String code;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_hoa_don", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Invoice invoice;
+
+    @Column(name = "ma_giao_dich_cong", length = 200)
+    String transactionCode;
+
+    @Column(name = "so_tien")
+    Double amount;
+
+    @Column(name = "noi_dung", columnDefinition = "NVARCHAR(MAX)")
+    String description;
+
+    @Column(name = "trang_thai")
+    int status; // 0: Thất bại, 1: Thành công
+
+    @Column(name = "thoi_gian_giao_dich")
+    LocalDateTime transactionTime;
+}

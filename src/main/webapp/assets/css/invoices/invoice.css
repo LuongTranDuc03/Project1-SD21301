@@ -1,3 +1,6 @@
 /* ==========================================================================
    Invoice Management Styling
    ========================================================================== */
+@import url('invoice-list.css');
+@import url('invoice-detail.css');
+@import url('invoice-print.css');

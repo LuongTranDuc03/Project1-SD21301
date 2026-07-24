@@ -676,7 +676,7 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="origin">Xuất xứ</label>
-                                <input type="text" id="origin" class="form-input" value="<%= prod.getOrigin() != null ? prod.getOrigin() : "N/A" %>" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
+                                <input type="text" id="origin" class="form-input" value="<%= prod.getOrigin() != null ? prod.getOrigin().getName() : "N/A" %>" readonly style="background-color: #f1f5f9; cursor: not-allowed;">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="status">Trạng thái</label>
@@ -720,8 +720,10 @@
                                 <tr>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">STT</th>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Hình ảnh</th>
+                                    <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Mã vạch</th>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Màu sắc</th>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Kích cỡ</th>
+                                    <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Giá gốc</th>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Đơn giá</th>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Số lượng</th>
                                     <th style="text-align: center; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; white-space: nowrap;">Trạng thái</th>
@@ -733,7 +735,7 @@
                                         int stt = 1;
                                         for (project.duan1_sd21301.model.luong.ProductDetail v : prod.getDetails()) {
                                             String pStatus = v.getStatus();
-                                            if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("Hoạt động")) {
+                                            if (pStatus == null || pStatus.trim().isEmpty() || pStatus.equals("AVAILABLE")) {
                                                 pStatus = v.getStock() > 0 ? "Còn hàng" : "Hết hàng";
                                             }
                                             String vStatusClass = pStatus.equals("Còn hàng") || pStatus.equals("AVAILABLE") ? "available" : "out_of_stock";
@@ -750,10 +752,21 @@
                                             </div>
                                         <% } %>
                                     </td>
+                                    <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">
+                                        <% if (v.getBarcode() != null && !v.getBarcode().isEmpty()) { %>
+                                            <span><%= v.getBarcode() %></span>
+                                            <button type="button" onclick="showBarcodeModal('<%= v.getBarcode() %>')" style="margin-left: 8px; padding: 4px 8px; font-size: 11px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer;">
+                                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align: middle;"><path d="M3 5a2 2 0 0 1 2-2h4M21 5a2 2 0 0 0-2-2h-4M3 19a2 2 0 0 0 2 2h4M21 19a2 2 0 0 1-2 2h-4"></path><path d="M7 8v8M12 8v8M17 8v8"></path></svg>
+                                            </button>
+                                        <% } else { %>
+                                            N/A
+                                        <% } %>
+                                    </td>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #0f172a;"><%= v.getColor() != null ? v.getColor() : "" %></td>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9;">
                                         <span style="background-color: #f1f5f9; color: #475569; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: 600;"><%= v.getSize() != null ? v.getSize() : "" %></span>
                                     </td>
+                                    <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;"><%= String.format("%,.0f", v.getCostPrice()) %> đ</td>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b;"><%= String.format("%,.0f", v.getPrice()) %> đ</td>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #475569;"><%= v.getStock() %></td>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9;">
@@ -765,7 +778,7 @@
                                     } else {
                                 %>
                                 <tr>
-                                    <td colspan="7" style="text-align: center; padding: 40px; color: #9ca3af;">Không có dữ liệu biến thể.</td>
+                                    <td colspan="9" style="text-align: center; padding: 40px; color: #9ca3af;">Không có dữ liệu biến thể.</td>
                                 </tr>
                                 <%
                                     }
@@ -778,5 +791,35 @@
             </div>
         </main>
     </div>
+
+    <!-- Barcode Modal -->
+    <div id="barcodeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background-color: #fff; padding: 24px; border-radius: 8px; max-width: 400px; width: 100%; text-align: center; position: relative;">
+            <button onclick="document.getElementById('barcodeModal').style.display='none'" style="position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 20px; color: #64748b;">&times;</button>
+            <h3 style="margin-top: 0; margin-bottom: 16px; color: #0f172a; font-size: 16px;">Mã Barcode Biến Thể</h3>
+            <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-bottom: 16px;">
+                <svg id="modal-barcode-svg" style="max-width: 100%; height: auto;"></svg>
+            </div>
+            <button type="button" onclick="document.getElementById('barcodeModal').style.display='none'" style="background-color: #3b82f6; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 500; cursor: pointer;">Đóng</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script>
+        function showBarcodeModal(barcode) {
+            if (barcode) {
+                JsBarcode("#modal-barcode-svg", barcode, {
+                    format: "CODE128",
+                    lineColor: "#000",
+                    width: 2,
+                    height: 80,
+                    displayValue: true,
+                    fontSize: 16,
+                    margin: 10
+                });
+                document.getElementById('barcodeModal').style.display = 'flex';
+            }
+        }
+    </script>
 </body>
 </html>

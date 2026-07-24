@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chi_tiet_san_pham")
@@ -23,9 +24,16 @@ public class ProductDetail {
     @Column(name = "chi_tiet_san_pham_code", length = 50, nullable = false, unique = true)
     String code;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_san_pham", nullable = false)
     Product product;
+
+    @Column(name = "ma_vach", length = 100)
+    String barcode;
+
+    @Column(name = "gia_goc")
+    @Builder.Default
+    double costPrice = 0.0;
 
     @Column(name = "gia_ban")
     @Builder.Default
@@ -55,15 +63,28 @@ public class ProductDetail {
     @Builder.Default
     String status = "AVAILABLE";
 
-    @Transient
-    String size;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_kich_thuoc")
+    Size size;
 
-    @Transient
-    String color;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_mau_sac")
+    Color color;
 
-    @Transient
-    String style;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_kieu_dang")
+    Style style;
 
-    @Transient
-    List<String> images;
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    @Builder.Default
+    LocalDateTime updatedAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "productDetail", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    List<Image> images;
 }

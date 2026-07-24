@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Nhúng CSS Custom -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=1.1">
     <style>
         /* Tối giản màu sắc và cải thiện giao diện */
         .invoice-table th, .invoice-table td {
@@ -143,98 +143,7 @@
             background-color: #fef2f2;
             color: #991b1b;
         }
-        /* Custom card style with border radius and header */
-        .custom-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px !important;
-            overflow: hidden !important;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-        .card-header-bar {
-            background-color: #12192D;
-            color: #ffffff;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .card-header-title {
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .toggle-filter-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .toggle-filter-btn:hover {
-            color: #ffffff;
-        }
-        .card-body-content {
-            padding: 20px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            max-height: 1000px;
-        }
-        .card-body-content.collapsed {
-            max-height: 0;
-            padding-top: 0;
-            padding-bottom: 0;
-            border: none;
-        }
 
-        /* Filter Grid Layout */
-        .filter-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 16px 24px;
-        }
-        @media (max-width: 992px) {
-            .filter-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        @media (max-width: 576px) {
-            .filter-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .filter-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .filter-field label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #475569;
-        }
-        .filter-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            height: 38px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-family: inherit;
-            color: #1e293b;
-            background: #ffffff;
-            outline: none;
-            transition: all 0.2s;
-            box-sizing: border-box;
-        }
-        .filter-control:focus {
-            border-color: #12192D;
-            box-shadow: 0 0 0 3px rgba(18, 25, 45, 0.08);
-        }
 
         /* Dual price slider */
         .price-slider-container {
@@ -503,11 +412,11 @@
                 double globalMaxPrice = 0.0;
                 if (products != null) {
                     for (Product p : products) {
-                        if (p.getCategory() != null && !p.getCategory().trim().isEmpty()) {
-                            categories.add(p.getCategory().trim());
+                        if (p.getCategory() != null && p.getCategory().getName() != null && !p.getCategory().getName().trim().isEmpty()) {
+                            categories.add(p.getCategory().getName().trim());
                         }
-                        if (p.getBrand() != null && !p.getBrand().trim().isEmpty()) {
-                            brands.add(p.getBrand().trim());
+                        if (p.getBrand() != null && p.getBrand().getName() != null && !p.getBrand().getName().trim().isEmpty()) {
+                            brands.add(p.getBrand().getName().trim());
                         }
 
                         // Xác định giá min/max của sản phẩm này (dựa theo biến thể nếu có)
@@ -613,12 +522,7 @@
 
             <!-- Thanh nút thao tác (Mã QR, Xuất Excel, Thêm mới) đặt giữa Bộ lọc và Bảng dữ liệu -->
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
-                <button type="button" onclick="showQRModal()" class="btn-export" style="background-color: #3B82F6; border: 1px solid #3B82F6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none">
-                        <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M9 9h6v6H9z"></path>
-                    </svg>
-                    <span>Mã QR</span>
-                </button>
+
                 <a href="${pageContext.request.contextPath}/admin/products?action=exportExcel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>Xuất Excel</span>
@@ -673,7 +577,7 @@
                                         }
                                     }
                         %>
-                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() %>" data-brand="<%= prod.getBrand() != null ? prod.getBrand().toLowerCase() : "" %>" data-status="<%= pStatus %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
+                        <tr data-id="<%= prod.getCode() %>" data-name="<%= prod.getName() != null ? prod.getName().toLowerCase() : "" %>" data-category="<%= prod.getCategory() != null ? prod.getCategory().getName() : "" %>" data-brand="<%= (prod.getBrand() != null && prod.getBrand().getName() != null) ? prod.getBrand().getName().toLowerCase() : "" %>" data-status="<%= pStatus %>" data-min-price="<%= minPrice %>" data-max-price="<%= maxPrice %>" data-stock="<%= prod.getStock() %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td>
                                 <span class="product-id-text"><%= prod.getCode() %></span>
@@ -682,10 +586,10 @@
                                 <span class="product-name-text"><%= prod.getName() != null ? prod.getName() : "" %></span>
                             </td>
                             <td>
-                                <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500;"><%= prod.getCategory() %></span>
+                                <span style="background-color: #f1f5f9; color: #475569; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 500;"><%= prod.getCategory() != null ? prod.getCategory().getName() : "" %></span>
                             </td>
                             <td>
-                                <span style="color: #475569; font-weight: 500;"><%= prod.getBrand() != null ? prod.getBrand() : "N/A" %></span>
+                                <span style="color: #475569; font-weight: 500;"><%= prod.getBrand() != null ? prod.getBrand().getName() : "N/A" %></span>
                             </td>
                             <td>
                                 <span class="product-price-range"><%= prod.getPriceRangeFormatted() %></span>
@@ -1139,88 +1043,7 @@
     });
 </script>
 
-<!-- Thư viện QRCode.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-<!-- Modal hiển thị QR Code -->
-<div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
-        <div style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border-radius: 12px 12px 0 0;">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Mã QR Sản Phẩm</h3>
-            <button type="button" onclick="closeQRModal()" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: background 0.2s;">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-        </div>
-        <div style="padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <div id="qrcode" style="margin-bottom: 16px; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;"></div>
-            <p style="text-align: center; color: #64748b; font-size: 13px; margin: 0;">Quét mã này để xem danh sách sản phẩm ngay lập tức trên điện thoại (không cần mạng nội bộ).</p>
-        </div>
-    </div>
-</div>
-
-<script>
-    let qrcodeObj = null;
-
-    function removeAccents(str) {
-        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
-    }
-
-    function showQRModal() {
-        const modal = document.getElementById('qrModal');
-        modal.style.display = 'flex';
-        
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = ''; 
-        
-        // Cập nhật Selector đúng với bảng dữ liệu
-        const rows = document.querySelectorAll('#productTbody tr');
-        let textContent = "DANH SACH SAN PHAM\n\n";
-        
-        let count = 0;
-        // Giới hạn 5 sản phẩm để đảm bảo QR Code không bị quá dung lượng hoặc lỗi
-        for (let i = 0; i < rows.length; i++) {
-            if (rows[i].style.display !== 'none') {
-                const id = rows[i].dataset.id || '';
-                const name = removeAccents(rows[i].dataset.name || '');
-                const price = rows[i].dataset.minprice || '0';
-                const formattedPrice = parseInt(price).toLocaleString('vi-VN') + ' d';
-                
-                textContent += "Ma SP: " + id + "\n";
-                textContent += "Ten: " + name + "\n";
-                textContent += "Gia: " + formattedPrice + "\n";
-                textContent += "------------------\n";
-                
-                count++;
-                if (count >= 5) {
-                    textContent += "(Hien thi " + count + " SP dau tien)\n";
-                    break;
-                }
-            }
-        }
-        
-        if (count === 0) {
-            textContent += "Khong co san pham nao.\n";
-        }
-
-        try {
-            qrcodeObj = new QRCode(qrContainer, {
-                text: textContent,
-                width: 250,
-                height: 250,
-                colorDark : "#0f172a",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M 
-            });
-        } catch (e) {
-            console.error("QR Code Error: ", e);
-            qrContainer.innerHTML = '<p style="color:red; text-align:center;">Lỗi tạo QR Code. Dữ liệu quá dài.</p>';
-        }
-    }
-    
-    function closeQRModal() {
-        document.getElementById('qrModal').style.display = 'none';
-    }
-</script>
 
 <%-- Toast thông báo dùng chung --%>
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />

@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import project.duan1_sd21301.model.Address;
 
 import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "nhan_vien")
@@ -52,13 +53,21 @@ public class Employee {
     @Column(name = "cccd", length = 20)
     String cccd;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_dia_chi")
     Address address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_vai_tro")
     Role role;
+
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    @Builder.Default
+    LocalDateTime updatedAt = LocalDateTime.now();
 
     @Transient
     public void setAddressString(String addressStr) {

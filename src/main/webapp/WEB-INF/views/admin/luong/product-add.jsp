@@ -969,6 +969,7 @@
                         newGenerated[color].push({ 
                             size: size, 
                             stock: 10, 
+                            costPrice: 0,
                             price: 0,
                             style: '',
                             weight: 0.5,
@@ -1012,16 +1013,16 @@
                         `;
                     }
                     tbodyHtml += `
-                            <td style="width: 10%;">
+                            <td style="width: 8%;">
                                 <input type="text" class="form-input" value="\${v.size}" readonly style="background: #f8fafc; color: #475569; font-weight: 600; border-color: #e2e8f0; pointer-events: none; margin-bottom: 4px;">
                                 <input type="hidden" name="variantSize" value="\${v.size}">
                                 <input type="hidden" name="variantColor" value="\${color}">
                                 <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || 'anh-default.png'}">
                             </td>
-                            <td style="width: 13%;">
+                            <td style="width: 10%;">
                                 <input type="text" name="variantStyle" class="form-input style-input-\${cIdx}" placeholder="Ví dụ: Slim-fit" value="\${v.style || ''}" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">
                             </td>
-                            <td style="width: 22%;">
+                            <td style="width: 20%;">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
                                     <div style="display: flex; align-items: center; gap: 4px;">
                                         <span style="font-size: 11px; color: #64748b; width: 28px;">Dài</span>
@@ -1041,16 +1042,19 @@
                                     </div>
                                 </div>
                             </td>
-                            <td style="width: 13%;">
-                                <input type="text" name="variantPrice" class="form-input price-input-\${cIdx}" value="\${(v.price || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'price')">
+                            <td style="width: 12%;">
+                                <input type="text" name="variantCostPrice" class="form-input cp-input-\${cIdx}" value="\${(v.costPrice || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'costPrice')">
                             </td>
                             <td style="width: 12%;">
+                                <input type="text" name="variantPrice" class="form-input price-input-\${cIdx}" value="\${(v.price || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'price')">
+                            </td>
+                            <td style="width: 10%;">
                                 <input type="text" name="variantStock" class="form-input stock-input-\${cIdx}" value="\${(v.stock || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'stock')">
                             </td>
-                            <td style="width: 15%;">
+                            <td style="width: 13%;">
                                 <select name="variantStatus" class="form-select status-input-\${cIdx}" style="padding: 6px; font-size: 12px;" onchange="updateVariantData('\${color}', '\${v.size}', 'status', this.value)">
-                                    <option value="Còn hàng" \${v.status === 'Còn hàng' || v.status === 'Hoạt động' ? 'selected' : ''}>Còn hàng</option>
-                                    <option value="Hết hàng" \${v.status === 'Hết hàng' || v.status === 'Ngừng hoạt động' ? 'selected' : ''}>Hết hàng</option>
+                                    <option value="Còn hàng" \${v.status === 'Còn hàng' || v.status === 'AVAILABLE' ? 'selected' : ''}>Còn hàng</option>
+                                    <option value="Hết hàng" \${v.status === 'Hết hàng' || v.status === 'OUT_OF_STOCK' ? 'selected' : ''}>Hết hàng</option>
                                 </select>
                             </td>
                             <td style="width: 5%; text-align: center;">
@@ -1081,6 +1085,7 @@
                                     <th>Kích cỡ</th>
                                     <th>Kiểu dáng</th>
                                     <th>Thông số (cm, kg)</th>
+                                    <th>Giá gốc</th>
                                     <th>Đơn giá</th>
                                     <th>Số lượng</th>
                                     <th>Trạng thái</th>
@@ -1154,7 +1159,7 @@
             if (generatedVariants[color]) {
                 const variant = generatedVariants[color].find(v => v.size === size);
                 if (variant) {
-                    if (['length', 'width', 'thickness', 'weight', 'price', 'stock'].includes(field)) {
+                    if (['length', 'width', 'thickness', 'weight', 'costPrice', 'price', 'stock'].includes(field)) {
                         if (parseFloat(value) < 0) value = 0;
                     }
                     variant[field] = value;
@@ -1188,6 +1193,7 @@
                         const targetVar = generatedVariants[targetColor].find(v => v.size === size);
                         if (targetVar) {
                             targetVar.stock = sourceVar.stock;
+                            targetVar.costPrice = sourceVar.costPrice;
                             targetVar.price = sourceVar.price;
                             targetVar.style = sourceVar.style;
                             targetVar.length = sourceVar.length;
@@ -1530,8 +1536,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             <% for (project.duan1_sd21301.model.luong.ProductDetail d : product.getDetails()) { %>
-                var c = "<%= d.getColor() != null ? d.getColor().replace("\"", "\\\"") : "" %>";
-                var s = "<%= d.getSize() != null ? d.getSize().replace("\"", "\\\"") : "" %>";
+                var c = "<%= d.getColor() != null ? d.getColor().getName().replace("\"", "\\\"") : "" %>";
+                var s = "<%= d.getSize() != null ? d.getSize().getName().replace("\"", "\\\"") : "" %>";
                 
                 if (c && !selectedColors.includes(c)) {
                     selectedColors.push(c);
@@ -1544,7 +1550,7 @@
                 }
                 generatedVariants[c].push({
                     size: s,
-                    style: "<%= d.getStyle() != null ? d.getStyle().replace("\"", "\\\"") : "" %>",
+                    style: "<%= d.getStyle() != null ? d.getStyle().getName().replace("\"", "\\\"") : "" %>",
                     price: <%= d.getPrice() %>,
                     stock: <%= d.getStock() %>,
                     weight: <%= d.getWeight() %>,

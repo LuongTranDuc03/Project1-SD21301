@@ -55,7 +55,6 @@
                             .action-icon-btn:hover {
                                 background-color: #f8fafc;
                                 color: #0f172a;
-                            }
                             .badge-status {
                                 display: inline-block;
                                 padding: 2px 8px;
@@ -400,15 +399,15 @@
                                                     <label>Trạng thái</label>
                                                     <div style="display: flex; align-items: center; gap: 16px; height: 38px;">
                                                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterStatus" value="Tất cả" onchange="this.form.submit()" ${requestScope.filterStatusVal == null || requestScope.filterStatusVal == 'Tất cả' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
+                                                            <input type="radio" name="filterStatus" value="-1" onchange="this.form.submit()" ${requestScope.filterStatusVal == null || requestScope.filterStatusVal == '-1' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
                                                             Tất cả
                                                         </label>
                                                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterStatus" value="Hoạt động" onchange="this.form.submit()" ${requestScope.filterStatusVal == 'Hoạt động' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
+                                                            <input type="radio" name="filterStatus" value="1" onchange="this.form.submit()" ${requestScope.filterStatusVal == '1' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
                                                             Hoạt động
                                                         </label>
                                                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterStatus" value="Khóa" onchange="this.form.submit()" ${requestScope.filterStatusVal == 'Khóa' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
+                                                            <input type="radio" name="filterStatus" value="0" onchange="this.form.submit()" ${requestScope.filterStatusVal == '0' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
                                                             Khóa
                                                         </label>
                                                     </div>
@@ -419,7 +418,7 @@
                                                     <% if ((request.getAttribute("searchVal") !=null && !((String)request.getAttribute("searchVal")).isEmpty()) ||
                                                            (request.getAttribute("filterGenderVal") !=null && !((String)request.getAttribute("filterGenderVal")).equals("Tất cả")) ||
                                                            (request.getAttribute("filterAddressVal") !=null && !((String)request.getAttribute("filterAddressVal")).isEmpty()) ||
-                                                           (request.getAttribute("filterStatusVal") !=null && !((String)request.getAttribute("filterStatusVal")).equals("Tất cả"))) {
+                                                           (request.getAttribute("filterStatusVal") !=null && !((String)request.getAttribute("filterStatusVal")).equals("-1"))) {
                                                     %>
                                                         <a href="<%= contextPath %>/admin/customers" class="btn-reset-filter" style="text-decoration: none;">
                                                             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg>
@@ -513,7 +512,7 @@
                                                                         %>
                                                                 </td>
                                                                 <td style="text-align: center;">
-                                                                    <% if ("Hoạt động".equalsIgnoreCase(c.getStatus())) { %>
+                                                                    <% if (c.getStatus() != null && c.getStatus() == 1) { %>
                                                                         <span class="badge-status available">Hoạt động</span>
                                                                     <% } else { %>
                                                                         <span class="badge-status out_of_stock">Khóa</span>
@@ -549,9 +548,9 @@
                                                                                 <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                                             </svg>
                                                                         </a>
-                                                                        <label class="switch" title="<%= "Hoạt động".equalsIgnoreCase(c.getStatus()) ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
+                                                                        <label class="switch" title="<%= c.getStatus() != null && c.getStatus() == 1 ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
                                                                             <input type="checkbox"
-                                                                                <%= "Hoạt động".equalsIgnoreCase(c.getStatus()) ? "checked" : "" %>
+                                                                                <%= c.getStatus() != null && c.getStatus() == 1 ? "checked" : "" %>
                                                                                 onchange="toggleCustomerStatus('<%= c.getId() %>')">
                                                                             <span class="slider"></span>
                                                                         </label>

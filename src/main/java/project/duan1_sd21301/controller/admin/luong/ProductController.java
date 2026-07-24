@@ -36,8 +36,12 @@ public class ProductController extends HttpServlet {
                 int stt = 1;
                 for (Product prod : products) {
                     String name = prod.getName() != null ? prod.getName().replace("\"", "\"\"") : "";
-                    String brand = prod.getBrand() != null ? prod.getBrand().replace("\"", "\"\"") : "N/A";
-                    String category = prod.getCategory() != null ? prod.getCategory().replace("\"", "\"\"") : "";
+                    String brand = (prod.getBrand() != null && prod.getBrand().getName() != null)
+                            ? prod.getBrand().getName().replace("\"", "\"\"")
+                            : "N/A";
+                    String category = (prod.getCategory() != null && prod.getCategory().getName() != null)
+                            ? prod.getCategory().getName().replace("\"", "\"\"")
+                            : "";
                     String priceRange = prod.getPriceRangeFormatted().replace("\"", "\"\"");
 
                     String statusLabel = "";
@@ -77,7 +81,8 @@ public class ProductController extends HttpServlet {
                     request.setAttribute("colors", productService.getAllColors());
                     request.setAttribute("sizes", productService.getAllSizes());
                     request.setAttribute("styles", productService.getAllStyles());
-                    request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request,
+                            response);
                     return;
                 }
             }
@@ -89,7 +94,8 @@ public class ProductController extends HttpServlet {
             if (targetProduct != null) {
                 request.setAttribute("pageTitle", "Chi tiết sản phẩm " + productCode);
                 request.setAttribute("product", targetProduct);
-                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request,
+                        response);
                 return;
             }
         }
@@ -142,25 +148,53 @@ public class ProductController extends HttpServlet {
                     int variantId = Integer.parseInt(variantIdStr);
                     ProductDetail detail = productService.getDetailById(variantId);
                     if (detail != null) {
-                        detail.setColor(request.getParameter("color"));
-                        detail.setSize(request.getParameter("size"));
-                        detail.setStyle(request.getParameter("style"));
+                        detail.setColor(project.duan1_sd21301.model.luong.Color.builder()
+                                .name(request.getParameter("color")).build());
+                        detail.setSize(project.duan1_sd21301.model.luong.Size.builder()
+                                .name(request.getParameter("size")).build());
+                        detail.setStyle(project.duan1_sd21301.model.luong.Style.builder()
+                                .name(request.getParameter("style")).build());
 
-                        try { detail.setPrice(Double.parseDouble(request.getParameter("price"))); } catch (Exception ignored) {}
-                        try { detail.setStock(Integer.parseInt(request.getParameter("stock"))); } catch (Exception ignored) {}
-                        try { detail.setWeight(Double.parseDouble(request.getParameter("weight"))); } catch (Exception ignored) {}
-                        try { detail.setLength(Double.parseDouble(request.getParameter("length"))); } catch (Exception ignored) {}
-                        try { detail.setWidth(Double.parseDouble(request.getParameter("width"))); } catch (Exception ignored) {}
-                        try { detail.setThickness(Double.parseDouble(request.getParameter("thickness"))); } catch (Exception ignored) {}
+                        try {
+                            detail.setPrice(Double.parseDouble(request.getParameter("price")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setCostPrice(Double.parseDouble(request.getParameter("costPrice")));
+                        } catch (Exception ignored) {
+                        }
+                        detail.setBarcode(request.getParameter("barcode"));
+                        try {
+                            detail.setStock(Integer.parseInt(request.getParameter("stock")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setWeight(Double.parseDouble(request.getParameter("weight")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setLength(Double.parseDouble(request.getParameter("length")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setWidth(Double.parseDouble(request.getParameter("width")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
+                        } catch (Exception ignored) {
+                        }
                         detail.setStatus(request.getParameter("status"));
 
                         String imagesParam = request.getParameter("images");
                         if (imagesParam != null) {
-                            if (imagesParam.trim().isEmpty()) {
-                                detail.setImages(new ArrayList<>());
-                            } else {
-                                detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
+                            List<project.duan1_sd21301.model.luong.Image> imgList = new ArrayList<>();
+                            if (!imagesParam.trim().isEmpty()) {
+                                for (String s : imagesParam.split(",")) {
+                                    imgList.add(project.duan1_sd21301.model.luong.Image.builder().url(s).build());
+                                }
                             }
+                            detail.setImages(imgList);
                         }
                         productService.updateProductDetail(detail);
                     }
@@ -194,25 +228,54 @@ public class ProductController extends HttpServlet {
                 if (targetProduct != null) {
                     ProductDetail detail = ProductDetail.builder()
                             .product(targetProduct)
-                            .color(request.getParameter("color"))
-                            .size(request.getParameter("size"))
-                            .style(request.getParameter("style"))
+                            .color(project.duan1_sd21301.model.luong.Color.builder().name(request.getParameter("color"))
+                                    .build())
+                            .size(project.duan1_sd21301.model.luong.Size.builder().name(request.getParameter("size"))
+                                    .build())
+                            .style(project.duan1_sd21301.model.luong.Style.builder().name(request.getParameter("style"))
+                                    .build())
                             .status(request.getParameter("status"))
                             .build();
 
-                    try { detail.setPrice(Double.parseDouble(request.getParameter("price"))); } catch (Exception ignored) {}
-                    try { detail.setStock(Integer.parseInt(request.getParameter("stock"))); } catch (Exception ignored) {}
-                    try { detail.setWeight(Double.parseDouble(request.getParameter("weight"))); } catch (Exception ignored) {}
-                    try { detail.setLength(Double.parseDouble(request.getParameter("length"))); } catch (Exception ignored) {}
-                    try { detail.setWidth(Double.parseDouble(request.getParameter("width"))); } catch (Exception ignored) {}
-                    try { detail.setThickness(Double.parseDouble(request.getParameter("thickness"))); } catch (Exception ignored) {}
+                    try {
+                        detail.setPrice(Double.parseDouble(request.getParameter("price")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setCostPrice(Double.parseDouble(request.getParameter("costPrice")));
+                    } catch (Exception ignored) {
+                    }
+                    detail.setBarcode(request.getParameter("barcode"));
+                    try {
+                        detail.setStock(Integer.parseInt(request.getParameter("stock")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setWeight(Double.parseDouble(request.getParameter("weight")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setLength(Double.parseDouble(request.getParameter("length")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setWidth(Double.parseDouble(request.getParameter("width")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
+                    } catch (Exception ignored) {
+                    }
 
                     String imagesParam = request.getParameter("images");
+                    List<project.duan1_sd21301.model.luong.Image> imgList = new ArrayList<>();
                     if (imagesParam != null && !imagesParam.trim().isEmpty()) {
-                        detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
+                        for (String s : imagesParam.split(","))
+                            imgList.add(project.duan1_sd21301.model.luong.Image.builder().url(s).build());
                     } else {
-                        detail.setImages(new ArrayList<>(Arrays.asList("anh-default.png")));
+                        imgList.add(project.duan1_sd21301.model.luong.Image.builder().url("anh-default.png").build());
                     }
+                    detail.setImages(imgList);
 
                     productService.addProductDetail(detail);
                 }
@@ -257,6 +320,8 @@ public class ProductController extends HttpServlet {
         String[] colors = request.getParameterValues("variantColor");
         String[] styles = request.getParameterValues("variantStyle");
         String[] prices = request.getParameterValues("variantPrice");
+        String[] costPrices = request.getParameterValues("variantCostPrice");
+        String[] barcodes = request.getParameterValues("variantBarcode");
         String[] stocks = request.getParameterValues("variantStock");
         String[] weights = request.getParameterValues("variantWeight");
         String[] lengths = request.getParameterValues("variantLength");
@@ -266,39 +331,82 @@ public class ProductController extends HttpServlet {
 
         List<ProductDetail> details = new ArrayList<>();
         double minPrice = Double.MAX_VALUE;
+        double minCostPrice = Double.MAX_VALUE;
 
         if (sizes != null) {
             for (int i = 0; i < sizes.length; i++) {
                 double p = 0.0;
+                double cp = 0.0;
+                String bc = null;
                 int st = 0;
                 double w = 0.0;
                 double l = 0.0;
                 double wd = 0.0;
                 double th = 0.0;
 
-                try { if (prices != null && prices[i] != null) p = Double.parseDouble(prices[i].replace(",", "")); } catch (Exception ignored) {}
-                try { if (stocks != null && stocks[i] != null) st = Integer.parseInt(stocks[i].replace(",", "")); } catch (Exception ignored) {}
-                try { if (weights != null && weights[i] != null) w = Double.parseDouble(weights[i]); } catch (Exception ignored) {}
-                try { if (lengths != null && lengths[i] != null) l = Double.parseDouble(lengths[i]); } catch (Exception ignored) {}
-                try { if (widths != null && widths[i] != null) wd = Double.parseDouble(widths[i]); } catch (Exception ignored) {}
-                try { if (thicknesses != null && thicknesses[i] != null) th = Double.parseDouble(thicknesses[i]); } catch (Exception ignored) {}
+                try {
+                    if (prices != null && prices[i] != null)
+                        p = Double.parseDouble(prices[i].replace(",", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (costPrices != null && costPrices[i] != null)
+                        cp = Double.parseDouble(costPrices[i].replace(",", ""));
+                } catch (Exception ignored) {
+                }
+                if (barcodes != null && barcodes[i] != null) {
+                    bc = barcodes[i];
+                }
+                try {
+                    if (stocks != null && stocks[i] != null)
+                        st = Integer.parseInt(stocks[i].replace(",", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (weights != null && weights[i] != null)
+                        w = Double.parseDouble(weights[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (lengths != null && lengths[i] != null)
+                        l = Double.parseDouble(lengths[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (widths != null && widths[i] != null)
+                        wd = Double.parseDouble(widths[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (thicknesses != null && thicknesses[i] != null)
+                        th = Double.parseDouble(thicknesses[i]);
+                } catch (Exception ignored) {
+                }
 
-                if (p < minPrice) minPrice = p;
+                if (p < minPrice)
+                    minPrice = p;
+                if (cp < minCostPrice && cp > 0)
+                    minCostPrice = cp;
 
-                String imgStr = (variantImages != null && variantImages.length > i) ? variantImages[i] : "anh-default.png";
-                List<String> imgList = new ArrayList<>();
+                String imgStr = (variantImages != null && variantImages.length > i) ? variantImages[i]
+                        : "anh-default.png";
+                List<project.duan1_sd21301.model.luong.Image> imgList = new ArrayList<>();
                 if (imgStr != null && !imgStr.trim().isEmpty()) {
                     for (String s : imgStr.split(",")) {
-                        if (!s.trim().isEmpty()) imgList.add(s.trim());
+                        if (!s.trim().isEmpty())
+                            imgList.add(project.duan1_sd21301.model.luong.Image.builder().url(s.trim()).build());
                     }
                 }
-                if (imgList.isEmpty()) imgList.add("anh-default.png");
+                if (imgList.isEmpty())
+                    imgList.add(project.duan1_sd21301.model.luong.Image.builder().url("anh-default.png").build());
 
                 ProductDetail detail = ProductDetail.builder()
-                        .size(sizes[i])
-                        .color(colors[i])
-                        .style(styles[i])
+                        .size(project.duan1_sd21301.model.luong.Size.builder().name(sizes[i]).build())
+                        .color(project.duan1_sd21301.model.luong.Color.builder().name(colors[i]).build())
+                        .style(project.duan1_sd21301.model.luong.Style.builder().name(styles[i]).build())
                         .price(p)
+                        .costPrice(cp)
+                        .barcode(bc)
                         .stock(st)
                         .weight(w)
                         .length(l)
@@ -311,19 +419,26 @@ public class ProductController extends HttpServlet {
             }
         }
 
-        if (minPrice == Double.MAX_VALUE) minPrice = 0.0;
-        String computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? "OUT_OF_STOCK" : "AVAILABLE";
+        if (minPrice == Double.MAX_VALUE)
+            minPrice = 0.0;
+        if (minCostPrice == Double.MAX_VALUE)
+            minCostPrice = 0.0;
+            
+        String computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? "OUT_OF_STOCK"
+                : "AVAILABLE";
 
         if (isEdit) {
             Product existingProduct = productService.getProductByCode(code);
             if (existingProduct != null) {
                 existingProduct.setName(name);
-                existingProduct.setCategory(category);
-                existingProduct.setBrand(brand);
-                existingProduct.setOrigin(origin);
+                existingProduct
+                        .setCategory(project.duan1_sd21301.model.luong.Category.builder().name(category).build());
+                existingProduct.setBrand(project.duan1_sd21301.model.luong.Brand.builder().name(brand).build());
+                existingProduct.setOrigin(project.duan1_sd21301.model.luong.Origin.builder().name(origin).build());
                 existingProduct.setCareInstructions(careInstructions);
                 existingProduct.setDescription(description);
                 existingProduct.setPrice(minPrice);
+                existingProduct.setCostPrice(minCostPrice);
                 existingProduct.setStatus(computedStatus);
 
                 productService.updateProduct(existingProduct);
@@ -337,9 +452,9 @@ public class ProductController extends HttpServlet {
                 Product temp = Product.builder()
                         .code(code)
                         .name(name)
-                        .category(category)
-                        .brand(brand)
-                        .origin(origin)
+                        .category(project.duan1_sd21301.model.luong.Category.builder().name(category).build())
+                        .brand(project.duan1_sd21301.model.luong.Brand.builder().name(brand).build())
+                        .origin(project.duan1_sd21301.model.luong.Origin.builder().name(origin).build())
                         .careInstructions(careInstructions)
                         .description(description)
                         .details(details)
@@ -354,12 +469,13 @@ public class ProductController extends HttpServlet {
             Product newProduct = Product.builder()
                     .code(code)
                     .name(name)
-                    .category(category)
-                    .brand(brand)
-                    .origin(origin)
+                    .category(project.duan1_sd21301.model.luong.Category.builder().name(category).build())
+                    .brand(project.duan1_sd21301.model.luong.Brand.builder().name(brand).build())
+                    .origin(project.duan1_sd21301.model.luong.Origin.builder().name(origin).build())
                     .careInstructions(careInstructions)
                     .description(description)
                     .price(minPrice)
+                    .costPrice(minCostPrice)
                     .status(computedStatus)
                     .details(details)
                     .build();

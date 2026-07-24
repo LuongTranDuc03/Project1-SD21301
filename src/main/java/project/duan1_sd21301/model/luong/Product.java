@@ -6,6 +6,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "san_pham")
 @Data
@@ -31,11 +33,16 @@ public class Product {
     @Column(name = "doi_tuong", length = 50, columnDefinition = "NVARCHAR(50)")
     String targetGender;
 
-    @Column(name = "xuat_xu", length = 100, columnDefinition = "NVARCHAR(100)")
-    String origin;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_xuat_xu")
+    Origin origin;
 
     @Column(name = "huong_dan_bao_quan", columnDefinition = "NVARCHAR(MAX)")
     String careInstructions;
+
+    @Column(name = "gia_goc")
+    @Builder.Default
+    double costPrice = 0.0;
 
     @Column(name = "gia_ban")
     @Builder.Default
@@ -49,13 +56,15 @@ public class Product {
     @Builder.Default
     String status = "AVAILABLE";
 
-    @Transient
-    String category;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_danh_muc")
+    Category category;
 
-    @Transient
-    String brand;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_thuong_hieu")
+    Brand brand;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     List<ProductDetail> details;
@@ -69,6 +78,13 @@ public class Product {
             total += d.getStock();
         return total;
     }
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    @Builder.Default
+    LocalDateTime updatedAt = LocalDateTime.now();
 
     @Transient
     public String getEffectiveStatus() {

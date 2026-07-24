@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.6.1.jre11</version>
+            <version>13.2.1.jre11</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -52,13 +52,13 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
         </dependency>
         <!-- Microsoft SQL Server JDBC Driver -->
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.6.1.jre11</version>
+            <version>13.2.1.jre11</version>
         </dependency>
         <!-- JPA API & Hibernate Core -->
         <dependency>
@@ -77,7 +77,23 @@
             <artifactId>google-api-client</artifactId>
             <version>2.4.0</version>
         </dependency>
+		
+        <!-- Jackson - Parse JSON từ Province API -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.1</version>
+        </dependency>
+
+
+ <!-- Apache POI - Xuất file Excel -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.4.0</version>
+        </dependency>
     </dependencies>
+
 
     <build>
         <plugins>

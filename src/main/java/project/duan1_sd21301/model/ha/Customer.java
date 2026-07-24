@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "khach_hang")
@@ -46,9 +47,17 @@ public class Customer {
     @Column(name = "anh_dai_dien", length = 500, columnDefinition = "NVARCHAR(500)")
     String avatar;
 
-    @Column(name = "trang_thai", length = 50, columnDefinition = "NVARCHAR(50)")
+    @Column(name = "trang_thai")
     @Builder.Default
-    String status = "Hoạt động";
+    Integer status = 1;
+
+    @Column(name = "created_at")
+    @Builder.Default
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    @Builder.Default
+    LocalDateTime updatedAt = LocalDateTime.now();
 
     @Transient
     @Builder.Default

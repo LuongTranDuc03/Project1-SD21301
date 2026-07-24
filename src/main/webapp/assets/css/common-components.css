@@ -1,0 +1,147 @@
+/* Custom card style with border radius and header */
+.custom-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card-header-bar {
+    background-color: #12192D;
+    color: #ffffff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.toggle-filter-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.toggle-filter-btn:hover {
+    color: #ffffff;
+}
+.card-body-content {
+    padding: 20px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    max-height: 1000px;
+}
+.card-body-content.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: none;
+}
+
+/* Filter Grid Layout */
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px 24px;
+}
+@media (max-width: 992px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 576px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.filter-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+.filter-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    height: 38px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #1e293b;
+    background: #ffffff;
+    outline: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.filter-control:focus {
+    border-color: #12192D;
+    box-shadow: 0 0 0 3px rgba(18, 25, 45, 0.08);
+}
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 0 12px;
+    height: 38px;
+    transition: all 0.2s;
+}
+.search-box:focus-within {
+    border-color: #12192D;
+    box-shadow: 0 0 0 3px rgba(18, 25, 45, 0.08);
+}
+.search-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    font-size: 13px;
+    font-family: inherit;
+    color: #1e293b;
+    background: transparent;
+}
+.search-box input::placeholder {
+    color: #94a3b8;
+}
+.search-box svg {
+    color: #64748b;
+    margin-right: 8px;
+}
+.category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.cat-pill {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #f1f5f9;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.cat-pill:hover {
+    background: #e2e8f0;
+}
+.cat-pill.active {
+    background: #12192D;
+    color: #ffffff;
+}
