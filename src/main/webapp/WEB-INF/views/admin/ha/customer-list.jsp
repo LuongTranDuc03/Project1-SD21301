@@ -7,6 +7,7 @@
     // Đường dẫn gốc ứng dụng (Context Path) dùng cho việc định tuyến và tải file tĩnh (CSS/JS)
     String contextPath = request.getContextPath(); 
 %>
+
                     <!DOCTYPE html>
                     <html lang="vi">
 

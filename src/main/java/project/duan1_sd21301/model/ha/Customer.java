@@ -18,6 +18,7 @@ import java.util.ArrayList;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Customer {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;

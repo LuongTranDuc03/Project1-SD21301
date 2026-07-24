@@ -22,6 +22,7 @@ public class CustomerValidator {
     ) {
         List<String> errors = new ArrayList<>();
 
+
         // 1. Mã khách hàng
         if (code == null || code.trim().isEmpty()) {
             errors.add("Mã khách hàng không được để trống.");

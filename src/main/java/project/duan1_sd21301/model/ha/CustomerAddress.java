@@ -15,6 +15,7 @@ import project.duan1_sd21301.model.Address;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerAddress {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
