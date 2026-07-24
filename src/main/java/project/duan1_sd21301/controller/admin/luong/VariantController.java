@@ -15,6 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(name = "VariantController", value = "/admin/variants")
+@jakarta.servlet.annotation.MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class VariantController extends HttpServlet {
 
     private final ProductService productService = new ProductServiceImpl();
@@ -90,7 +95,58 @@ public class VariantController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
-        if ("edit".equals(action)) {
+        if ("add".equals(action)) {
+            String productCode = request.getParameter("productCode");
+            String color = request.getParameter("color");
+            String size = request.getParameter("size");
+            String style = request.getParameter("style");
+            String importPriceStr = request.getParameter("importPrice");
+            String priceStr = request.getParameter("price");
+            String stockStr = request.getParameter("stock");
+            String weightStr = request.getParameter("weight");
+            String lengthStr = request.getParameter("length");
+            String widthStr = request.getParameter("width");
+            String thicknessStr = request.getParameter("thickness");
+
+            Product product = productService.getProductByCode(productCode);
+            if (product != null) {
+                ProductDetail detail = new ProductDetail();
+                detail.setProduct(product);
+                detail.setColor(color);
+                detail.setSize(size);
+                detail.setStyle(style);
+                try {
+                    if (importPriceStr != null && !importPriceStr.isEmpty()) detail.setImportPrice(Double.parseDouble(importPriceStr.replace(",", "")));
+                    if (priceStr != null && !priceStr.isEmpty()) detail.setPrice(Double.parseDouble(priceStr.replace(",", "")));
+                    if (stockStr != null && !stockStr.isEmpty()) detail.setStock(Integer.parseInt(stockStr.replace(",", "")));
+                    if (weightStr != null && !weightStr.isEmpty()) detail.setWeight(Double.parseDouble(weightStr.replace(",", "")));
+                    if (lengthStr != null && !lengthStr.isEmpty()) detail.setLength(Double.parseDouble(lengthStr.replace(",", "")));
+                    if (widthStr != null && !widthStr.isEmpty()) detail.setWidth(Double.parseDouble(widthStr.replace(",", "")));
+                    if (thicknessStr != null && !thicknessStr.isEmpty()) detail.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
+                } catch (Exception ignored) {}
+
+                try {
+                    jakarta.servlet.http.Part filePart = request.getPart("variantImage");
+                    if (filePart != null && filePart.getSize() > 0 && filePart.getSubmittedFileName() != null && !filePart.getSubmittedFileName().trim().isEmpty()) {
+                        try (java.io.InputStream is = filePart.getInputStream()) {
+                            String uploadedUrl = project.duan1_sd21301.util.CloudinaryUtil.uploadImage(is, "product_variants");
+                            if (uploadedUrl != null && !uploadedUrl.trim().isEmpty()) {
+                                List<String> images = new ArrayList<>();
+                                images.add(uploadedUrl);
+                                detail.setImages(images);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠️ Variant image upload error: " + e.getMessage());
+                }
+
+                productService.addProductDetail(detail);
+                jakarta.servlet.http.HttpSession session = request.getSession();
+                session.setAttribute("toastMessage", "Thêm biến thể thành công!");
+                session.setAttribute("toastType", "success");
+            }
+        } else if ("edit".equals(action)) {
             String variantIdStr = request.getParameter("variantId");
             String productCode = request.getParameter("productCode");
             String color = request.getParameter("color");
@@ -144,6 +200,22 @@ public class VariantController extends HttpServlet {
                     if (thicknessStr != null && !thicknessStr.isEmpty())
                         detail.setThickness(Double.parseDouble(thicknessStr.replace(",", "")));
                 } catch (NumberFormatException ignored) {}
+
+                try {
+                    jakarta.servlet.http.Part filePart = request.getPart("variantImage");
+                    if (filePart != null && filePart.getSize() > 0 && filePart.getSubmittedFileName() != null && !filePart.getSubmittedFileName().trim().isEmpty()) {
+                        try (java.io.InputStream is = filePart.getInputStream()) {
+                            String uploadedUrl = project.duan1_sd21301.util.CloudinaryUtil.uploadImage(is, "product_variants");
+                            if (uploadedUrl != null && !uploadedUrl.trim().isEmpty()) {
+                                List<String> images = new ArrayList<>();
+                                images.add(uploadedUrl);
+                                detail.setImages(images);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠️ Variant image upload error: " + e.getMessage());
+                }
 
                 productService.updateProductDetail(detail);
 

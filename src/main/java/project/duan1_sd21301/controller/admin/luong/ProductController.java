@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 @WebServlet(name = "ProductController", value = "/admin/products")
+@jakarta.servlet.annotation.MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024
+        * 10, maxRequestSize = 1024 * 1024 * 50)
 public class ProductController extends HttpServlet {
 
     private final ProductService productService = new ProductServiceImpl();
@@ -129,7 +131,8 @@ public class ProductController extends HttpServlet {
                 Product p = productService.getProductByCode(productCode.trim());
                 if (p != null) {
                     String currentEff = p.getEffectiveStatus();
-                    String newStatus = ("OUT_OF_STOCK".equalsIgnoreCase(currentEff) || "OUT_OF_STOCK".equalsIgnoreCase(p.getStatus())) ? "AVAILABLE" : "OUT_OF_STOCK";
+                    String newStatus = ("OUT_OF_STOCK".equalsIgnoreCase(currentEff)
+                            || "OUT_OF_STOCK".equalsIgnoreCase(p.getStatus())) ? "AVAILABLE" : "OUT_OF_STOCK";
                     p.setStatus(newStatus);
                     boolean ok = productService.updateProduct(p);
                     response.setContentType("application/json");
@@ -253,11 +256,31 @@ public class ProductController extends HttpServlet {
                     } catch (Exception ignored) {
                     }
 
-                    String imagesParam = request.getParameter("images");
-                    if (imagesParam != null && !imagesParam.trim().isEmpty()) {
-                        detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
-                    } else {
-                        detail.setImages(new ArrayList<>(Arrays.asList("anh-default.png")));
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("variantImage");
+                        if (filePart == null) {
+                            filePart = request.getPart("image");
+                        }
+                        if (filePart != null && filePart.getSize() > 0 && filePart.getSubmittedFileName() != null
+                                && !filePart.getSubmittedFileName().trim().isEmpty()) {
+                            try (java.io.InputStream is = filePart.getInputStream()) {
+                                String uploadedUrl = project.duan1_sd21301.util.CloudinaryUtil.uploadImage(is,
+                                        "product_variants");
+                                if (uploadedUrl != null && !uploadedUrl.trim().isEmpty()) {
+                                    detail.setImages(new ArrayList<>(Arrays.asList(uploadedUrl)));
+                                }
+                            }
+                        }
+                    } catch (Exception ignored) {
+                    }
+
+                    if (detail.getImages() == null || detail.getImages().isEmpty()) {
+                        String imagesParam = request.getParameter("images");
+                        if (imagesParam != null && !imagesParam.trim().isEmpty()) {
+                            detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
+                        } else {
+                            detail.setImages(new ArrayList<>(Arrays.asList("anh-default.png")));
+                        }
                     }
 
                     productService.addProductDetail(detail);
@@ -299,6 +322,7 @@ public class ProductController extends HttpServlet {
         String careInstructions = request.getParameter("careInstructions");
         String description = request.getParameter("description");
 
+        String[] variantIds = request.getParameterValues("variantId");
         String[] sizes = request.getParameterValues("variantSize");
         String[] colors = request.getParameterValues("variantColor");
         String[] styles = request.getParameterValues("variantStyle");
@@ -316,6 +340,13 @@ public class ProductController extends HttpServlet {
 
         if (sizes != null) {
             for (int i = 0; i < sizes.length; i++) {
+                int vId = 0;
+                try {
+                    if (variantIds != null && variantIds.length > i && variantIds[i] != null
+                            && !variantIds[i].trim().isEmpty())
+                        vId = Integer.parseInt(variantIds[i].trim());
+                } catch (Exception ignored) {
+                }
                 double ip = 0.0;
                 double p = 0.0;
                 int st = 0;
@@ -325,7 +356,8 @@ public class ProductController extends HttpServlet {
                 double th = 0.0;
 
                 try {
-                    if (importPrices != null && importPrices.length > i && importPrices[i] != null && !importPrices[i].trim().isEmpty())
+                    if (importPrices != null && importPrices.length > i && importPrices[i] != null
+                            && !importPrices[i].trim().isEmpty())
                         ip = Double.parseDouble(importPrices[i].replaceAll("[^0-9.]", ""));
                 } catch (Exception ignored) {
                 }
@@ -375,7 +407,12 @@ public class ProductController extends HttpServlet {
                 if (imgList.isEmpty())
                     imgList.add("anh-default.png");
 
+                String detailCode = (code != null ? code : "CTSP") + "-" + colors[i] + "-" + sizes[i];
+                detailCode = detailCode.replaceAll("\\s+", "");
+
                 ProductDetail detail = ProductDetail.builder()
+                        .id(vId)
+                        .code(detailCode)
                         .size(sizes[i])
                         .color(colors[i])
                         .style(styles[i])
@@ -409,6 +446,7 @@ public class ProductController extends HttpServlet {
                 existingProduct.setDescription(description);
                 existingProduct.setPrice(minPrice);
                 existingProduct.setStatus(computedStatus);
+                existingProduct.setDetails(details);
 
                 productService.updateProduct(existingProduct);
                 request.getSession().setAttribute("toastMessage", "Cập nhật sản phẩm thành công!");
@@ -459,7 +497,8 @@ public class ProductController extends HttpServlet {
                 request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thành công!");
                 request.getSession().setAttribute("toastType", "success");
             } else {
-                request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thất bại! Vui lòng kiểm tra lại kết nối CSDL hoặc dữ liệu.");
+                request.getSession().setAttribute("toastMessage",
+                        "Thêm sản phẩm thất bại! Vui lòng kiểm tra lại kết nối CSDL hoặc dữ liệu.");
                 request.getSession().setAttribute("toastType", "error");
             }
         }

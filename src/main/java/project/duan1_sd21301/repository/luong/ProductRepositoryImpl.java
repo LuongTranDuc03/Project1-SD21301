@@ -6,7 +6,11 @@ import project.duan1_sd21301.util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ProductRepositoryImpl implements ProductRepository {
 
@@ -224,9 +228,21 @@ public class ProductRepositoryImpl implements ProductRepository {
                 ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
                 ps.setInt(11, product.getId());
 
-                return ps.executeUpdate() > 0;
+                boolean updated = ps.executeUpdate() > 0;
+                if (updated && product.getDetails() != null) {
+                    syncDeletedDetails(conn, product.getId(), product.getDetails());
+                    for (ProductDetail detail : product.getDetails()) {
+                        detail.setProduct(product);
+                        if (detail.getId() > 0) {
+                            updateDetail(detail);
+                        } else {
+                            insertDetailInternal(conn, detail);
+                        }
+                    }
+                }
+                return updated;
             } catch (SQLException ex1) {
-                String sqlFallback = "UPDATE san_pham SET san_pham_code = ?, ten_san_pham = ?, id_danh_muc = ?, id_thuong_hieu = ?, xuat_xu = ?, "
+                String sqlFallback = "UPDATE san_pham SET san_pham_code = ?, ten_san_pham = ?, id_danh_muc = ?, id_thuong_hieu = ?, id_xuat_xu = ?, "
                         + "mo_ta = ?, huong_dan_bao_quan = ?, gia_ban = ?, da_ban = ?, trang_thai = ? "
                         + "WHERE id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
@@ -248,7 +264,19 @@ public class ProductRepositoryImpl implements ProductRepository {
                     ps.setString(10, product.getStatus() != null ? product.getStatus() : "AVAILABLE");
                     ps.setInt(11, product.getId());
 
-                    return ps.executeUpdate() > 0;
+                    boolean updatedFallback = ps.executeUpdate() > 0;
+                    if (updatedFallback && product.getDetails() != null) {
+                        syncDeletedDetails(conn, product.getId(), product.getDetails());
+                        for (ProductDetail detail : product.getDetails()) {
+                            detail.setProduct(product);
+                            if (detail.getId() > 0) {
+                                updateDetail(detail);
+                            } else {
+                                insertDetailInternal(conn, detail);
+                            }
+                        }
+                    }
+                    return updatedFallback;
                 }
             }
         } catch (SQLException e) {
@@ -348,8 +376,20 @@ public class ProductRepositoryImpl implements ProductRepository {
         String sql = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+        String vCode = detail.getCode();
+        if (vCode == null || vCode.trim().isEmpty()) {
+            String pCode = (detail.getProduct() != null && detail.getProduct().getCode() != null)
+                    ? detail.getProduct().getCode()
+                    : "CTSP";
+            String color = detail.getColor() != null ? detail.getColor() : "";
+            String size = detail.getSize() != null ? detail.getSize() : "";
+            vCode = (pCode + "-" + color + "-" + size).replaceAll("\\s+", "");
+            if (vCode.length() > 50)
+                vCode = vCode.substring(0, 50);
+        }
+
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, detail.getCode());
+            ps.setString(1, vCode);
             ps.setInt(2, detail.getProduct() != null ? detail.getProduct().getId() : 0);
             if (sizeId > 0)
                 ps.setInt(3, sizeId);
@@ -438,8 +478,20 @@ public class ProductRepositoryImpl implements ProductRepository {
                     + "gia_nhap = ?, gia_ban = ?, so_luong = ?, trong_luong = ?, chieu_dai = ?, chieu_rong = ?, do_day = ?, trang_thai = ? "
                     + "WHERE id = ?";
 
+            String vCode = detail.getCode();
+            if (vCode == null || vCode.trim().isEmpty()) {
+                String pCode = (detail.getProduct() != null && detail.getProduct().getCode() != null)
+                        ? detail.getProduct().getCode()
+                        : "CTSP";
+                String color = detail.getColor() != null ? detail.getColor() : "";
+                String size = detail.getSize() != null ? detail.getSize() : "";
+                vCode = (pCode + "-" + color + "-" + size).replaceAll("\\s+", "");
+                if (vCode.length() > 50)
+                    vCode = vCode.substring(0, 50);
+            }
+
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, detail.getCode());
+                ps.setString(1, vCode);
                 if (sizeId > 0)
                     ps.setInt(2, sizeId);
                 else
@@ -474,13 +526,87 @@ public class ProductRepositoryImpl implements ProductRepository {
         return false;
     }
 
+    private void syncDeletedDetails(Connection conn, int productId, List<ProductDetail> keptDetails) {
+        try {
+            Map<Integer, ProductDetail> dbVariantMap = new HashMap<>();
+            Map<String, Integer> dbKeyToIdMap = new HashMap<>();
+
+            String sql = "SELECT ct.id, kt.ten_kich_thuoc, ms.ten_mau_sac "
+                    + "FROM chi_tiet_san_pham ct "
+                    + "LEFT JOIN kich_thuoc kt ON ct.id_kich_thuoc = kt.id "
+                    + "LEFT JOIN mau_sac ms ON ct.id_mau_sac = ms.id "
+                    + "WHERE ct.id_san_pham = ?";
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, productId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int dbId = rs.getInt("id");
+                        String size = rs.getString("ten_kich_thuoc");
+                        String color = rs.getString("ten_mau_sac");
+                        if (size == null)
+                            size = "";
+                        if (color == null)
+                            color = "";
+                        String key = (color.trim() + "|" + size.trim()).toLowerCase();
+                        dbVariantMap.put(dbId, ProductDetail.builder().id(dbId).color(color).size(size).build());
+                        dbKeyToIdMap.put(key, dbId);
+                    }
+                }
+            }
+
+            Set<Integer> matchedDbIds = new HashSet<>();
+
+            if (keptDetails != null) {
+                for (ProductDetail d : keptDetails) {
+                    if (d.getId() > 0 && dbVariantMap.containsKey(d.getId())) {
+                        matchedDbIds.add(d.getId());
+                    } else {
+                        String c = d.getColor() != null ? d.getColor().trim() : "";
+                        String s = d.getSize() != null ? d.getSize().trim() : "";
+                        String key = (c + "|" + s).toLowerCase();
+                        if (dbKeyToIdMap.containsKey(key)) {
+                            int matchedId = dbKeyToIdMap.get(key);
+                            d.setId(matchedId);
+                            matchedDbIds.add(matchedId);
+                        }
+                    }
+                }
+            }
+
+            for (Integer dbId : dbVariantMap.keySet()) {
+                if (!matchedDbIds.contains(dbId)) {
+                    try (PreparedStatement psImg = conn
+                            .prepareStatement("DELETE FROM hinh_anh WHERE id_chi_tiet_san_pham = ?")) {
+                        psImg.setInt(1, dbId);
+                        psImg.executeUpdate();
+                    }
+                    try (PreparedStatement psDel = conn
+                            .prepareStatement("DELETE FROM chi_tiet_san_pham WHERE id = ?")) {
+                        psDel.setInt(1, dbId);
+                        psDel.executeUpdate();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("⚠️ Warning during syncDeletedDetails: " + e.getMessage());
+        }
+    }
+
     @Override
     public boolean deleteDetail(int detailId) {
-        String sql = "DELETE FROM chi_tiet_san_pham WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, detailId);
-            return ps.executeUpdate() > 0;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (conn == null)
+                return false;
+            try (PreparedStatement psImg = conn
+                    .prepareStatement("DELETE FROM hinh_anh WHERE id_chi_tiet_san_pham = ?")) {
+                psImg.setInt(1, detailId);
+                psImg.executeUpdate();
+            }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM chi_tiet_san_pham WHERE id = ?")) {
+                ps.setInt(1, detailId);
+                return ps.executeUpdate() > 0;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

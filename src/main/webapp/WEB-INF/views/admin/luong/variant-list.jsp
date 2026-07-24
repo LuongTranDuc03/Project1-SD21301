@@ -397,11 +397,21 @@
                                 <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
                             </td>
                             <td style="text-align: center;">
-                                <% if (v.getImages() != null && !v.getImages().isEmpty()) { %>
-                                    <img src="${pageContext.request.contextPath}/assets/img/<%= v.getImages().get(0) %>" alt="Image" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; display: inline-block;">
+                                <% 
+                                    String imgUrl = (v.getImages() != null && !v.getImages().isEmpty()) ? v.getImages().get(0) : null;
+                                    boolean hasValidImg = imgUrl != null && !imgUrl.trim().isEmpty() && !"null".equalsIgnoreCase(imgUrl.trim());
+                                    if (hasValidImg) {
+                                        String fullImgSrc = (imgUrl.startsWith("http://") || imgUrl.startsWith("https://")) 
+                                            ? imgUrl 
+                                            : request.getContextPath() + "/assets/img/" + imgUrl;
+                                 %>
+                                     <img src="<%= fullImgSrc %>" alt="Image" style="width: 85px; height: 85px; object-fit: cover; border-radius: 10px; border: 1.5px solid #cbd5e1; display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: transform 0.2s;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-flex';">
+                                     <div style="display: none; width: 85px; height: 85px; border-radius: 10px; background-color: #f8fafc; border: 1.5px dashed #cbd5e1; align-items: center; justify-content: center; color: #94a3b8; margin: 0 auto;">
+                                         <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                     </div>
                                 <% } else { %>
-                                    <div style="width: 36px; height: 36px; border-radius: 6px; background-color: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; margin: 0 auto;">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                    <div style="width: 85px; height: 85px; border-radius: 10px; background-color: #f8fafc; border: 1.5px dashed #cbd5e1; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; margin: 0 auto;">
+                                        <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                                     </div>
                                 <% } %>
                             </td>
@@ -425,6 +435,7 @@
                             </td>
                             <td style="text-align: center;">
                                 <a href="javascript:void(0)" onclick="openEditVariantModal(this)" class="action-icon-btn edit-btn" title="Chỉnh sửa"
+                                   data-variantid="<%= v.getId() %>"
                                    data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "" %>"
                                    data-color="<%= v.getColor() != null ? v.getColor() : "" %>"
                                    data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
@@ -477,8 +488,9 @@
             </button>
         </div>
         <div style="padding: 24px; overflow-y: auto;">
-            <form id="editVariantForm" action="${pageContext.request.contextPath}/admin/variants" method="POST" onsubmit="return validateEditVariantForm()">
+            <form id="editVariantForm" action="${pageContext.request.contextPath}/admin/variants" method="POST" enctype="multipart/form-data" onsubmit="return validateEditVariantForm()">
                 <input type="hidden" name="action" value="edit">
+                <input type="hidden" id="edit-variantId" name="variantId">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
@@ -519,11 +531,15 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ Dày (cm)</label>
-                        <input type="number" id="edit-thickness" name="thickness" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.1">
+                        <input type="number" id="edit-thickness" name="thickness" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.01">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng Lượng (g)</label>
                         <input type="number" id="edit-weight" name="weight" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.01">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Hình Ảnh Biến Thể (Upload Cloudinary)</label>
+                        <input type="file" id="edit-variantImage" name="variantImage" accept="image/*" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
                     </div>
                 </div>
                 <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
@@ -588,6 +604,7 @@
     }
 
     function openEditVariantModal(btn) {
+        document.getElementById('edit-variantId').value = btn.getAttribute('data-variantid') || '';
         document.getElementById('edit-productCode').value = btn.getAttribute('data-productcode');
         document.getElementById('edit-color').value = btn.getAttribute('data-color');
         document.getElementById('edit-size').value = btn.getAttribute('data-size');

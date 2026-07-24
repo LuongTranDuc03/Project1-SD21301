@@ -742,11 +742,18 @@
                                 <tr>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: 500;"><%= stt++ %></td>
                                     <td style="text-align: center; padding: 12px; border-bottom: 1px solid #f1f5f9;">
-                                        <% if (v.getImages() != null && !v.getImages().isEmpty()) { %>
-                                            <img src="${pageContext.request.contextPath}/assets/img/<%= v.getImages().get(0) %>" alt="Image" style="width: 36px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; display: inline-block;">
+                                        <% 
+                                            String vImg = (v.getImages() != null && !v.getImages().isEmpty()) ? v.getImages().get(0) : null;
+                                            boolean hasVImg = vImg != null && !vImg.trim().isEmpty() && !"null".equalsIgnoreCase(vImg.trim());
+                                            if (hasVImg) {
+                                                String vImgSrc = (vImg.startsWith("http://") || vImg.startsWith("https://")) 
+                                                    ? vImg 
+                                                    : (request.getContextPath() + "/assets/img/" + vImg);
+                                        %>
+                                            <img src="<%= vImgSrc %>" onerror="this.src='${pageContext.request.contextPath}/assets/img/anh-default.png'" alt="Image" style="width: 90px; height: 90px; object-fit: cover; border-radius: 10px; border: 1.5px solid #cbd5e1; display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
                                         <% } else { %>
-                                            <div style="width: 36px; height: 36px; border-radius: 6px; background-color: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; margin: 0 auto;">
-                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                            <div style="width: 90px; height: 90px; border-radius: 10px; background-color: #f8fafc; border: 1.5px dashed #cbd5e1; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; margin: 0 auto;">
+                                                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                                             </div>
                                         <% } %>
                                     </td>

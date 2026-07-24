@@ -1001,11 +1001,16 @@
                 variants.forEach((v, vIdx) => {
                     tbodyHtml += `<tr>`;
                     if (vIdx === 0) {
+                        const currentImg = colorImages[color];
+                        const isValidCurrentImg = currentImg && currentImg !== 'null' && currentImg.trim() !== '';
+                        const imgSrc = (isValidCurrentImg && (currentImg.startsWith('http://') || currentImg.startsWith('https://'))) 
+                            ? currentImg 
+                            : (isValidCurrentImg ? ('${pageContext.request.contextPath}/assets/img/' + currentImg) : '${pageContext.request.contextPath}/assets/img/anh-default.png');
                         tbodyHtml += `
-                            <td style="width: 12%; vertical-align: middle; background: #fff;" rowspan="\${variants.length}">
-                                <div style="width: 100px; height: 100px; border: 1px dashed #cbd5e1; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; position: relative; margin: 0 auto;" onclick="document.getElementById('img-input-\${cIdx}').click()">
-                                    <img id="img-preview-\${cIdx}" src="${pageContext.request.contextPath}/assets/img/\${colorImages[color] || 'anh-default.png'}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/assets/img/anh-default.png'">
-                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; font-size: 11px; font-weight: 500; text-align: center; padding: 6px 0;">Thêm ảnh</div>
+                            <td style="width: 16%; vertical-align: middle; background: #fff;" rowspan="\${variants.length}">
+                                <div style="width: 170px; height: 170px; border: 2px dashed #94a3b8; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; position: relative; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;" onclick="document.getElementById('img-input-\${cIdx}').click()">
+                                    <img id="img-preview-\${cIdx}" src="\${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/assets/img/anh-default.png'">
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.8); color: white; font-size: 12px; font-weight: 600; text-align: center; padding: 8px 0;">📷 Đổi / Thêm ảnh</div>
                                 </div>
                                 <input type="file" id="img-input-\${cIdx}" accept="image/*" style="display: none;" onchange="handleColorImageUpload(this, '\${color}', 'img-preview-\${cIdx}')">
                             </td>
@@ -1013,6 +1018,7 @@
                     }
                     tbodyHtml += `
                             <td style="width: 10%;">
+                                <input type="hidden" name="variantId" value="\${v.id || 0}">
                                 <input type="text" class="form-input" value="\${v.size}" readonly style="background: #f8fafc; color: #475569; font-weight: 600; border-color: #e2e8f0; pointer-events: none; margin-bottom: 4px;">
                                 <input type="hidden" name="variantSize" value="\${v.size}">
                                 <input type="hidden" name="variantColor" value="\${color}">
@@ -1033,7 +1039,7 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 4px;">
                                         <span style="font-size: 11px; color: #64748b; width: 28px;">Dày</span>
-                                        <input type="number" name="variantThickness" class="form-input thi-input-\${cIdx}" value="\${v.thickness || 5}" min="0" step="0.1" style="padding: 2px 6px; font-size: 12px; height: 24px; width: 100px;" oninput="if(this.value < 0) this.value = 0;" onchange="updateVariantData('\${color}', '\${v.size}', 'thickness', this.value)">
+                                        <input type="number" name="variantThickness" class="form-input thi-input-\${cIdx}" value="\${v.thickness || 5}" min="0" step="0.01" style="padding: 2px 6px; font-size: 12px; height: 24px; width: 100px;" oninput="if(this.value < 0) this.value = 0;" onchange="updateVariantData('\${color}', '\${v.size}', 'thickness', this.value)">
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 4px;">
                                         <span style="font-size: 11px; color: #64748b; width: 28px;">Nặng</span>
@@ -1107,24 +1113,36 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById(previewId).src = e.target.result;
-                    colorImages[color] = file.name;
-                    
-                    if (generatedVariants[color]) {
-                        generatedVariants[color].forEach(v => {
-                            v.image = file.name;
-                        });
-                    }
-                    
-                    document.querySelectorAll('input[name="variantColor"]').forEach(inp => {
-                        if (inp.value === color) {
-                            const imgInp = inp.parentElement.querySelector('input[name="variantImage"]');
-                            if (imgInp) imgInp.value = file.name;
-                        }
-                    });
-                    
-                    renderImagesSection();
                 };
                 reader.readAsDataURL(file);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch('${pageContext.request.contextPath}/admin/upload-cloudinary', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.url) {
+                        colorImages[color] = data.url;
+                        if (generatedVariants[color]) {
+                            generatedVariants[color].forEach(v => {
+                                v.image = data.url;
+                            });
+                        }
+                        document.querySelectorAll('input[name="variantColor"]').forEach(inp => {
+                            if (inp.value === color) {
+                                const imgInp = inp.parentElement.querySelector('input[name="variantImage"]');
+                                if (imgInp) imgInp.value = data.url;
+                            }
+                        });
+                        document.getElementById(previewId).src = data.url;
+                    }
+                })
+                .catch(err => console.error("Cloudinary upload error:", err));
+
                 isFormDirty = true;
             }
         };
@@ -1135,13 +1153,29 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById(previewId).src = e.target.result;
-                    updateVariantData(color, size, 'image', file.name);
-                    const hiddenInput = input.parentElement.querySelector('input[name="variantImage"]');
-                    if (hiddenInput) {
-                        hiddenInput.value = file.name;
-                    }
                 };
                 reader.readAsDataURL(file);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch('${pageContext.request.contextPath}/admin/upload-cloudinary', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.url) {
+                        updateVariantData(color, size, 'image', data.url);
+                        const hiddenInput = input.parentElement.querySelector('input[name="variantImage"]');
+                        if (hiddenInput) {
+                            hiddenInput.value = data.url;
+                        }
+                        document.getElementById(previewId).src = data.url;
+                    }
+                })
+                .catch(err => console.error("Cloudinary upload error:", err));
+
                 isFormDirty = true;
             }
         };
@@ -1471,24 +1505,78 @@
             }
         };
 
-        // Xử lý nút Hủy bỏ ở cuối form
-        window.handleCancelBtn = function(event) {
+        // Theo dõi thay đổi dữ liệu trong form
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('productForm');
+            if (form) {
+                form.addEventListener('input', function() { isFormDirty = true; });
+                form.addEventListener('change', function() { isFormDirty = true; });
+            }
+        });
+
+        // Xử lý nút Quay lại & Hủy bỏ
+        window.confirmBackToList = function(event) {
             if (event) event.preventDefault();
-            const isEditMode = <%= isEdit %>;
-            if (isEditMode) {
-                if (isFormDirty) {
-                    const modal = document.getElementById('editConfirmBackModal');
+            if (isFormDirty) {
+                const modal = document.getElementById('confirmBackModal');
+                if (modal) {
                     modal.style.display = 'flex';
-                    setTimeout(() => {
-                        modal.classList.add('active');
-                    }, 10);
+                    setTimeout(() => modal.classList.add('active'), 10);
                 } else {
                     proceedBackToList();
                 }
             } else {
-                // Thêm mới sản phẩm thì dùng modal của thêm mới
-                confirmBackToList(event);
+                proceedBackToList();
             }
+        };
+
+        window.handleEditBack = function(event) {
+            if (event) event.preventDefault();
+            if (isFormDirty) {
+                const modal = document.getElementById('editConfirmBackModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    setTimeout(() => modal.classList.add('active'), 10);
+                } else {
+                    proceedBackToList();
+                }
+            } else {
+                proceedBackToList();
+            }
+        };
+
+        window.closeConfirmModal = function() {
+            const modal = document.getElementById('confirmBackModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 250);
+            }
+        };
+
+        window.closeEditConfirmModal = function() {
+            const modal = document.getElementById('editConfirmBackModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 250);
+            }
+        };
+
+        window.saveAndGoBack = function() {
+            const form = document.getElementById('productForm');
+            if (form) {
+                if (typeof validateForm === 'function' && !validateForm()) {
+                    closeEditConfirmModal();
+                    return;
+                }
+                isFormDirty = false;
+                form.submit();
+            }
+        };
+
+        // Nút Hủy bỏ ở cuối form: Rời đi lập tức không lưu dữ liệu mới
+        window.handleCancelBtn = function(event) {
+            if (event) event.preventDefault();
+            proceedBackToList();
         };
 
         window.proceedBackToList = function() {
@@ -1504,11 +1592,11 @@
                 <h3 class="confirm-title">Xác nhận quay lại</h3>
             </div>
             <div class="confirm-modal-body">
-                Quay lại danh sách sẽ làm mất toàn bộ dữ liệu sản phẩm hiện có đang nhập. Bạn có chắc chắn muốn tiếp tục?
+                Quay lại danh sách sẽ làm mất toàn bộ dữ liệu sản phẩm đang nhập. Bạn có chắc chắn muốn tiếp tục?
             </div>
             <div class="confirm-modal-footer">
-                <button type="button" class="confirm-btn-no" onclick="closeConfirmModal()">Không quay lại</button>
-                <button type="button" class="confirm-btn-yes" onclick="proceedBackToList()">Đồng ý</button>
+                <button type="button" class="confirm-btn-no" onclick="closeConfirmModal()">Ở lại nhập tiếp</button>
+                <button type="button" class="confirm-btn-yes" onclick="proceedBackToList()">Đồng ý (Không lưu)</button>
             </div>
         </div>
     </div>
@@ -1525,8 +1613,8 @@
             </div>
             <div class="confirm-modal-footer" style="flex-direction: column; gap: 8px;">
                 <button type="button" class="confirm-btn-yes" onclick="saveAndGoBack()" style="width: 100%; padding: 10px; display: block;">Lưu dữ liệu mới</button>
-                <button type="button" class="confirm-btn-danger" onclick="proceedBackToList()" style="width: 100%; padding: 10px; display: block;">Hủy bỏ (Quay lại không lưu)</button>
-                <button type="button" class="confirm-btn-no" onclick="closeEditConfirmModal()" style="width: 100%; padding: 10px; display: block; border-color: transparent; background: transparent;">Tiếp tục chỉnh sửa</button>
+                <button type="button" class="confirm-btn-danger" onclick="proceedBackToList()" style="width: 100%; padding: 10px; display: block;">Quay lại không lưu</button>
+                <button type="button" class="confirm-btn-no" onclick="closeEditConfirmModal()" style="width: 100%; padding: 10px; display: block; border-color: transparent; background: transparent;">Ở lại chỉnh sửa tiếp</button>
             </div>
         </div>
     </div>
@@ -1548,6 +1636,7 @@
                     generatedVariants[c] = [];
                 }
                 generatedVariants[c].push({
+                    id: <%= d.getId() %>,
                     size: s,
                     style: "<%= d.getStyle() != null ? d.getStyle().replace("\"", "\\\"") : "" %>",
                     importPrice: <%= d.getImportPrice() %>,
