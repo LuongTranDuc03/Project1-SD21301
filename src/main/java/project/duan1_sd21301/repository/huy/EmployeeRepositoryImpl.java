@@ -413,6 +413,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
                 return ps.executeUpdate() > 0;
             } catch (SQLException e) {
+                System.err.println("❌ EmployeeRepositoryImpl.update main Error: " + e.getMessage());
+                e.printStackTrace();
+                
                 String fallbackSql = "UPDATE nhan_vien SET code = ?, id_vai_tro = ?, ho_ten = ?, email = ?, mat_khau = ?, " +
                         "so_dien_thoai = ?, ngay_sinh = ?, gioi_tinh = ?, " +
                         "anh_dai_dien = ?, cccd = ?, trang_thai = ?, id_dia_chi = ? WHERE id = ?";
@@ -431,6 +434,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
                     if (addressId > 0) ps.setInt(12, addressId); else ps.setNull(12, Types.INTEGER);
                     ps.setInt(13, entity.getId());
                     return ps.executeUpdate() > 0;
+                } catch (SQLException ex) {
+                    System.err.println("❌ EmployeeRepositoryImpl.update fallback Error: " + ex.getMessage());
+                    ex.printStackTrace();
                 }
             }
         } catch (SQLException e) {

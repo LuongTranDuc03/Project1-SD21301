@@ -162,4 +162,11 @@ public class Invoice {
             return customer.getEmail();
         return "";
     }
+
+    @Transient
+    public String getCustomerAddress() {
+        if (address != null && address.getFormattedAddress() != null)
+            return address.getFormattedAddress();
+        return receiverAddress != null ? receiverAddress : "";
+    }
 }

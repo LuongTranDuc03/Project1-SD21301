@@ -116,7 +116,7 @@ public class CouponRepository {
         if (ed != null) c.setEndDate(ed.toLocalDateTime());
         c.setDescription(rs.getString("mo_ta"));
         c.setStatus(rs.getObject("trang_thai") != null ? rs.getInt("trang_thai") : 1);
-        Timestamp ct = rs.getTimestamp("ngay_tao");
+        Timestamp ct = rs.getTimestamp("created_at");
         if (ct != null) c.setCreatedAt(ct.toLocalDateTime());
         return c;
     }
@@ -175,7 +175,7 @@ public class CouponRepository {
             sql.append("AND (LOWER(phieu_giam_gia_code) LIKE ? OR LOWER(ten_chuong_trinh) LIKE ?) ");
         }
         
-        sql.append("ORDER BY ngay_tao DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        sql.append("ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {

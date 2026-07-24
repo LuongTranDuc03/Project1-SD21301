@@ -114,7 +114,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public boolean update(Customer customer) {
-        String sql = "UPDATE khach_hang SET ho_ten=?, email=?, mat_khau=?, so_dien_thoai=?, ngay_sinh=?, gioi_tinh=?, anh_dai_dien=?, trang_thai=? WHERE khach_hang_code=?";
+        String sql = "UPDATE khach_hang SET ho_ten=?, email=?, mat_khau=?, so_dien_thoai=?, ngay_sinh=?, gioi_tinh=?, anh_dai_dien=?, trang_thai=? WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customer.getFullName());
@@ -133,7 +133,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             ps.setString(6, customer.getGender());
             ps.setString(7, customer.getAvatar());
             ps.setInt(8, customer.getStatus());
-            ps.setString(9, customer.getCode());
+            ps.setInt(9, customer.getId());
 
             boolean updated = ps.executeUpdate() > 0;
             if (updated && customer.getId() > 0 && customer.getAddresses() != null) {

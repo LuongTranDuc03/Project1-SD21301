@@ -56,7 +56,7 @@
     String customerEmail   = inv.getCustomerEmail()   != null ? inv.getCustomerEmail()   : "—";
     String customerAddress = inv.getCustomerAddress() != null ? inv.getCustomerAddress() : "—";
     String payMethod       = inv.getPaymentMethod()   != null ? inv.getPaymentMethod().getName() : "Chưa xác định";
-    boolean paid           = inv.getPaymentStatus() == 1; // 1 = Đã thanh toán
+    boolean paid           = inv.getPaymentStatus() != null && inv.getPaymentStatus() == 1; // 1 = Đã thanh toán
 %>
 <div class="app-container">
     <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
@@ -150,11 +150,18 @@
                                         String totalPrice   = detail.getTotalPrice()   != null ? String.format("%,.0fđ", detail.getTotalPrice()).replace(",", ".") : "—";
                                         String spName;
                                         if (detail.getProductDetail() != null) {
-                                            spName = "SP #" + detail.getProductDetail().getId();
-                                            if (detail.getProductDetail().getSize()  != null) spName += " - " + detail.getProductDetail().getSize();
-                                            if (detail.getProductDetail().getColor() != null) spName += " / " + detail.getProductDetail().getColor();
+                                            String pName = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getName() : "Sản phẩm không xác định";
+                                            String pCode = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getCode() : "?";
+                                            String vCode = detail.getProductDetail().getCode();
+                                            String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize().getName() : "";
+                                            String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor().getName() : "";
+                                            
+                                            spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>";
                                         } else {
-                                            spName = "Sản phẩm không xác định";
+                                            spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định";
+                                            if (detail.getVariantDescriptionSnapshot() != null) {
+                                                spName += "<br><span style='font-size:11px;color:#6b7280;'>" + detail.getVariantDescriptionSnapshot() + "</span>";
+                                            }
                                         }
                             %>
                             <tr>
@@ -284,13 +291,42 @@
             <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
             <div class="modal-field">
                 <label>Trạng thái mới</label>
-                <select name="newStatus" id="newStatusSelect">
-                    <option value="0" <%= orderStatus == 0 ? "selected" : "" %>>Chờ xác nhận</option>
-                    <option value="1" <%= orderStatus == 1 ? "selected" : "" %>>Đã xác nhận</option>
-                    <option value="2" <%= orderStatus == 2 ? "selected" : "" %>>Hoàn thành</option>
-                    <option value="3" <%= orderStatus == 3 ? "selected" : "" %>>Đã huỷ</option>
-                    <option value="4" <%= orderStatus == 4 ? "selected" : "" %>>Đã hoàn tiền</option>
+                <select name="newStatus" id="newStatusSelect" onchange="updateSelectColor(this)">
+                    <option value="0" style="color:#f59e0b;font-weight:600;" <%= orderStatus == 0 ? "selected" : "" %>>Chờ xác nhận</option>
+                    <option value="1" style="color:#3b82f6;font-weight:600;" <%= orderStatus == 1 ? "selected" : "" %>>Đã xác nhận</option>
+                    <option value="2" style="color:#10b981;font-weight:600;" <%= orderStatus == 2 ? "selected" : "" %>>Hoàn thành</option>
+                    <option value="3" style="color:#ef4444;font-weight:600;" <%= orderStatus == 3 ? "selected" : "" %>>Đã huỷ</option>
+                    <option value="4" style="color:#8b5cf6;font-weight:600;" <%= orderStatus == 4 ? "selected" : "" %>>Đã hoàn tiền</option>
                 </select>
+                <script>
+                    function updateSelectColor(selectObj) {
+                        const colors = {
+                            "0": "#f59e0b",
+                            "1": "#3b82f6",
+                            "2": "#10b981",
+                            "3": "#ef4444",
+                            "4": "#8b5cf6"
+                        };
+                        const bgs = {
+                            "0": "#fef3c7",
+                            "1": "#dbeafe",
+                            "2": "#d1fae5",
+                            "3": "#fee2e2",
+                            "4": "#ede9fe"
+                        };
+                        const val = selectObj.value;
+                        if(colors[val]) {
+                            selectObj.style.color = colors[val];
+                            selectObj.style.backgroundColor = bgs[val];
+                            selectObj.style.fontWeight = "600";
+                        }
+                    }
+                    // Trigger on load
+                    document.addEventListener("DOMContentLoaded", function() {
+                        var sel = document.getElementById("newStatusSelect");
+                        if(sel) updateSelectColor(sel);
+                    });
+                </script>
             </div>
             <div class="modal-field">
                 <label>Ghi chú (tuỳ chọn)</label>

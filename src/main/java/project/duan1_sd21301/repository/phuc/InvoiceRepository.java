@@ -3,6 +3,8 @@ package project.duan1_sd21301.repository.phuc;
 import project.duan1_sd21301.model.Address;
 import project.duan1_sd21301.model.luong.ProductDetail;
 import project.duan1_sd21301.model.luong.Product;
+import project.duan1_sd21301.model.luong.Size;
+import project.duan1_sd21301.model.luong.Color;
 import project.duan1_sd21301.model.phuc.Invoice;
 import project.duan1_sd21301.model.phuc.InvoiceDetail;
 import project.duan1_sd21301.model.phuc.InvoiceHistory;
@@ -22,10 +24,10 @@ public class InvoiceRepository {
         if (invoice.getCode() == null || invoice.getCode().trim().isEmpty()) {
             invoice.setCode("HD" + System.currentTimeMillis() % 100000);
         }
-        String sql = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_phieu_giam_gia, " +
-                "id_phuong_thuc_thanh_toan, id_dia_chi, ten_khach_nhan, sdt_khach_nhan, tong_tien, " +
-                "tong_thanh_toan, ngay_dat_hang, trang_thai_don_hang, loai_don_hang, ghi_chu, phi_van_chuyen, ngay_giao_du_kien, ngay_hoan_thanh, dia_chi_snapshot) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_ma_giam_gia, " +
+                "id_phuong_thuc_thanh_toan, id_dia_chi, ten_khach_nhan, sdt_khach_nhan, tam_tinh, " +
+                "tong_thanh_toan, ngay_dat_hang, trang_thai_don_hang, ghi_chu, ngay_giao_du_kien, ngay_hoan_thanh, dia_chi_snapshot) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -59,18 +61,16 @@ public class InvoiceRepository {
             else
                 ps.setNull(11, Types.TIMESTAMP);
             ps.setInt(12, invoice.getOrderStatus() != null ? invoice.getOrderStatus() : 0);
-            ps.setInt(13, invoice.getOrderType() != null ? invoice.getOrderType() : 0);
-            ps.setString(14, invoice.getNote());
-            ps.setDouble(15, invoice.getShippingFee() != null ? invoice.getShippingFee() : 0.0);
+            ps.setString(13, invoice.getNote());
             if (invoice.getExpectedDeliveryDate() != null)
-                ps.setTimestamp(16, Timestamp.valueOf(invoice.getExpectedDeliveryDate()));
+                ps.setTimestamp(14, Timestamp.valueOf(invoice.getExpectedDeliveryDate()));
             else
-                ps.setNull(16, Types.TIMESTAMP);
+                ps.setNull(14, Types.TIMESTAMP);
             if (invoice.getCompletionDate() != null)
-                ps.setTimestamp(17, Timestamp.valueOf(invoice.getCompletionDate()));
+                ps.setTimestamp(15, Timestamp.valueOf(invoice.getCompletionDate()));
             else
-                ps.setNull(17, Types.TIMESTAMP);
-            ps.setString(18, invoice.getAddressSnapshot());
+                ps.setNull(15, Types.TIMESTAMP);
+            ps.setString(16, invoice.getAddressSnapshot());
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -88,11 +88,11 @@ public class InvoiceRepository {
     }
 
     public Invoice update(Invoice invoice) {
-        String sql = "UPDATE hoa_don SET hoa_don_code = ?, id_khach_hang = ?, id_nhan_vien = ?, id_phieu_giam_gia = ?, "
+        String sql = "UPDATE hoa_don SET hoa_don_code = ?, id_khach_hang = ?, id_nhan_vien = ?, id_ma_giam_gia = ?, "
                 +
-                "id_phuong_thuc_thanh_toan = ?, id_dia_chi = ?, ten_khach_nhan = ?, sdt_khach_nhan = ?, tong_tien = ?, "
+                "id_phuong_thuc_thanh_toan = ?, id_dia_chi = ?, ten_khach_nhan = ?, sdt_khach_nhan = ?, tam_tinh = ?, "
                 +
-                "tong_thanh_toan = ?, ngay_dat_hang = ?, trang_thai_don_hang = ?, loai_don_hang = ?, ghi_chu = ?, phi_van_chuyen = ?, ngay_giao_du_kien = ?, ngay_hoan_thanh = ?, dia_chi_snapshot = ? "
+                "tong_thanh_toan = ?, ngay_dat_hang = ?, trang_thai_don_hang = ?, ghi_chu = ?, ngay_giao_du_kien = ?, ngay_hoan_thanh = ?, dia_chi_snapshot = ? "
                 +
                 "WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -128,19 +128,17 @@ public class InvoiceRepository {
             else
                 ps.setNull(11, Types.TIMESTAMP);
             ps.setInt(12, invoice.getOrderStatus() != null ? invoice.getOrderStatus() : 0);
-            ps.setInt(13, invoice.getOrderType() != null ? invoice.getOrderType() : 0);
-            ps.setString(14, invoice.getNote());
-            ps.setDouble(15, invoice.getShippingFee() != null ? invoice.getShippingFee() : 0.0);
+            ps.setString(13, invoice.getNote());
             if (invoice.getExpectedDeliveryDate() != null)
-                ps.setTimestamp(16, Timestamp.valueOf(invoice.getExpectedDeliveryDate()));
+                ps.setTimestamp(14, Timestamp.valueOf(invoice.getExpectedDeliveryDate()));
             else
-                ps.setNull(16, Types.TIMESTAMP);
+                ps.setNull(14, Types.TIMESTAMP);
             if (invoice.getCompletionDate() != null)
-                ps.setTimestamp(17, Timestamp.valueOf(invoice.getCompletionDate()));
+                ps.setTimestamp(15, Timestamp.valueOf(invoice.getCompletionDate()));
             else
-                ps.setNull(17, Types.TIMESTAMP);
-            ps.setString(18, invoice.getAddressSnapshot());
-            ps.setInt(19, invoice.getId());
+                ps.setNull(15, Types.TIMESTAMP);
+            ps.setString(16, invoice.getAddressSnapshot());
+            ps.setInt(17, invoice.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -197,7 +195,7 @@ public class InvoiceRepository {
             if (history.getCode() == null || history.getCode().trim().isEmpty()) {
                 history.setCode("LSHD" + System.currentTimeMillis() % 100000);
             }
-            String insertHistorySql = "INSERT INTO lich_su_hoa_don (lich_su_hoa_don_code, id_hoa_don, id_nguoi_thuc_hien, trang_thai_cu, trang_thai_moi, ghi_chu, thoi_gian) "
+            String insertHistorySql = "INSERT INTO lich_su_hoa_don (lich_su_hoa_don_code, id_hoa_don, id_nguoi_thuc_hien, trang_thai_cu, trang_thai_moi, ghi_chu, thoi_gian_cap_nhat) "
                     +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement psHist = conn.prepareStatement(insertHistorySql, Statement.RETURN_GENERATED_KEYS)) {
@@ -253,7 +251,7 @@ public class InvoiceRepository {
         invoice.setCode(rs.getString("hoa_don_code"));
         invoice.setReceiverName(rs.getString("ten_khach_nhan"));
         invoice.setReceiverPhone(rs.getString("sdt_khach_nhan"));
-        invoice.setSubtotal(rs.getDouble("tong_tien"));
+        invoice.setSubtotal(rs.getDouble("tam_tinh"));
         invoice.setTotalAmount(rs.getDouble("tong_thanh_toan"));
         Timestamp orderDate = rs.getTimestamp("ngay_dat_hang");
         if (orderDate != null)
@@ -270,9 +268,9 @@ public class InvoiceRepository {
         invoice.setAddressSnapshot(rs.getString("dia_chi_snapshot"));
         
         invoice.setOrderStatus(rs.getObject("trang_thai_don_hang") != null ? rs.getInt("trang_thai_don_hang") : 0);
-        invoice.setOrderType(rs.getObject("loai_don_hang") != null ? rs.getInt("loai_don_hang") : 0);
+        invoice.setOrderType(0);
         invoice.setNote(rs.getString("ghi_chu"));
-        invoice.setShippingFee(rs.getObject("phi_van_chuyen") != null ? rs.getDouble("phi_van_chuyen") : 0.0);
+        invoice.setShippingFee(0.0);
 
         // Basic mapping for PaymentMethod if joined
         try {
@@ -321,7 +319,7 @@ public class InvoiceRepository {
     public Invoice findById(int id) {
         String sql = "SELECT hd.*, " +
                 "pm.id AS pm_id, pm.phuong_thuc_thanh_toan_code AS pm_code, pm.ten_phuong_thuc AS pm_name, " +
-                "ad.id AS ad_id, ad.tinh_thanh_pho AS ad_province, ad.quan_huyen AS ad_district, ad.phuong_xa AS ad_ward, ad.dia_chi_cu_the AS ad_street "
+                "ad.id AS ad_id, ad.tinh AS ad_province, ad.huyen AS ad_district, ad.xa AS ad_ward, ad.dia_chi_chi_tiet AS ad_street "
                 +
                 "FROM hoa_don hd " +
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
@@ -345,10 +343,14 @@ public class InvoiceRepository {
         List<InvoiceDetail> list = new ArrayList<>();
         String sql = "SELECT ct.*, " +
                 "pd.id AS pd_id, pd.chi_tiet_san_pham_code AS pd_code, pd.gia_ban AS pd_price, " +
-                "p.id AS p_id, p.ten_san_pham AS p_name " +
+                "p.id AS p_id, p.ten_san_pham AS p_name, p.san_pham_code AS p_code, " +
+                "sz.id AS sz_id, sz.ten_kich_thuoc AS sz_name, " +
+                "c.id AS c_id, c.ten_mau AS c_name " +
                 "FROM chi_tiet_hoa_don ct " +
                 "LEFT JOIN chi_tiet_san_pham pd ON ct.id_chi_tiet_san_pham = pd.id " +
                 "LEFT JOIN san_pham p ON pd.id_san_pham = p.id " +
+                "LEFT JOIN kich_thuoc sz ON pd.id_kich_thuoc = sz.id " +
+                "LEFT JOIN mau_sac c ON pd.id_mau_sac = c.id " +
                 "WHERE ct.id_hoa_don = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -378,7 +380,24 @@ public class InvoiceRepository {
                             Product p = new Product();
                             p.setId(pId);
                             p.setName(rs.getString("p_name"));
+                            p.setCode(rs.getString("p_code"));
                             pd.setProduct(p);
+                        }
+                        
+                        int szId = rs.getInt("sz_id");
+                        if (!rs.wasNull()) {
+                            Size sz = new Size();
+                            sz.setId(szId);
+                            sz.setName(rs.getString("sz_name"));
+                            pd.setSize(sz);
+                        }
+                        
+                        int cId = rs.getInt("c_id");
+                        if (!rs.wasNull()) {
+                            Color c = new Color();
+                            c.setId(cId);
+                            c.setName(rs.getString("c_name"));
+                            pd.setColor(c);
                         }
 
                         detail.setProductDetail(pd);
@@ -399,7 +418,7 @@ public class InvoiceRepository {
 
     public List<InvoiceHistory> findHistoryByInvoiceId(int invoiceId) {
         List<InvoiceHistory> list = new ArrayList<>();
-        String sql = "SELECT * FROM lich_su_hoa_don WHERE id_hoa_don = ? ORDER BY thoi_gian DESC";
+        String sql = "SELECT * FROM lich_su_hoa_don WHERE id_hoa_don = ? ORDER BY thoi_gian_cap_nhat DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
@@ -411,7 +430,7 @@ public class InvoiceRepository {
                     history.setOldStatus(rs.getInt("trang_thai_cu"));
                     history.setNewStatus(rs.getInt("trang_thai_moi"));
                     history.setNote(rs.getString("ghi_chu"));
-                    Timestamp ts = rs.getTimestamp("thoi_gian");
+                    Timestamp ts = rs.getTimestamp("thoi_gian_cap_nhat");
                     if (ts != null)
                         history.setUpdatedAt(ts.toLocalDateTime());
 

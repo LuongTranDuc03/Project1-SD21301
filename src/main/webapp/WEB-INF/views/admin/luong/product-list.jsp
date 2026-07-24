@@ -699,7 +699,7 @@
         applyFilters();
 
         const formData = new URLSearchParams();
-        formData.append('id', productId);
+        formData.append('code', productId);
 
         fetch('${pageContext.request.contextPath}/admin/products?action=toggleStatus', {
             method: 'POST',

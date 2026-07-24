@@ -135,11 +135,18 @@
                         String totalPrice = detail.getTotalPrice() != null ? String.format("%,.0fđ", detail.getTotalPrice()).replace(",", ".") : "—";
                         String spName;
                         if (detail.getProductDetail() != null) {
-                            spName = "SP #" + detail.getProductDetail().getId();
-                            if (detail.getProductDetail().getSize()  != null) spName += " - " + detail.getProductDetail().getSize();
-                            if (detail.getProductDetail().getColor() != null) spName += " / " + detail.getProductDetail().getColor();
+                            String pName = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getName() : "Sản phẩm không xác định";
+                            String pCode = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getCode() : "?";
+                            String vCode = detail.getProductDetail().getCode();
+                            String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize().getName() : "";
+                            String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor().getName() : "";
+                            
+                            spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>";
                         } else {
-                            spName = "Sản phẩm không xác định";
+                            spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định";
+                            if (detail.getVariantDescriptionSnapshot() != null) {
+                                spName += "<br><span style='font-size:11px;color:#6b7280;'>" + detail.getVariantDescriptionSnapshot() + "</span>";
+                            }
                         }
             %>
             <tr>

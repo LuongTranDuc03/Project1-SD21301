@@ -22,7 +22,8 @@ import java.util.Map;
         "/admin/coupons/add",
         "/admin/coupons/edit",
         "/admin/coupons/save",
-        "/admin/coupons/toggle-status"
+        "/admin/coupons/toggle-status",
+        "/admin/coupons/export-excel"
 })
 public class CouponController extends HttpServlet {
 
@@ -54,6 +55,8 @@ public class CouponController extends HttpServlet {
             handleAddForm(request, response);
         } else if (uri.endsWith("/edit")) {
             handleEditForm(request, response);
+        } else if (uri.endsWith("/export-excel")) {
+            handleExportExcel(request, response);
         } else {
             handleList(request, response);
         }
@@ -277,6 +280,62 @@ public class CouponController extends HttpServlet {
         if (val == null || val.trim().isEmpty()) return null;
         try { return Integer.parseInt(val.trim()); }
         catch (NumberFormatException e) { return null; }
+    }
+
+    private void handleExportExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String keyword = request.getParameter("q");
+        if (keyword != null && keyword.trim().isEmpty()) keyword = null;
+
+        String fromDate = request.getParameter("fromDate");
+        if (fromDate != null && fromDate.trim().isEmpty()) fromDate = null;
+
+        String toDate = request.getParameter("toDate");
+        if (toDate != null && toDate.trim().isEmpty()) toDate = null;
+
+        Integer discountType = parseIntParam(request.getParameter("discountType"));
+        Integer status       = parseIntParam(request.getParameter("status"));
+
+        List<Coupon> list = repo.findAll(discountType, status, keyword, fromDate, toDate, 0, Integer.MAX_VALUE);
+
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook wb = new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+            org.apache.poi.ss.usermodel.Sheet sheet = wb.createSheet("Phieu giam gia");
+
+            org.apache.poi.ss.usermodel.CellStyle headerStyle = wb.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
+            String[] columns = {"Mã giảm giá", "Tên chương trình", "Loại", "Mức giảm", "Đơn tối thiểu", "Số lượng", "Đã dùng", "Bắt đầu", "Kết thúc", "Trạng thái"};
+            for (int i = 0; i < columns.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 1;
+            for (Coupon c : list) {
+                org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(c.getCode() != null ? c.getCode() : "");
+                row.createCell(1).setCellValue(c.getName() != null ? c.getName() : "");
+                row.createCell(2).setCellValue(DISCOUNT_TYPE_LABELS.getOrDefault(c.getDiscountType(), ""));
+                row.createCell(3).setCellValue(c.getDiscountValue() != null ? c.getDiscountValue() : 0);
+                row.createCell(4).setCellValue(c.getMinOrderValue() != null ? c.getMinOrderValue() : 0);
+                row.createCell(5).setCellValue(c.getQuantity() != null ? c.getQuantity() : 0);
+                row.createCell(6).setCellValue(c.getUsedQuantity() != null ? c.getUsedQuantity() : 0);
+                row.createCell(7).setCellValue(c.getStartDate() != null ? c.getStartDate().format(DATE_ONLY_FMT) : "");
+                row.createCell(8).setCellValue(c.getEndDate() != null ? c.getEndDate().format(DATE_ONLY_FMT) : "");
+                row.createCell(9).setCellValue(STATUS_LABELS.getOrDefault(c.getStatus(), ""));
+            }
+
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=phieu-giam-gia.xlsx");
+            wb.write(response.getOutputStream());
+        }
     }
 
     private Double parseDoubleParam(String val) {

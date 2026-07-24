@@ -513,9 +513,7 @@
             tr.dataset.status = newStatusData;
         }
         
-        var productCode = tr.dataset.productcode || '';
-        var color = tr.dataset.color || '';
-        var size = tr.dataset.size || '';
+        var variantId = tr.id.replace('variant-row-', '');
         
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "${pageContext.request.contextPath}/admin/variants", true);
@@ -529,7 +527,7 @@
                 }
             }
         };
-        xhr.send("action=toggleStatus&productCode=" + encodeURIComponent(productCode) + "&color=" + encodeURIComponent(color) + "&size=" + encodeURIComponent(size) + "&status=" + encodeURIComponent(newStatusLabel));
+        xhr.send("action=toggleStatus&variantId=" + encodeURIComponent(variantId) + "&status=" + encodeURIComponent(newStatusData));
 
         // Gọi lại hàm filter để đồng bộ nếu bộ lọc đang được áp dụng
         if (typeof applyFilters === 'function') {
