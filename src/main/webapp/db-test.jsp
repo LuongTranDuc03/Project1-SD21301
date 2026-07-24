@@ -8,45 +8,29 @@
     <h1>Database Test</h1>
     <pre>
 <%
-    out.println("Starting test...");
+    out.println("Kiểm tra trạng thái đơn hàng trong DB...");
     try (Connection conn = DatabaseConnection.getConnection()) {
-        out.println("Connection successful!");
-        conn.setAutoCommit(true);
-        // Try a simple update on nhan_vien or khach_hang that will fail or succeed
-        // E.g., updating a non-existent record to see if it throws an exception or just returns 0
-        
-        out.println("Testing UPDATE khach_hang (non-existent id)...");
-        try (PreparedStatement ps = conn.prepareStatement("UPDATE khach_hang SET trang_thai = 1 WHERE id = -999")) {
-            int rows = ps.executeUpdate();
-            out.println("Rows updated: " + rows);
-        } catch(SQLException ex) {
-            out.println("UPDATE Exception: " + ex.getMessage());
-            ex.printStackTrace(new PrintWriter(out));
-        }
-
-        out.println("\nTesting INSERT khach_hang...");
-        String sql = "INSERT INTO khach_hang (khach_hang_code, ho_ten, email, so_dien_thoai, trang_thai) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "TEST_CODE_" + System.currentTimeMillis());
-            ps.setString(2, "Test Name");
-            ps.setString(3, "test@test.com");
-            ps.setString(4, "0123456789");
-            ps.setInt(5, 1);
-            int rows = ps.executeUpdate();
-            out.println("Rows inserted: " + rows);
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if(rs.next()) {
-                    out.println("Generated ID: " + rs.getInt(1));
-                }
+        try (PreparedStatement ps = conn.prepareStatement("SELECT id, trang_thai_don_hang FROM hoa_don")) {
+            ResultSet rs = ps.executeQuery();
+            int c0 = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0, cOther = 0;
+            while(rs.next()) {
+                int status = rs.getInt("trang_thai_don_hang");
+                if (status == 0) c0++;
+                else if (status == 1) c1++;
+                else if (status == 2) c2++;
+                else if (status == 3) c3++;
+                else if (status == 4) c4++;
+                else cOther++;
             }
-        } catch(SQLException ex) {
-            out.println("INSERT Exception: " + ex.getMessage());
-            ex.printStackTrace(new PrintWriter(out));
+            out.println("0 (Chờ xác nhận): " + c0);
+            out.println("1 (Đã xác nhận): " + c1);
+            out.println("2 (Hoàn thành): " + c2);
+            out.println("3 (Đã hủy): " + c3);
+            out.println("4 (Đã hoàn tiền): " + c4);
+            out.println("Khác: " + cOther);
         }
-
     } catch (Exception e) {
-        out.println("Connection Exception: " + e.getMessage());
-        e.printStackTrace(new PrintWriter(out));
+        out.println("Exception: " + e.getMessage());
     }
 %>
     </pre>
