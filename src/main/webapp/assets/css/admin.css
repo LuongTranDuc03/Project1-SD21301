@@ -4,6 +4,6 @@
 /* Feature-based stylesheets */
 @import url('products/product.css');
 @import url('invoices/invoice.css');
-@import url('employees/employee.css');
+
 @import url('coupons/coupon.css');
 @import url('customers/customer.css');
