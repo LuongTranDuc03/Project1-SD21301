@@ -301,6 +301,9 @@
                                                                                             style="text-align: left; width: 200px;">
                                                                                             Họ và tên</th>
                                                                                         <th
+                                                                                            style="text-align: center; width: 90px;">
+                                                                                            Giới tính</th>
+                                                                                        <th
                                                                                             style="text-align: left; width: 120px;">
                                                                                             Vai trò</th>
                                                                                         <th
@@ -358,6 +361,9 @@
                                                                                                             emp.getFullName()
                                                                                                             : "—" %>
                                                                                                     </span></td>
+                                                                                                <td style="padding: 14px 16px; text-align: center;">
+                                                                                                    <%= (emp.getGender() != null && emp.getGender()) ? "Nam" : "Nữ" %>
+                                                                                                </td>
                                                                                                 <td
                                                                                                     style="padding: 14px 16px;">
                                                                                                     <span
