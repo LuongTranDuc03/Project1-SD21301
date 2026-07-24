@@ -20,8 +20,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
+import java.io.File;
  
 @WebServlet(name = "EmployeeController", urlPatterns = { "/admin/employees" })
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class EmployeeController extends HttpServlet {
 
     private final EmployeeService employeeService = new EmployeeServiceImpl();
@@ -506,11 +514,30 @@ public class EmployeeController extends HttpServlet {
             emp.setGender(false);
         }
 
-        String avatar = req.getParameter("avatar");
-        if (avatar != null && !avatar.trim().isEmpty()) {
-            emp.setAvatar(avatar);
-        } else {
-            emp.setAvatar("https://ui-avatars.com/api/?name=" + emp.getFullName().replace(" ", "+") + "&background=random");
+        try {
+            Part filePart = req.getPart("anhDaiDienFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                File uploadDir = new File(req.getServletContext().getRealPath("/"), "uploads");
+                if (!uploadDir.exists()) uploadDir.mkdirs();
+                String uniqueFileName = System.currentTimeMillis() + "_" + filePart.getSubmittedFileName();
+                filePart.write(new File(uploadDir, uniqueFileName).getAbsolutePath());
+                emp.setAvatar(req.getContextPath() + "/uploads/" + uniqueFileName);
+            } else {
+                String avatar = req.getParameter("avatar");
+                if (avatar != null && !avatar.trim().isEmpty()) {
+                    emp.setAvatar(avatar);
+                } else {
+                    emp.setAvatar("https://ui-avatars.com/api/?name=" + emp.getFullName().replace(" ", "+") + "&background=random");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            String avatar = req.getParameter("avatar");
+            if (avatar != null && !avatar.trim().isEmpty()) {
+                emp.setAvatar(avatar);
+            } else {
+                emp.setAvatar("https://ui-avatars.com/api/?name=" + emp.getFullName().replace(" ", "+") + "&background=random");
+            }
         }
 
         String statusStr = req.getParameter("status");

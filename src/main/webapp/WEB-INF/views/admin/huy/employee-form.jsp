@@ -234,7 +234,7 @@
                                             </div>
 
                                             <form action="${pageContext.request.contextPath}/admin/employees"
-                                                method="post" id="employeeForm" novalidate>
+                                                method="post" id="employeeForm" enctype="multipart/form-data" novalidate>
                                                 <input type="hidden" name="action" value="<%= isEdit ? "update" : "create" %>">
                                                 <% if (isEdit && emp != null) { %>
                                                     <input type="hidden" name="id" value="<%= emp.getId() %>">
@@ -262,9 +262,22 @@
                                                                     <line x1="12" y1="16" x2="12" y2="12"></line>
                                                                     <line x1="12" y1="8" x2="12.01" y2="8"></line>
                                                                 </svg>
-                                                                THÔNG TIN NHÂN VIÊN
+                                                                THÔNG TIN CÁ NHÂN & ẢNH ĐẠI DIỆN
                                                             </div>
                                                             <div class="form-card-body">
+                                                                <!-- Khu vực upload ảnh đại diện -->
+                                                                <div class="avatar-upload-area" style="display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; margin-bottom: 24px; background-color: #f8fafc;">
+                                                                    <img src="<%= (isEdit && emp != null && emp.getAvatar() != null && !emp.getAvatar().isEmpty()) ? emp.getAvatar() : "https://i.pravatar.cc/150?img=0" %>" id="avatarPreview" class="preview-avatar" alt="avatar preview" onerror="this.src='https://i.pravatar.cc/150?img=0'" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; margin-bottom: 0;">
+                                                                    <div>
+                                                                        <input type="file" name="anhDaiDienFile" id="employeeAvatarFile" accept="image/*" onchange="previewImage(this)" style="display: none;">
+                                                                        <button type="button" onclick="document.getElementById('employeeAvatarFile').click()" class="btn-cancel" style="padding: 8px 16px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); background-color: #ffffff; border: 1px solid #cbd5e1; color: #475569; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center;">
+                                                                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                                                            Chọn Ảnh Mới
+                                                                        </button>
+                                                                        <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">Dung lượng tối đa 1 MB (Định dạng: JPEG, PNG)</div>
+                                                                    </div>
+                                                                </div>
+
                                                                 <div class="form-grid">
                                                                     <!-- THÔNG TIN CÁ NHÂN -->
                                                                     <div class="form-group">
@@ -1052,6 +1065,16 @@
                                             await setAddressCascading(data.address);
                                         }
                                         validateAllFieldsLive();
+                                    }
+
+                                    function previewImage(input) {
+                                        if (input.files && input.files[0]) {
+                                            var reader = new FileReader();
+                                            reader.onload = function(e) {
+                                                document.getElementById('avatarPreview').src = e.target.result;
+                                            }
+                                            reader.readAsDataURL(input.files[0]);
+                                        }
                                     }
                                 </script>
                             </body>

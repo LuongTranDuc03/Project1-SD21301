@@ -291,136 +291,80 @@
                                                                                 style="table-layout: fixed; width: 100%;">
                                                                                 <thead>
                                                                                     <tr>
-                                                                                        <th
-                                                                                            style="text-align: center; width: 50px;">
-                                                                                            STT</th>
-                                                                                        <th
-                                                                                            style="text-align: left; width: 120px;">
-                                                                                            Mã nhân viên</th>
-                                                                                        <th
-                                                                                            style="text-align: left; width: 200px;">
-                                                                                            Họ và tên</th>
-                                                                                        <th
-                                                                                            style="text-align: center; width: 90px;">
-                                                                                            Giới tính</th>
-                                                                                        <th
-                                                                                            style="text-align: left; width: 120px;">
-                                                                                            Vai trò</th>
-                                                                                        <th
-                                                                                            style="text-align: left; width: 110px;">
-                                                                                            SĐT</th>
-                                                                                        <th
-                                                                                            style="text-align: left; width: 220px;">
-                                                                                            Email</th>
-                                                                                        <th
-                                                                                            style="text-align: left; width: 240px;">
-                                                                                            Địa chỉ</th>
-                                                                                        <th
-                                                                                            style="text-align: center; width: 130px;">
-                                                                                            Trạng thái</th>
+                                                                                        <th style="text-align: center; width: 50px;">STT</th>
+                                                                                        <th style="text-align: left; width: 120px;">MÃ NHÂN VIÊN</th>
+                                                                                        <th style="text-align: left; width: 180px;">TÊN NHÂN VIÊN</th>
+                                                                                        <th style="text-align: left; width: 110px;">SỐ ĐIỆN THOẠI</th>
+                                                                                        <th style="text-align: left; width: 180px;">EMAIL</th>
+                                                                                        <th style="text-align: center; width: 100px;">NGÀY SINH</th>
+                                                                                        <th style="text-align: center; width: 90px;">GIỚI TÍNH</th>
+                                                                                        <th style="text-align: left; width: 100px;">VAI TRÒ</th>
+                                                                                        <th style="text-align: left; width: 200px;">ĐỊA CHỈ</th>
+                                                                                        <th style="text-align: center; width: 130px;">TRẠNG THÁI</th>
                                                                                         <% if (isAdmin) { %>
-                                                                                            <th
-                                                                                                style="text-align: center; width: 120px;">
-                                                                                                Hành động</th>
-                                                                                            <% } %>
+                                                                                            <th style="text-align: center; width: 120px;">HÀNH ĐỘNG</th>
+                                                                                        <% } %>
                                                                                     </tr>
                                                                                 </thead>
                                                                                 <tbody id="empTbody">
-                                                                                    <% List<Employee> listEmp = (List
-                                                                                        <Employee>)
-                                                                                            request.getAttribute("employees");
-                                                                                            SimpleDateFormat df = new
-                                                                                            SimpleDateFormat("yyyy-MM-dd");
-
-                                                                                            if (listEmp != null &&
-                                                                                            !listEmp.isEmpty()) {
+                                                                                    <% List<Employee> listEmp = (List<Employee>) request.getAttribute("employees");
+                                                                                        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                                                                                        if (listEmp != null && !listEmp.isEmpty()) {
                                                                                             int stt = 1;
-                                                                                            for (Employee emp : listEmp)
-                                                                                            {
-                                                                                            String fullAddr = emp.getFullAddressString();
-                                                                                            %>
-                                                                                            <tr data-role="<%= emp.getRoleName() %>"
-                                                                                                data-gender="<%= emp.getGender() != null ? emp.getGender() : "" %>"
-                                                                                                data-status="<%= emp.getStatus() %>"
-                                                                                                data-address="<%= fullAddr.toLowerCase() %>"
-                                                                                                data-id="<%= emp.getId() %>"
-                                                                                                onmouseover="this.style.backgroundColor='#F8FAFC'"
-                                                                                                onmouseout="this.style.backgroundColor='transparent'">
-                                                                                                <td
-                                                                                                    style="text-align: center; color: #64748b; font-weight: 500;">
-                                                                                                    <%= stt++ %>
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <%= emp.getCode()
-                                                                                                        %>
-                                                                                                </td>
-                                                                                                <td><span
-                                                                                                        style="font-weight: 600; color: #0f172a;">
-                                                                                                        <%= emp.getFullName()
-                                                                                                            !=null ?
-                                                                                                            emp.getFullName()
-                                                                                                            : "—" %>
-                                                                                                    </span></td>
-                                                                                                <td style="padding: 14px 16px; text-align: center;">
-                                                                                                    <%= (emp.getGender() != null && emp.getGender()) ? "Nam" : "Nữ" %>
-                                                                                                </td>
-                                                                                                <td
-                                                                                                    style="padding: 14px 16px;">
-                                                                                                    <span
-                                                                                                        style="font-size:14px; font-weight:500; color:#334155;">
-                                                                                                        <% 
-                                                                                                            String rName = emp.getRoleName();
-                                                                                                            if ("Admin".equals(rName) || rName == null || rName.isEmpty()) rName = "Quản lý";
-                                                                                                        %>
-                                                                                                        <%= rName %>
-                                                                                                    </span>
-                                                                                                </td>
-                                                                                                <td
-                                                                                                    style="padding: 14px 16px;">
-                                                                                                    <%= emp.getPhoneNumber() != null ? emp.getPhoneNumber() : ""
-                                                                                                        %>
-                                                                                                </td>
-                                                                                                <td
-                                                                                                    style="padding: 14px 16px;">
-                                                                                                    <%= emp.getEmail()
-                                                                                                        %>
-                                                                                                </td>
-                                                                                                <td style="padding: 14px 16px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                                                                                    title="<%= fullAddr %>">
-                                                                                                    <%= !fullAddr.isEmpty()
-                                                                                                        ?
-                                                                                                        fullAddr
-                                                                                                        : "-" %>
-                                                                                                </td>
-                                                                                                <td
-                                                                                                    style="padding: 14px 16px; text-align: center;">
-                                                                                                    <span
-                                                                                                        class="badge-status <%= emp.getStatus()==1 ? "active" : "inactive" %>">
-                                                                                                        <%= emp.getStatus()==1 ? "Đang hoạt động" : "Đã nghỉ việc" %>
-                                                                                                    </span>
-                                                                                                </td>
-                                                                                                <% if (isAdmin) { %>
-                                                                                                    <td style="padding: 14px 16px; text-align: center;">
-                                                                                                        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=detail&id=<%= emp.getId() %>"
-                                                                                                                class="action-icon-btn details-btn" title="Chi tiết">
-                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                                                                                            </a>
-                                                                                                            <a href="${pageContext.request.contextPath}/admin/employees?action=edit&id=<%= emp.getId() %>"
-                                                                                                                class="action-icon-btn edit-btn" title="Chỉnh sửa">
-                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                                                                                            </a>
-                                                                                                            <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
-                                                                                                                <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onchange="window.location.href='${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=<%= emp.getId() %>'">
-                                                                                                                <span class="slider"></span>
-                                                                                                            </label>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <% } %>
-                                                                                            </tr>
+                                                                                            for (Employee emp : listEmp) {
+                                                                                                String fullAddr = emp.getFullAddressString();
+                                                                                    %>
+                                                                                    <tr data-role="<%= emp.getRoleName() %>"
+                                                                                        data-gender="<%= emp.getGender() != null ? emp.getGender() : "" %>"
+                                                                                        data-status="<%= emp.getStatus() %>"
+                                                                                        data-address="<%= fullAddr.toLowerCase() %>"
+                                                                                        data-id="<%= emp.getId() %>"
+                                                                                        onmouseover="this.style.backgroundColor='#F8FAFC'"
+                                                                                        onmouseout="this.style.backgroundColor='transparent'">
+                                                                                        <td style="text-align: center; color: #64748b; font-weight: 500;"><%= stt++ %></td>
+                                                                                        <td><%= emp.getCode() %></td>
+                                                                                        <td><span style="font-weight: 600; color: #0f172a;"><%= emp.getFullName() !=null ? emp.getFullName() : "—" %></span></td>
+                                                                                        <td style="padding: 14px 16px;"><%= emp.getPhoneNumber() != null ? emp.getPhoneNumber() : "—" %></td>
+                                                                                        <td style="padding: 14px 16px;"><%= emp.getEmail() %></td>
+                                                                                        <td style="padding: 14px 16px; text-align: center;"><%= emp.getBirthday() != null ? df.format(emp.getBirthday()) : "—" %></td>
+                                                                                        <td style="padding: 14px 16px; text-align: center;"><%= (emp.getGender() != null && emp.getGender()) ? "Nam" : "Nữ" %></td>
+                                                                                        <td style="padding: 14px 16px;">
+                                                                                            <span style="font-size:14px; font-weight:500; color:#334155;">
+                                                                                                <% 
+                                                                                                    String rName = emp.getRoleName();
+                                                                                                    if ("Admin".equals(rName) || rName == null || rName.isEmpty()) rName = "Quản lý";
+                                                                                                %>
+                                                                                                <%= rName %>
+                                                                                            </span>
+                                                                                        </td>
+                                                                                        <td style="padding: 14px 16px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= fullAddr %>">
+                                                                                            <%= !fullAddr.isEmpty() ? fullAddr : "—" %>
+                                                                                        </td>
+                                                                                        <td style="padding: 14px 16px; text-align: center;">
+                                                                                            <span class="badge-status <%= emp.getStatus()==1 ? "active" : "inactive" %>">
+                                                                                                <%= emp.getStatus()==1 ? "Đang hoạt động" : "Đã nghỉ việc" %>
+                                                                                            </span>
+                                                                                        </td>
+                                                                                        <% if (isAdmin) { %>
+                                                                                        <td style="padding: 14px 16px; text-align: center;">
+                                                                                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                                                                                <a href="${pageContext.request.contextPath}/admin/employees?action=detail&id=<%= emp.getId() %>" class="action-icon-btn details-btn" title="Chi tiết">
+                                                                                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                                                                </a>
+                                                                                                <a href="${pageContext.request.contextPath}/admin/employees?action=edit&id=<%= emp.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa">
+                                                                                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                                                                                </a>
+                                                                                                <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
+                                                                                                    <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onchange="window.location.href='${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=<%= emp.getId() %>'">
+                                                                                                    <span class="slider"></span>
+                                                                                                </label>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        <% } %>
+                                                                                    </tr>
                                                                                             <% } } else { %>
                                                                                                 <tr>
-                                                                                                    <td colspan="9"
+                                                                                                    <td colspan="11"
                                                                                                         style="padding: 40px; text-align: center; color: #94A3B8; font-weight: 500;">
                                                                                                         Không tìm thấy
                                                                                                         nhân viên nào

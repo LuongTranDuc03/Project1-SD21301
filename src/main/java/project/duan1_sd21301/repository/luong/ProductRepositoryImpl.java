@@ -10,7 +10,8 @@ import java.util.List;
 
 public class ProductRepositoryImpl implements ProductRepository {
 
-    private static final String BASE_SELECT_PRODUCT = "SELECT sp.*, dm.ten_danh_muc, th.ten_thuong_hieu, xx.ten_xuat_xu " +
+    private static final String BASE_SELECT_PRODUCT = "SELECT sp.*, dm.ten_danh_muc, th.ten_thuong_hieu, xx.ten_xuat_xu "
+            +
             "FROM san_pham sp " +
             "LEFT JOIN danh_muc dm ON sp.id_danh_muc = dm.id " +
             "LEFT JOIN thuong_hieu th ON sp.id_thuong_hieu = th.id " +
@@ -110,9 +111,18 @@ public class ProductRepositoryImpl implements ProductRepository {
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, product.getCode());
                 ps.setString(2, product.getName());
-                if (categoryId > 0) ps.setInt(3, categoryId); else ps.setNull(3, Types.INTEGER);
-                if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
-                if (originId > 0) ps.setInt(5, originId); else ps.setNull(5, Types.INTEGER);
+                if (categoryId > 0)
+                    ps.setInt(3, categoryId);
+                else
+                    ps.setNull(3, Types.INTEGER);
+                if (brandId > 0)
+                    ps.setInt(4, brandId);
+                else
+                    ps.setNull(4, Types.INTEGER);
+                if (originId > 0)
+                    ps.setInt(5, originId);
+                else
+                    ps.setNull(5, Types.INTEGER);
                 ps.setString(6, product.getDescription());
                 ps.setString(7, product.getCareInstructions());
                 ps.setDouble(8, product.getPrice());
@@ -140,8 +150,14 @@ public class ProductRepositoryImpl implements ProductRepository {
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setString(1, product.getCode());
                     ps.setString(2, product.getName());
-                    if (categoryId > 0) ps.setInt(3, categoryId); else ps.setNull(3, Types.INTEGER);
-                    if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
+                    if (categoryId > 0)
+                        ps.setInt(3, categoryId);
+                    else
+                        ps.setNull(3, Types.INTEGER);
+                    if (brandId > 0)
+                        ps.setInt(4, brandId);
+                    else
+                        ps.setNull(4, Types.INTEGER);
                     ps.setString(5, product.getOrigin());
                     ps.setString(6, product.getDescription());
                     ps.setString(7, product.getCareInstructions());
@@ -189,9 +205,18 @@ public class ProductRepositoryImpl implements ProductRepository {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, product.getCode());
                 ps.setString(2, product.getName());
-                if (categoryId > 0) ps.setInt(3, categoryId); else ps.setNull(3, Types.INTEGER);
-                if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
-                if (originId > 0) ps.setInt(5, originId); else ps.setNull(5, Types.INTEGER);
+                if (categoryId > 0)
+                    ps.setInt(3, categoryId);
+                else
+                    ps.setNull(3, Types.INTEGER);
+                if (brandId > 0)
+                    ps.setInt(4, brandId);
+                else
+                    ps.setNull(4, Types.INTEGER);
+                if (originId > 0)
+                    ps.setInt(5, originId);
+                else
+                    ps.setNull(5, Types.INTEGER);
                 ps.setString(6, product.getDescription());
                 ps.setString(7, product.getCareInstructions());
                 ps.setDouble(8, product.getPrice());
@@ -207,8 +232,14 @@ public class ProductRepositoryImpl implements ProductRepository {
                 try (PreparedStatement ps = conn.prepareStatement(sqlFallback)) {
                     ps.setString(1, product.getCode());
                     ps.setString(2, product.getName());
-                    if (categoryId > 0) ps.setInt(3, categoryId); else ps.setNull(3, Types.INTEGER);
-                    if (brandId > 0) ps.setInt(4, brandId); else ps.setNull(4, Types.INTEGER);
+                    if (categoryId > 0)
+                        ps.setInt(3, categoryId);
+                    else
+                        ps.setNull(3, Types.INTEGER);
+                    if (brandId > 0)
+                        ps.setInt(4, brandId);
+                    else
+                        ps.setNull(4, Types.INTEGER);
                     ps.setString(5, product.getOrigin());
                     ps.setString(6, product.getDescription());
                     ps.setString(7, product.getCareInstructions());
@@ -320,9 +351,18 @@ public class ProductRepositoryImpl implements ProductRepository {
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, detail.getCode());
             ps.setInt(2, detail.getProduct() != null ? detail.getProduct().getId() : 0);
-            if (sizeId > 0) ps.setInt(3, sizeId); else ps.setNull(3, Types.INTEGER);
-            if (colorId > 0) ps.setInt(4, colorId); else ps.setNull(4, Types.INTEGER);
-            if (styleId > 0) ps.setInt(5, styleId); else ps.setNull(5, Types.INTEGER);
+            if (sizeId > 0)
+                ps.setInt(3, sizeId);
+            else
+                ps.setNull(3, Types.INTEGER);
+            if (colorId > 0)
+                ps.setInt(4, colorId);
+            else
+                ps.setNull(4, Types.INTEGER);
+            if (styleId > 0)
+                ps.setInt(5, styleId);
+            else
+                ps.setNull(5, Types.INTEGER);
             ps.setDouble(6, detail.getImportPrice());
             ps.setDouble(7, detail.getPrice());
             ps.setInt(8, detail.getStock());
@@ -349,9 +389,18 @@ public class ProductRepositoryImpl implements ProductRepository {
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlFallback, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, detail.getProduct() != null ? detail.getProduct().getId() : 0);
-                if (sizeId > 0) ps.setInt(2, sizeId); else ps.setNull(2, Types.INTEGER);
-                if (colorId > 0) ps.setInt(3, colorId); else ps.setNull(3, Types.INTEGER);
-                if (styleId > 0) ps.setInt(4, styleId); else ps.setNull(4, Types.INTEGER);
+                if (sizeId > 0)
+                    ps.setInt(2, sizeId);
+                else
+                    ps.setNull(2, Types.INTEGER);
+                if (colorId > 0)
+                    ps.setInt(3, colorId);
+                else
+                    ps.setNull(3, Types.INTEGER);
+                if (styleId > 0)
+                    ps.setInt(4, styleId);
+                else
+                    ps.setNull(4, Types.INTEGER);
                 ps.setDouble(5, detail.getImportPrice());
                 ps.setDouble(6, detail.getPrice());
                 ps.setInt(7, detail.getStock());
@@ -370,7 +419,8 @@ public class ProductRepositoryImpl implements ProductRepository {
                     }
                     return true;
                 }
-            } catch (SQLException ignored) {}
+            } catch (SQLException ignored) {
+            }
         }
         return false;
     }
@@ -390,9 +440,18 @@ public class ProductRepositoryImpl implements ProductRepository {
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, detail.getCode());
-                if (sizeId > 0) ps.setInt(2, sizeId); else ps.setNull(2, Types.INTEGER);
-                if (colorId > 0) ps.setInt(3, colorId); else ps.setNull(3, Types.INTEGER);
-                if (styleId > 0) ps.setInt(4, styleId); else ps.setNull(4, Types.INTEGER);
+                if (sizeId > 0)
+                    ps.setInt(2, sizeId);
+                else
+                    ps.setNull(2, Types.INTEGER);
+                if (colorId > 0)
+                    ps.setInt(3, colorId);
+                else
+                    ps.setNull(3, Types.INTEGER);
+                if (styleId > 0)
+                    ps.setInt(4, styleId);
+                else
+                    ps.setNull(4, Types.INTEGER);
                 ps.setDouble(5, detail.getImportPrice());
                 ps.setDouble(6, detail.getPrice());
                 ps.setInt(7, detail.getStock());
@@ -594,7 +653,8 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         try {
             String ori = rs.getString("ten_xuat_xu");
-            if (ori == null) ori = rs.getString("xuat_xu");
+            if (ori == null)
+                ori = rs.getString("xuat_xu");
             p.setOrigin(ori);
         } catch (SQLException ignored) {
             try {

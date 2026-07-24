@@ -170,6 +170,22 @@
                         THÔNG TIN CHI TIẾT NHÂN VIÊN
                     </div>
                     <div class="form-card-body">
+                        <!-- Hiển thị ảnh đại diện -->
+                        <div style="display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px dashed #cbd5e1; border-radius: 12px; margin-bottom: 24px; background-color: #f8fafc;">
+                            <img src="<%= (employee.getAvatar() != null && !employee.getAvatar().isEmpty()) ? employee.getAvatar() : "https://ui-avatars.com/api/?name=" + (employee.getFullName() != null ? employee.getFullName().replace(" ", "+") : "NV") + "&background=random" %>" alt="Avatar" onerror="this.src='https://i.pravatar.cc/150?img=0'" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; margin-bottom: 0;">
+                            <div>
+                                <h3 style="margin: 0 0 4px 0; font-size: 18px; color: #0f172a; font-weight: 700;"><%= employee.getFullName() != null ? employee.getFullName() : "Chưa có tên" %></h3>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <span style="font-size: 13px; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                                        <%= (employee.getRoleName() != null && !employee.getRoleName().isEmpty()) ? employee.getRoleName() : (employee.getRoleId() == 2 ? "Quản lý" : "Nhân viên") %>
+                                    </span>
+                                    <span style="font-size: 13px; color: <%= employee.getStatus() == 1 ? "#10b981" : "#ef4444" %>; font-weight: 600;">
+                                        <%= employee.getStatus() == 1 ? "● Đang làm việc" : "● Đã nghỉ việc/Khóa" %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-grid">
                             <!-- THÔNG TIN CÁ NHÂN -->
                             <div class="form-group">
