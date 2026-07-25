@@ -7,13 +7,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "HomeController", value = "/admin/home")
+@WebServlet(name = "HomeController", urlPatterns = {"/home", "/admin/home"})
 public class HomeController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setAttribute("pageTitle", "Trang chủ");
-        request.getRequestDispatcher("/WEB-INF/views/admin/under-construction.jsp").forward(request, response);
+        request.getRequestDispatcher("/home.jsp").forward(request, response);
     }
 }

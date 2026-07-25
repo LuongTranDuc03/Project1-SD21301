@@ -451,8 +451,13 @@ public class EmployeeController extends HttpServlet {
         Address addressObj = new Address();
         if (idStr != null && !idStr.isEmpty()) {
             Employee oldEmp = employeeService.getEmployeeById(Integer.parseInt(idStr));
-            if (oldEmp != null && oldEmp.getAddress() != null) {
-                addressObj.setId(oldEmp.getAddress().getId());
+            if (oldEmp != null) {
+                if (oldEmp.getAddress() != null) {
+                    addressObj.setId(oldEmp.getAddress().getId());
+                }
+                // Giữ nguyên ngày tạo ban đầu và cập nhật thời gian sửa đổi mới nhất
+                emp.setCreatedAt(oldEmp.getCreatedAt());
+                emp.setUpdatedAt(java.time.LocalDateTime.now());
             }
         }
 

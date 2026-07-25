@@ -50,8 +50,8 @@ public class CustomerValidator {
         // 3. Email
         if (email == null || email.trim().isEmpty()) {
             errors.add("Email không được để trống.");
-        } else if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            errors.add("Email không đúng định dạng.");
+        } else if (!email.trim().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            errors.add("Email không đúng định dạng chuẩn (Ví dụ: example@gmail.com).");
         } else if (customers != null) {
             for (Customer c : customers) {
                 if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
