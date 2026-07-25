@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
     <%@ page import="project.duan1_sd21301.model.huy.Employee" %>
         <%@ page import="project.duan1_sd21301.model.huy.Role" %>
             <%@ page import="java.util.List" %>
@@ -95,7 +95,7 @@
                                                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                                                         </svg>
                                                     </button>
-                                                    <div class="date-pill" id="live-date">Thứ Năm, 09/07/2026</div>
+                                                    <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                                                     <div class="profile-pill">
                                                         <span class="profile-avatar-mini">A</span>
                                                         <span>Admin</span>

@@ -78,7 +78,7 @@
                     </svg>
                     <span class="notif-badge"></span>
                 </button>
-                <div class="date-pill" id="currentDate"></div>
+                <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span class="profile-avatar-mini">A</span>
                     <span>Admin</span>
@@ -242,40 +242,35 @@
                 </div>
             </div>
 
+            <!-- Thanh nút thao tác -->
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
+                <%
+                    StringBuilder exportUrl = new StringBuilder(request.getContextPath() + "/admin/invoices/export-excel?_=1");
+                    if (currentStatus != null) exportUrl.append("&trangThai=").append(currentStatus);
+                    if (fromDate != null && !fromDate.isEmpty())
+                        exportUrl.append("&fromDate=").append(fromDate);
+                    if (toDate != null && !toDate.isEmpty()) exportUrl.append("&toDate=").append(toDate);
+                    if (keyword != null && !keyword.isEmpty())
+                        exportUrl.append("&q=").append(java.net.URLEncoder.encode(keyword, "UTF-8"));
+                    if (currentPaymentMethodId != null)
+                        exportUrl.append("&paymentMethodId=").append(currentPaymentMethodId);
+                %>
+                <a href="<%= exportUrl %>" class="btn-export" id="btnExportExcel" title="Xuất danh sách hóa đơn ra Excel" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="8" y1="13" x2="16" y2="13"></line>
+                        <line x1="8" y1="17" x2="16" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Xuất Excel</span>
+                </a>
+            </div>
+
             <!-- KHU VỰC BẢNG DỮ LIỆU HOÁ ĐƠN: Hiển thị danh sách hoá đơn dựa trên bộ lọc -->
             <div class="custom-card">
                 <div class="card-header-bar" style="display: flex; justify-content: space-between; align-items: center;">
                                             <span class="card-header-title">&#8226; Bảng dữ liệu hoá đơn</span>
-                                            <div class="cl-actions">
-                                                <%
-                                                    StringBuilder exportUrl = new StringBuilder(request.getContextPath() + "/admin/invoices/export-excel?_=1");
-                                                    if (currentStatus != null) exportUrl.append("&trangThai=").append(currentStatus);
-                                                    if (fromDate != null && !fromDate.isEmpty())
-                                                        exportUrl.append("&fromDate=").append(fromDate);
-                                                    if (toDate != null && !toDate.isEmpty()) exportUrl.append("&toDate=").append(toDate);
-                                                    if (keyword != null && !keyword.isEmpty())
-                                                        exportUrl.append("&q=").append(java.net.URLEncoder.encode(keyword, "UTF-8"));
-                                                    if (currentPaymentMethodId != null)
-                                                        exportUrl.append("&paymentMethodId=").append(currentPaymentMethodId);
-                                                %>
-                                                <a href="<%= exportUrl %>" class="btn-export"
-                                                   id="btnExportExcel"
-                                                   title="Xuất danh sách hóa đơn ra Excel"
-                                                   style="background-color: #10b981; border-color: #10b981; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;">
-                                                    <svg viewBox="0 0 24 24" width="15" height="15"
-                                                         stroke="currentColor" stroke-width="2.5"
-                                                         fill="none" stroke-linecap="round"
-                                                         stroke-linejoin="round">
-                                                        <path
-                                                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                                        <polyline points="14 2 14 8 20 8"/>
-                                                        <line x1="16" y1="13" x2="8" y2="13"/>
-                                                        <line x1="16" y1="17" x2="8" y2="17"/>
-                                                        <polyline points="10 9 9 9 8 9"/>
-                                                    </svg>
-                                                    Xuất Excel
-                                                </a>
-                                            </div>
                 </div>
 
                 <div class="filter-row"
@@ -573,3 +568,4 @@
 </body>
 
 </html>
+

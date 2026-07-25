@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
     <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
         <%@ page import="project.duan1_sd21301.model.Address" %>
             <%@ page import="java.util.List" %>
@@ -193,7 +193,7 @@
                                                     </svg>
                                                     <span class="notif-badge"></span>
                                                 </button>
-                                                <div class="date-pill">Thứ Ba, 30/06/2026</div>
+                                                <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                                                 <div class="profile-pill">
                                                     <span class="profile-avatar-mini">A</span>
                                                     <span>Admin</span>
