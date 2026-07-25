@@ -115,7 +115,7 @@ public class GoogleLoginController extends HttpServlet {
         // Đăng nhập thành công
         HttpSession session = request.getSession();
         session.setAttribute("loggedInUser", employee);
-        response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+        response.sendRedirect(request.getContextPath() + "/admin/home");
     }
 
     /** Giải mã Base64 JWT payload để lấy email (fallback khi không có Client ID thật) */
