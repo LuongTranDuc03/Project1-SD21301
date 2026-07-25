@@ -10,12 +10,15 @@ import java.io.IOException;
 import project.duan1_sd21301.service.luong.ProductService;
 import project.duan1_sd21301.service.luong.ProductServiceImpl;
 import project.duan1_sd21301.repository.phuc.InvoiceRepository;
+import project.duan1_sd21301.repository.ha.CustomerRepository;
+import project.duan1_sd21301.repository.ha.CustomerRepositoryImpl;
 
 @WebServlet(name = "PosController", value = "/admin/pos")
 public class PosController extends HttpServlet {
 
     private final ProductService productService = new ProductServiceImpl();
     private final InvoiceRepository invoiceRepository = new InvoiceRepository();
+    private final CustomerRepository customerRepository = new CustomerRepositoryImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -26,6 +29,7 @@ public class PosController extends HttpServlet {
         request.setAttribute("products", productService.getAllProducts());
         request.setAttribute("colors", productService.getAllColors());
         request.setAttribute("sizes", productService.getAllSizes());
+        request.setAttribute("customers", customerRepository.findAll());
         
         long totalInvoices = invoiceRepository.countAll(null, null, null, null, null);
         request.setAttribute("nextOrderIndex", totalInvoices + 1);

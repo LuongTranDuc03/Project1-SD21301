@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
+<%@ page import="project.duan1_sd21301.model.ha.Customer" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -50,7 +51,7 @@
                 <div class="pos-title-area">
                     <h2>Bán hàng tại quầy</h2>
                     <p class="pos-subtitle">
-                        Người bán: <strong>${sessionScope.employee != null ? sessionScope.employee.fullName : 'Admin'}</strong>
+                        Người bán: <strong>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Admin'}</strong>
                     </p>
                 </div>
                 <button class="btn-create-order" onclick="createOrder()">
@@ -96,7 +97,7 @@
                     <div class="pos-card-header">
                         <h3>Thông tin khách hàng</h3>
                         <div class="pos-card-actions">
-                            <button class="btn-outline-primary"><i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> Chọn khách hàng</button>
+                            <button class="btn-outline-primary" onclick="openCustomerModal()"><i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> Chọn khách hàng</button>
                             <button class="btn-outline-primary" id="btnChooseAddress" style="display: none;">Chọn địa chỉ</button>
                         </div>
                     </div>
@@ -104,7 +105,7 @@
                     <div class="customer-info-basic">
                         <div class="info-row">
                             <span class="info-label">Tên khách hàng:</span>
-                            <span class="info-value">Khách lẻ</span>
+                            <span class="info-value" id="customerNameDisplay">Khách lẻ</span>
                         </div>
                         <p class="text-muted" id="deliveryHintText">Tại quầy: chỉ cần chọn sản phẩm và thanh toán.</p>
                     </div>
@@ -113,25 +114,48 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Số điện thoại <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Nhập số điện thoại...">
+                                <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="updateCheckoutState()">
                             </div>
                             <div class="form-group">
                                 <label>Địa chỉ cụ thể <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Số nhà, ngõ, đường...">
+                                <input type="text" class="form-control" id="customerAddressInput" placeholder="Số nhà, ngõ, đường..." oninput="updateCheckoutState()">
                             </div>
                         </div>
-                        <div class="form-row three-cols">
+                        <!-- Block for Khách lẻ (API Comboboxes) -->
+                        <div class="form-row three-cols" id="apiAddressComboboxes">
                             <div class="form-group">
                                 <label>Tỉnh/Thành phố <span class="text-danger">*</span></label>
-                                <select class="form-control"><option>Chọn Tỉnh/Thành phố...</option></select>
+                                <select class="form-control" id="provinceSelect" onchange="fetchDistricts(this.value); updateCheckoutState()">
+                                    <option value="">Chọn Tỉnh/Thành phố...</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Quận/Huyện <span class="text-danger">*</span></label>
-                                <select class="form-control"><option>Chọn Quận/Huyện...</option></select>
+                                <select class="form-control" id="districtSelect" onchange="fetchWards(this.value); updateCheckoutState()">
+                                    <option value="">Chọn Quận/Huyện...</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label>Xã/Phường <span class="text-danger">*</span></label>
-                                <select class="form-control"><option>Chọn Xã/Phường...</option></select>
+                                <select class="form-control" id="wardSelect" onchange="updateCheckoutState()">
+                                    <option value="">Chọn Xã/Phường...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Block for Fixed Customer (Readonly Inputs) -->
+                        <div class="form-row three-cols" id="fixedAddressInputs" style="display: none;">
+                            <div class="form-group">
+                                <label>Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="provinceFixed" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Quận/Huyện <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="districtFixed" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Xã/Phường <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="wardFixed" readonly>
                             </div>
                         </div>
                     </div>
@@ -144,7 +168,7 @@
                         <div class="toggle-delivery">
                             <span id="deliveryLabel">Tại quầy</span>
                             <label class="switch">
-                                <input type="checkbox" id="deliveryToggle" onchange="toggleDelivery()">
+                                <input type="checkbox" id="deliveryToggle" onchange="toggleDelivery(); updateCheckoutState()">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -154,17 +178,12 @@
                         <div class="coupon-inputs">
                             <div class="form-group" style="flex: 3;">
                                 <label>Mã phiếu giảm giá</label>
-                                <input type="text" class="form-control" placeholder="Nhập mã (Enter để áp dụng)">
+                                <input type="text" class="form-control" id="discountCodeInput" placeholder="Nhập mã" oninput="updateCheckoutState()">
                             </div>
                             <div class="form-group" style="flex: 1;">
                                 <label>Giá trị</label>
-                                <input type="text" class="form-control" disabled value="15%">
+                                <input type="text" class="form-control" id="discountValueInput" placeholder="" oninput="updateCheckoutState()">
                             </div>
-                        </div>
-                        <div style="margin-top: 10px; padding: 10px; background-color: #dcfce7; border-radius: 6px; font-size: 13px; color: #166534;">
-                            <strong>Áp dụng thành công phiếu giảm giá PGG00003 (15%)</strong><br>
-                            Giảm 300.000 đ<br>
-                            <span style="font-size: 11px; opacity: 0.8; margin-top: 4px; display: inline-block;">Hệ thống kiểm tra ưu đãi theo thời gian thực. Nếu phiếu ngừng hoạt động, ưu đãi phù hợp nhất sẽ được tự động cập nhật.</span>
                         </div>
                     </div>
                     
@@ -175,15 +194,11 @@
                         </div>
                         
                         <div class="summary-row shipping-row" id="shippingRow" style="display: none;">
-                            <span class="summary-label" style="display: flex; align-items: center; gap: 6px;">Phí vận chuyển <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 800; color: #ea580c; font-style: italic; font-size: 11px;">GHN <span style="font-size: 8px; color: #0f172a;">Express</span></span></span>
+                            <span class="summary-label">Phí vận chuyển</span>
                             <div class="shipping-fee-input">
-                                <input type="text" class="form-control text-right" value="0" style="width: 80px;">
+                                <input type="text" class="form-control text-right" id="shippingFeeInput" value="" placeholder="0" style="width: 80px;" oninput="updateCheckoutState()">
                                 <span>đ</span>
-                                <button class="btn-refresh"><i class="fa-solid fa-rotate-right"></i></button>
                             </div>
-                        </div>
-                        <div class="shipping-hint" id="shippingHint" style="display: none;">
-                            Chưa đủ địa chỉ để tính phí GHN.
                         </div>
                         
                         <div class="summary-row">
@@ -199,7 +214,7 @@
                         <div class="summary-row">
                             <span class="summary-label">Khách thanh toán <i class="fa-solid fa-money-bill-wave"></i></span>
                             <div class="customer-pay-input">
-                                <input type="text" class="form-control text-right" value="0">
+                                <input type="text" class="form-control text-right" id="customerPayInput" value="0" oninput="updateCheckoutState()">
                                 <span>đ</span>
                             </div>
                         </div>
@@ -215,6 +230,72 @@
             </div>
         </div>
     </main>
+</div>
+
+<!-- Customer Modal -->
+<div class="pos-modal-overlay" id="customerModalOverlay">
+    <div class="pos-modal" style="max-width: 1200px;">
+        <div class="pos-modal-header">
+            <h3>Chọn khách hàng</h3>
+            <button class="btn-close-modal" onclick="closeCustomerModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="pos-modal-body">
+            <div class="pos-filter-group search-group" style="margin-bottom: 15px;">
+                <input type="text" class="pos-filter-input" id="customerSearch" placeholder="Tìm kiếm theo tên, số điện thoại..." style="width: 100%;" oninput="filterCustomers()">
+            </div>
+            <div class="pos-table-container">
+                <table class="pos-table">
+                    <thead>
+                        <tr>
+                            <th>Mã KH</th>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ mặc định</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customerTableBody">
+                        <tr class="customer-row">
+                            <td></td>
+                            <td style="font-weight: 600;">Khách lẻ</td>
+                            <td></td>
+                            <td></td>
+                            <td><button class="btn-add-variant" onclick="selectCustomer('Khách lẻ', '', this)">Chọn</button></td>
+                        </tr>
+                        <% 
+                        java.util.List<Customer> customers = (java.util.List<Customer>) request.getAttribute("customers");
+                        if (customers != null) {
+                            for (Customer c : customers) {
+                                project.duan1_sd21301.model.ha.CustomerAddress defAddr = c.getDefaultAddress();
+                                String phone = c.getPhoneNumber() != null ? c.getPhoneNumber() : "";
+                                String prov = defAddr != null && defAddr.getProvince() != null ? defAddr.getProvince() : "";
+                                String dist = defAddr != null && defAddr.getDistrict() != null ? defAddr.getDistrict() : "";
+                                String ward = defAddr != null && defAddr.getWard() != null ? defAddr.getWard() : "";
+                                String detail = defAddr != null && defAddr.getDetailedAddress() != null ? defAddr.getDetailedAddress() : "";
+                                String addrStr = defAddr != null ? defAddr.getFormattedAddress() : "Chưa có địa chỉ";
+                        %>
+                        <tr class="customer-row" 
+                            data-prov="<%= prov %>"
+                            data-dist="<%= dist %>"
+                            data-ward="<%= ward %>"
+                            data-detail="<%= detail %>">
+                            <td><%= c.getCode() %></td>
+                            <td style="font-weight: 600;"><%= c.getFullName() %></td>
+                            <td><%= phone %></td>
+                            <td><%= addrStr %></td>
+                            <td><button class="btn-add-variant" onclick="selectCustomer('<%= c.getFullName() %>', '<%= phone %>', this)">Chọn</button></td>
+                        </tr>
+                        <% 
+                            }
+                        }
+                        %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Variant Modal -->
@@ -374,9 +455,55 @@
     const MAX_ORDERS = 10;
     let nextOrderId = parseInt('${nextOrderIndex}') || 1;
 
+    function saveOrdersToStorage() {
+        localStorage.setItem('pos_orders', JSON.stringify(orders));
+        if (currentOrderId) {
+            localStorage.setItem('pos_current_order_id', currentOrderId);
+        }
+    }
+
     function initPOS() {
-        createOrder(); // Create initial order
+        const savedOrders = localStorage.getItem('pos_orders');
+        if (savedOrders) {
+            try {
+                orders = JSON.parse(savedOrders);
+                currentOrderId = localStorage.getItem('pos_current_order_id');
+                
+                if (!orders || !Array.isArray(orders) || orders.length === 0) {
+                    orders = [];
+                    createOrder();
+                } else {
+                    const exists = orders.find(o => o.id === currentOrderId);
+                    if (!exists) {
+                        currentOrderId = orders[0].id;
+                    }
+                    
+                    let maxLocalId = 0;
+                    orders.forEach(o => {
+                        if (o.id && o.id.startsWith('HD')) {
+                            const num = parseInt(o.id.substring(2));
+                            if (!isNaN(num) && num > maxLocalId) {
+                                maxLocalId = num;
+                            }
+                        }
+                    });
+                    const serverNextId = parseInt('${nextOrderIndex}') || 1;
+                    nextOrderId = Math.max(serverNextId, maxLocalId + 1);
+                    
+                    renderTabs();
+                    renderCurrentOrderItems();
+                }
+            } catch (e) {
+                console.error("Error parsing pos orders", e);
+                orders = [];
+                createOrder();
+            }
+        } else {
+            createOrder();
+        }
+        
         countTotalVariants();
+        fetchProvinces();
     }
 
     // --- Order Tabs Logic ---
@@ -393,13 +520,26 @@
         orders.push({
             id: newOrderId,
             name: newOrderId,
-            items: []
+            items: [],
+            customerName: 'Khách lẻ',
+            customerPhone: '',
+            isDelivery: false,
+            deliveryPhone: '',
+            deliveryAddress: '',
+            province: '',
+            district: '',
+            ward: '',
+            discountCode: '',
+            discountValue: '',
+            shippingFee: '',
+            customerPay: ''
         });
         
         currentOrderId = newOrderId;
         
         renderTabs();
         renderCurrentOrderItems();
+        renderCheckoutState();
     }
     
     function renderTabs() {
@@ -436,6 +576,7 @@
         currentOrderId = orderId;
         renderTabs();
         renderCurrentOrderItems();
+        renderCheckoutState();
     }
     
     function closeOrder(orderId, event) {
@@ -461,6 +602,7 @@
         
         renderTabs();
         renderCurrentOrderItems();
+        renderCheckoutState();
     }
 
     // --- Modal Logic ---
@@ -538,23 +680,29 @@
             return;
         }
         
-        const row = document.querySelector(`.variant-row[data-code="${variantCode}"]`);
-        if (!row) return;
+        const row = document.querySelector(`.variant-row[data-code="` + variantCode.replace(/"/g, '\\"') + `"]`);
+        if (!row) {
+            console.error("Row not found for variantCode: " + variantCode);
+            return;
+        }
         
-        const name = row.getAttribute('data-name');
-        const color = row.getAttribute('data-color');
-        const size = row.getAttribute('data-size');
+        const name = row.getAttribute('data-name') || '';
+        const color = row.getAttribute('data-color') || '';
+        const size = row.getAttribute('data-size') || '';
         const price = parseFloat(row.getAttribute('data-price')) || 0;
         const stock = parseInt(row.getAttribute('data-stock')) || 0;
-        const image = row.getAttribute('data-image');
+        const image = row.getAttribute('data-image') || '';
         
         if (stock <= 0) {
-            alert("Sản phẩm này đã hết hàng!");
+            alert("Sản phẩm này đã hết hàng (Tồn kho = 0)!");
             return;
         }
         
         const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
+        if (orderIndex === -1) {
+            console.error("Order not found: " + currentOrderId);
+            return;
+        }
         
         const order = orders[orderIndex];
         const existingItemIndex = order.items.findIndex(item => item.code === variantCode);
@@ -647,6 +795,7 @@
             document.getElementById('summaryTotalPayment').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
             document.getElementById('summaryChange').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
         }
+        saveOrdersToStorage();
     }
     
     function toggleDelivery() {
@@ -659,14 +808,262 @@
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
             document.getElementById('shippingRow').style.display = 'flex';
-            document.getElementById('shippingHint').style.display = 'block';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
             document.getElementById('shippingRow').style.display = 'none';
-            document.getElementById('shippingHint').style.display = 'none';
         }
+    }
+    
+    // --- Address & API Logic ---
+    function fetchProvinces() {
+        fetch('https://provinces.open-api.vn/api/p/')
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById('provinceSelect');
+                if(!select) return;
+                select.innerHTML = '<option value="">Chọn Tỉnh/Thành phố...</option>';
+                data.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.code;
+                    opt.text = p.name;
+                    select.appendChild(opt);
+                });
+            })
+            .catch(err => console.error("Error fetching provinces:", err));
+    }
+    
+    function fetchDistricts(provinceCode) {
+        const select = document.getElementById('districtSelect');
+        const wardSelect = document.getElementById('wardSelect');
+        select.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
+        wardSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+        
+        if (!provinceCode) return;
+        
+        fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.districts) {
+                    data.districts.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d.code;
+                        opt.text = d.name;
+                        select.appendChild(opt);
+                    });
+                }
+            })
+            .catch(err => console.error("Error fetching districts:", err));
+    }
+    
+    function fetchWards(districtCode) {
+        const select = document.getElementById('wardSelect');
+        select.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+        
+        if (!districtCode) return;
+        
+        fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.wards) {
+                    data.wards.forEach(w => {
+                        const opt = document.createElement('option');
+                        opt.value = w.code;
+                        opt.text = w.name;
+                        select.appendChild(opt);
+                    });
+                }
+            })
+            .catch(err => console.error("Error fetching wards:", err));
+    }
+    
+    // --- Customer Modal Logic ---
+    function openCustomerModal() {
+        document.getElementById('customerModalOverlay').classList.add('active');
+    }
+    
+    function closeCustomerModal() {
+        document.getElementById('customerModalOverlay').classList.remove('active');
+    }
+    
+    function filterCustomers() {
+        const searchText = document.getElementById('customerSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#customerTableBody tr.customer-row');
+        
+        rows.forEach(row => {
+            const code = (row.children[0].textContent || '').toLowerCase();
+            const name = (row.children[1].textContent || '').toLowerCase();
+            const phone = (row.children[2].textContent || '').toLowerCase();
+            
+            if (!searchText || code.includes(searchText) || name.includes(searchText) || phone.includes(searchText)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    function selectCustomer(name, phone, btnElement) {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex !== -1) {
+            orders[orderIndex].customerName = name;
+            if (name !== 'Khách lẻ') {
+                orders[orderIndex].deliveryPhone = phone;
+                if (btnElement) {
+                    const row = btnElement.closest('tr');
+                    orders[orderIndex].province = row.getAttribute('data-prov') || '';
+                    orders[orderIndex].district = row.getAttribute('data-dist') || '';
+                    orders[orderIndex].ward = row.getAttribute('data-ward') || '';
+                    orders[orderIndex].deliveryAddress = row.getAttribute('data-detail') || '';
+                }
+            } else {
+                orders[orderIndex].deliveryPhone = '';
+                orders[orderIndex].province = '';
+                orders[orderIndex].district = '';
+                orders[orderIndex].ward = '';
+                orders[orderIndex].deliveryAddress = '';
+            }
+            saveOrdersToStorage();
+        }
+        
+        renderCheckoutState();
+        closeCustomerModal();
+    }
+    
+    // --- Checkout State Management ---
+    function updateCheckoutState() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        order.isDelivery = document.getElementById('deliveryToggle').checked;
+        order.deliveryPhone = document.getElementById('customerPhoneInput').value;
+        order.deliveryAddress = document.getElementById('customerAddressInput').value;
+        
+        const isFixed = order.customerName && order.customerName !== 'Khách lẻ';
+        if (!isFixed) {
+            order.province = document.getElementById('provinceSelect').value;
+            order.district = document.getElementById('districtSelect').value;
+            order.ward = document.getElementById('wardSelect').value;
+        }
+        
+        order.shippingFee = document.getElementById('shippingFeeInput').value;
+        order.customerPay = document.getElementById('customerPayInput').value;
+        order.discountCode = document.getElementById('discountCodeInput').value;
+        order.discountValue = document.getElementById('discountValueInput').value;
+        
+        saveOrdersToStorage();
+    }
+    
+    function renderCheckoutState() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        document.getElementById('customerNameDisplay').textContent = order.customerName || 'Khách lẻ';
+        
+        const toggle = document.getElementById('deliveryToggle');
+        toggle.checked = !!order.isDelivery;
+        
+        const isFixed = order.customerName && order.customerName !== 'Khách lẻ';
+        
+        const isDelivery = toggle.checked;
+        document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+        if (isDelivery) {
+            document.getElementById('btnChooseAddress').style.display = 'inline-block';
+            document.getElementById('deliveryHintText').style.display = 'none';
+            document.getElementById('deliveryForm').style.display = 'flex';
+            document.getElementById('shippingRow').style.display = 'flex';
+        } else {
+            document.getElementById('btnChooseAddress').style.display = 'none';
+            if (isFixed) {
+                document.getElementById('deliveryHintText').style.display = 'none';
+                document.getElementById('deliveryForm').style.display = 'flex';
+            } else {
+                document.getElementById('deliveryHintText').style.display = 'block';
+                document.getElementById('deliveryForm').style.display = 'none';
+            }
+            document.getElementById('shippingRow').style.display = 'none';
+        }
+        
+        document.getElementById('customerPhoneInput').value = order.deliveryPhone || '';
+        document.getElementById('customerAddressInput').value = order.deliveryAddress || '';
+        
+        // Handle fixed fields for DB customers
+        const pInput = document.getElementById('customerPhoneInput');
+        const aInput = document.getElementById('customerAddressInput');
+        const apiBlock = document.getElementById('apiAddressComboboxes');
+        const fixedBlock = document.getElementById('fixedAddressInputs');
+        
+        if (isFixed) {
+            pInput.setAttribute('readonly', 'readonly');
+            aInput.setAttribute('readonly', 'readonly');
+            
+            apiBlock.style.display = 'none';
+            fixedBlock.style.display = 'flex';
+            
+            document.getElementById('provinceFixed').value = order.province || '';
+            document.getElementById('districtFixed').value = order.district || '';
+            document.getElementById('wardFixed').value = order.ward || '';
+        } else {
+            pInput.removeAttribute('readonly');
+            aInput.removeAttribute('readonly');
+            
+            apiBlock.style.display = 'flex';
+            fixedBlock.style.display = 'none';
+            
+            document.getElementById('provinceSelect').value = order.province || '';
+            
+            if (order.province) {
+                fetch(`https://provinces.open-api.vn/api/p/${order.province}?depth=2`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const select = document.getElementById('districtSelect');
+                        select.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
+                        if (data && data.districts) {
+                            data.districts.forEach(d => {
+                                const opt = document.createElement('option');
+                                opt.value = d.code;
+                                opt.text = d.name;
+                                select.appendChild(opt);
+                            });
+                        }
+                        select.value = order.district || '';
+                        
+                        if (order.district) {
+                            fetch(`https://provinces.open-api.vn/api/d/${order.district}?depth=2`)
+                                .then(res => res.json())
+                                .then(data2 => {
+                                    const wSelect = document.getElementById('wardSelect');
+                                    wSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+                                    if (data2 && data2.wards) {
+                                        data2.wards.forEach(w => {
+                                            const opt = document.createElement('option');
+                                            opt.value = w.code;
+                                            opt.text = w.name;
+                                            wSelect.appendChild(opt);
+                                        });
+                                    }
+                                    wSelect.value = order.ward || '';
+                                })
+                                .catch(err => console.error(err));
+                        } else {
+                            document.getElementById('wardSelect').innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+                        }
+                    })
+                    .catch(err => console.error(err));
+            } else {
+                document.getElementById('districtSelect').innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
+                document.getElementById('wardSelect').innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+            }
+        }
+        
+        document.getElementById('shippingFeeInput').value = order.shippingFee || '';
+        document.getElementById('customerPayInput').value = order.customerPay || '';
+        document.getElementById('discountCodeInput').value = order.discountCode || '';
+        document.getElementById('discountValueInput').value = order.discountValue || '';
+
     }
     
     function updateItemQty(code, change) {
