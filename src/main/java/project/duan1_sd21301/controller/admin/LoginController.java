@@ -27,7 +27,7 @@ public class LoginController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("loggedInUser") != null) {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+            response.sendRedirect(request.getContextPath() + "/admin/home");
             return;
         }
         request.getRequestDispatcher("/WEB-INF/views/admin/login.jsp").forward(request, response);
@@ -52,7 +52,7 @@ public class LoginController extends HttpServlet {
             String roleName = (employee.getRole() != null && employee.getRole().getRoleName() != null)
                     ? employee.getRole().getRoleName() : "Nhân viên";
             session.setAttribute("currentUserRole", roleName);
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+            response.sendRedirect(request.getContextPath() + "/admin/home");
         } else {
             request.setAttribute("error", "Email hoặc mật khẩu không chính xác, hoặc tài khoản đã bị khóa.");
             request.getRequestDispatcher("/WEB-INF/views/admin/login.jsp").forward(request, response);

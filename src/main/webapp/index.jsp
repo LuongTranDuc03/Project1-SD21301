@@ -1,4 +1,4 @@
-<%-- Tự động điều hướng đến trang quản trị admin/dashboard --%>
+<%-- Tự động điều hướng đến trang chủ /admin/home khi truy cập website --%>
 <%
-    response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+    response.sendRedirect(request.getContextPath() + "/admin/home");
 %>
