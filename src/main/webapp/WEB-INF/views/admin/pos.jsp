@@ -372,7 +372,7 @@
     let orders = [];
     let currentOrderId = null;
     const MAX_ORDERS = 10;
-    let orderCounter = 0;
+    let nextOrderId = parseInt('${nextOrderIndex}') || 1;
 
     function initPOS() {
         createOrder(); // Create initial order
@@ -387,9 +387,8 @@
             return;
         }
         
-        orderCounter++;
-        const timestamp = Date.now().toString().slice(-6);
-        const newOrderId = "HD" + timestamp + String(orderCounter).padStart(2, '0');
+        const newOrderId = "HD" + String(nextOrderId).padStart(3, '0');
+        nextOrderId++;
         
         orders.push({
             id: newOrderId,
@@ -449,6 +448,10 @@
             return;
         }
         
+        if (!confirm('Bạn có chắc chắn muốn xóa thông tin hóa đơn này không?')) {
+            return;
+        }
+        
         orders = orders.filter(o => o.id !== orderId);
         
         if (currentOrderId === orderId) {
@@ -457,6 +460,7 @@
         }
         
         renderTabs();
+        renderCurrentOrderItems();
     }
 
     // --- Modal Logic ---
