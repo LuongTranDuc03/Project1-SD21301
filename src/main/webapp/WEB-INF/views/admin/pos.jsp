@@ -211,15 +211,23 @@
                             <span class="summary-value text-danger" id="summaryTotalPayment">0 đ</span>
                         </div>
                         
-                        <div class="summary-row">
+                        <div class="summary-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                            <span class="summary-label">Hình thức thanh toán</span>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <button type="button" class="btn-payment-method active" id="btnPayCash" onclick="setPaymentMethod('CASH')"><i class="fa-solid fa-money-bill-wave"></i> Tiền mặt</button>
+                                <button type="button" class="btn-payment-method" id="btnPayTransfer" onclick="setPaymentMethod('TRANSFER')"><i class="fa-solid fa-qrcode"></i> Chuyển khoản</button>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-row" id="customerPayRow">
                             <span class="summary-label">Khách thanh toán <i class="fa-solid fa-money-bill-wave"></i></span>
                             <div class="customer-pay-input">
-                                <input type="text" class="form-control text-right" id="customerPayInput" value="0" oninput="updateCheckoutState()">
+                                <input type="text" class="form-control text-right" id="customerPayInput" value="0" oninput="handleCurrencyInput(this)">
                                 <span>đ</span>
                             </div>
                         </div>
                         
-                        <div class="summary-row">
+                        <div class="summary-row" id="summaryChangeRow">
                             <span class="summary-label" id="summaryChangeLabel">Tiền thiếu</span>
                             <span class="summary-value" id="summaryChange">0 đ</span>
                         </div>
@@ -663,7 +671,7 @@
         document.getElementById('totalVariantsCount').textContent = visibleCount;
         
         // Basic pagination info update (mocked since it's just client-side filtering without actual pages right now)
-        document.getElementById('paginationInfo').innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">${visibleCount}</span> biến thể`;
+        document.getElementById('paginationInfo').innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">\${visibleCount}</span> biến thể`;
     }
     
     function countTotalVariants() {
@@ -842,7 +850,7 @@
         
         if (!provinceCode) return;
         
-        fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
+        fetch(`https://provinces.open-api.vn/api/p/\${provinceCode}?depth=2`)
             .then(res => res.json())
             .then(data => {
                 if (data && data.districts) {
@@ -863,7 +871,7 @@
         
         if (!districtCode) return;
         
-        fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
+        fetch(`https://provinces.open-api.vn/api/d/\${districtCode}?depth=2`)
             .then(res => res.json())
             .then(data => {
                 if (data && data.wards) {
@@ -932,6 +940,67 @@
     }
     
     // --- Checkout State Management ---
+    function handleCurrencyInput(input) {
+        let val = input.value.replace(/\D/g, '');
+        if (val) {
+            input.value = parseInt(val, 10).toLocaleString('vi-VN');
+        } else {
+            input.value = '';
+        }
+        updateCheckoutState();
+    }
+    
+    function updateTotals() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        let sumTotal = 0;
+        if (order.items) {
+            order.items.forEach(item => {
+                sumTotal += (item.price * item.quantity);
+            });
+        }
+        
+        document.getElementById('summaryTotalItems').textContent = sumTotal.toLocaleString('vi-VN') + ' đ';
+        
+        let discount = parseFloat((order.discountValue || '0').toString().replace(/\D/g, '')) || 0;
+        let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/\D/g, '')) || 0) : 0;
+        
+        document.getElementById('summaryDiscount').textContent = discount.toLocaleString('vi-VN') + ' đ';
+        
+        let finalTotal = sumTotal + shippingFee - discount;
+        if (finalTotal < 0) finalTotal = 0;
+        
+        document.getElementById('summaryTotalPayment').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
+        
+        let customerPay = parseFloat((order.customerPay || '0').toString().replace(/\D/g, '')) || 0;
+        let change = customerPay - finalTotal;
+        const changeLabel = document.getElementById('summaryChangeLabel');
+        const changeValue = document.getElementById('summaryChange');
+        
+        const customerPayRow = document.getElementById('customerPayRow');
+        const summaryChangeRow = document.getElementById('summaryChangeRow');
+        
+        if (order.paymentMethod === 'TRANSFER') {
+            customerPayRow.style.display = 'none';
+            summaryChangeRow.style.display = 'none';
+        } else {
+            customerPayRow.style.display = 'flex';
+            summaryChangeRow.style.display = 'flex';
+            
+            if (change >= 0) {
+                changeLabel.textContent = "Tiền thừa";
+                changeValue.textContent = change.toLocaleString('vi-VN') + ' đ';
+                changeValue.className = "summary-value text-success";
+            } else {
+                changeLabel.textContent = "Tiền thiếu";
+                changeValue.textContent = Math.abs(change).toLocaleString('vi-VN') + ' đ';
+                changeValue.className = "summary-value text-danger";
+            }
+        }
+    }
+
     function updateCheckoutState() {
         const orderIndex = orders.findIndex(o => o.id === currentOrderId);
         if (orderIndex === -1) return;
@@ -953,6 +1022,7 @@
         order.discountCode = document.getElementById('discountCodeInput').value;
         order.discountValue = document.getElementById('discountValueInput').value;
         
+        updateTotals();
         saveOrdersToStorage();
     }
     
@@ -962,6 +1032,14 @@
         const order = orders[orderIndex];
         
         document.getElementById('customerNameDisplay').textContent = order.customerName || 'Khách lẻ';
+        
+        if (order.paymentMethod === 'TRANSFER') {
+            document.getElementById('btnPayTransfer').classList.add('active');
+            document.getElementById('btnPayCash').classList.remove('active');
+        } else {
+            document.getElementById('btnPayCash').classList.add('active');
+            document.getElementById('btnPayTransfer').classList.remove('active');
+        }
         
         const toggle = document.getElementById('deliveryToggle');
         toggle.checked = !!order.isDelivery;
@@ -1016,7 +1094,7 @@
             document.getElementById('provinceSelect').value = order.province || '';
             
             if (order.province) {
-                fetch(`https://provinces.open-api.vn/api/p/${order.province}?depth=2`)
+                fetch(`https://provinces.open-api.vn/api/p/\${order.province}?depth=2`)
                     .then(res => res.json())
                     .then(data => {
                         const select = document.getElementById('districtSelect');
@@ -1032,7 +1110,7 @@
                         select.value = order.district || '';
                         
                         if (order.district) {
-                            fetch(`https://provinces.open-api.vn/api/d/${order.district}?depth=2`)
+                            fetch(`https://provinces.open-api.vn/api/d/\${order.district}?depth=2`)
                                 .then(res => res.json())
                                 .then(data2 => {
                                     const wSelect = document.getElementById('wardSelect');
@@ -1106,10 +1184,158 @@
         renderCurrentOrderItems();
     }
     
+    // --- QR and Success Modals ---
+    function setPaymentMethod(method) {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        order.paymentMethod = method;
+        
+        if (method === 'TRANSFER') {
+            openQrModal(order);
+        }
+        
+        renderCheckoutState();
+        updateTotals();
+        saveOrdersToStorage();
+    }
+    
+    function openQrModal(order) {
+        let sumTotal = 0;
+        if (order.items) {
+            order.items.forEach(item => {
+                sumTotal += (item.price * item.quantity);
+            });
+        }
+        let discount = parseFloat((order.discountValue || '0').toString().replace(/\D/g, '')) || 0;
+        let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/\D/g, '')) || 0) : 0;
+        let finalTotal = sumTotal + shippingFee - discount;
+        if (finalTotal < 0) finalTotal = 0;
+        
+        document.getElementById('qrAmountDisplay').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
+        
+        // Sử dụng ảnh tĩnh mã QR người dùng yêu cầu
+        const qrUrl = `\${window.location.origin}${pageContext.request.contextPath}/assets/img/my-qr.jpg`;
+        
+        document.getElementById('qrImage').src = qrUrl;
+        document.getElementById('qrModal').classList.add('active');
+    }
+
+    function closeQrModal() {
+        document.getElementById('qrModal').classList.remove('active');
+    }
+
+    function demoSuccessfulTransfer() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        let sumTotal = 0;
+        if (order.items) {
+            order.items.forEach(item => {
+                sumTotal += (item.price * item.quantity);
+            });
+        }
+        let discount = parseFloat((order.discountValue || '0').toString().replace(/\D/g, '')) || 0;
+        let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/\D/g, '')) || 0) : 0;
+        let finalTotal = sumTotal + shippingFee - discount;
+        if (finalTotal < 0) finalTotal = 0;
+        
+        order.customerPay = finalTotal;
+        
+        closeQrModal();
+        renderCheckoutState();
+        updateTotals();
+        saveOrdersToStorage();
+        
+        openSuccessInvoiceModal(order, finalTotal);
+    }
+    
+    function openSuccessInvoiceModal(order, finalTotal) {
+        document.getElementById('invoiceCustomerName').textContent = order.customerName || 'Khách lẻ';
+        document.getElementById('invoiceCustomerPhone').textContent = order.deliveryPhone || '---';
+        document.getElementById('invoiceTotalAmount').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
+        
+        const tbody = document.getElementById('invoiceProductList');
+        tbody.innerHTML = '';
+        if (order.items && order.items.length > 0) {
+            order.items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">\${item.name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center;">\${item.quantity}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">\${item.price.toLocaleString('vi-VN')} đ</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">\${(item.price * item.quantity).toLocaleString('vi-VN')} đ</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        document.getElementById('invoiceModal').classList.add('active');
+    }
+    
+    function closeInvoiceModal() {
+        document.getElementById('invoiceModal').classList.remove('active');
+    }
+
     // Initialize
     window.addEventListener('DOMContentLoaded', initPOS);
     
 </script>
+
+<!-- Modal QR Code -->
+<div class="pos-modal-overlay" id="qrModal">
+    <div class="pos-modal" style="width: 400px; text-align: center; padding: 20px; position: relative;">
+        <button type="button" onclick="closeQrModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+        <h3 style="margin-top: 0;">Quét mã thanh toán</h3>
+        <p style="color: #64748b; font-size: 14px;">Mở ứng dụng ngân hàng và quét mã QR dưới đây</p>
+        <div style="margin: 20px 0;">
+            <img id="qrImage" src="" alt="QR Code" style="width: 250px; height: 250px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 8px;">
+        </div>
+        <p style="font-weight: bold; font-size: 20px; color: #b91c1c; margin-bottom: 20px;" id="qrAmountDisplay">0 đ</p>
+        <button class="btn-outline-primary" style="width: 100%; background: #22c55e; color: white; border-color: #22c55e; padding: 10px; border-radius: 8px; font-weight: bold;" onclick="demoSuccessfulTransfer()">Demo chuyển khoản thành công</button>
+    </div>
+</div>
+
+<!-- Invoice/Success Modal -->
+<div class="pos-modal-overlay" id="invoiceModal">
+    <div class="pos-modal" style="width: 600px; padding: 25px; position: relative;">
+        <button type="button" onclick="closeInvoiceModal()" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <i class="fa-solid fa-circle-check" style="color: #22c55e; font-size: 48px; margin-bottom: 10px;"></i>
+            <h3 style="margin: 0; color: #16a34a;">Thanh toán thành công</h3>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div><strong style="color: #475569;">Khách hàng:</strong> <span id="invoiceCustomerName">Khách lẻ</span></div>
+            <div><strong style="color: #475569;">Số điện thoại:</strong> <span id="invoiceCustomerPhone">---</span></div>
+            <div><strong style="color: #475569;">Hình thức:</strong> Chuyển khoản</div>
+            <div><strong style="color: #475569;">Trạng thái:</strong> Đã thanh toán</div>
+        </div>
+        
+        <div style="margin-bottom: 20px; max-height: 250px; overflow-y: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f1f5f9; color: #475569;">
+                        <th style="padding: 10px; text-align: left;">Sản phẩm</th>
+                        <th style="padding: 10px; text-align: center;">SL</th>
+                        <th style="padding: 10px; text-align: right;">Đơn giá</th>
+                        <th style="padding: 10px; text-align: right;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceProductList">
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 16px;">Tổng cộng:</strong>
+            <strong style="font-size: 20px; color: #b91c1c;" id="invoiceTotalAmount">0 đ</strong>
+        </div>
+        
+        <button class="btn-outline-primary" style="width: 100%; margin-top: 25px; background: #3b82f6; color: white; border-color: #3b82f6; padding: 10px; border-radius: 8px; font-weight: bold;" onclick="closeInvoiceModal()">Đóng</button>
+    </div>
+</div>
 
 </body>
 </html>
