@@ -26,9 +26,9 @@ public class InvoiceRepository {
         }
         String sql = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_ma_giam_gia, " +
                 "id_phuong_thuc_thanh_toan, id_dia_chi, ten_khach_nhan, sdt_khach_nhan, tam_tinh, " +
-                "tong_thanh_toan, ngay_dat_hang, trang_thai_don_hang, ghi_chu, ngay_giao_du_kien, ngay_hoan_thanh, dia_chi_snapshot) "
+                "tong_thanh_toan, ngay_dat_hang, trang_thai_don_hang, ghi_chu, ngay_giao_du_kien, ngay_hoan_thanh, dia_chi_snapshot, loai_hoa_don, phi_van_chuyen) "
                 +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -72,6 +72,8 @@ public class InvoiceRepository {
             else
                 ps.setNull(15, Types.TIMESTAMP);
             ps.setString(16, invoice.getAddressSnapshot());
+            ps.setInt(17, invoice.getOrderType() != null ? invoice.getOrderType() : 1);
+            ps.setDouble(18, invoice.getShippingFee() != null ? invoice.getShippingFee() : 0.0);
 
             int rows = ps.executeUpdate();
             if (rows > 0) {
@@ -93,7 +95,7 @@ public class InvoiceRepository {
                 +
                 "id_phuong_thuc_thanh_toan = ?, id_dia_chi = ?, ten_khach_nhan = ?, sdt_khach_nhan = ?, tam_tinh = ?, "
                 +
-                "tong_thanh_toan = ?, ngay_dat_hang = ?, trang_thai_don_hang = ?, ghi_chu = ?, ngay_giao_du_kien = ?, ngay_hoan_thanh = ?, dia_chi_snapshot = ? "
+                "tong_thanh_toan = ?, ngay_dat_hang = ?, trang_thai_don_hang = ?, ghi_chu = ?, ngay_giao_du_kien = ?, ngay_hoan_thanh = ?, dia_chi_snapshot = ?, loai_hoa_don = ?, phi_van_chuyen = ? "
                 +
                 "WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -139,7 +141,9 @@ public class InvoiceRepository {
             else
                 ps.setNull(15, Types.TIMESTAMP);
             ps.setString(16, invoice.getAddressSnapshot());
-            ps.setInt(17, invoice.getId());
+            ps.setInt(17, invoice.getOrderType() != null ? invoice.getOrderType() : 1);
+            ps.setDouble(18, invoice.getShippingFee() != null ? invoice.getShippingFee() : 0.0);
+            ps.setInt(19, invoice.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -269,9 +273,9 @@ public class InvoiceRepository {
         invoice.setAddressSnapshot(rs.getString("dia_chi_snapshot"));
 
         invoice.setOrderStatus(rs.getObject("trang_thai_don_hang") != null ? rs.getInt("trang_thai_don_hang") : 0);
-        invoice.setOrderType(0);
+        invoice.setOrderType(rs.getObject("loai_hoa_don") != null ? rs.getInt("loai_hoa_don") : 1);
         invoice.setNote(rs.getString("ghi_chu"));
-        invoice.setShippingFee(0.0);
+        invoice.setShippingFee(rs.getDouble("phi_van_chuyen"));
 
         // Basic mapping for PaymentMethod if joined
         try {
@@ -363,6 +367,9 @@ public class InvoiceRepository {
                     detail.setCode(rs.getString("chi_tiet_hoa_don_code"));
                     detail.setProductNameSnapshot(rs.getString("ten_sp_tai_thoi_diem"));
                     detail.setVariantDescriptionSnapshot(rs.getString("mo_ta_variant"));
+                    detail.setColorSnapshot(rs.getString("mau_sac_snapshot"));
+                    detail.setSizeSnapshot(rs.getString("kich_thuoc_snapshot"));
+                    detail.setStyleSnapshot(rs.getString("kieu_dang_snapshot"));
                     detail.setUnitPrice(rs.getDouble("don_gia"));
                     detail.setDiscountPrice(rs.getDouble("gia_giam"));
                     detail.setQuantity(rs.getInt("so_luong"));
@@ -442,7 +449,7 @@ public class InvoiceRepository {
         return list;
     }
 
-    public List<Invoice> findAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
+    public List<Invoice> findAll(Integer orderType, Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
             Integer paymentMethodId, int page, int size) {
         List<Invoice> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT hd.*, " +
@@ -451,6 +458,8 @@ public class InvoiceRepository {
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
                 "WHERE 1=1 ");
 
+        if (orderType != null)
+            sql.append("AND hd.loai_hoa_don = ? ");
         if (orderStatus != null)
             sql.append("AND hd.trang_thai_don_hang = ? ");
         if (paymentMethodId != null)
@@ -495,6 +504,8 @@ public class InvoiceRepository {
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
+            if (orderType != null)
+                ps.setInt(index++, orderType);
             if (orderStatus != null)
                 ps.setInt(index++, orderStatus);
             if (paymentMethodId != null)
@@ -528,10 +539,12 @@ public class InvoiceRepository {
         return list;
     }
 
-    public long countAll(Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
+    public long countAll(Integer orderType, Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
             Integer paymentMethodId) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 ");
 
+        if (orderType != null)
+            sql.append("AND hd.loai_hoa_don = ? ");
         if (orderStatus != null)
             sql.append("AND hd.trang_thai_don_hang = ? ");
         if (paymentMethodId != null)
@@ -574,6 +587,8 @@ public class InvoiceRepository {
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int index = 1;
+            if (orderType != null)
+                ps.setInt(index++, orderType);
             if (orderStatus != null)
                 ps.setInt(index++, orderStatus);
             if (paymentMethodId != null)

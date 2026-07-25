@@ -38,14 +38,22 @@ public class InvoiceController extends HttpServlet {
 
     private static final int PAGE_SIZE = 10;
 
-    private static final Map<Integer, String> ORDER_STATUS_LABELS;
+    private static final Map<Integer, String> ORDER_STATUS_LABELS_ONLINE;
+    private static final Map<Integer, String> ORDER_STATUS_LABELS_POS;
     static {
-        ORDER_STATUS_LABELS = new LinkedHashMap<>();
-        ORDER_STATUS_LABELS.put(0, "Chờ xác nhận");
-        ORDER_STATUS_LABELS.put(1, "Đã xác nhận");
-        ORDER_STATUS_LABELS.put(2, "Hoàn thành");
-        ORDER_STATUS_LABELS.put(3, "Đã huỷ");
-        ORDER_STATUS_LABELS.put(4, "Đã hoàn tiền");
+        ORDER_STATUS_LABELS_ONLINE = new LinkedHashMap<>();
+        ORDER_STATUS_LABELS_ONLINE.put(0, "Chờ xác nhận");
+        ORDER_STATUS_LABELS_ONLINE.put(1, "Đã xác nhận");
+        ORDER_STATUS_LABELS_ONLINE.put(2, "Đang giao");
+        ORDER_STATUS_LABELS_ONLINE.put(3, "Hoàn thành");
+        ORDER_STATUS_LABELS_ONLINE.put(4, "Đã huỷ");
+        ORDER_STATUS_LABELS_ONLINE.put(5, "Đã hoàn tiền");
+
+        ORDER_STATUS_LABELS_POS = new LinkedHashMap<>();
+        ORDER_STATUS_LABELS_POS.put(0, "Chờ thanh toán");
+        ORDER_STATUS_LABELS_POS.put(1, "Chờ giao hàng");
+        ORDER_STATUS_LABELS_POS.put(3, "Hoàn thành");
+        ORDER_STATUS_LABELS_POS.put(4, "Đã huỷ");
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -125,21 +133,30 @@ public class InvoiceController extends HttpServlet {
             catch (NumberFormatException ignored) { }
         }
 
-        long total      = invoiceRepo.countAll(orderStatus, keyword, fromDate, toDate, paymentMethodId);
+        Integer orderType = null;
+        String otParam = request.getParameter("orderType");
+        if (otParam != null && !otParam.isEmpty()) {
+            try { orderType = Integer.parseInt(otParam); }
+            catch (NumberFormatException ignored) { }
+        }
+
+        long total      = invoiceRepo.countAll(orderType, orderStatus, keyword, fromDate, toDate, paymentMethodId);
         int totalPages  = (int) Math.ceil((double) total / PAGE_SIZE);
         if (totalPages == 0) totalPages = 1;
         page = Math.min(page, totalPages - 1);
 
-        List<Invoice> invoices = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, paymentMethodId, page, PAGE_SIZE);
+        List<Invoice> invoices = invoiceRepo.findAll(orderType, orderStatus, keyword, fromDate, toDate, paymentMethodId, page, PAGE_SIZE);
         List<project.duan1_sd21301.model.phuc.PaymentMethod> paymentMethods = invoiceRepo.findAllPaymentMethods();
 
         request.setAttribute("invoices",           invoices);
-        request.setAttribute("orderStatusLabels",  ORDER_STATUS_LABELS);
+        request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
+        request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
         request.setAttribute("total",              total);
         request.setAttribute("page",               page);
         request.setAttribute("size",               PAGE_SIZE);
         request.setAttribute("totalPages",         totalPages);
         request.setAttribute("currentOrderStatus", orderStatus);
+        request.setAttribute("currentOrderType",   orderType);
         request.setAttribute("currentPaymentMethodId", paymentMethodId);
         request.setAttribute("paymentMethods",     paymentMethods);
         request.setAttribute("keyword",            keyword);
@@ -167,7 +184,8 @@ public class InvoiceController extends HttpServlet {
         request.setAttribute("invoice",           invoice);
         request.setAttribute("detailList",        detailList);
         request.setAttribute("historyList",       historyList);
-        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
+        request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
+        request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
         request.setAttribute("pageTitle",         "Chi tiết hóa đơn #HD-" + id);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-detail.jsp")
@@ -188,7 +206,8 @@ public class InvoiceController extends HttpServlet {
 
         request.setAttribute("invoice",           invoice);
         request.setAttribute("detailList",        detailList);
-        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
+        request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
+        request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-print.jsp")
                 .forward(request, response);
@@ -280,8 +299,15 @@ public class InvoiceController extends HttpServlet {
             catch (NumberFormatException ignored) { }
         }
 
+        Integer orderType = null;
+        String otParam = request.getParameter("orderType");
+        if (otParam != null && !otParam.isEmpty()) {
+            try { orderType = Integer.parseInt(otParam); }
+            catch (NumberFormatException ignored) { }
+        }
+
         // Lấy TẤT CẢ hóa đơn (không phân trang) theo filter
-        List<Invoice> all = invoiceRepo.findAll(orderStatus, keyword, fromDate, toDate, paymentMethodId, 0, Integer.MAX_VALUE);
+        List<Invoice> all = invoiceRepo.findAll(orderType, orderStatus, keyword, fromDate, toDate, paymentMethodId, 0, Integer.MAX_VALUE);
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -385,7 +411,8 @@ public class InvoiceController extends HttpServlet {
                 c8.setCellStyle(centerStyle);
 
                 Cell c9 = row.createCell(9);
-                c9.setCellValue(ORDER_STATUS_LABELS.getOrDefault(inv.getOrderStatus(), "?"));
+                Map<Integer, String> labels = (inv.getOrderType() != null && inv.getOrderType() == 0) ? ORDER_STATUS_LABELS_POS : ORDER_STATUS_LABELS_ONLINE;
+                c9.setCellValue(labels.getOrDefault(inv.getOrderStatus(), "?"));
                 c9.setCellStyle(centerStyle);
             }
 

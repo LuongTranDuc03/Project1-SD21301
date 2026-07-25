@@ -107,7 +107,7 @@ public class Invoice {
     Double shippingFee;
 
     // ===== Trạng thái =====
-    @Column(name = "loai_don_hang")
+    @Column(name = "loai_hoa_don")
     Integer orderType;
 
     @Column(name = "ghi_chu", columnDefinition = "NVARCHAR(MAX)")
@@ -117,7 +117,7 @@ public class Invoice {
     Integer paymentStatus; // 0: Chưa thanh toán, 1: Đã thanh toán
 
     @Column(name = "trang_thai_don_hang")
-    Integer orderStatus; // 0: Chờ xác nhận, 1: Đã xác nhận, 2: Hoàn thành, 3: Đã huỷ, 4: Đã hoàn tiền
+    Integer orderStatus; // POS: 0: Chờ thanh toán, 1: Chờ giao hàng, 3: Hoàn thành, 4: Đã huỷ | Online: 0: Chờ xác nhận, 1: Đã xác nhận, 2: Đang giao, 3: Hoàn thành, 4: Đã huỷ, 5: Đã hoàn tiền
 
     @Column(name = "trang_thai")
     Integer status;

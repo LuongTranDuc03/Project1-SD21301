@@ -40,11 +40,11 @@ public class DashboardRepository {
         }
 
         String sql = "SELECT " +
-                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
                 "COUNT(*) AS totalOrders, " +
-                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
-                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN 1 ELSE 0 END) AS countCompleted, " +
-                "SUM(CASE WHEN trang_thai_don_hang IN (3, 4) THEN 1 ELSE 0 END) AS countCancelled, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END) AS countCompleted, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 4 THEN 1 ELSE 0 END) AS countCancelled, " +
                 "SUM(CASE WHEN trang_thai_don_hang IN (0, 1) THEN 1 ELSE 0 END) AS countProcessing " +
                 "FROM hoa_don WHERE " + condition;
 
@@ -80,7 +80,7 @@ public class DashboardRepository {
                 "JOIN chi_tiet_san_pham pd ON ct.id_chi_tiet_san_pham = pd.id " +
                 "JOIN san_pham p ON pd.id_san_pham = p.id " +
                 "JOIN hoa_don hd ON ct.id_hoa_don = hd.id " +
-                "WHERE hd.trang_thai_don_hang = 2 ";
+                "WHERE hd.trang_thai_don_hang = 3 ";
         
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql += "AND CAST(hd.ngay_dat_hang AS DATE) >= ? ";
@@ -126,7 +126,7 @@ public class DashboardRepository {
                 "SUM(hd.tong_thanh_toan) AS spent " +
                 "FROM hoa_don hd " +
                 "JOIN khach_hang kh ON hd.id_khach_hang = kh.id " +
-                "WHERE hd.trang_thai_don_hang = 2 ";
+                "WHERE hd.trang_thai_don_hang = 3 ";
                 
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql += "AND CAST(hd.ngay_dat_hang AS DATE) >= ? ";
@@ -168,7 +168,7 @@ public class DashboardRepository {
         Map<Integer, Double> map = new HashMap<>();
         String sql = "SELECT DAY(ngay_dat_hang) AS day, SUM(tong_thanh_toan) AS revenue " +
                 "FROM hoa_don " +
-                "WHERE YEAR(ngay_dat_hang) = ? AND MONTH(ngay_dat_hang) = ? AND trang_thai_don_hang = 2 " +
+                "WHERE YEAR(ngay_dat_hang) = ? AND MONTH(ngay_dat_hang) = ? AND trang_thai_don_hang = 3 " +
                 "GROUP BY DAY(ngay_dat_hang) " +
                 "ORDER BY day ASC";
         try (Connection conn = DatabaseConnection.getConnection();

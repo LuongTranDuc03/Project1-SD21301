@@ -25,15 +25,15 @@ public class StatisticRepository {
         Long productsSold = 0L;
 
         String sqlInvoice = "SELECT " +
-                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_thanh_toan ELSE 0 END), " +
-                "COUNT(id), " +
-                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN 1 ELSE 0 END), " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_thanh_toan ELSE 0 END), " +
+                "COUNT(*), " +
                 "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END), " +
+                "SUM(CASE WHEN trang_thai_don_hang = 4 THEN 1 ELSE 0 END), " +
                 "SUM(CASE WHEN trang_thai_don_hang IN (0,1) THEN 1 ELSE 0 END) " +
                 "FROM hoa_don WHERE ngay_dat_hang BETWEEN ? AND ?";
 
         String sqlProducts = "SELECT SUM(ct.so_luong) FROM chi_tiet_hoa_don ct JOIN hoa_don i ON ct.id_hoa_don = i.id " +
-                "WHERE i.trang_thai_don_hang = 2 AND i.ngay_dat_hang BETWEEN ? AND ?";
+                "WHERE i.trang_thai_don_hang = 3 AND i.ngay_dat_hang BETWEEN ? AND ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement psInv = conn.prepareStatement(sqlInvoice);
@@ -82,7 +82,7 @@ public class StatisticRepository {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT CAST(ngay_dat_hang AS DATE) AS d, SUM(tong_thanh_toan) " +
                      "FROM hoa_don " +
-                     "WHERE trang_thai_don_hang = 2 " +
+                     "WHERE trang_thai_don_hang = 3 " +
                      "AND ngay_dat_hang BETWEEN ? AND ? " +
                      "GROUP BY CAST(ngay_dat_hang AS DATE) " +
                      "ORDER BY d ASC";
@@ -111,7 +111,7 @@ public class StatisticRepository {
                      "JOIN chi_tiet_san_pham pd ON ct.id_chi_tiet_san_pham = pd.id " +
                      "JOIN san_pham p ON pd.id_san_pham = p.id " +
                      "JOIN hoa_don hd ON ct.id_hoa_don = hd.id " +
-                     "WHERE hd.trang_thai_don_hang = 2 " +
+                     "WHERE hd.trang_thai_don_hang = 3 " +
                      "GROUP BY p.ten_san_pham, p.id " +
                      "ORDER BY total_sold DESC";
                      
@@ -132,7 +132,7 @@ public class StatisticRepository {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT TOP " + limit + " hd.ten_khach_nhan, COUNT(hd.id) as so_don, SUM(hd.tong_thanh_toan) as chi_tieu " +
                      "FROM hoa_don hd " +
-                     "WHERE hd.trang_thai_don_hang = 2 AND hd.ten_khach_nhan IS NOT NULL AND hd.ten_khach_nhan != '' " +
+                     "WHERE hd.trang_thai_don_hang = 3 AND hd.ten_khach_nhan IS NOT NULL AND hd.ten_khach_nhan != '' " +
                      "GROUP BY hd.ten_khach_nhan, hd.sdt_khach_nhan " +
                      "ORDER BY chi_tieu DESC";
                      

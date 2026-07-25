@@ -31,7 +31,7 @@ public class PosController extends HttpServlet {
         request.setAttribute("sizes", productService.getAllSizes());
         request.setAttribute("customers", customerRepository.findAll());
         
-        long totalInvoices = invoiceRepository.countAll(null, null, null, null, null);
+        long totalInvoices = invoiceRepository.countAll(null, null, null, null, null, null);
         request.setAttribute("nextOrderIndex", totalInvoices + 1);
         
         request.getRequestDispatcher("/WEB-INF/views/admin/pos.jsp").forward(request, response);
