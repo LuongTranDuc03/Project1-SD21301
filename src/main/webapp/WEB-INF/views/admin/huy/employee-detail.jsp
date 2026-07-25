@@ -223,6 +223,16 @@
                                 <span class="info-value"><%= employee.getEmail() != null ? employee.getEmail() : "" %></span>
                             </div>
 
+                            <div class="form-group">
+                                <span class="form-label">Ngày tham gia</span>
+                                <span class="info-value"><%= employee.getCreatedAt() != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(employee.getCreatedAt()) : "Chưa cập nhật" %></span>
+                            </div>
+
+                            <div class="form-group">
+                                <span class="form-label">Cập nhật lần cuối</span>
+                                <span class="info-value"><%= employee.getUpdatedAt() != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(employee.getUpdatedAt()) : "Chưa cập nhật" %></span>
+                            </div>
+
                             <!-- BỘ ĐỊA CHỈ TRONG CÙNG GRID -->
                             <div class="form-group">
                                 <span class="form-label">Tỉnh / Thành phố</span>
