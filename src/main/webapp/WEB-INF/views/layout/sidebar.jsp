@@ -72,7 +72,6 @@
     <!-- 2. Menu Navigation -->
     <nav class="sidebar-menu">
         <div class="menu-section">
-            <span class="menu-title">MENU CHÍNH</span>
             <ul>
                 <!-- Trang chủ -->
                 <li class="<%= uri.endsWith("/admin/home") ? "active" : "" %>">
