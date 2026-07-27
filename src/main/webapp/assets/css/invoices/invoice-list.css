@@ -139,62 +139,62 @@
     color: #fff;
 }
 
-.il-table-wrap {
+.invoice-table-wrap {
     background: #fff;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     overflow-x: auto;
 }
 
-.il-table {
+.invoice-table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
     min-width: 780px;
 }
 
-.il-table colgroup col:nth-child(1) {
+.invoice-table colgroup col:nth-child(1) {
     width: 54px;
 }
 
-.il-table colgroup col:nth-child(2) {
+.invoice-table colgroup col:nth-child(2) {
     width: 90px;
 }
 
-.il-table colgroup col:nth-child(3) {
+.invoice-table colgroup col:nth-child(3) {
     width: 100px;
 }
 
-.il-table colgroup col:nth-child(4) {
+.invoice-table colgroup col:nth-child(4) {
     width: 150px;
 }
 
-.il-table colgroup col:nth-child(5) {
+.invoice-table colgroup col:nth-child(5) {
     width: 115px;
 }
 
-.il-table colgroup col:nth-child(6) {
+.invoice-table colgroup col:nth-child(6) {
     width: 105px;
 }
 
-.il-table colgroup col:nth-child(7) {
+.invoice-table colgroup col:nth-child(7) {
     width: 115px;
 }
 
-.il-table colgroup col:nth-child(8) {
+.invoice-table colgroup col:nth-child(8) {
     width: 128px;
 }
 
-.il-table colgroup col:nth-child(9) {
+.invoice-table colgroup col:nth-child(9) {
     width: 130px;
 }
 
-.il-table thead tr {
+.invoice-table thead tr {
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
 }
 
-.il-table th {
+.invoice-table th {
     padding: 12px 10px;
     text-align: left;
     font-size: 11px;
@@ -205,27 +205,27 @@
     white-space: nowrap;
 }
 
-.il-table th:nth-child(1),
-.il-table th:nth-child(9) {
+.invoice-table th:nth-child(1),
+.invoice-table th:nth-child(9) {
     text-align: center;
     padding-left: 6px;
     padding-right: 6px;
 }
 
-.il-table tbody tr {
+.invoice-table tbody tr {
     border-bottom: 1px solid #f3f4f6;
     transition: background .12s;
 }
 
-.il-table tbody tr:last-child {
+.invoice-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.il-table tbody tr:hover {
+.invoice-table tbody tr:hover {
     background: #fafafa;
 }
 
-.il-table td {
+.invoice-table td {
     padding: 14px 16px;
     font-size: 13px;
     color: #374151;
