@@ -18,50 +18,6 @@
           rel="stylesheet">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
-    <style>
-        /* Pagination Styling */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 20px 0;
-            margin-top: 10px;
-        }
-        .page-btn {
-            min-width: 32px;
-            height: 32px;
-            padding: 0 10px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            color: #475569;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-        .page-btn:hover:not(.disabled) {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #0f172a;
-        }
-        .page-btn.active {
-            background: #10b981;
-            border-color: #10b981;
-            color: white;
-        }
-        .page-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f1f5f9;
-            pointer-events: none;
-        }
-    </style>
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/assets/css/invoices/invoice-list.css?v=<%= System.currentTimeMillis() %>">
 </head>
@@ -129,18 +85,21 @@
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
-                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
+                    <span class="profile-avatar-mini">A</span>
+                    <span>Admin</span>
                 </div>
             </div>
         </header>
 
         <div class="content-wrapper">
             <div class="page-header"
-                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <div>
-                    <h1>Quản lý hoá đơn</h1>
-                    <div class="subtitle">Tổng <%= total %> hoá đơn</div>
+                    <h1 class="page-title-text">Quản lý hoá đơn</h1>
+                    <div class="page-subtitle-text">Tổng <strong>
+                        <%= total %>
+                    </strong> hoá đơn
+                    </div>
                 </div>
 
             </div>
@@ -158,139 +117,81 @@
                      style="overflow-x: auto;">
                     <form id="searchForm" method="get"
                           action="${pageContext.request.contextPath}/admin/invoices"
-                          style="display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; width: 100%;">
-                        <input type="hidden" id="hiddenTrangThai"
-                               name="trangThai"
-                               value="<%= currentStatus != null ? currentStatus : "" %>"
-                            <%=currentStatus==null ? "disabled" : "" %>>
-
-                        <div class="search-box" id="searchBox"
-                             style="width: 350px; min-width: 350px;">
-                            <svg viewBox="0 0 24 24" width="16" height="16"
-                                 stroke="currentColor" stroke-width="2.5"
-                                 fill="none" stroke-linecap="round"
-                                 stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8"/>
-                                <line x1="21" y1="21" x2="16.65"
-                                      y2="16.65"/>
-                            </svg>
-                            <input type="text" id="searchInput" name="q"
-                                   placeholder="Tên khách hàng, SĐT hoặc mã HD..."
-                                   value="<%= keyword != null ? keyword : "" %>"
-                                   autocomplete="off">
+                          style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; width: 100%;">
+                        
+                        <!-- Trạng thái -->
+                        <div class="filter-field" style="min-width: 140px;">
+                            <label for="statusFilter">Trạng thái</label>
+                            <select id="statusFilter" name="trangThai" class="filter-control" onchange="document.getElementById('searchForm').submit()">
+                                <option value="">-- Tất cả --</option>
+                                <% if (statusLabels != null) {
+                                    for (Map.Entry<Integer, String> e : statusLabels.entrySet()) { %>
+                                <option value="<%= e.getKey() %>" <%= e.getKey().equals(currentStatus) ? "selected" : "" %>><%= e.getValue() %></option>
+                                <% } } %>
+                            </select>
                         </div>
-                        <div style="display: flex; align-items: center; min-width: max-content;">
-                            <select name="orderType"
-                                    onchange="document.getElementById('searchForm').submit()"
-                                    style="padding: 8px 28px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #374151; outline: none; background: #fff; cursor: pointer;">
-                                <option value="">Tất cả loại hoá đơn</option>
-                                <%-- Đã khai báo currentOrderType ở đầu file, không cần khai báo lại --%>
+
+                        <!-- Từ ngày -->
+                        <div class="filter-field" style="min-width: 160px;">
+                            <label for="fromDateFilter">Từ ngày</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" id="fromDateFilter" name="fromDate" class="filter-control" value="<%= fromDate != null ? fromDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
+                                <% if (fromDate != null && !fromDate.isEmpty()) { %>
+                                <button type="button" onclick="document.getElementById('fromDateFilter').value=''; document.getElementById('searchForm').submit();" style="padding: 0 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #64748b;" title="Xoá ngày">✕</button>
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <!-- Đến ngày -->
+                        <div class="filter-field" style="min-width: 160px;">
+                            <label for="toDateFilter">Đến ngày</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" id="toDateFilter" name="toDate" class="filter-control" value="<%= toDate != null ? toDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
+                                <% if (toDate != null && !toDate.isEmpty()) { %>
+                                <button type="button" onclick="document.getElementById('toDateFilter').value=''; document.getElementById('searchForm').submit();" style="padding: 0 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #64748b;" title="Xoá ngày">✕</button>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- Tìm kiếm -->
+                        <div class="filter-field" style="min-width: 250px;">
+                            <label for="searchInput">Tìm kiếm</label>
+                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Tên KH, SĐT hoặc mã HD..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
+                        </div>
+                        
+                        <!-- Loại hoá đơn -->
+                        <div class="filter-field" style="min-width: 140px;">
+                            <label for="orderTypeFilter">Loại đơn hàng</label>
+                            <select id="orderTypeFilter" name="orderType" class="filter-control" onchange="document.getElementById('searchForm').submit()">
+                                <option value="">-- Tất cả --</option>
                                 <option value="0" <%= currentOrderType != null && currentOrderType == 0 ? "selected" : "" %>>Tại quầy</option>
                                 <option value="1" <%= currentOrderType != null && currentOrderType == 1 ? "selected" : "" %>>Online</option>
                             </select>
                         </div>
-
-                        <div style="display: flex; align-items: center; min-width: max-content;">
-                            <select name="paymentMethodId"
-                                    onchange="document.getElementById('searchForm').submit()"
-                                    style="padding: 8px 28px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #374151; outline: none; background: #fff; cursor: pointer;">
-                                <option value="">Tất cả PTTT</option>
+                        
+                        <!-- Phương thức thanh toán -->
+                        <div class="filter-field" style="min-width: 160px;">
+                            <label for="paymentMethodFilter">Thanh toán</label>
+                            <select id="paymentMethodFilter" name="paymentMethodId" class="filter-control" onchange="document.getElementById('searchForm').submit()">
+                                <option value="">-- Tất cả --</option>
                                 <%
                                     List<project.duan1_sd21301.model.phuc.PaymentMethod> paymentMethods = (List<project.duan1_sd21301.model.phuc.PaymentMethod>) request.getAttribute("paymentMethods");
                                     if (paymentMethods != null) {
                                         for (project.duan1_sd21301.model.phuc.PaymentMethod pm : paymentMethods) {
                                 %>
-                                <option value="<%= pm.getId() %>" <%= currentPaymentMethodId != null && currentPaymentMethodId.equals(pm.getId()) ? "selected" : "" %>><%= pm.getName() %>
-                                </option>
-                                <%
-                                        }
-                                    }
-                                %>
+                                <option value="<%= pm.getId() %>" <%= currentPaymentMethodId != null && currentPaymentMethodId.equals(pm.getId()) ? "selected" : "" %>><%= pm.getName() %></option>
+                                <% } } %>
                             </select>
                         </div>
-
-                        <div
-                                style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
-                                                    <span
-                                                            style="font-size: 13px; color: #6b7280; white-space: nowrap;">Từ
-                                                        ngày:</span>
-                            <div
-                                    style="display: flex; align-items: center; gap: 4px;">
-                                <input type="date" id="fromDateFilter"
-                                       name="fromDate" class="date-input"
-                                       title="Từ ngày"
-                                       value="<%= fromDate != null ? fromDate : "" %>"
-                                       onchange="document.getElementById('searchForm').submit()">
-                                <% if (fromDate != null &&
-                                        !fromDate.isEmpty()) { %>
-                                <a href="javascript:void(0)"
-                                   onclick="document.getElementById('fromDateFilter').value=''; document.getElementById('searchForm').submit();"
-                                   style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;"
-                                   onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#ef4444';"
-                                   onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b';"
-                                   title="Xoá ngày">
-                                    <svg viewBox="0 0 24 24" width="14"
-                                         height="14"
-                                         stroke="currentColor"
-                                         stroke-width="2.5" fill="none">
-                                        <line x1="18" y1="6" x2="6"
-                                              y2="18"/>
-                                        <line x1="6" y1="6" x2="18"
-                                              y2="18"/>
-                                    </svg>
-                                </a>
-                                <% } %>
-                            </div>
-                        </div>
-
-                        <div
-                                style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
-                                                    <span
-                                                            style="font-size: 13px; color: #6b7280; white-space: nowrap;">Đến
-                                                        ngày:</span>
-                            <div
-                                    style="display: flex; align-items: center; gap: 4px;">
-                                <input type="date" id="toDateFilter"
-                                       name="toDate" class="date-input"
-                                       title="Đến ngày"
-                                       value="<%= toDate != null ? toDate : "" %>"
-                                       onchange="document.getElementById('searchForm').submit()">
-                                <% if (toDate != null && !toDate.isEmpty()) {
-                                %>
-                                <a href="javascript:void(0)"
-                                   onclick="document.getElementById('toDateFilter').value=''; document.getElementById('searchForm').submit();"
-                                   style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;"
-                                   onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#ef4444';"
-                                   onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b';"
-                                   title="Xoá ngày">
-                                    <svg viewBox="0 0 24 24" width="14"
-                                         height="14"
-                                         stroke="currentColor"
-                                         stroke-width="2.5" fill="none">
-                                        <line x1="18" y1="6" x2="6"
-                                              y2="18"/>
-                                        <line x1="6" y1="6" x2="18"
-                                              y2="18"/>
-                                    </svg>
-                                </a>
-                                <% } %>
-                            </div>
-                        </div>
-
+                        
+                        <!-- Đặt lại -->
                         <% if ((keyword != null && !keyword.isEmpty()) || currentStatus != null || currentOrderType != null || currentPaymentMethodId != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty())) { %>
-                        <a href="${pageContext.request.contextPath}/admin/invoices"
-                           class="btn-reset-filter"
-                           id="btnReset" title="Đặt lại toàn bộ bộ lọc"
-                           style="flex-shrink: 0; min-width: max-content;">
-                            <svg viewBox="0 0 24 24" width="13" height="13"
-                                 stroke="currentColor" stroke-width="2.5"
-                                 fill="none" stroke-linecap="round"
-                                 stroke-linejoin="round">
-                                <polyline points="1 4 1 10 7 10"/>
-                                <path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
-                            </svg>
-                            Đặt lại
-                        </a>
+                        <div class="filter-field" style="flex-shrink: 0;">
+                            <a href="${pageContext.request.contextPath}/admin/invoices" class="btn-reset-filter" title="Đặt lại toàn bộ bộ lọc" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; text-decoration: none; height: 38px; box-sizing: border-box;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                                Đặt lại
+                            </a>
+                        </div>
                         <% } %>
                     </form>
 
@@ -313,7 +214,7 @@
                     if (currentOrderType != null)
                         exportUrl.append("&orderType=").append(currentOrderType);
                 %>
-                <a href="<%= exportUrl %>" class="btn-export" id="btnExportExcel" title="Xuất danh sách hóa đơn ra Excel" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                <a href="<%= exportUrl %>" class="btn-export" id="btnExportExcel" title="Xuất danh sách hóa đơn ra Excel" style="background-color: #1e293b; border: 1px solid #1e293b; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -323,6 +224,10 @@
                     </svg>
                     <span>Xuất Excel</span>
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/invoices/add" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Thêm hóa đơn</span>
+                </a>
             </div>
 
             <!-- KHU VỰC BẢNG DỮ LIỆU HOÁ ĐƠN: Hiển thị danh sách hoá đơn dựa trên bộ lọc -->
@@ -331,27 +236,12 @@
                                             <span class="card-header-title">&#8226; Bảng dữ liệu hoá đơn</span>
                 </div>
 
-                <div class="filter-row"
-                     style="padding: 16px 20px 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                    <div class="category-pills">
-                        <button type="button" class="cat-pill <%= currentStatus == null ? "active" : "" %>"
-                                onclick="applyFilter(null)">Tất cả
-                        </button>
-                        <% if (statusLabels != null) {
-                            for (Map.Entry<Integer, String> e : statusLabels.entrySet()) { %>
-                        <button type="button"
-                                class="cat-pill <%= e.getKey().equals(currentStatus) ? "active" : "" %>"
-                                onclick="applyFilter(<%= e.getKey() %>)"><%= e.getValue() %>
-                        </button>
-                        <% }
-                        } %>
-                    </div>
-                </div>
+
 
                 <div class="il-table-wrap"
                      style="background:#fff; overflow-x:auto;">
-                    <table class="il-table admin-table"
-                           style="width:100%; border-collapse:collapse; min-width:780px;">
+                    <table class="invoice-table"
+                           style="width:100%; table-layout: fixed; min-width:780px;">
                         <colgroup>
                             <col style="width: 5%;">
                             <col style="width: 8%;">
@@ -496,25 +386,24 @@
                         <% } %>
                         </tbody>
                     </table>
+                </div>
 
-                    <!-- KHU VỰC PHÂN TRANG: Hiển thị thông tin phân trang và các nút chuyển trang -->
-                    <div class="pagination-container">
-                        <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
-                        <% int startPage = Math.max(0, pageNo - 2);
-                            int endPage = Math.min(totalPages - 1, pageNo + 2);
-                            if (startPage > 0) {
-                        %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
-                        <% if (startPage > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <% }
-                            for (int i = startPage; i <= endPage; i++) { %>
-                        <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
-                        <% }
-                            if (endPage < totalPages - 1) {
-                                if (endPage < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
-                        <% } %>
-                        <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
-                    </div>
+                <div class="pagination-container">
+                    <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+                    <% int startPage = Math.max(0, pageNo - 2);
+                        int endPage = Math.min(totalPages - 1, pageNo + 2);
+                        if (startPage > 0) {
+                    %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
+                    <% if (startPage > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <% }
+                        for (int i = startPage; i <= endPage; i++) { %>
+                    <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
+                    <% }
+                        if (endPage < totalPages - 1) {
+                            if (endPage < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
+                    <% } %>
+                    <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
                 </div>
             </div>
     </main>

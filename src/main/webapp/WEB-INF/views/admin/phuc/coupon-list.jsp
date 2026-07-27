@@ -14,50 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
-    <style>
-        /* Pagination Styling */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 20px 0;
-            margin-top: 10px;
-        }
-        .page-btn {
-            min-width: 32px;
-            height: 32px;
-            padding: 0 10px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            color: #475569;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-        .page-btn:hover:not(.disabled) {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #0f172a;
-        }
-        .page-btn.active {
-            background: #10b981;
-            border-color: #10b981;
-            color: white;
-        }
-        .page-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f1f5f9;
-            pointer-events: none;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-list.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body>
 <%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu danh sách phiếu giảm giá, bộ lọc và phân trang --%>
@@ -104,17 +61,17 @@
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
-                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
+                    <span class="profile-avatar-mini">A</span>
+                    <span>Admin</span>
                 </div>
             </div>
         </header>
 
         <div class="content-wrapper">
-                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <div>
-                    <h1>Quản lý phiếu giảm giá</h1>
-                    <div class="subtitle">Tổng <%= total %> phiếu giảm giá</div>
+                    <h1 class="page-title-text">Quản lý phiếu giảm giá</h1>
+                    <div class="page-subtitle-text">Tổng <strong><%= total %></strong> phiếu giảm giá</div>
                 </div>
             </div>
 
@@ -135,71 +92,70 @@
                     <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
                 </div>
                 <div class="card-body-content" id="filterCardBody" style="overflow-x: auto;">
-                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" style="display: flex; gap: 12px; align-items: center; flex-wrap: nowrap; width: 100%;">
-                        <div class="search-box" id="searchBox" style="width: 250px; min-width: 250px;">
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            <input type="text" id="searchInput" name="q"
-                                   placeholder="Nhập mã / tên..."
-                                   value="<%= keyword != null ? keyword : "" %>"
-                                   autocomplete="off">
+                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; width: 100%;">
+                        
+                        <!-- Trạng thái -->
+                        <div class="filter-field" style="min-width: 140px;">
+                            <label for="filterStatus">Trạng thái</label>
+                            <select name="status" id="filterStatus" class="filter-control" onchange="this.form.submit()">
+                                <option value="">Tất cả trạng thái</option>
+                                <% if (statusLabels != null) {
+                                    for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
+                                <option value="<%= e.getKey() %>" <%= e.getKey().equals(curStatus) ? "selected" : "" %>><%= e.getValue() %></option>
+                                <%  }
+                                } %>
+                            </select>
                         </div>
                         
-                        <select name="discountType" id="filterType" class="filter-select" style="min-width: max-content;" onchange="this.form.submit()">
-                            <option value="">Tất cả loại giảm</option>
-                            <% if (typeLabels != null) {
-                                for (Map.Entry<Integer,String> e : typeLabels.entrySet()) { %>
-                            <option value="<%= e.getKey() %>" <%= e.getKey().equals(curType) ? "selected" : "" %>><%= e.getValue() %></option>
-                            <%  }
-                            } %>
-                        </select>
-                        
-                        <select name="status" id="filterStatus" class="filter-select" style="min-width: max-content;" onchange="this.form.submit()">
-                            <option value="">Tất cả trạng thái</option>
-                            <% if (statusLabels != null) {
-                                for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
-                            <option value="<%= e.getKey() %>" <%= e.getKey().equals(curStatus) ? "selected" : "" %>><%= e.getValue() %></option>
-                            <%  }
-                            } %>
-                        </select>
-                        <div style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
-                            <span style="font-size: 13px; color: #6b7280; white-space: nowrap;">Từ ngày:</span>
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <input type="date" id="fromDateFilter" name="fromDate" class="date-input" title="Từ ngày"
-                                       value="<%= fromDate != null ? fromDate : "" %>"
-                                       onchange="document.getElementById('searchForm').submit()">
+                        <!-- Loại giảm giá -->
+                        <div class="filter-field" style="min-width: 140px;">
+                            <label for="filterType">Loại giảm</label>
+                            <select name="discountType" id="filterType" class="filter-control" onchange="this.form.submit()">
+                                <option value="">Tất cả loại giảm</option>
+                                <% if (typeLabels != null) {
+                                    for (Map.Entry<Integer,String> e : typeLabels.entrySet()) { %>
+                                <option value="<%= e.getKey() %>" <%= e.getKey().equals(curType) ? "selected" : "" %>><%= e.getValue() %></option>
+                                <%  }
+                                } %>
+                            </select>
+                        </div>
+
+                        <!-- Từ ngày -->
+                        <div class="filter-field" style="min-width: 160px;">
+                            <label for="fromDateFilter">Từ ngày</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" id="fromDateFilter" name="fromDate" class="filter-control" value="<%= fromDate != null ? fromDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
                                 <% if (fromDate != null && !fromDate.isEmpty()) { %>
-                                <a href="javascript:void(0)" onclick="document.getElementById('fromDateFilter').value=''; document.getElementById('searchForm').submit();" 
-                                   style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;" 
-                                   onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#ef4444';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b';" title="Xoá ngày">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                </a>
+                                <button type="button" onclick="document.getElementById('fromDateFilter').value=''; document.getElementById('searchForm').submit();" style="padding: 0 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #64748b;" title="Xoá ngày">✕</button>
                                 <% } %>
                             </div>
                         </div>
                         
-                        <div style="display: flex; align-items: center; gap: 8px; min-width: max-content;">
-                            <span style="font-size: 13px; color: #6b7280; white-space: nowrap;">Đến ngày:</span>
-                            <div style="display: flex; align-items: center; gap: 4px;">
-                                <input type="date" id="toDateFilter" name="toDate" class="date-input" title="Đến ngày"
-                                       value="<%= toDate != null ? toDate : "" %>"
-                                       onchange="document.getElementById('searchForm').submit()">
+                        <!-- Đến ngày -->
+                        <div class="filter-field" style="min-width: 160px;">
+                            <label for="toDateFilter">Đến ngày</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" id="toDateFilter" name="toDate" class="filter-control" value="<%= toDate != null ? toDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
                                 <% if (toDate != null && !toDate.isEmpty()) { %>
-                                <a href="javascript:void(0)" onclick="document.getElementById('toDateFilter').value=''; document.getElementById('searchForm').submit();" 
-                                   style="color: #64748b; text-decoration: none; display: flex; align-items: center; justify-content: center; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;" 
-                                   onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#ef4444';" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b';" title="Xoá ngày">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                </a>
+                                <button type="button" onclick="document.getElementById('toDateFilter').value=''; document.getElementById('searchForm').submit();" style="padding: 0 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #64748b;" title="Xoá ngày">✕</button>
                                 <% } %>
                             </div>
                         </div>
+
+                        <!-- Tìm kiếm -->
+                        <div class="filter-field" style="min-width: 250px;">
+                            <label for="searchInput">Tìm kiếm</label>
+                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Nhập mã / tên..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
+                        </div>
                         
+                        <!-- Đặt lại -->
                         <% if ((keyword != null && !keyword.isEmpty()) || curType != null || curStatus != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty())) { %>
-                        <a href="${pageContext.request.contextPath}/admin/coupons"
-                           class="btn-reset-filter"
-                           id="btnReset" title="Đặt lại toàn bộ bộ lọc" style="flex-shrink: 0; min-width: max-content;">
-                            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-                            Đặt lại
-                        </a>
+                        <div class="filter-field" style="flex-shrink: 0;">
+                            <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-reset-filter" id="btnReset" title="Đặt lại toàn bộ bộ lọc" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; text-decoration: none; height: 38px; box-sizing: border-box;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                                Đặt lại
+                            </a>
+                        </div>
                         <% } %>
                     </form>
                 </div>
@@ -207,7 +163,7 @@
 
             <!-- Thanh nút thao tác -->
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
-                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #1e293b; border: 1px solid #1e293b; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>Xuất Excel</span>
                 </a>
@@ -222,8 +178,8 @@
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bảng dữ liệu phiếu giảm giá</span>
                 </div>
-                <div class="cl-table-wrap" style="background:#fff; overflow-x:auto;">
-                    <table class="cl-table admin-table" style="width:100%; border-collapse:collapse; min-width:780px;">
+                <div class="il-table-wrap" style="background:#fff; overflow-x:auto;">
+                    <table class="invoice-table" style="width:100%; table-layout: fixed; min-width:780px;">
                     <thead>
                     <tr>
                         <th>STT</th>
@@ -324,10 +280,7 @@
                     <%  } %>
                     </tbody>
                 </table>
-            </div>
-            </div>
-
-                <!-- KHU VỰC PHÂN TRANG: Chuyển trang và hiển thị tổng số kết quả -->
+                </div>
                 <div class="pagination-container">
                     <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
                     <%
@@ -345,6 +298,7 @@
                     <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
                     <%  } %>
                     <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+                </div>
                 </div>
             </div>
         </div>
