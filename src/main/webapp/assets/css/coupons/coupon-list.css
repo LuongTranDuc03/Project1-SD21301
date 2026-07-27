@@ -547,27 +547,24 @@
 
 /* Badge Trạng Thái Phiếu Giảm Giá */
 .badge-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 10px;
-    font-size: 12px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
-    border-radius: 9999px;
-    white-space: nowrap;
 }
 
 .badge-status.dang-ap-dung {
-    background: #dcfce3;
-    color: #16a34a;
+    background-color: #ecfdf5;
+    color: #065f46;
 }
 
 .badge-status.ket-thuc {
-    background: #fee2e2;
-    color: #ef4444;
+    background-color: #fef2f2;
+    color: #991b1b;
 }
 
 .badge-status.chua-kich-hoat {
-    background: #f3f4f6;
+    background-color: #f3f4f6;
     color: #4b5563;
 }
