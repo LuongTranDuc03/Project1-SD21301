@@ -554,17 +554,12 @@
     font-weight: 600;
 }
 
-.badge-status.dang-ap-dung {
+.badge-status.active {
     background-color: #ecfdf5;
     color: #065f46;
 }
 
-.badge-status.ket-thuc {
+.badge-status.inactive {
     background-color: #fef2f2;
     color: #991b1b;
-}
-
-.badge-status.chua-kich-hoat {
-    background-color: #f3f4f6;
-    color: #4b5563;
 }

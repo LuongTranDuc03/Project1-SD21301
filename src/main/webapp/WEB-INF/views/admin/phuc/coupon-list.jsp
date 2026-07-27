@@ -192,16 +192,16 @@
                     <table class="invoice-table" style="width: 100%; min-width: 1000px;">
                     <thead>
                     <tr>
-                        <th>STT</th>
-                        <th>Mã giảm giá</th>
-                        <th>Tên chương trình</th>
-                        <th>Giá trị giảm</th>
-                        <th>Đơn hàng tối thiểu</th>
-                        <th>Số lượng</th>
-                        <th>Ngày bắt đầu</th>
-                        <th>Ngày kết thúc</th>
-                        <th>Trạng thái</th>
-                        <th style="width: 100px; text-align:center;">Hành động</th>
+                        <th style="text-align: center; width: 50px;">STT</th>
+                        <th style="text-align: left; width: 120px;">Mã giảm giá</th>
+                        <th style="text-align: left; width: 220px;">Tên chương trình</th>
+                        <th style="text-align: left; width: 120px;">Giá trị giảm</th>
+                        <th style="text-align: left; width: 150px;">Đơn hàng tối thiểu</th>
+                        <th style="text-align: left; width: 120px;">Số lượng</th>
+                        <th style="text-align: left; width: 120px;">Ngày bắt đầu</th>
+                        <th style="text-align: left; width: 120px;">Ngày kết thúc</th>
+                        <th style="text-align: center; width: 140px;">Trạng thái</th>
+                        <th style="text-align: center; width: 100px;">Hành động</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -235,9 +235,9 @@
                                 int tt = c.getStatus() != null ? c.getStatus() : 0;
                                 String ttCls, ttLbl;
                                 switch (tt) {
-                                    case 1:  ttCls = "dang-ap-dung";   ttLbl = "Đang kích hoạt";   break;
-                                    case 2:  ttCls = "ket-thuc";       ttLbl = "Hết hạn";          break;
-                                    default: ttCls = "chua-kich-hoat"; ttLbl = "Chưa kích hoạt";   break;
+                                    case 1:  ttCls = "active";     ttLbl = "Đang kích hoạt";   break;
+                                    case 2:  ttCls = "inactive";   ttLbl = "Hết hạn";          break;
+                                    default: ttCls = "inactive";   ttLbl = "Chưa kích hoạt";   break;
                                 }
 
                                 boolean isOn = (tt == 1);
