@@ -42,6 +42,15 @@ public class InvoiceDetail {
     @Column(name = "mo_ta_variant", columnDefinition = "NVARCHAR(255)")
     String variantDescriptionSnapshot;
 
+    @Column(name = "mau_sac_snapshot", columnDefinition = "NVARCHAR(100)")
+    String colorSnapshot;
+
+    @Column(name = "kich_thuoc_snapshot", columnDefinition = "NVARCHAR(20)")
+    String sizeSnapshot;
+
+    @Column(name = "kieu_dang_snapshot", columnDefinition = "NVARCHAR(100)")
+    String styleSnapshot;
+
     @Column(name = "don_gia")
     Double unitPrice;
 

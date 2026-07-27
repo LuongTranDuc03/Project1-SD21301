@@ -26,12 +26,16 @@
 <%-- KHU VỰC LOGIC JSP: Khởi tạo và lấy dữ liệu phân trang, lọc hoá đơn từ Request --%>
 <%
     List<Invoice> invoices = (List<Invoice>) request.getAttribute("invoices");
-    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
     long total = request.getAttribute("total") != null ? (long) request.getAttribute("total") : 0;
     int pageNo = request.getAttribute("page") != null ? (int) request.getAttribute("page") : 0;
     int size = request.getAttribute("size") != null ? (int) request.getAttribute("size") : 10;
     int totalPages = request.getAttribute("totalPages") != null ? (int) request.getAttribute("totalPages") : 1;
     Integer currentStatus = (Integer) request.getAttribute("currentOrderStatus");
+    Integer currentOrderType = (Integer) request.getAttribute("currentOrderType");
+    Map<Integer, String> statusLabelsOnline = (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline");
+    Map<Integer, String> statusLabelsPos = (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
+    Map<Integer, String> statusLabels = currentOrderType != null && currentOrderType == 0 ? statusLabelsPos : statusLabelsOnline;
+
     String keyword = (String) request.getAttribute("keyword");
     String fromDate = (String) request.getAttribute("fromDate");
     String toDate = (String) request.getAttribute("toDate");
@@ -48,11 +52,12 @@
     if (currentPaymentMethodId != null) baseUrlSb.append("paymentMethodId=").append(currentPaymentMethodId).append("&");
     String baseUrl = baseUrlSb.toString();
 
-    java.util.function.Function<Integer, String> badgeClass = (s) -> {
+    java.util.function.BiFunction<Integer, Integer, String> badgeClass = (s, type) -> {
         if (s == null) return "cho-xu-ly";
-        if (s == 4) return "da-hoan-tien";
-        if (s == 3) return "da-huy";
-        if (s == 2) return "hoan-thanh";
+        if (s == 5) return "da-hoan-tien";
+        if (s == 4) return "da-huy";
+        if (s == 3) return "hoan-thanh";
+        if (s == 2) return "da-xac-nhan";
         if (s == 1) return "da-xac-nhan";
         return "cho-xu-ly";
     };
@@ -133,12 +138,22 @@
                                    value="<%= keyword != null ? keyword : "" %>"
                                    autocomplete="off">
                         </div>
+                        <div style="display: flex; align-items: center; min-width: max-content;">
+                            <select name="orderType"
+                                    onchange="document.getElementById('searchForm').submit()"
+                                    style="padding: 8px 28px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #374151; outline: none; background: #fff; cursor: pointer;">
+                                <option value="">Tất cả loại hoá đơn</option>
+                                <%-- Đã khai báo currentOrderType ở đầu file, không cần khai báo lại --%>
+                                <option value="0" <%= currentOrderType != null && currentOrderType == 0 ? "selected" : "" %>>Tại quầy</option>
+                                <option value="1" <%= currentOrderType != null && currentOrderType == 1 ? "selected" : "" %>>Online</option>
+                            </select>
+                        </div>
 
                         <div style="display: flex; align-items: center; min-width: max-content;">
                             <select name="paymentMethodId"
                                     onchange="document.getElementById('searchForm').submit()"
                                     style="padding: 8px 28px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; color: #374151; outline: none; background: #fff; cursor: pointer;">
-                                <option value="">Loại hoá đơn</option>
+                                <option value="">Tất cả PTTT</option>
                                 <%
                                     List<project.duan1_sd21301.model.phuc.PaymentMethod> paymentMethods = (List<project.duan1_sd21301.model.phuc.PaymentMethod>) request.getAttribute("paymentMethods");
                                     if (paymentMethods != null) {
@@ -221,7 +236,7 @@
                             </div>
                         </div>
 
-                        <% if ((keyword != null && !keyword.isEmpty()) || currentStatus != null || currentPaymentMethodId != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty())) { %>
+                        <% if ((keyword != null && !keyword.isEmpty()) || currentStatus != null || currentOrderType != null || currentPaymentMethodId != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty())) { %>
                         <a href="${pageContext.request.contextPath}/admin/invoices"
                            class="btn-reset-filter"
                            id="btnReset" title="Đặt lại toàn bộ bộ lọc"
@@ -254,6 +269,8 @@
                         exportUrl.append("&q=").append(java.net.URLEncoder.encode(keyword, "UTF-8"));
                     if (currentPaymentMethodId != null)
                         exportUrl.append("&paymentMethodId=").append(currentPaymentMethodId);
+                    if (currentOrderType != null)
+                        exportUrl.append("&orderType=").append(currentOrderType);
                 %>
                 <a href="<%= exportUrl %>" class="btn-export" id="btnExportExcel" title="Xuất danh sách hóa đơn ra Excel" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -295,16 +312,17 @@
                     <table class="il-table admin-table"
                            style="width:100%; border-collapse:collapse; min-width:780px;">
                         <colgroup>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
-                            <col>
+                            <col style="width: 5%;">
+                            <col style="width: 8%;">
+                            <col style="width: 10%;">
+                            <col style="width: 15%;">
+                            <col style="width: 10%;">
+                            <col style="width: 7%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 8%;">
+                            <col style="width: 10%;">
+                            <col style="width: 7%;">
                         </colgroup>
                         <thead>
                         <tr>
@@ -313,6 +331,7 @@
                             <th>Mã nhân viên</th>
                             <th>Khách hàng</th>
                             <th>Số điện thoại</th>
+                            <th>Loại đơn</th>
                             <th>Tổng tiền</th>
                             <th>Ngày đặt</th>
                             <th>Thanh toán</th>
@@ -328,11 +347,9 @@
                             int stt = 1;
                             for (Invoice inv : invoices) {
                                 int s = inv.getOrderStatus();
-                                String
-                                        bCls = badgeClass.apply(s);
-                                String
-                                        bLbl = statusLabels != null ?
-                                        statusLabels.getOrDefault(s, "?") : "?";
+                                Integer type = inv.getOrderType();
+                                String bCls = badgeClass.apply(s, type);
+                                String bLbl = (type != null && type == 0 ? statusLabelsPos : statusLabelsOnline).getOrDefault(s, "?");
                                 String total2 = inv.getTotalAmount() != null ?
                                         String.format("%,.0fđ",
                                                 inv.getTotalAmount()).replace(",", ".")
@@ -370,6 +387,11 @@
                                      style="margin-top:0;color:#374151;">
                                     <%= custPhone %>
                                 </div>
+                            </td>
+                            <td>
+                                <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (type != null && type == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
+                                    <%= (type != null && type == 0) ? "Tại quầy" : "Online" %>
+                                </span>
                             </td>
                             <td
                                     style="font-weight:700;color:#111827;">

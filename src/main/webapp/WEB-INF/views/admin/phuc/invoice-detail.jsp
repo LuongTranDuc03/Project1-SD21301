@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.phuc.Invoice" %>
 <%@ page import="project.duan1_sd21301.model.phuc.InvoiceDetail" %>
 <%@ page import="project.duan1_sd21301.model.phuc.InvoiceHistory" %>
@@ -25,8 +25,9 @@
     List<InvoiceDetail>  detailList  = (List<InvoiceDetail>)  request.getAttribute("detailList");
     List<InvoiceHistory> historyList = (List<InvoiceHistory>) request.getAttribute("historyList");
     
-    // Lấy danh sách map hiển thị nhãn trạng thái (ví dụ: 0 -> Chờ xác nhận)
-    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    // Lấy danh sách map hiển thị nhãn trạng thái
+    Map<Integer, String> statusLabelsOnline = (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline");
+    Map<Integer, String> statusLabelsPos = (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
     
     // Khởi tạo các đối tượng format ngày tháng
     DateTimeFormatter dtf     = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -36,17 +37,20 @@
     if (inv == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
 
     int orderStatus = inv.getOrderStatus();
+    Integer orderType = inv.getOrderType();
     
     // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
-    java.util.function.Function<Integer, String> bClassFn = (s) -> {
+    java.util.function.BiFunction<Integer, Integer, String> bClassFn = (s, t) -> {
         if (s == null)  return "cho-xu-ly";
-        if (s == 4)     return "da-hoan-tien";
-        if (s == 3)     return "da-huy";
-        if (s == 2)     return "hoan-thanh";
+        if (s == 5)     return "da-hoan-tien";
+        if (s == 4)     return "da-huy";
+        if (s == 3)     return "hoan-thanh";
+        if (s == 2)     return "da-xac-nhan";
         if (s == 1)     return "da-xac-nhan";
         return "cho-xu-ly";
     };
-    String badgeClass = bClassFn.apply(orderStatus);
+    String badgeClass = bClassFn.apply(orderStatus, orderType);
+    Map<Integer, String> statusLabels = orderType != null && orderType == 0 ? statusLabelsPos : statusLabelsOnline;
     String badgeLabel = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
 
     // Chuẩn bị các chuỗi thông tin khách hàng, fallback (mặc định) sang chuỗi rỗng hoặc "—" nếu null
@@ -100,10 +104,13 @@
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         In hoá đơn
                     </a>
-                    <%-- Nếu đơn hàng chưa bị huỷ (3) hoặc chưa hoàn tiền (4) thì mới hiển thị nút cập nhật/huỷ --%>
-                    <% if (orderStatus != 4 && orderStatus != 3) { %>
+                    <%-- Chỉ hiện Cập nhật/Huỷ khi đơn chưa Hoàn thành/Huỷ/Hoàn trả --%>
+                    <% if (orderStatus < 3) { %>
                     <button class="btn-action" style="background:#3b82f6;color:white;border:none;" onclick="openModal('update')">Cập nhật trạng thái</button>
                     <button class="btn-action btn-huy" onclick="openModal('cancel')">Huỷ đơn</button>
+                    <% } %>
+                    <% if (orderStatus == 4) { %>
+                    <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refund')">Hoàn tiền</button>
                     <% } %>
                 </div>
             </div>
@@ -119,7 +126,12 @@
                             <div class="invoice-icon-row">
                                 <div>
                                     <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:2px;letter-spacing:.05em;">MÃ HOÁ ĐƠN</div>
-                                    <div class="invoice-id">HD<%= inv.getId() %></div>
+                                    <div class="invoice-id" style="display: flex; align-items: center; gap: 8px;">
+                                        HD<%= inv.getId() %>
+                                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (orderType != null && orderType == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
+                                            <%= (orderType != null && orderType == 0) ? "Tại quầy" : "Online" %>
+                                        </span>
+                                    </div>
                                     <div class="invoice-date">Ngày đặt: <%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—" %></div>
                                     <% if (inv.getConfirmDate() != null) { %>
                                     <div class="invoice-date">Ngày xác nhận: <%= inv.getConfirmDate().format(dtf) %></div>
@@ -159,7 +171,19 @@
                                             spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>";
                                         } else {
                                             spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định";
-                                            if (detail.getVariantDescriptionSnapshot() != null) {
+                                            String variants = "";
+                                            if (detail.getColorSnapshot() != null && !detail.getColorSnapshot().isEmpty()) {
+                                                variants += detail.getColorSnapshot() + " ";
+                                            }
+                                            if (detail.getSizeSnapshot() != null && !detail.getSizeSnapshot().isEmpty()) {
+                                                variants += "- " + detail.getSizeSnapshot() + " ";
+                                            }
+                                            if (detail.getStyleSnapshot() != null && !detail.getStyleSnapshot().isEmpty()) {
+                                                variants += "- " + detail.getStyleSnapshot();
+                                            }
+                                            if (!variants.isEmpty()) {
+                                                spName += "<br><span style='font-size:11px;color:#6b7280;'>" + variants + "</span>";
+                                            } else if (detail.getVariantDescriptionSnapshot() != null) {
                                                 spName += "<br><span style='font-size:11px;color:#6b7280;'>" + detail.getVariantDescriptionSnapshot() + "</span>";
                                             }
                                         }
@@ -186,6 +210,12 @@
                             <div class="fin-row">
                                 <span class="fin-label">Giảm giá hoá đơn</span>
                                 <span class="fin-value" style="color:#22c55e;">-<%= String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".") %></span>
+                            </div>
+                            <% } %>
+                            <% if (orderType != null && orderType == 1 && inv.getShippingFee() != null && inv.getShippingFee() > 0) { %>
+                            <div class="fin-row">
+                                <span class="fin-label">Phí vận chuyển</span>
+                                <span class="fin-value" style="color:#ef4444;">+<%= String.format("%,.0fđ", inv.getShippingFee()).replace(",", ".") %></span>
                             </div>
                             <% } %>
                             <hr class="fin-divider">
@@ -292,27 +322,25 @@
             <div class="modal-field">
                 <label>Trạng thái mới</label>
                 <select name="newStatus" id="newStatusSelect" onchange="updateSelectColor(this)">
-                    <option value="0" style="color:#f59e0b;font-weight:600;" <%= orderStatus == 0 ? "selected" : "" %>>Chờ xác nhận</option>
-                    <option value="1" style="color:#3b82f6;font-weight:600;" <%= orderStatus == 1 ? "selected" : "" %>>Đã xác nhận</option>
-                    <option value="2" style="color:#10b981;font-weight:600;" <%= orderStatus == 2 ? "selected" : "" %>>Hoàn thành</option>
-                    <option value="3" style="color:#ef4444;font-weight:600;" <%= orderStatus == 3 ? "selected" : "" %>>Đã huỷ</option>
-                    <option value="4" style="color:#8b5cf6;font-weight:600;" <%= orderStatus == 4 ? "selected" : "" %>>Đã hoàn tiền</option>
+                    <% for(Map.Entry<Integer, String> entry : statusLabels.entrySet()) {
+                        if (entry.getKey() < 4) {
+                    %>
+                    <option value="<%= entry.getKey() %>" <%= orderStatus == entry.getKey() ? "selected" : "" %>><%= entry.getValue() %></option>
+                    <% } } %>
                 </select>
                 <script>
                     function updateSelectColor(selectObj) {
                         const colors = {
                             "0": "#f59e0b",
                             "1": "#3b82f6",
-                            "2": "#10b981",
-                            "3": "#ef4444",
-                            "4": "#8b5cf6"
+                            "2": "#06b6d4",
+                            "3": "#10b981"
                         };
                         const bgs = {
                             "0": "#fef3c7",
                             "1": "#dbeafe",
-                            "2": "#d1fae5",
-                            "3": "#fee2e2",
-                            "4": "#ede9fe"
+                            "2": "#cffafe",
+                            "3": "#d1fae5"
                         };
                         const val = selectObj.value;
                         if(colors[val]) {
@@ -347,7 +375,7 @@
         <p>Thao tác này sẽ hoàn trả tồn kho và không thể hoàn tác.</p>
         <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
             <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
-            <input type="hidden" name="newStatus" value="3">
+            <input type="hidden" name="newStatus" value="4">
             <div class="modal-field">
                 <label>Lý do huỷ đơn *</label>
                 <textarea name="note" rows="3" placeholder="Nhập lý do huỷ..."></textarea>
@@ -355,6 +383,26 @@
             <div class="modal-actions">
                 <button type="button" class="btn-cancel-m" onclick="closeModal('cancelModal')">Quay lại</button>
                 <button type="submit" class="btn-ok red">Xác nhận huỷ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%-- KHU VỰC MODAL HOÀN TIỀN --%>
+<div class="modal-overlay" id="refundModal">
+    <div class="modal-box">
+        <h3 style="color:#8b5cf6;">Xác nhận hoàn tiền</h3>
+        <p>Đơn hàng này đã bị huỷ. Bạn có chắc chắn muốn hoàn tiền cho khách hàng?</p>
+        <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
+            <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
+            <input type="hidden" name="newStatus" value="5">
+            <div class="modal-field">
+                <label>Ghi chú (tuỳ chọn)</label>
+                <textarea name="note" rows="3" placeholder="Nhập ghi chú hoàn tiền..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-m" onclick="closeModal('refundModal')">Quay lại</button>
+                <button type="submit" class="btn-ok" style="background:#8b5cf6;color:white;border:none;">Hoàn tiền</button>
             </div>
         </form>
     </div>
@@ -401,7 +449,8 @@
 
     // Logic 2: Hàm mở modal theo loại (update = cập nhật trạng thái, cancel = huỷ đơn)
     function openModal(type) {
-        document.getElementById(type === 'cancel' ? 'cancelModal' : 'confirmModal').classList.add('show');
+        let modalId = type === 'cancel' ? 'cancelModal' : (type === 'refund' ? 'refundModal' : 'confirmModal');
+        document.getElementById(modalId).classList.add('show');
     }
 
     // Logic 3: Hàm đóng modal khi bấm nút Huỷ/Quay lại

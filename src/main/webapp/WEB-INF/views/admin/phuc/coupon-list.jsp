@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.phuc.Coupon" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -272,7 +272,7 @@
                                     <input type="hidden" name="status" value="<%= isOn ? 0 : 1 %>">
                                     <label class="toggle-switch" title="<%= isOn ? "Tắt" : "Bật" %> phiếu">
                                         <input type="checkbox" <%= isOn ? "checked" : "" %>
-                                               onchange="if (<%= isExpired %> && this.checked) { alert('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!'); this.checked = false; } else { document.getElementById('toggleForm-<%= c.getId() %>').submit(); }">
+                                               onchange="if (<%= isExpired %> && this.checked) { showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!'); this.checked = false; } else { document.getElementById('toggleForm-<%= c.getId() %>').submit(); }">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </form>
