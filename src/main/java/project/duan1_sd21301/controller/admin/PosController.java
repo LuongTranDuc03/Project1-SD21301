@@ -12,6 +12,7 @@ import project.duan1_sd21301.service.luong.ProductServiceImpl;
 import project.duan1_sd21301.repository.phuc.InvoiceRepository;
 import project.duan1_sd21301.repository.ha.CustomerRepository;
 import project.duan1_sd21301.repository.ha.CustomerRepositoryImpl;
+import project.duan1_sd21301.repository.phuc.CouponRepository;
 
 @WebServlet(name = "PosController", value = "/admin/pos")
 public class PosController extends HttpServlet {
@@ -19,6 +20,7 @@ public class PosController extends HttpServlet {
     private final ProductService productService = new ProductServiceImpl();
     private final InvoiceRepository invoiceRepository = new InvoiceRepository();
     private final CustomerRepository customerRepository = new CustomerRepositoryImpl();
+    private final CouponRepository couponRepository = new CouponRepository();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,6 +32,7 @@ public class PosController extends HttpServlet {
         request.setAttribute("colors", productService.getAllColors());
         request.setAttribute("sizes", productService.getAllSizes());
         request.setAttribute("customers", customerRepository.findAll());
+        request.setAttribute("activeCoupons", couponRepository.findActive());
         
         long totalInvoices = invoiceRepository.countAll(null, null, null, null, null, null);
         request.setAttribute("nextOrderIndex", totalInvoices + 1);

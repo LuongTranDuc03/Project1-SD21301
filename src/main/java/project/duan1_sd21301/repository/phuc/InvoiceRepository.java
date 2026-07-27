@@ -367,9 +367,6 @@ public class InvoiceRepository {
                     detail.setCode(rs.getString("chi_tiet_hoa_don_code"));
                     detail.setProductNameSnapshot(rs.getString("ten_sp_tai_thoi_diem"));
                     detail.setVariantDescriptionSnapshot(rs.getString("mo_ta_variant"));
-                    detail.setColorSnapshot(rs.getString("mau_sac_snapshot"));
-                    detail.setSizeSnapshot(rs.getString("kich_thuoc_snapshot"));
-                    detail.setStyleSnapshot(rs.getString("kieu_dang_snapshot"));
                     detail.setUnitPrice(rs.getDouble("don_gia"));
                     detail.setDiscountPrice(rs.getDouble("gia_giam"));
                     detail.setQuantity(rs.getInt("so_luong"));

@@ -39,8 +39,8 @@
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.employee != null ? sessionScope.employee.fullName.substring(0, 1).toUpperCase() : 'A'}</span>
-                    <span>${sessionScope.employee != null ? sessionScope.employee.fullName : 'Admin'}</span>
+                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
+                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
                 </div>
             </div>
         </header>
@@ -118,6 +118,11 @@
                             </div>
                             
                             <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
+                            
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label class="form-label">Ghi chú đơn hàng</label>
+                                <textarea class="form-control" id="orderNoteInput" rows="2" placeholder="Ghi chú (Tùy chọn)..." oninput="updateCheckoutState()" style="resize: none;"></textarea>
+                            </div>
                         </div>
                         
                         <!-- Cột phải: Địa chỉ giao hàng -->
@@ -197,13 +202,20 @@
                     
                     <div class="coupon-section">
                         <div class="coupon-inputs">
-                            <div class="form-group" style="flex: 3;">
+                            <div class="form-group" style="flex: 1; width: 100%;">
                                 <label>Mã phiếu giảm giá</label>
-                                <input type="text" class="form-control" id="discountCodeInput" placeholder="Nhập mã" oninput="updateCheckoutState()">
-                            </div>
-                            <div class="form-group" style="flex: 1;">
-                                <label>Giá trị</label>
-                                <input type="text" class="form-control" id="discountValueInput" placeholder="" oninput="updateCheckoutState()">
+                                <select class="form-control" id="discountCodeInput" onchange="applyDiscountSelect()" style="text-transform: uppercase;">
+                                    <option value="">-- Chọn mã giảm giá --</option>
+                                    <c:forEach var="c" items="${activeCoupons}">
+                                        <option value="${c.code}" 
+                                            data-type="${c.discountType}" 
+                                            data-value="${c.discountValue}" 
+                                            data-min="${c.minOrderValue != null ? c.minOrderValue : 0}" 
+                                            data-max="${c.maxDiscountAmount != null ? c.maxDiscountAmount : 0}">
+                                            ${c.code} - ${c.name}
+                                        </option>
+                                    </c:forEach>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -873,13 +885,8 @@
             
             container.innerHTML = html;
             
-            // Update summary
-            document.getElementById('summaryTotalItems').textContent = formattedSumTotal;
-            let discount = 300000;
-            let finalTotal = sumTotal - discount;
-            if (finalTotal < 0) finalTotal = 0;
-            document.getElementById('summaryTotalPayment').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
-            document.getElementById('summaryChange').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
+            // Re-apply discount logic based on new total, which will also update the summary
+            applyDiscountSelect();
         }
         saveOrdersToStorage();
     }
@@ -1157,15 +1164,24 @@
         
         const isFixed = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';
         if (!isFixed) {
-            order.province = document.getElementById('provinceSelect').value;
-            order.district = document.getElementById('districtSelect').value;
-            order.ward = document.getElementById('wardSelect').value;
+            const pSel = document.getElementById('provinceSelect');
+            const dSel = document.getElementById('districtSelect');
+            const wSel = document.getElementById('wardSelect');
+            order.province = pSel.options[pSel.selectedIndex] ? pSel.options[pSel.selectedIndex].text : '';
+            order.district = dSel.options[dSel.selectedIndex] ? dSel.options[dSel.selectedIndex].text : '';
+            order.ward = wSel.options[wSel.selectedIndex] ? wSel.options[wSel.selectedIndex].text : '';
+            
+            // Need to save codes somewhere if we want to restore the dropdowns later. 
+            // For now, restoring might break if we only save text.
+            order.provinceCode = pSel.value;
+            order.districtCode = dSel.value;
+            order.wardCode = wSel.value;
         }
         
         order.shippingFee = document.getElementById('shippingFeeInput').value;
         order.customerPay = document.getElementById('customerPayInput').value;
         order.discountCode = document.getElementById('discountCodeInput').value;
-        order.discountValue = document.getElementById('discountValueInput').value;
+        order.note = document.getElementById('orderNoteInput').value;
         
         updateTotals();
         saveOrdersToStorage();
@@ -1279,10 +1295,10 @@
             apiBlock.style.display = 'flex';
             fixedBlock.style.display = 'none';
             
-            document.getElementById('provinceSelect').value = order.province || '';
+            document.getElementById('provinceSelect').value = order.provinceCode || '';
             
-            if (order.province) {
-                fetch(`https://provinces.open-api.vn/api/p/\${order.province}?depth=2`)
+            if (order.provinceCode) {
+                fetch(`https://provinces.open-api.vn/api/p/\${order.provinceCode}?depth=2`)
                     .then(res => res.json())
                     .then(data => {
                         const select = document.getElementById('districtSelect');
@@ -1295,10 +1311,10 @@
                                 select.appendChild(opt);
                             });
                         }
-                        select.value = order.district || '';
+                        select.value = order.districtCode || '';
                         
-                        if (order.district) {
-                            fetch(`https://provinces.open-api.vn/api/d/\${order.district}?depth=2`)
+                        if (order.districtCode) {
+                            fetch(`https://provinces.open-api.vn/api/d/\${order.districtCode}?depth=2`)
                                 .then(res => res.json())
                                 .then(data2 => {
                                     const wSelect = document.getElementById('wardSelect');
@@ -1311,7 +1327,7 @@
                                             wSelect.appendChild(opt);
                                         });
                                     }
-                                    wSelect.value = order.ward || '';
+                                    wSelect.value = order.wardCode || '';
                                 })
                                 .catch(err => console.error(err));
                         } else {
@@ -1328,8 +1344,63 @@
         document.getElementById('shippingFeeInput').value = order.shippingFee || '';
         document.getElementById('customerPayInput').value = order.customerPay || '';
         document.getElementById('discountCodeInput').value = order.discountCode || '';
-        document.getElementById('discountValueInput').value = order.discountValue || '';
+        document.getElementById('orderNoteInput').value = order.note || '';
 
+    }
+    
+    function applyDiscountSelect() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        let sumTotal = 0;
+        if (order.items) {
+            order.items.forEach(item => {
+                sumTotal += (item.price * item.quantity);
+            });
+        }
+        
+        const select = document.getElementById('discountCodeInput');
+        const option = select.options[select.selectedIndex];
+        
+        if (!option.value) {
+            order.discountCode = '';
+            order.discountValue = '0';
+            updateTotals();
+            saveOrdersToStorage();
+            return;
+        }
+        
+        const type = parseInt(option.getAttribute('data-type'));
+        const value = parseFloat(option.getAttribute('data-value'));
+        const minOrder = parseFloat(option.getAttribute('data-min'));
+        const maxDiscount = parseFloat(option.getAttribute('data-max'));
+        
+        if (sumTotal < minOrder) {
+            alert('Đơn hàng chưa đạt giá trị tối thiểu ' + minOrder.toLocaleString('vi-VN') + ' đ để áp dụng mã này!');
+            select.value = '';
+            order.discountCode = '';
+            order.discountValue = '0';
+            updateTotals();
+            saveOrdersToStorage();
+            return;
+        }
+        
+        let discountAmt = 0;
+        if (type === 1) { // VND
+            discountAmt = value;
+        } else if (type === 0) { // %
+            discountAmt = sumTotal * (value / 100.0);
+            if (maxDiscount > 0 && discountAmt > maxDiscount) {
+                discountAmt = maxDiscount;
+            }
+        }
+        
+        order.discountCode = option.value;
+        order.discountValue = discountAmt.toString();
+        
+        updateTotals();
+        saveOrdersToStorage();
     }
     
     function updateItemQty(code, change) {
@@ -1436,7 +1507,7 @@
         updateTotals();
         saveOrdersToStorage();
         
-        openSuccessInvoiceModal(order, finalTotal);
+        checkoutAjax(order, finalTotal);
     }
     
     function openSuccessInvoiceModal(order, finalTotal) {
@@ -1535,9 +1606,35 @@
                 return;
             }
             
-            openSuccessInvoiceModal(order, finalTotal);
+            checkoutAjax(order, finalTotal);
         }
     }
+    
+    function checkoutAjax(order, finalTotal) {
+        fetch(`\${window.location.origin}${pageContext.request.contextPath}/admin/pos/checkout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(order)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                openSuccessInvoiceModal(order, finalTotal);
+                // Clear order after success
+                orders.splice(orders.findIndex(o => o.id === order.id), 1);
+                if (orders.length === 0) createOrder();
+                else switchOrder(orders[0].id);
+                saveOrdersToStorage();
+            } else {
+                alert("Lỗi thanh toán: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Lỗi kết nối máy chủ!");
+        });
+    }
+
     
     function closeInvoiceModal() {
         document.getElementById('invoiceModal').classList.remove('active');
