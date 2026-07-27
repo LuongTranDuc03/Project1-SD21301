@@ -1,6 +1,7 @@
 package project.duan1_sd21301.repository.phuc;
 
 import project.duan1_sd21301.model.Address;
+import project.duan1_sd21301.model.ha.Customer;
 import project.duan1_sd21301.model.luong.ProductDetail;
 import project.duan1_sd21301.model.luong.Product;
 import project.duan1_sd21301.model.luong.Size;
@@ -256,6 +257,7 @@ public class InvoiceRepository {
         invoice.setCode(rs.getString("hoa_don_code"));
         invoice.setReceiverName(rs.getString("ten_khach_nhan"));
         invoice.setReceiverPhone(rs.getString("sdt_khach_nhan"));
+        invoice.setReceiverAddress(rs.getString("dia_chi_khach_nhan"));
         invoice.setSubtotal(rs.getDouble("tam_tinh"));
         invoice.setTotalAmount(rs.getDouble("tong_thanh_toan"));
         Timestamp orderDate = rs.getTimestamp("ngay_dat_hang");
@@ -317,6 +319,33 @@ public class InvoiceRepository {
             }
         } catch (SQLException ignored) {
         }
+        
+        // Basic mapping for Customer if joined
+        try {
+            int custId = rs.getInt("c_id");
+            if (!rs.wasNull()) {
+                Customer c = new Customer();
+                c.setId(custId);
+                c.setFullName(rs.getString("c_name"));
+                c.setEmail(rs.getString("c_email"));
+                c.setPhoneNumber(rs.getString("c_phone"));
+                invoice.setCustomer(c);
+            } else {
+                int directCustId = rs.getInt("id_khach_hang");
+                if (!rs.wasNull()) {
+                    Customer c = new Customer();
+                    c.setId(directCustId);
+                    invoice.setCustomer(c);
+                }
+            }
+        } catch (SQLException ignored) {
+            int directCustId = rs.getInt("id_khach_hang");
+            if (!rs.wasNull()) {
+                Customer c = new Customer();
+                c.setId(directCustId);
+                invoice.setCustomer(c);
+            }
+        }
 
         return invoice;
     }
@@ -324,11 +353,12 @@ public class InvoiceRepository {
     public Invoice findById(int id) {
         String sql = "SELECT hd.*, " +
                 "pm.id AS pm_id, pm.phuong_thuc_thanh_toan_code AS pm_code, pm.ten_phuong_thuc AS pm_name, " +
-                "ad.id AS ad_id, ad.tinh AS ad_province, ad.huyen AS ad_district, ad.xa AS ad_ward, ad.dia_chi_chi_tiet AS ad_street "
-                +
+                "ad.id AS ad_id, ad.tinh AS ad_province, ad.huyen AS ad_district, ad.xa AS ad_ward, ad.dia_chi_chi_tiet AS ad_street, " +
+                "c.id AS c_id, c.ho_ten AS c_name, c.email AS c_email, c.so_dien_thoai AS c_phone " +
                 "FROM hoa_don hd " +
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
                 "LEFT JOIN dia_chi ad ON hd.id_dia_chi = ad.id " +
+                "LEFT JOIN khach_hang c ON hd.id_khach_hang = c.id " +
                 "WHERE hd.id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

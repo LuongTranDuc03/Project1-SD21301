@@ -9,7 +9,7 @@ import java.sql.*;
 
 public class PosCheckoutService {
 
-    public boolean processCheckout(PosOrderRequestDTO orderDTO, Employee loggedInUser) {
+    public String processCheckout(PosOrderRequestDTO orderDTO, Employee loggedInUser) {
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
@@ -34,8 +34,9 @@ public class PosCheckoutService {
             }
 
             // 4. Lookup Payment Method ID
-            int paymentMethodId = orderDTO.getPaymentMethod().equals("TRANSFER") ? 2 : 1; 
-            String paymentMethodName = orderDTO.getPaymentMethod().equals("TRANSFER") ? "Chuyển khoản" : "Tiền mặt";
+            String paymentMethod = orderDTO.getPaymentMethod() != null ? orderDTO.getPaymentMethod() : "CASH";
+            int paymentMethodId = paymentMethod.equals("TRANSFER") ? 2 : 1; 
+            String paymentMethodName = paymentMethod.equals("TRANSFER") ? "Chuyển khoản" : "Tiền mặt";
 
             // 5. Determine Order Status
             int orderStatus = orderDTO.isDelivery() ? 1 : 3; // 1: Đã xác nhận (Giao hàng), 3: Hoàn thành (Tại quầy)
@@ -198,13 +199,13 @@ public class PosCheckoutService {
             }
 
             conn.commit();
-            return true;
+            return invoiceCode;
         } catch (Exception e) {
             e.printStackTrace();
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
-            return false;
+            return null;
         } finally {
             if (conn != null) {
                 try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }

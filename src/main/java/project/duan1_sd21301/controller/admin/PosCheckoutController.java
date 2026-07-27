@@ -44,9 +44,9 @@ public class PosCheckoutController extends HttpServlet {
         try {
             PosOrderRequestDTO orderDTO = mapper.readValue(sb.toString(), PosOrderRequestDTO.class);
             
-            boolean result = checkoutService.processCheckout(orderDTO, loggedInUser);
-            if (result) {
-                out.print("{\"success\": true, \"message\": \"Checkout successful\"}");
+            String invoiceCode = checkoutService.processCheckout(orderDTO, loggedInUser);
+            if (invoiceCode != null) {
+                out.print("{\"success\": true, \"message\": \"Checkout successful\", \"invoiceCode\": \"" + invoiceCode + "\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 out.print("{\"success\": false, \"message\": \"Checkout failed. Please check logs.\"}");

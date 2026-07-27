@@ -113,8 +113,8 @@
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label">Số điện thoại</label>
-                                <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="updateCheckoutState()">
+                                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateCheckoutState()">
                             </div>
                             
                             <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
@@ -137,7 +137,7 @@
                                 
                                 <div class="form-group">
                                     <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="updateCheckoutState()">
+                                    <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateCheckoutState()">
                                 </div>
                                 
                                 <div class="form-group" style="width: 100%;">
@@ -456,6 +456,7 @@
                         List<Product> products = (List<Product>) request.getAttribute("products");
                         if (products != null) {
                             for (Product p : products) {
+                                if (p.getStatus() == null || p.getStatus() != 1) continue;
                         %>
                         <option value="<%= p.getName() %>"><%= p.getName() %></option>
                         <%  }
@@ -487,8 +488,10 @@
                         if (products != null) {
                             int stt = 1;
                             for (Product p : products) {
+                                if (p.getStatus() == null || p.getStatus() != 1) continue;
                                 if (p.getDetails() != null) {
                                     for (ProductDetail v : p.getDetails()) {
+                                        if (v.getStatus() == null || v.getStatus() != 1) continue;
                                         String img = (v.getImages() != null && !v.getImages().isEmpty()) ? v.getImages().get(0) : "";
                                         String imageUrl = "";
                                         if (img != null && !img.trim().isEmpty() && !"null".equalsIgnoreCase(img.trim())) {
@@ -611,7 +614,7 @@
             return;
         }
         
-        const newOrderId = "HD" + String(nextOrderId).padStart(3, '0');
+        const newOrderId = "Đơn " + nextOrderId;
         nextOrderId++;
         
         orders.push({
@@ -631,7 +634,8 @@
             discountCode: '',
             discountValue: '',
             shippingFee: '',
-            customerPay: ''
+            customerPay: '',
+            paymentMethod: 'CASH'
         });
         
         currentOrderId = newOrderId;
@@ -683,25 +687,24 @@
             event.stopPropagation();
         }
         
-        if (orders.length === 1) {
-            alert('Không thể đóng đơn hàng cuối cùng!');
-            return;
-        }
-        
-        if (!confirm('Bạn có chắc chắn muốn xóa thông tin hóa đơn này không?')) {
-            return;
-        }
-        
-        orders = orders.filter(o => o.id !== orderId);
-        
-        if (currentOrderId === orderId) {
-            // Switch to the last available order
-            currentOrderId = orders[orders.length - 1].id;
-        }
-        
-        renderTabs();
-        renderCurrentOrderItems();
-        renderCheckoutState();
+        showCustomConfirm('Bạn có chắc chắn muốn xóa thông tin hóa đơn này không?', function(result) {
+            if (!result) return;
+            
+            orders = orders.filter(o => o.id !== orderId);
+            
+            if (orders.length === 0) {
+                createOrder();
+            } else {
+                if (currentOrderId === orderId) {
+                    // Switch to the last available order
+                    currentOrderId = orders[orders.length - 1].id;
+                }
+                renderTabs();
+                renderCurrentOrderItems();
+                renderCheckoutState();
+            }
+            saveOrdersToStorage();
+        });
     }
 
     // --- Modal Logic ---
@@ -1510,7 +1513,8 @@
         checkoutAjax(order, finalTotal);
     }
     
-    function openSuccessInvoiceModal(order, finalTotal) {
+    function openSuccessInvoiceModal(order, finalTotal, invoiceCode) {
+        document.getElementById('invoiceSuccessCode').textContent = invoiceCode || '---';
         document.getElementById('invoiceCustomerName').textContent = order.customerName || 'Khách lẻ';
         document.getElementById('invoiceBuyerPhone').textContent = order.customerPhone || '---';
         
@@ -1589,6 +1593,22 @@
             return;
         }
         
+        if (!order.customerName || order.customerName.trim() === '' || order.customerName.trim() === 'Khách lẻ') {
+            alert("Vui lòng nhập tên khách hàng!");
+            return;
+        }
+        
+        if (!order.customerPhone || order.customerPhone.trim() === '') {
+            alert("Vui lòng nhập số điện thoại khách hàng!");
+            return;
+        }
+        
+        const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+        if (!phoneRegex.test(order.customerPhone.trim())) {
+            alert("Số điện thoại không hợp lệ! Vui lòng nhập đúng định dạng (VD: 0912345678).");
+            return;
+        }
+        
         if (order.paymentMethod === 'TRANSFER') {
             openQrModal(order);
         } else {
@@ -1619,7 +1639,7 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                openSuccessInvoiceModal(order, finalTotal);
+                openSuccessInvoiceModal(order, finalTotal, data.invoiceCode);
                 // Clear order after success
                 orders.splice(orders.findIndex(o => o.id === order.id), 1);
                 if (orders.length === 0) createOrder();
@@ -1666,6 +1686,10 @@
         <div style="text-align: center; margin-bottom: 20px;">
             <i class="fa-solid fa-circle-check" style="color: #22c55e; font-size: 48px; margin-bottom: 10px;"></i>
             <h3 style="margin: 0; color: #16a34a;">Thanh toán thành công</h3>
+            <div style="margin-top: 10px; font-size: 16px;">
+                <strong style="color: #475569;">Mã hóa đơn:</strong> 
+                <span id="invoiceSuccessCode" style="font-weight: bold; color: #b91c1c; font-size: 18px;">---</span>
+            </div>
         </div>
         
         <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
@@ -1712,6 +1736,56 @@
         <button class="btn-outline-primary" style="width: 100%; margin-top: 25px; background: #3b82f6; color: white; border-color: #3b82f6; padding: 10px; border-radius: 8px; font-weight: bold;" onclick="closeInvoiceModal()">Đóng</button>
     </div>
 </div>
+
+<!-- Custom Alert Modal -->
+<div class="pos-modal-overlay" id="customAlertModal" style="z-index: 10000;">
+    <div class="pos-modal" style="width: 400px; text-align: center; padding: 24px; position: relative;">
+        <h3 style="margin-bottom: 16px; font-size: 18px; color: #1e293b;">Thông báo</h3>
+        <p id="customAlertMessage" style="color: #475569; margin-bottom: 24px; font-size: 14px; line-height: 1.5;"></p>
+        <button class="btn-primary" onclick="closeCustomAlert()" style="padding: 8px 24px;">Đóng</button>
+    </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="pos-modal-overlay" id="customConfirmModal" style="z-index: 10000;">
+    <div class="pos-modal" style="width: 400px; text-align: center; padding: 24px; position: relative;">
+        <h3 style="margin-bottom: 16px; font-size: 18px; color: #1e293b;">Xác nhận</h3>
+        <p id="customConfirmMessage" style="color: #475569; margin-bottom: 24px; font-size: 14px; line-height: 1.5;"></p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <button class="btn-outline-primary" onclick="closeCustomConfirm(false)" style="padding: 8px 24px;">Hủy</button>
+            <button class="btn-primary" onclick="closeCustomConfirm(true)" style="padding: 8px 24px; background: #E11D48; border-color: #E11D48;">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showCustomAlert(message) {
+        document.getElementById('customAlertMessage').textContent = message;
+        document.getElementById('customAlertModal').classList.add('active');
+    }
+
+    function closeCustomAlert() {
+        document.getElementById('customAlertModal').classList.remove('active');
+    }
+
+    let confirmCallback = null;
+    function showCustomConfirm(message, callback) {
+        document.getElementById('customConfirmMessage').textContent = message;
+        confirmCallback = callback;
+        document.getElementById('customConfirmModal').classList.add('active');
+    }
+
+    function closeCustomConfirm(result) {
+        document.getElementById('customConfirmModal').classList.remove('active');
+        if (confirmCallback) {
+            confirmCallback(result);
+            confirmCallback = null;
+        }
+    }
+    
+    // Override default alert globally in this page to catch all alerts
+    window.alert = showCustomAlert;
+</script>
 
 </body>
 </html>
