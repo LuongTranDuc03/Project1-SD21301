@@ -614,7 +614,10 @@
                                                                 <% } %>
                                                             </tbody>
                                             </table>
-                                            <div id="paginationContainer" class="pagination-container"></div>
+                                            <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid #e2e8f0; margin-top: 10px;">
+                                                <div id="paginationInfo" style="color: #64748b; font-size: 13px;"></div>
+                                                <div id="paginationContainer" class="pagination-container" style="padding: 0; margin-top: 0;"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -739,13 +742,25 @@
                             
                             function renderPagination(totalItems, totalPages) {
                                 const container = document.getElementById('paginationContainer');
+                                const infoContainer = document.getElementById('paginationInfo');
                                 if (!container) return;
                                 
                                 container.innerHTML = '';
+                                if(infoContainer) {
+                                    if(totalItems === 0) {
+                                        infoContainer.innerHTML = '';
+                                    } else {
+                                        const startIndex = (currentPage - 1) * itemsPerPage;
+                                        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+                                        infoContainer.innerHTML = 'Hiển thị <strong>' + (startIndex + 1) + '- ' + endIndex + '</strong> trong tổng <strong>' + totalItems + '</strong> khách hàng';
+                                    }
+                                }
                                 
-                                if (totalItems === 0 || totalPages <= 1) {
+                                if (totalItems === 0) {
                                     return; // Không cần phân trang
                                 }
+                                
+                                const displayTotalPages = Math.max(1, totalPages);
                                 
                                 // Nút Previous
                                 const prevBtn = document.createElement('button');
@@ -756,10 +771,10 @@
                                 container.appendChild(prevBtn);
                                 
                                 // Các nút số trang
-                                for (let i = 1; i <= totalPages; i++) {
-                                    if (totalPages > 7) {
-                                        if (i !== 1 && i !== totalPages && Math.abs(i - currentPage) > 1) {
-                                            if (i === 2 || i === totalPages - 1) {
+                                for (let i = 1; i <= displayTotalPages; i++) {
+                                    if (displayTotalPages > 7) {
+                                        if (i !== 1 && i !== displayTotalPages && Math.abs(i - currentPage) > 1) {
+                                            if (i === 2 || i === displayTotalPages - 1) {
                                                 const dots = document.createElement('span');
                                                 dots.innerHTML = '...';
                                                 dots.style.padding = '0 5px';
@@ -781,7 +796,7 @@
                                 const nextBtn = document.createElement('button');
                                 nextBtn.className = 'page-btn';
                                 nextBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>';
-                                nextBtn.disabled = currentPage === totalPages;
+                                nextBtn.disabled = currentPage === displayTotalPages;
                                 nextBtn.onclick = () => applyPagination(currentPage + 1);
                                 container.appendChild(nextBtn);
                             }

@@ -562,6 +562,7 @@ public class InvoiceRepository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Lỗi SQL khi findAll Invoice: " + e.getMessage(), e);
         }
         return list;
     }

@@ -200,6 +200,7 @@ public class CouponRepository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Lỗi SQL khi findAll Coupon: " + e.getMessage(), e);
         }
         return list;
     }
@@ -247,6 +248,7 @@ public class CouponRepository {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Lỗi SQL khi countAll Coupon: " + e.getMessage(), e);
         }
         return 0;
     }

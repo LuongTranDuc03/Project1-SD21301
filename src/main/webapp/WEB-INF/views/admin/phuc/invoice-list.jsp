@@ -388,12 +388,20 @@
                         </tbody>
                     </table>
                     </div>
-                </div>
+            </div>
 
-                <div class="pagination-container">
+            <!-- KHU VỰC PHÂN TRANG: Hiển thị thông tin phân trang và các nút chuyển trang -->
+            <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid #e2e8f0; margin-top: 10px;">
+                <div id="paginationInfo" style="color: #64748b; font-size: 13px;">
+                    Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
+                    trong tổng <strong><%= String.format("%,d", total) %></strong> đơn hàng
+                </div>
+                <div id="paginationContainer" class="pagination-container" style="padding: 0; margin-top: 0;">
                     <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
-                    <% int startPage = Math.max(0, pageNo - 2);
-                        int endPage = Math.min(totalPages - 1, pageNo + 2);
+                    <%
+                        int displayTotalPages = Math.max(1, totalPages);
+                        int startPage = Math.max(0, pageNo - 2);
+                        int endPage = Math.min(displayTotalPages - 1, pageNo + 2);
                         if (startPage > 0) {
                     %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
                     <% if (startPage > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
@@ -401,12 +409,13 @@
                         for (int i = startPage; i <= endPage; i++) { %>
                     <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
                     <% }
-                        if (endPage < totalPages - 1) {
-                            if (endPage < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                    <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
+                        if (endPage < displayTotalPages - 1) {
+                            if (endPage < displayTotalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <a href="<%= baseUrl %>page=<%= displayTotalPages - 1 %>" class="page-btn"><%= displayTotalPages %></a>
                     <% } %>
-                    <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+                    <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= displayTotalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
                 </div>
+            </div>
             </div>
     </main>
 </div>
