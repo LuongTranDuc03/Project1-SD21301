@@ -1129,7 +1129,7 @@
                 const value = parseFloat(option.getAttribute('data-value'));
                 const minOrder = parseFloat(option.getAttribute('data-min'));
                 const maxDiscount = parseFloat(option.getAttribute('data-max'));
-                if (sumTotal >= minOrder) {
+                if (sumTotal > 0 && sumTotal >= minOrder) {
                     if (type === 1) { // VND
                         discount = value;
                     } else if (type === 0) { // %
@@ -1137,6 +1137,9 @@
                         if (maxDiscount > 0 && discount > maxDiscount) {
                             discount = maxDiscount;
                         }
+                    }
+                    if (discount > sumTotal) {
+                        discount = sumTotal; // Không giảm quá tổng tiền hàng
                     }
                 } else {
                     // Không đủ điều kiện nữa thì gỡ bỏ
@@ -1413,6 +1416,16 @@
             return;
         }
         
+        if (sumTotal === 0) {
+            alert('Giỏ hàng đang trống, không thể áp dụng mã giảm giá!');
+            select.value = '';
+            order.discountCode = '';
+            order.discountValue = '0';
+            updateTotals();
+            saveOrdersToStorage();
+            return;
+        }
+        
         const type = parseInt(option.getAttribute('data-type'));
         const value = parseFloat(option.getAttribute('data-value'));
         const minOrder = parseFloat(option.getAttribute('data-min'));
@@ -1436,6 +1449,10 @@
             if (maxDiscount > 0 && discountAmt > maxDiscount) {
                 discountAmt = maxDiscount;
             }
+        }
+        
+        if (discountAmt > sumTotal) {
+            discountAmt = sumTotal; // Không giảm quá tổng tiền hàng
         }
         
         order.discountCode = option.value;

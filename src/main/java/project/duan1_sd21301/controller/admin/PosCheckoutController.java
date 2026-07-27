@@ -54,7 +54,8 @@ public class PosCheckoutController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print("{\"success\": false, \"message\": \"Invalid request format: " + e.getMessage() + "\"}");
+            String msg = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"") : "Lỗi hệ thống";
+            out.print("{\"success\": false, \"message\": \"" + msg + "\"}");
         }
     }
 }

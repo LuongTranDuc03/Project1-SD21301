@@ -27,9 +27,43 @@ public class PosCheckoutService {
             // 3. Lookup Coupon ID & Update Usage
             Integer couponId = null;
             if (orderDTO.getDiscountCode() != null && !orderDTO.getDiscountCode().trim().isEmpty()) {
-                couponId = getCouponId(conn, orderDTO.getDiscountCode());
-                if (couponId != null) {
-                    updateCouponUsage(conn, couponId);
+                String couponSql = "SELECT id, so_luong, da_su_dung, han_su_dung_moi_khach FROM phieu_giam_gia WHERE phieu_giam_gia_code = ?";
+                try (PreparedStatement ps = conn.prepareStatement(couponSql)) {
+                    ps.setString(1, orderDTO.getDiscountCode());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            couponId = rs.getInt("id");
+                            int soLuong = rs.getInt("so_luong");
+                            int daSuDung = rs.getInt("da_su_dung");
+                            int hanSuDungMoiKhach = rs.getInt("han_su_dung_moi_khach");
+                            
+                            // Check total quantity
+                            if (rs.getObject("so_luong") != null && daSuDung >= soLuong) {
+                                throw new RuntimeException("Mã giảm giá đã hết lượt sử dụng toàn hệ thống!");
+                            }
+                            
+                            // Check usage limit per customer
+                            if (customerId != null) {
+                                String countSql = "SELECT COUNT(*) FROM hoa_don WHERE id_khach_hang = ? AND id_ma_giam_gia = ? AND trang_thai_don_hang != 4"; // 4 = Cancelled
+                                try (PreparedStatement psCount = conn.prepareStatement(countSql)) {
+                                    psCount.setInt(1, customerId);
+                                    psCount.setInt(2, couponId);
+                                    try (ResultSet rsCount = psCount.executeQuery()) {
+                                        if (rsCount.next()) {
+                                            int usedByCustomer = rsCount.getInt(1);
+                                            if (usedByCustomer >= hanSuDungMoiKhach) {
+                                                throw new RuntimeException("Khách hàng này đã sử dụng mã giảm giá này " + usedByCustomer + " lần (Hạn mức: " + hanSuDungMoiKhach + " lần/khách)!");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            updateCouponUsage(conn, couponId);
+                        } else {
+                            throw new RuntimeException("Mã giảm giá không tồn tại!");
+                        }
+                    }
                 }
             }
 
@@ -205,7 +239,7 @@ public class PosCheckoutService {
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
-            return null;
+            throw new RuntimeException(e.getMessage());
         } finally {
             if (conn != null) {
                 try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
