@@ -14,6 +14,50 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
+    <style>
+        /* Pagination Styling */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 0;
+            margin-top: 10px;
+        }
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        .page-btn:hover:not(.disabled) {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        .page-btn.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f1f5f9;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 <%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu danh sách phiếu giảm giá, bộ lọc và phân trang --%>
@@ -67,10 +111,10 @@
         </header>
 
         <div class="content-wrapper">
-                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div>
-                    <h1 class="page-title-text">Quản lý phiếu giảm giá</h1>
-                    <div class="page-subtitle-text">Tổng <strong><%= total %></strong> phiếu giảm giá</div>
+                    <h1>Quản lý phiếu giảm giá</h1>
+                    <div class="subtitle">Tổng <%= total %> phiếu giảm giá</div>
                 </div>
             </div>
 
@@ -284,29 +328,23 @@
             </div>
 
                 <!-- KHU VỰC PHÂN TRANG: Chuyển trang và hiển thị tổng số kết quả -->
-                <div class="cl-pagination">
-                    <span class="info">
-                        Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
-                        trong tổng <strong><%= String.format("%,d", total) %></strong> phiếu
-                    </span>
-                    <div class="paging-btns">
-                        <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="pg-btn <%= pageNo == 0 ? "disabled" : "" %>">‹</a>
-                        <%
-                            int startP = Math.max(0, pageNo - 2);
-                            int endP   = Math.min(totalPages - 1, pageNo + 2);
-                            if (startP > 0) {
-                        %><a href="<%= baseUrl %>page=0" class="pg-btn">1</a>
-                        <% if (startP > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <%  }
-                            for (int i = startP; i <= endP; i++) { %>
-                        <a href="<%= baseUrl %>page=<%= i %>" class="pg-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
-                        <%  }
-                            if (endP < totalPages - 1) {
-                                if (endP < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="pg-btn"><%= totalPages %></a>
-                        <%  } %>
-                        <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="pg-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>">›</a>
-                    </div>
+                <div class="pagination-container">
+                    <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+                    <%
+                        int startP = Math.max(0, pageNo - 2);
+                        int endP   = Math.min(totalPages - 1, pageNo + 2);
+                        if (startP > 0) {
+                    %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
+                    <% if (startP > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <%  }
+                        for (int i = startP; i <= endP; i++) { %>
+                    <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
+                    <%  }
+                        if (endP < totalPages - 1) {
+                            if (endP < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
+                    <%  } %>
+                    <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
                 </div>
             </div>
         </div>

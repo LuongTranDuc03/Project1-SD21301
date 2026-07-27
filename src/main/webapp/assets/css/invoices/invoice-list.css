@@ -75,7 +75,7 @@
 #searchForm {
     display: flex;
     flex: 0 1 520px;
-        min-width: 200px;
+    min-width: 200px;
 }
 
 .btn-reset {
@@ -111,7 +111,7 @@
     gap: 6px;
     flex-wrap: wrap;
     margin-left: auto;
-    }
+}
 
 .filter-tab {
     padding: 8px 14px;
@@ -144,12 +144,12 @@
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     overflow-x: auto;
-    }
+}
 
 .il-table {
     width: 100%;
     border-collapse: collapse;
-        table-layout: fixed;
+    table-layout: fixed;
     min-width: 780px;
 }
 
@@ -203,7 +203,7 @@
     text-transform: uppercase;
     letter-spacing: .04em;
     white-space: nowrap;
-    }
+}
 
 .il-table th:nth-child(1),
 .il-table th:nth-child(9) {
@@ -387,26 +387,32 @@
     border-radius: 9999px;
     white-space: nowrap;
 }
+
 .badge-status.cho-xu-ly {
     background: #eff6ff;
     color: #3b82f6;
 }
+
 .badge-status.da-xac-nhan {
     background: #eef2ff;
     color: #4f46e5;
 }
+
 .badge-status.dang-giao {
     background: #fef3c7;
     color: #d97706;
 }
+
 .badge-status.hoan-thanh {
     background: #dcfce3;
     color: #16a34a;
 }
+
 .badge-status.da-huy {
     background: #fee2e2;
     color: #ef4444;
 }
+
 .badge-status.da-hoan-tien {
     background: #f3f4f6;
     color: #4b5563;

@@ -149,7 +149,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     }
                     return true;
                 }
-                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

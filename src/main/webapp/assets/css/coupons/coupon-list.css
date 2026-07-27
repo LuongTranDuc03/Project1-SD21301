@@ -556,14 +556,17 @@
     border-radius: 9999px;
     white-space: nowrap;
 }
+
 .badge-status.dang-ap-dung {
     background: #dcfce3;
     color: #16a34a;
 }
+
 .badge-status.ket-thuc {
     background: #fee2e2;
     color: #ef4444;
 }
+
 .badge-status.chua-kich-hoat {
     background: #f3f4f6;
     color: #4b5563;
