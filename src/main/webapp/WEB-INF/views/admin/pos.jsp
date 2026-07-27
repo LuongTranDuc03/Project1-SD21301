@@ -96,66 +96,87 @@
                 <div class="pos-card-box">
                     <div class="pos-card-header">
                         <h3>Thông tin khách hàng</h3>
-                        <div class="pos-card-actions">
-                            <button class="btn-outline-primary" onclick="openCustomerModal()"><i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> Chọn khách hàng</button>
-                            <button class="btn-outline-primary" id="btnChooseAddress" style="display: none;">Chọn địa chỉ</button>
+                        <div class="pos-card-actions" style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn-outline-primary" onclick="openCustomerModal()"><i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> Chọn KH</button>
+                            <button class="btn-outline-primary" id="btnChooseAddress" style="display: none;" onclick="openAddressSelectionModal()"><i class="fa-solid fa-map-location-dot" style="margin-right: 5px;"></i> Chọn địa chỉ</button>
                         </div>
                     </div>
                     
-                    <div class="customer-info-basic">
-                        <div class="info-row">
-                            <span class="info-label">Tên khách hàng:</span>
-                            <span class="info-value" id="customerNameDisplay">Khách lẻ</span>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 10px;">
+                        <!-- Cột trái: Thông tin khách hàng (người mua) -->
+                        <div class="customer-info-basic" style="display: flex; flex-direction: column; gap: 12px;">
+                            <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Người mua hàng</h4>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="updateCheckoutState()">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="updateCheckoutState()">
+                            </div>
+                            
+                            <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
                         </div>
-                        <p class="text-muted" id="deliveryHintText">Tại quầy: chỉ cần chọn sản phẩm và thanh toán.</p>
-                    </div>
-                    
-                    <div class="customer-address-form" id="deliveryForm" style="display: none;">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Số điện thoại <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="updateCheckoutState()">
-                            </div>
-                            <div class="form-group">
-                                <label>Địa chỉ cụ thể <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerAddressInput" placeholder="Số nhà, ngõ, đường..." oninput="updateCheckoutState()">
-                            </div>
-                        </div>
-                        <!-- Block for Khách lẻ (API Comboboxes) -->
-                        <div class="form-row three-cols" id="apiAddressComboboxes">
-                            <div class="form-group">
-                                <label>Tỉnh/Thành phố <span class="text-danger">*</span></label>
-                                <select class="form-control" id="provinceSelect" onchange="fetchDistricts(this.value); updateCheckoutState()">
-                                    <option value="">Chọn Tỉnh/Thành phố...</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Quận/Huyện <span class="text-danger">*</span></label>
-                                <select class="form-control" id="districtSelect" onchange="fetchWards(this.value); updateCheckoutState()">
-                                    <option value="">Chọn Quận/Huyện...</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Xã/Phường <span class="text-danger">*</span></label>
-                                <select class="form-control" id="wardSelect" onchange="updateCheckoutState()">
-                                    <option value="">Chọn Xã/Phường...</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Block for Fixed Customer (Readonly Inputs) -->
-                        <div class="form-row three-cols" id="fixedAddressInputs" style="display: none;">
-                            <div class="form-group">
-                                <label>Tỉnh/Thành phố <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="provinceFixed" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Quận/Huyện <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="districtFixed" readonly>
-                            </div>
-                            <div class="form-group">
-                                <label>Xã/Phường <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="wardFixed" readonly>
+                        
+                        <!-- Cột phải: Địa chỉ giao hàng -->
+                        <div class="customer-address-form" style="display: flex; flex-direction: column; gap: 12px;">
+                            <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Thông tin nhận hàng</h4>
+                            
+                            <div id="deliveryForm" style="display: none; flex-direction: column; gap: 12px;">
+                                <div class="form-group">
+                                    <label class="form-label">Tên người nhận (nếu có)</label>
+                                    <input type="text" class="form-control" id="recipientNameInput" placeholder="Tên người nhận..." oninput="updateCheckoutState()">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="updateCheckoutState()">
+                                </div>
+                                
+                                <div class="form-group" style="width: 100%;">
+                                    <label>Địa chỉ cụ thể <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="customerAddressInput" placeholder="Số nhà, ngõ, đường..." oninput="updateCheckoutState()">
+                                </div>
+                                
+                                <!-- Block for Khách lẻ (API Comboboxes) -->
+                                <div class="form-row three-cols" id="apiAddressComboboxes" style="margin-top: 0;">
+                                    <div class="form-group">
+                                        <label>Tỉnh/TP <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="provinceSelect" onchange="fetchDistricts(this.value); updateCheckoutState()">
+                                            <option value="">Chọn Tỉnh/Thành phố...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Quận/Huyện <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="districtSelect" onchange="fetchWards(this.value); updateCheckoutState()">
+                                            <option value="">Chọn Quận/Huyện...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Xã/Phường <span class="text-danger">*</span></label>
+                                        <select class="form-control" id="wardSelect" onchange="updateCheckoutState()">
+                                            <option value="">Chọn Xã/Phường...</option>
+                                        </select>
+                                    </div>
+                                </div>
+        
+                                <!-- Block for Fixed Customer (Readonly Inputs) -->
+                                <div class="form-row three-cols" id="fixedAddressInputs" style="display: none; margin-top: 0;">
+                                    <div class="form-group">
+                                        <label>Tỉnh/TP <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="provinceFixed" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Quận/Huyện <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="districtFixed" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Xã/Phường <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="wardFixed" readonly>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -233,7 +254,7 @@
                         </div>
                     </div>
                     
-                    <button class="btn-confirm-order">XÁC NHẬN ĐẶT HÀNG</button>
+                    <button class="btn-confirm-order" onclick="confirmOrder()">XÁC NHẬN ĐẶT HÀNG</button>
                 </div>
             </div>
         </div>
@@ -305,6 +326,62 @@
         </div>
     </div>
 </div>
+
+<!-- Address Selection Modal -->
+<div class="pos-modal-overlay" id="addressSelectionModalOverlay">
+    <div class="pos-modal" style="max-width: 800px;">
+        <div class="pos-modal-header">
+            <h3>Chọn địa chỉ giao hàng</h3>
+            <button class="btn-close-modal" onclick="closeAddressSelectionModal()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="pos-modal-body">
+            <div class="pos-table-container">
+                <table class="pos-table">
+                    <thead>
+                        <tr>
+                            <th>Người nhận</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="addressSelectionTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const customerAddressesMap = {};
+    <%
+    if (customers != null) {
+        for (Customer c : customers) {
+            if (c.getAddresses() != null && !c.getAddresses().isEmpty()) {
+                out.print("customerAddressesMap['" + c.getCode() + "'] = [");
+                for (int i = 0; i < c.getAddresses().size(); i++) {
+                    project.duan1_sd21301.model.ha.CustomerAddress ca = c.getAddresses().get(i);
+                    String recName = ca.getRecipientName() != null ? ca.getRecipientName().replace("'", "\\'") : c.getFullName().replace("'", "\\'");
+                    String recPhone = ca.getPhoneNumber() != null ? ca.getPhoneNumber() : c.getPhoneNumber();
+                    String prov = ca.getProvince() != null ? ca.getProvince() : "";
+                    String dist = ca.getDistrict() != null ? ca.getDistrict() : "";
+                    String ward = ca.getWard() != null ? ca.getWard() : "";
+                    String detail = ca.getDetailedAddress() != null ? ca.getDetailedAddress().replace("'", "\\'") : "";
+                    String fullAddr = ca.getFormattedAddress() != null ? ca.getFormattedAddress().replace("'", "\\'") : "";
+                    boolean isDef = ca.isDefault();
+                    out.print(String.format("{name:'%s', phone:'%s', prov:'%s', dist:'%s', ward:'%s', detail:'%s', fullAddr:'%s', isDefault:%b}", 
+                            recName, recPhone, prov, dist, ward, detail, fullAddr, isDef));
+                    if (i < c.getAddresses().size() - 1) out.print(",");
+                }
+                out.print("];\n");
+            }
+        }
+    }
+    %>
+</script>
 
 <!-- Variant Modal -->
 <div class="pos-modal-overlay" id="variantModalOverlay">
@@ -530,6 +607,8 @@
             name: newOrderId,
             items: [],
             customerName: 'Khách lẻ',
+            customerCode: '',
+            recipientName: '',
             customerPhone: '',
             isDelivery: false,
             deliveryPhone: '',
@@ -768,7 +847,6 @@
                 html += 
                     '<div class="pos-cart-item">' +
                         '<div class="pos-cart-item-left">' +
-                            '<input type="checkbox" class="pos-cart-checkbox" checked>' +
                             imgHtml +
                             '<div class="pos-cart-item-info">' +
                                 '<div class="pos-cart-item-name">' + item.name + '</div>' +
@@ -916,16 +994,21 @@
         const orderIndex = orders.findIndex(o => o.id === currentOrderId);
         if (orderIndex !== -1) {
             orders[orderIndex].customerName = name;
+            orders[orderIndex].recipientName = name;
+            orders[orderIndex].customerPhone = phone;
+            
             if (name !== 'Khách lẻ') {
                 orders[orderIndex].deliveryPhone = phone;
                 if (btnElement) {
                     const row = btnElement.closest('tr');
+                    orders[orderIndex].customerCode = row.children[0].textContent.trim();
                     orders[orderIndex].province = row.getAttribute('data-prov') || '';
                     orders[orderIndex].district = row.getAttribute('data-dist') || '';
                     orders[orderIndex].ward = row.getAttribute('data-ward') || '';
                     orders[orderIndex].deliveryAddress = row.getAttribute('data-detail') || '';
                 }
             } else {
+                orders[orderIndex].customerCode = '';
                 orders[orderIndex].deliveryPhone = '';
                 orders[orderIndex].province = '';
                 orders[orderIndex].district = '';
@@ -937,6 +1020,60 @@
         
         renderCheckoutState();
         closeCustomerModal();
+    }
+    
+    // --- Address Selection Modal ---
+    function openAddressSelectionModal() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        if (!order.customerCode || !customerAddressesMap[order.customerCode] || customerAddressesMap[order.customerCode].length === 0) {
+            alert('Khách hàng này không có địa chỉ nào khác để chọn!');
+            return;
+        }
+        
+        const addresses = customerAddressesMap[order.customerCode];
+        const tbody = document.getElementById('addressSelectionTableBody');
+        tbody.innerHTML = '';
+        
+        addresses.forEach((addr, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight: 600;">\${addr.name}</div>
+                    \${addr.isDefault ? '<div style="color:red; font-size: 12px; margin-top: 2px;">(Mặc định)</div>' : ''}
+                </td>
+                <td>\${addr.phone}</td>
+                <td>\${addr.fullAddr}</td>
+                <td><button class="btn-add-variant" onclick="selectAddressFromModal(\${idx})">Chọn</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        document.getElementById('addressSelectionModalOverlay').classList.add('active');
+    }
+    
+    function closeAddressSelectionModal() {
+        document.getElementById('addressSelectionModalOverlay').classList.remove('active');
+    }
+    
+    function selectAddressFromModal(index) {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        const addr = customerAddressesMap[order.customerCode][index];
+        order.deliveryPhone = addr.phone;
+        order.recipientName = addr.name;
+        order.province = addr.prov;
+        order.district = addr.dist;
+        order.ward = addr.ward;
+        order.deliveryAddress = addr.detail;
+        
+        saveOrdersToStorage();
+        renderCheckoutState();
+        closeAddressSelectionModal();
     }
     
     // --- Checkout State Management ---
@@ -1007,10 +1144,18 @@
         const order = orders[orderIndex];
         
         order.isDelivery = document.getElementById('deliveryToggle').checked;
+        const nameInput = document.getElementById('customerNameInput');
+        if (nameInput) order.customerName = nameInput.value;
+        const buyerPhone = document.getElementById('buyerPhoneInput');
+        if (buyerPhone) order.customerPhone = buyerPhone.value;
+        
+        const recInput = document.getElementById('recipientNameInput');
+        if (recInput) order.recipientName = recInput.value;
+        
         order.deliveryPhone = document.getElementById('customerPhoneInput').value;
         order.deliveryAddress = document.getElementById('customerAddressInput').value;
         
-        const isFixed = order.customerName && order.customerName !== 'Khách lẻ';
+        const isFixed = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';
         if (!isFixed) {
             order.province = document.getElementById('provinceSelect').value;
             order.district = document.getElementById('districtSelect').value;
@@ -1031,7 +1176,55 @@
         if (orderIndex === -1) return;
         const order = orders[orderIndex];
         
-        document.getElementById('customerNameDisplay').textContent = order.customerName || 'Khách lẻ';
+        const isFixedCustomer = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';
+
+        const nameInput = document.getElementById('customerNameInput');
+        if (nameInput) {
+            nameInput.value = order.customerName || 'Khách lẻ';
+            if (isFixedCustomer) {
+                nameInput.setAttribute('readonly', true);
+                nameInput.style.backgroundColor = '#f3f4f6'; // Thêm màu nền xám để biểu thị không sửa được
+            } else {
+                nameInput.removeAttribute('readonly');
+                nameInput.style.backgroundColor = '';
+            }
+        }
+        
+        const buyerPhoneInput = document.getElementById('buyerPhoneInput');
+        if (buyerPhoneInput) {
+            buyerPhoneInput.value = order.customerPhone || '';
+            if (isFixedCustomer) {
+                buyerPhoneInput.setAttribute('readonly', true);
+                buyerPhoneInput.style.backgroundColor = '#f3f4f6';
+            } else {
+                buyerPhoneInput.removeAttribute('readonly');
+                buyerPhoneInput.style.backgroundColor = '';
+            }
+        }
+        
+        const recInput = document.getElementById('recipientNameInput');
+        if (recInput) {
+            recInput.value = order.recipientName || order.customerName || '';
+            if (isFixedCustomer) {
+                recInput.setAttribute('readonly', true);
+                recInput.style.backgroundColor = '#f3f4f6';
+            } else {
+                recInput.removeAttribute('readonly');
+                recInput.style.backgroundColor = '';
+            }
+        }
+        
+        const phoneInput = document.getElementById('customerPhoneInput');
+        if (phoneInput) {
+            phoneInput.value = order.deliveryPhone || '';
+            if (isFixedCustomer) {
+                phoneInput.setAttribute('readonly', true);
+                phoneInput.style.backgroundColor = '#f3f4f6';
+            } else {
+                phoneInput.removeAttribute('readonly');
+                phoneInput.style.backgroundColor = '';
+            }
+        }
         
         if (order.paymentMethod === 'TRANSFER') {
             document.getElementById('btnPayTransfer').classList.add('active');
@@ -1055,13 +1248,8 @@
             document.getElementById('shippingRow').style.display = 'flex';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
-            if (isFixed) {
-                document.getElementById('deliveryHintText').style.display = 'none';
-                document.getElementById('deliveryForm').style.display = 'flex';
-            } else {
-                document.getElementById('deliveryHintText').style.display = 'block';
-                document.getElementById('deliveryForm').style.display = 'none';
-            }
+            document.getElementById('deliveryHintText').style.display = 'block';
+            document.getElementById('deliveryForm').style.display = 'none';
             document.getElementById('shippingRow').style.display = 'none';
         }
         
@@ -1253,8 +1441,51 @@
     
     function openSuccessInvoiceModal(order, finalTotal) {
         document.getElementById('invoiceCustomerName').textContent = order.customerName || 'Khách lẻ';
-        document.getElementById('invoiceCustomerPhone').textContent = order.deliveryPhone || '---';
+        document.getElementById('invoiceBuyerPhone').textContent = order.customerPhone || '---';
+        
         document.getElementById('invoiceTotalAmount').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
+        
+        const methodStr = (order.paymentMethod === 'CASH') ? 'Tiền mặt' : 'Chuyển khoản';
+        document.getElementById('invoicePaymentMethod').textContent = methodStr;
+        
+        const deliverySection = document.getElementById('invoiceDeliverySection');
+        if (order.isDelivery) {
+            deliverySection.style.display = 'block';
+            
+            document.getElementById('invoiceRecipientName').textContent = order.recipientName || order.customerName || '---';
+            document.getElementById('invoiceRecipientPhone').textContent = order.deliveryPhone || '---';
+            
+            let addrParts = [];
+            if (order.deliveryAddress && order.deliveryAddress.trim() !== '') addrParts.push(order.deliveryAddress);
+            if (order.ward) {
+                const wOpt = document.querySelector(`#wardSelect option[value="\${order.ward}"]`);
+                if(wOpt && wOpt.text && !wOpt.text.includes('Chọn')) {
+                    addrParts.push(wOpt.text);
+                } else {
+                    addrParts.push(order.ward);
+                }
+            }
+            if (order.district) {
+                const dOpt = document.querySelector(`#districtSelect option[value="\${order.district}"]`);
+                if(dOpt && dOpt.text && !dOpt.text.includes('Chọn')) {
+                    addrParts.push(dOpt.text);
+                } else {
+                    addrParts.push(order.district);
+                }
+            }
+            if (order.province) {
+                const pOpt = document.querySelector(`#provinceSelect option[value="\${order.province}"]`);
+                if(pOpt && pOpt.text && !pOpt.text.includes('Chọn')) {
+                    addrParts.push(pOpt.text);
+                } else {
+                    addrParts.push(order.province);
+                }
+            }
+            
+            document.getElementById('invoiceCustomerAddress').textContent = addrParts.length > 0 ? addrParts.join(', ') : '---';
+        } else {
+            deliverySection.style.display = 'none';
+        }
         
         const tbody = document.getElementById('invoiceProductList');
         tbody.innerHTML = '';
@@ -1262,7 +1493,10 @@
             order.items.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">\${item.name}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">
+                        <div>\${item.name}</div>
+                        <div style="font-size: 12px; color: #64748b;">\${item.code} &bull; \${item.color} &bull; \${item.size}</div>
+                    </td>
                     <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center;">\${item.quantity}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">\${item.price.toLocaleString('vi-VN')} đ</td>
                     <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">\${(item.price * item.quantity).toLocaleString('vi-VN')} đ</td>
@@ -1272,6 +1506,37 @@
         }
         
         document.getElementById('invoiceModal').classList.add('active');
+    }
+    
+    function confirmOrder() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        if (!order.items || order.items.length === 0) {
+            alert("Vui lòng thêm sản phẩm vào hóa đơn trước khi xác nhận!");
+            return;
+        }
+        
+        if (order.paymentMethod === 'TRANSFER') {
+            openQrModal(order);
+        } else {
+            // Thanh toán tiền mặt
+            let sumTotal = 0;
+            order.items.forEach(item => { sumTotal += (item.price * item.quantity); });
+            let discount = parseFloat((order.discountValue || '0').toString().replace(/\D/g, '')) || 0;
+            let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/\D/g, '')) || 0) : 0;
+            let finalTotal = sumTotal + shippingFee - discount;
+            if (finalTotal < 0) finalTotal = 0;
+            
+            let customerPay = parseFloat((order.customerPay || '0').toString().replace(/\D/g, '')) || 0;
+            if (customerPay < finalTotal) {
+                alert("Khách thanh toán chưa đủ số tiền!");
+                return;
+            }
+            
+            openSuccessInvoiceModal(order, finalTotal);
+        }
     }
     
     function closeInvoiceModal() {
@@ -1306,11 +1571,25 @@
             <h3 style="margin: 0; color: #16a34a;">Thanh toán thành công</h3>
         </div>
         
-        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div><strong style="color: #475569;">Khách hàng:</strong> <span id="invoiceCustomerName">Khách lẻ</span></div>
-            <div><strong style="color: #475569;">Số điện thoại:</strong> <span id="invoiceCustomerPhone">---</span></div>
-            <div><strong style="color: #475569;">Hình thức:</strong> Chuyển khoản</div>
-            <div><strong style="color: #475569;">Trạng thái:</strong> Đã thanh toán</div>
+        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong style="color: #475569;">Người mua:</strong> <span id="invoiceCustomerName">Khách lẻ</span></div>
+                <div><strong style="color: #475569;">SĐT:</strong> <span id="invoiceBuyerPhone">---</span></div>
+            </div>
+            
+            <div id="invoiceDeliverySection" style="display: none; border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 5px;">
+                <strong style="color: #475569; display: block; margin-bottom: 5px;">Thông tin nhận hàng:</strong>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px;">
+                    <div><span style="color: #64748b; font-size: 13px;">Người nhận:</span> <span id="invoiceRecipientName">---</span></div>
+                    <div><span style="color: #64748b; font-size: 13px;">SĐT nhận:</span> <span id="invoiceRecipientPhone">---</span></div>
+                </div>
+                <div><span style="color: #64748b; font-size: 13px;">Địa chỉ:</span> <span id="invoiceCustomerAddress">---</span></div>
+            </div>
+            
+            <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 5px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong style="color: #475569;">Hình thức:</strong> <span id="invoicePaymentMethod">Chuyển khoản</span></div>
+                <div><strong style="color: #475569;">Trạng thái:</strong> <span style="color: #16a34a; font-weight: bold;">Đã thanh toán</span></div>
+            </div>
         </div>
         
         <div style="margin-bottom: 20px; max-height: 250px; overflow-y: auto;">

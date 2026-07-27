@@ -390,6 +390,7 @@ CREATE TABLE hoa_don (
     tong_thanh_toan           DECIMAL(18,2)      NOT NULL DEFAULT 0,   -- [1]
     da_thanh_toan             DECIMAL(18,2)      NOT NULL DEFAULT 0,   -- [1]
     lien_hoan                 DECIMAL(18,2)      NOT NULL DEFAULT 0,   -- [1]
+    phi_van_chuyen            DECIMAL(18,2)      NOT NULL DEFAULT 0,   -- [1]
     ghi_chu                   NVARCHAR(MAX),
     trang_thai_thanh_toan     INT                NOT NULL DEFAULT 0,   -- 0: Chưa TT | 1: Đã TT
     trang_thai_don_hang       INT                NOT NULL DEFAULT 0,
