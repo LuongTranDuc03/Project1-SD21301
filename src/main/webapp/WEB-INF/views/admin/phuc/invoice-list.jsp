@@ -118,6 +118,12 @@
                           action="${pageContext.request.contextPath}/admin/invoices"
                           class="filter-grid">
                         
+                        <!-- Tìm kiếm -->
+                        <div class="filter-field" style="min-width: 250px;">
+                            <label for="searchInput">Tìm kiếm</label>
+                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Tên KH, SĐT hoặc mã HD..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
+                        </div>
+
                         <!-- Trạng thái -->
                         <div class="filter-field" style="min-width: 140px;">
                             <label for="statusFilter">Trạng thái</label>
@@ -152,11 +158,7 @@
                             </div>
                         </div>
 
-                        <!-- Tìm kiếm -->
-                        <div class="filter-field" style="min-width: 250px;">
-                            <label for="searchInput">Tìm kiếm</label>
-                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Tên KH, SĐT hoặc mã HD..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
-                        </div>
+
                         
                         <!-- Loại hoá đơn -->
                         <div class="filter-field" style="min-width: 140px;">
@@ -213,7 +215,7 @@
                     if (currentOrderType != null)
                         exportUrl.append("&orderType=").append(currentOrderType);
                 %>
-                <a href="<%= exportUrl %>" class="btn-export" id="btnExportExcel" title="Xuất danh sách hóa đơn ra Excel" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                <a href="<%= exportUrl %>" class="btn-export" id="btnExportExcel" title="Xuất danh sách hóa đơn ra Excel" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px; box-sizing: border-box; box-shadow: none;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -223,7 +225,7 @@
                     </svg>
                     <span>Xuất Excel</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/invoices/add" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                <a href="${pageContext.request.contextPath}/admin/invoices/add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px; box-sizing: border-box; box-shadow: none;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Thêm hóa đơn</span>
                 </a>
