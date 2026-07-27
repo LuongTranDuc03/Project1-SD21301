@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
@@ -664,85 +664,113 @@
         const stock = row ? parseInt(row.dataset.stock || '0') : 0;
 
         if (stock <= 0) {
-            alert('Sản phẩm có tổng số lượng bằng 0 (hết hàng), không thể thay đổi trạng thái!');
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Sản phẩm có tổng số lượng bằng 0 (hết hàng), không thể thay đổi trạng thái!',
+                confirmButtonText: 'Đóng'
+            });
             checkboxEl.checked = false;
             return;
         }
 
         const isChecked = checkboxEl.checked;
         const targetStatusText = isChecked ? 'còn hàng' : 'hết hàng';
-        const confirmChange = confirm('Bạn có muốn thay đổi trạng thái của sản phẩm thành ' + targetStatusText + ' hay không?');
-        if (!confirmChange) {
-            checkboxEl.checked = !isChecked; // Rollback toggle state
-            return;
-        }
-
-        const badge = row ? row.querySelector('.badge-status') : null;
-
-        // Store old state for rollback
-        const oldChecked = !checkboxEl.checked;
-        let oldStatus = 'AVAILABLE';
-        let oldBadgeText = 'Còn hàng';
-        let oldBadgeClass = 'available';
-
-        if (badge) {
-            if (badge.classList.contains('out_of_stock')) {
-                oldStatus = 'OUT_OF_STOCK';
-                oldBadgeText = 'Hết hàng';
-                oldBadgeClass = 'out_of_stock';
+        
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Bạn có muốn thay đổi trạng thái của sản phẩm thành ' + targetStatusText + ' hay không?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                checkboxEl.checked = !isChecked; // Rollback toggle state
+                return;
             }
-        }
 
-        // Optimistically update the UI immediately
-        const optStatus = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
-        const optText = isChecked ? 'Còn hàng' : 'Hết hàng';
-        const optClass = isChecked ? 'available' : 'out_of_stock';
+            const badge = row ? row.querySelector('.badge-status') : null;
 
-        if (row) {
-            row.dataset.status = optStatus;
-        }
-        if (badge) {
-            badge.className = 'badge-status ' + optClass;
-            badge.textContent = optText;
-        }
+            // Store old state for rollback
+            const oldChecked = !checkboxEl.checked;
+            let oldStatus = 'AVAILABLE';
+            let oldBadgeText = 'Còn hàng';
+            let oldBadgeClass = 'available';
 
-        applyFilters();
+            if (badge) {
+                if (badge.classList.contains('out_of_stock')) {
+                    oldStatus = 'OUT_OF_STOCK';
+                    oldBadgeText = 'Hết hàng';
+                    oldBadgeClass = 'out_of_stock';
+                }
+            }
 
-        const formData = new URLSearchParams();
-        formData.append('code', productId);
+            // Optimistically update the UI immediately
+            const optStatus = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
+            const optText = isChecked ? 'Còn hàng' : 'Hết hàng';
+            const optClass = isChecked ? 'available' : 'out_of_stock';
 
-        fetch('${pageContext.request.contextPath}/admin/products?action=toggleStatus', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: formData.toString()
-        })
-            .then(res => {
-                if (!res.ok) throw new Error('Network response was not ok');
-                return res.json();
+            if (row) {
+                row.dataset.status = optStatus;
+            }
+            if (badge) {
+                badge.className = 'badge-status ' + optClass;
+                badge.textContent = optText;
+            }
+
+            applyFilters();
+
+            const formData = new URLSearchParams();
+            formData.append('code', productId);
+
+            fetch('${pageContext.request.contextPath}/admin/products?action=toggleStatus', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
             })
-            .then(data => {
-                if (data.success) {
-                    // Confirmed by server. Update row state if server status is different
-                    if (row) {
-                        row.dataset.status = data.newStatus;
-                    }
-                    if (badge) {
-                        badge.className = 'badge-status';
-                        if (data.newStatus === 'AVAILABLE') {
-                            badge.classList.add('available');
-                            badge.textContent = 'Còn hàng';
-                        } else if (data.newStatus === 'OUT_OF_STOCK') {
-                            badge.classList.add('out_of_stock');
-                            badge.textContent = 'Hết hàng';
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Confirmed by server. Update row state if server status is different
+                        let finalStatus = (data.newStatus == 1 || data.newStatus === '1' || data.newStatus === 'AVAILABLE') ? 'AVAILABLE' : 'OUT_OF_STOCK';
+                        if (row) {
+                            row.dataset.status = finalStatus;
                         }
+                        if (badge) {
+                            badge.className = 'badge-status';
+                            if (finalStatus === 'AVAILABLE') {
+                                badge.classList.add('available');
+                                badge.textContent = 'Còn hàng';
+                            } else {
+                                badge.classList.add('out_of_stock');
+                                badge.textContent = 'Hết hàng';
+                            }
+                        }
+                        applyFilters();
+                        if (window.showToast) window.showToast('Cập nhật trạng thái sản phẩm thành công!', 'success');
+                    } else {
+                        // Rollback on failure
+                        checkboxEl.checked = oldChecked;
+                        if (row) row.dataset.status = oldStatus;
+                        if (badge) {
+                            badge.className = 'badge-status ' + oldBadgeClass;
+                            badge.textContent = oldBadgeText;
+                        }
+                        applyFilters();
+                        if (window.showToast) window.showToast(data.message || 'Cập nhật trạng thái thất bại!', 'error');
                     }
-                    applyFilters();
-                    if (window.showToast) window.showToast('Cập nhật trạng thái sản phẩm thành công!', 'success');
-                } else {
-                    // Rollback on failure
+                })
+                .catch(err => {
+                    console.error('Error toggling status:', err);
                     checkboxEl.checked = oldChecked;
                     if (row) row.dataset.status = oldStatus;
                     if (badge) {
@@ -750,23 +778,9 @@
                         badge.textContent = oldBadgeText;
                     }
                     applyFilters();
-                    if (window.showToast) window.showToast('Không thể cập nhật trạng thái!', 'error');
-                    else alert('Không thể cập nhật trạng thái!');
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                // Rollback on connection error
-                checkboxEl.checked = oldChecked;
-                if (row) row.dataset.status = oldStatus;
-                if (badge) {
-                    badge.className = 'badge-status ' + oldBadgeClass;
-                    badge.textContent = oldBadgeText;
-                }
-                applyFilters();
-                if (window.showToast) window.showToast('Có lỗi xảy ra khi kết nối server!', 'error');
-                else alert('Có lỗi xảy ra khi kết nối server!');
-            });
+                    if (window.showToast) window.showToast('Lỗi kết nối khi cập nhật trạng thái!', 'error');
+                });
+        });
     };
 
     // ===== FILTER & SEARCH =====
@@ -1058,6 +1072,7 @@
 <%-- Toast thông báo dùng chung --%>
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
 

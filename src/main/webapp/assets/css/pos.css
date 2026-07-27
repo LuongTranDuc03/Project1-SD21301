@@ -957,7 +957,7 @@ input:checked+.slider:before {
 
 .btn-confirm-order {
     width: 100%;
-    background: linear-gradient(to right, #e77373, #4a5568);
+    background: linear-gradient(to right, #22c55e, #16a34a);
     color: white;
     border: none;
     padding: 14px;
@@ -966,9 +966,10 @@ input:checked+.slider:before {
     font-weight: 700;
     cursor: pointer;
     text-transform: uppercase;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, transform 0.1s;
 }
 
 .btn-confirm-order:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
 }

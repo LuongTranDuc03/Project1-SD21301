@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
@@ -566,41 +566,57 @@
         var oldStatusData = isChecked ? 'OUT_OF_STOCK' : 'AVAILABLE';
         var oldBadgeClass = isChecked ? 'out_of_stock' : 'available';
 
-        statusBadge.className = 'badge-status ' + newBadgeClass;
-        statusBadge.textContent = newStatusLabel;
-        tr.dataset.status = newStatusData;
-        
-        var variantId = tr.dataset.variantid || '';
-        var productCode = tr.dataset.productcode || '';
-        var color = tr.dataset.color || '';
-        var size = tr.dataset.size || '';
-        
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "${pageContext.request.contextPath}/admin/variants", true);
-        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    if (window.showToast) window.showToast('Cập nhật trạng thái biến thể thành công!', 'success');
-                } else {
-                    checkbox.checked = oldChecked;
-                    statusBadge.className = 'badge-status ' + oldBadgeClass;
-                    statusBadge.textContent = oldStatusLabel;
-                    tr.dataset.status = oldStatusData;
-                    if (window.showToast) window.showToast('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
-                }
-                if (typeof applyFilters === 'function') {
-                    applyFilters();
-                }
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Bạn có muốn thay đổi trạng thái của biến thể thành ' + newStatusLabel.toLowerCase() + ' hay không?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                checkbox.checked = oldChecked; // Rollback
+                return;
             }
-        };
-        var bodyData = "action=toggleStatus" +
-            "&variantId=" + encodeURIComponent(variantId) +
-            "&productCode=" + encodeURIComponent(productCode) +
-            "&color=" + encodeURIComponent(color) +
-            "&size=" + encodeURIComponent(size) +
-            "&status=" + encodeURIComponent(newStatusData);
-        xhr.send(bodyData);
+
+            statusBadge.className = 'badge-status ' + newBadgeClass;
+            statusBadge.textContent = newStatusLabel;
+            tr.dataset.status = newStatusData;
+            
+            var variantId = tr.dataset.variantid || '';
+            var productCode = tr.dataset.productcode || '';
+            var color = tr.dataset.color || '';
+            var size = tr.dataset.size || '';
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "${pageContext.request.contextPath}/admin/variants", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        if (window.showToast) window.showToast('Cập nhật trạng thái biến thể thành công!', 'success');
+                    } else {
+                        checkbox.checked = oldChecked;
+                        statusBadge.className = 'badge-status ' + oldBadgeClass;
+                        statusBadge.textContent = oldStatusLabel;
+                        tr.dataset.status = oldStatusData;
+                        if (window.showToast) window.showToast('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
+                    }
+                    if (typeof applyFilters === 'function') {
+                        applyFilters();
+                    }
+                }
+            };
+            var bodyData = "action=toggleStatus" +
+                "&variantId=" + encodeURIComponent(variantId) +
+                "&productCode=" + encodeURIComponent(productCode) +
+                "&color=" + encodeURIComponent(color) +
+                "&size=" + encodeURIComponent(size) +
+                "&status=" + encodeURIComponent(newStatusData);
+            xhr.send(bodyData);
+        });
     }
 
     function openEditVariantModal(btn) {
@@ -932,7 +948,9 @@
     }
 </script>
 
+<%-- Toast thông báo dùng chung --%>
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
-
