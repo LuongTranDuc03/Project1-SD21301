@@ -91,8 +91,8 @@
                     <span class="card-header-title">&#8226; Bộ lọc tìm kiếm</span>
                     <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
                 </div>
-                <div class="card-body-content" id="filterCardBody" style="overflow-x: auto;">
-                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; width: 100%;">
+                <div class="card-body-content" id="filterCardBody">
+                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" class="filter-grid">
                         
                         <!-- Trạng thái -->
                         <div class="filter-field" style="min-width: 140px;">
@@ -163,7 +163,7 @@
 
             <!-- Thanh nút thao tác -->
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
-                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #1e293b; border: 1px solid #1e293b; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>Xuất Excel</span>
                 </a>
@@ -178,8 +178,9 @@
                 <div class="card-header-bar">
                     <span class="card-header-title">&#8226; Bảng dữ liệu phiếu giảm giá</span>
                 </div>
-                <div class="il-table-wrap" style="background:#fff; overflow-x:auto;">
-                    <table class="invoice-table" style="width:100%; table-layout: fixed; min-width:780px;">
+                <div class="card-body-content" style="padding: 0;">
+                    <div style="overflow-x: auto; width: 100%;">
+                    <table class="invoice-table" style="width: 100%; min-width: 1000px;">
                     <thead>
                     <tr>
                         <th>STT</th>
@@ -280,6 +281,7 @@
                     <%  } %>
                     </tbody>
                 </table>
+                </div>
                 </div>
                 <div class="pagination-container">
                     <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
