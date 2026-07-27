@@ -378,14 +378,11 @@
 
 /* Badge Trạng Thái */
 .badge-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 10px;
-    font-size: 12px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
-    border-radius: 9999px;
-    white-space: nowrap;
 }
 
 .badge-status.cho-xu-ly {
@@ -434,14 +431,11 @@
 }
 
 .badge-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 10px;
-    font-size: 12px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
-    border-radius: 9999px;
-    white-space: nowrap;
 }
 
 .pagination-container {

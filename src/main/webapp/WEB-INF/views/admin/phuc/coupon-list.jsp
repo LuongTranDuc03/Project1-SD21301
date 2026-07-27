@@ -100,18 +100,7 @@
                             <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Nhập mã / tên..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
                         </div>
 
-                        <!-- Trạng thái -->
-                        <div class="filter-field" style="min-width: 140px;">
-                            <label for="filterStatus">Trạng thái</label>
-                            <select name="status" id="filterStatus" class="filter-control" onchange="this.form.submit()">
-                                <option value="">Tất cả trạng thái</option>
-                                <% if (statusLabels != null) {
-                                    for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
-                                <option value="<%= e.getKey() %>" <%= e.getKey().equals(curStatus) ? "selected" : "" %>><%= e.getValue() %></option>
-                                <%  }
-                                } %>
-                            </select>
-                        </div>
+
                         
                         <!-- Loại giảm giá -->
                         <div class="filter-field" style="min-width: 140px;">
@@ -150,6 +139,24 @@
 
 
                         
+                        <!-- Trạng thái -->
+                        <div class="filter-field">
+                            <label>Trạng thái</label>
+                            <input type="hidden" name="status" id="filterStatus" value="<%= curStatus != null ? curStatus : "" %>">
+                            <div style="display: flex; gap: 16px; align-items: center; padding: 10px 0;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                    <input type="radio" name="statusRadio" value="" onchange="document.getElementById('filterStatus').value=this.value; document.getElementById('searchForm').submit()" <%= curStatus == null ? "checked" : "" %>> Tất cả
+                                </label>
+                                <% if (statusLabels != null) {
+                                    for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                    <input type="radio" name="statusRadio" value="<%= e.getKey() %>" onchange="document.getElementById('filterStatus').value=this.value; document.getElementById('searchForm').submit()" <%= e.getKey().equals(curStatus) ? "checked" : "" %>> <%= e.getValue() %>
+                                </label>
+                                <%  }
+                                } %>
+                            </div>
+                        </div>
+
                         <!-- Đặt lại -->
                         <% if ((keyword != null && !keyword.isEmpty()) || curType != null || curStatus != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty())) { %>
                         <div class="filter-field" style="flex-shrink: 0;">
@@ -165,11 +172,11 @@
 
             <!-- Thanh nút thao tác -->
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
-                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px; box-sizing: border-box; box-shadow: none;">
+                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>Xuất Excel</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/coupons/add" class="btn-export" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px; box-sizing: border-box; box-shadow: none;">
+                <a href="${pageContext.request.contextPath}/admin/coupons/add" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Thêm phiếu giảm giá</span>
                 </a>
