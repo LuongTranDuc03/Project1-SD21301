@@ -79,33 +79,39 @@ public class CouponController extends HttpServlet {
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = request.getParameter("q");
-        if (keyword != null && keyword.trim().isEmpty()) keyword = null;
+        if (keyword != null && keyword.trim().isEmpty())
+            keyword = null;
 
         String fromDate = request.getParameter("fromDate");
-        if (fromDate != null && fromDate.trim().isEmpty()) fromDate = null;
+        if (fromDate != null && fromDate.trim().isEmpty())
+            fromDate = null;
 
         String toDate = request.getParameter("toDate");
-        if (toDate != null && toDate.trim().isEmpty()) toDate = null;
+        if (toDate != null && toDate.trim().isEmpty())
+            toDate = null;
 
         Integer discountType = parseIntParam(request.getParameter("discountType"));
-        Integer status       = parseIntParam(request.getParameter("status"));
+        Integer status = parseIntParam(request.getParameter("status"));
 
         int page = 0;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.isEmpty()) {
-            try { page = Math.max(0, Integer.parseInt(pageParam)); }
-            catch (NumberFormatException ignored) {}
+            try {
+                page = Math.max(0, Integer.parseInt(pageParam));
+            } catch (NumberFormatException ignored) {
+            }
         }
         // Tự động cập nhật trạng thái các mã đã hết hạn trước khi load danh sách
         repo.updateExpiredCoupons();
 
-        long total     = repo.countAll(discountType, status, keyword, fromDate, toDate);
+        long total = repo.countAll(discountType, status, keyword, fromDate, toDate);
         int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
-        if (totalPages == 0) totalPages = 1;
+        if (totalPages == 0)
+            totalPages = 1;
         page = Math.min(page, totalPages - 1);
 
         List<Coupon> list = repo.findAll(discountType, status, keyword, fromDate, toDate, page, PAGE_SIZE);
-//
+        //
         LocalDateTime now = LocalDateTime.now();
         for (Coupon c : list) {
             if (c.getEndDate() != null && c.getEndDate().isBefore(now)) {
@@ -116,19 +122,19 @@ public class CouponController extends HttpServlet {
             }
         }
 
-        request.setAttribute("coupons",            list);
+        request.setAttribute("coupons", list);
         request.setAttribute("discountTypeLabels", DISCOUNT_TYPE_LABELS);
-        request.setAttribute("statusLabels",       STATUS_LABELS);
-        request.setAttribute("total",              total);
-        request.setAttribute("page",               page);
-        request.setAttribute("size",               PAGE_SIZE);
-        request.setAttribute("totalPages",         totalPages);
+        request.setAttribute("statusLabels", STATUS_LABELS);
+        request.setAttribute("total", total);
+        request.setAttribute("page", page);
+        request.setAttribute("size", PAGE_SIZE);
+        request.setAttribute("totalPages", totalPages);
         request.setAttribute("currentDiscountType", discountType);
-        request.setAttribute("currentStatus",      status);
-        request.setAttribute("keyword",            keyword);
-        request.setAttribute("fromDate",           fromDate);
-        request.setAttribute("toDate",             toDate);
-        request.setAttribute("pageTitle",          "Quản lý phiếu giảm giá");
+        request.setAttribute("currentStatus", status);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("fromDate", fromDate);
+        request.setAttribute("toDate", toDate);
+        request.setAttribute("pageTitle", "Quản lý phiếu giảm giá");
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/coupon-list.jsp")
                 .forward(request, response);
@@ -136,10 +142,10 @@ public class CouponController extends HttpServlet {
 
     private void handleAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("coupon",             new Coupon());
-        request.setAttribute("isEdit",             false);
+        request.setAttribute("coupon", new Coupon());
+        request.setAttribute("isEdit", false);
         request.setAttribute("discountTypeLabels", DISCOUNT_TYPE_LABELS);
-        request.setAttribute("pageTitle",          "Thêm phiếu giảm giá");
+        request.setAttribute("pageTitle", "Thêm phiếu giảm giá");
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/coupon-form.jsp")
                 .forward(request, response);
@@ -148,15 +154,21 @@ public class CouponController extends HttpServlet {
     private void handleEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = parseIdParam(request);
-        if (id < 0) { response.sendRedirect(request.getContextPath() + "/admin/coupons"); return; }
+        if (id < 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/coupons");
+            return;
+        }
 
         Coupon c = repo.findById(id);
-        if (c == null) { response.sendRedirect(request.getContextPath() + "/admin/coupons"); return; }
+        if (c == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/coupons");
+            return;
+        }
 
-        request.setAttribute("coupon",             c);
-        request.setAttribute("isEdit",             true);
+        request.setAttribute("coupon", c);
+        request.setAttribute("isEdit", true);
         request.setAttribute("discountTypeLabels", DISCOUNT_TYPE_LABELS);
-        request.setAttribute("pageTitle",          "Chỉnh sửa phiếu giảm giá");
+        request.setAttribute("pageTitle", "Chỉnh sửa phiếu giảm giá");
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/coupon-form.jsp")
                 .forward(request, response);
@@ -168,42 +180,48 @@ public class CouponController extends HttpServlet {
         boolean isEdit = idParam != null && !idParam.isEmpty() && !idParam.equals("0");
         int id = 0;
         if (isEdit) {
-            try { id = Integer.parseInt(idParam); }
-            catch (NumberFormatException e) { isEdit = false; }
+            try {
+                id = Integer.parseInt(idParam);
+            } catch (NumberFormatException e) {
+                isEdit = false;
+            }
         }
 
-        String code          = trim(request.getParameter("code"));
-        String name          = trim(request.getParameter("name"));
+        String code = trim(request.getParameter("code"));
+        String name = trim(request.getParameter("name"));
         Integer discountType = parseIntParam(request.getParameter("discountType"));
         Double discountValue = parseDoubleParam(request.getParameter("discountValue"));
         Double minOrderValue = parseDoubleParam(request.getParameter("minOrderValue"));
         Double maxDiscountAmount = parseDoubleParam(request.getParameter("maxDiscountAmount"));
-        Integer quantity     = parseIntParam(request.getParameter("quantity"));
+        Integer quantity = parseIntParam(request.getParameter("quantity"));
         Integer usedQuantity = parseIntParam(request.getParameter("usedQuantity"));
         Integer usagePerCustomer = parseIntParam(request.getParameter("usagePerCustomer"));
-        LocalDateTime startDate  = parseDateTime(request.getParameter("startDate"));
-        LocalDateTime endDate    = parseDateTime(request.getParameter("endDate"));
-        String description   = trim(request.getParameter("description"));
-        Integer status       = parseIntParam(request.getParameter("status"));
+        LocalDateTime startDate = parseDateTime(request.getParameter("startDate"));
+        LocalDateTime endDate = parseDateTime(request.getParameter("endDate"));
+        String description = trim(request.getParameter("description"));
+        Integer status = parseIntParam(request.getParameter("status"));
 
         if (code == null || code.isEmpty() || name == null
                 || discountType == null || discountValue == null || quantity == null) {
             response.sendRedirect(request.getContextPath()
                     + (isEdit ? "/admin/coupons/edit?id=" + id + "&err=missing"
-                               : "/admin/coupons/add?err=missing"));
+                            : "/admin/coupons/add?err=missing"));
             return;
         }
 
         if (repo.existsCode(code, isEdit ? id : 0)) {
             response.sendRedirect(request.getContextPath()
                     + (isEdit ? "/admin/coupons/edit?id=" + id + "&err=dup"
-                               : "/admin/coupons/add?err=dup"));
+                            : "/admin/coupons/add?err=dup"));
             return;
         }
 
         if (isEdit) {
             Coupon c = repo.findById(id);
-            if (c == null) { response.sendRedirect(request.getContextPath() + "/admin/coupons"); return; }
+            if (c == null) {
+                response.sendRedirect(request.getContextPath() + "/admin/coupons");
+                return;
+            }
 
             c.setCode(code);
             c.setName(name);
@@ -212,12 +230,15 @@ public class CouponController extends HttpServlet {
             c.setMinOrderValue(minOrderValue);
             c.setMaxDiscountAmount(maxDiscountAmount);
             c.setQuantity(quantity);
-            if (usedQuantity != null) c.setUsedQuantity(usedQuantity);
-            if (usagePerCustomer != null) c.setUsagePerCustomer(usagePerCustomer);
+            if (usedQuantity != null)
+                c.setUsedQuantity(usedQuantity);
+            if (usagePerCustomer != null)
+                c.setUsagePerCustomer(usagePerCustomer);
             c.setStartDate(startDate);
             c.setEndDate(endDate);
             c.setDescription(description);
-            if (status != null) c.setStatus(status);
+            if (status != null)
+                c.setStatus(status);
 
             repo.update(c);
             response.sendRedirect(request.getContextPath() + "/admin/coupons?msg=updated");
@@ -247,7 +268,7 @@ public class CouponController extends HttpServlet {
 
     private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        int id     = parseIdParam(request);
+        int id = parseIdParam(request);
         Integer st = parseIntParam(request.getParameter("status"));
 
         String ref = request.getHeader("Referer");
@@ -258,7 +279,7 @@ public class CouponController extends HttpServlet {
                 redirectUrl = redirectUrl.replaceFirst("&", "?");
             }
         }
-//
+        //
         if (id >= 0 && st != null) {
             Coupon c = repo.findById(id);
             if (c != null && c.getEndDate() != null && c.getEndDate().isBefore(LocalDateTime.now()) && st == 1) {
@@ -269,35 +290,46 @@ public class CouponController extends HttpServlet {
             repo.toggleStatus(id, st);
             redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "msg=updated";
         }
-        
+
         response.sendRedirect(redirectUrl);
     }
 
     private int parseIdParam(HttpServletRequest request) {
         String p = request.getParameter("id");
-        if (p == null) return -1;
-        try { return Integer.parseInt(p); }
-        catch (NumberFormatException e) { return -1; }
+        if (p == null)
+            return -1;
+        try {
+            return Integer.parseInt(p);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     private Integer parseIntParam(String val) {
-        if (val == null || val.trim().isEmpty()) return null;
-        try { return Integer.parseInt(val.trim()); }
-        catch (NumberFormatException e) { return null; }
+        if (val == null || val.trim().isEmpty())
+            return null;
+        try {
+            return Integer.parseInt(val.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private void handleExportExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String keyword = request.getParameter("q");
-        if (keyword != null && keyword.trim().isEmpty()) keyword = null;
+        if (keyword != null && keyword.trim().isEmpty())
+            keyword = null;
 
         String fromDate = request.getParameter("fromDate");
-        if (fromDate != null && fromDate.trim().isEmpty()) fromDate = null;
+        if (fromDate != null && fromDate.trim().isEmpty())
+            fromDate = null;
 
         String toDate = request.getParameter("toDate");
-        if (toDate != null && toDate.trim().isEmpty()) toDate = null;
+        if (toDate != null && toDate.trim().isEmpty())
+            toDate = null;
 
         Integer discountType = parseIntParam(request.getParameter("discountType"));
-        Integer status       = parseIntParam(request.getParameter("status"));
+        Integer status = parseIntParam(request.getParameter("status"));
 
         List<Coupon> list = repo.findAll(discountType, status, keyword, fromDate, toDate, 0, Integer.MAX_VALUE);
 
@@ -310,7 +342,8 @@ public class CouponController extends HttpServlet {
             headerStyle.setFont(headerFont);
 
             org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
-            String[] columns = {"Mã giảm giá", "Tên chương trình", "Loại", "Mức giảm", "Đơn tối thiểu", "Số lượng", "Đã dùng", "Bắt đầu", "Kết thúc", "Trạng thái"};
+            String[] columns = { "Mã giảm giá", "Tên chương trình", "Loại", "Mức giảm", "Đơn tối thiểu", "Số lượng",
+                    "Đã dùng", "Bắt đầu", "Kết thúc", "Trạng thái" };
             for (int i = 0; i < columns.length; i++) {
                 org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);
@@ -343,21 +376,31 @@ public class CouponController extends HttpServlet {
     }
 
     private Double parseDoubleParam(String val) {
-        if (val == null || val.trim().isEmpty()) return null;
-        try { return Double.parseDouble(val.trim()); }
-        catch (NumberFormatException e) { return null; }
+        if (val == null || val.trim().isEmpty())
+            return null;
+        try {
+            return Double.parseDouble(val.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private LocalDate parseDate(String val) {
-        if (val == null || val.trim().isEmpty()) return null;
-        try { return LocalDate.parse(val.trim(), DATE_ONLY_FMT); }
-        catch (DateTimeParseException e) { return null; }
+        if (val == null || val.trim().isEmpty())
+            return null;
+        try {
+            return LocalDate.parse(val.trim(), DATE_ONLY_FMT);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     private LocalDateTime parseDateTime(String val) {
-        if (val == null || val.trim().isEmpty()) return null;
-        try { return LocalDateTime.parse(val.trim(), DATE_FMT); }
-        catch (DateTimeParseException e) {
+        if (val == null || val.trim().isEmpty())
+            return null;
+        try {
+            return LocalDateTime.parse(val.trim(), DATE_FMT);
+        } catch (DateTimeParseException e) {
             try {
                 // Fallback for yyyy-MM-dd format if they just pass a date
                 return LocalDate.parse(val.trim(), DATE_ONLY_FMT).atStartOfDay();

@@ -8,19 +8,19 @@ import java.sql.Statement;
 public class TestDBConnection {
     public static void main(String[] args) {
         // Cấu hình thông tin kết nối Database
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoats;encrypt=true;trustServerCertificate=true;";
+        String url = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDatabase;encrypt=true;trustServerCertificate=true;";
         String user = "sa";
         String pass = "123456"; // Đổi lại mật khẩu sa của bạn nếu khác
 
         System.out.println("==================================================");
-        System.out.println("Đang kiểm tra kết nối tới CSDL SQL Server: FamiCoats...");
+        System.out.println("Đang kiểm tra kết nối tới CSDL SQL Server: FamiCoatsDatabase...");
         System.out.println("==================================================");
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             try (Connection conn = DriverManager.getConnection(url, user, pass)) {
                 if (conn != null && !conn.isClosed()) {
-                    System.out.println("✅ KẾT NỐI THÀNH CÔNG TỚI DATABASE [FamiCoats]!");
+                    System.out.println("✅ KẾT NỐI THÀNH CÔNG TỚI DATABASE [FamiCoatsDatabase]!");
                     
                     // Đọc thử bảng dia_chi để xác nhận
                     try (Statement stmt = conn.createStatement();

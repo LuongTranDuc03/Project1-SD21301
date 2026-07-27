@@ -50,6 +50,7 @@
         baseUrlSb.append("q=").append(java.net.URLEncoder.encode(keyword, "UTF-8")).append("&");
     Integer currentPaymentMethodId = (Integer) request.getAttribute("currentPaymentMethodId");
     if (currentPaymentMethodId != null) baseUrlSb.append("paymentMethodId=").append(currentPaymentMethodId).append("&");
+    if (currentOrderType != null) baseUrlSb.append("orderType=").append(currentOrderType).append("&");
     String baseUrl = baseUrlSb.toString();
 
     java.util.function.BiFunction<Integer, Integer, String> badgeClass = (s, type) -> {
@@ -245,7 +246,7 @@
                     </svg>
                     <span>Xuất Excel</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/admin/invoices/add" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                <a href="${pageContext.request.contextPath}/admin/pos" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Thêm hóa đơn</span>
                 </a>
