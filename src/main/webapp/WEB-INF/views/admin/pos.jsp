@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
@@ -109,7 +110,8 @@
                             
                             <div class="form-group">
                                 <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="updateCheckoutState()">
+                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="this.value = this.value.replace(/[^\p{L}\s]/gu, ''); updateCheckoutState()">
+                                <div id="customerNameError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;">Tên khách hàng chỉ được chứa chữ cái và khoảng trắng</div>
                             </div>
                             
                             <div class="form-group">
@@ -133,7 +135,7 @@
                             <div id="deliveryForm" style="display: none; flex-direction: column; gap: 12px;">
                                 <div class="form-group">
                                     <label class="form-label">Tên người nhận (nếu có)</label>
-                                    <input type="text" class="form-control" id="recipientNameInput" placeholder="Tên người nhận..." oninput="updateCheckoutState()">
+                                    <input type="text" class="form-control" id="recipientNameInput" placeholder="Tên người nhận..." oninput="this.value = this.value.replace(/[^\p{L}\s]/gu, ''); updateCheckoutState()">
                                 </div>
                                 
                                 <div class="form-group">
