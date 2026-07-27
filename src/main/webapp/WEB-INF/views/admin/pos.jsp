@@ -114,7 +114,8 @@
                             
                             <div class="form-group">
                                 <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateCheckoutState()">
+                                <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); document.getElementById('buyerPhoneError').style.display='none'; updateCheckoutState()">
+                                <div id="buyerPhoneError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;"></div>
                             </div>
                             
                             <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
@@ -137,7 +138,8 @@
                                 
                                 <div class="form-group">
                                     <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateCheckoutState()">
+                                    <input type="text" class="form-control" id="customerPhoneInput" placeholder="Nhập số điện thoại..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); document.getElementById('deliveryPhoneError').style.display='none'; updateCheckoutState()">
+                                    <div id="deliveryPhoneError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;"></div>
                                 </div>
                                 
                                 <div class="form-group" style="width: 100%;">
@@ -1109,9 +1111,44 @@
             });
         }
         
+        // Cập nhật lại discount dựa trên tổng tiền hiện tại để đảm bảo luôn đúng % và điều kiện minOrder
+        const select = document.getElementById('discountCodeInput');
+        let discount = 0;
+        if (order.discountCode && select) {
+            let option = null;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === order.discountCode) {
+                    option = select.options[i];
+                    break;
+                }
+            }
+            if (option) {
+                const type = parseInt(option.getAttribute('data-type'));
+                const value = parseFloat(option.getAttribute('data-value'));
+                const minOrder = parseFloat(option.getAttribute('data-min'));
+                const maxDiscount = parseFloat(option.getAttribute('data-max'));
+                if (sumTotal >= minOrder) {
+                    if (type === 1) { // VND
+                        discount = value;
+                    } else if (type === 0) { // %
+                        discount = sumTotal * (value / 100.0);
+                        if (maxDiscount > 0 && discount > maxDiscount) {
+                            discount = maxDiscount;
+                        }
+                    }
+                } else {
+                    // Không đủ điều kiện nữa thì gỡ bỏ
+                    order.discountCode = '';
+                    if (select.value === option.value) select.value = '';
+                }
+            } else {
+                order.discountCode = '';
+            }
+        }
+        order.discountValue = discount.toString();
+
         document.getElementById('summaryTotalItems').textContent = sumTotal.toLocaleString('vi-VN') + ' đ';
         
-        let discount = parseFloat((order.discountValue || '0').toString().replace(/\D/g, '')) || 0;
         let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/\D/g, '')) || 0) : 0;
         
         document.getElementById('summaryDiscount').textContent = discount.toLocaleString('vi-VN') + ' đ';
@@ -1593,20 +1630,44 @@
             return;
         }
         
-        if (!order.customerName || order.customerName.trim() === '' || order.customerName.trim() === 'Khách lẻ') {
-            alert("Vui lòng nhập tên khách hàng!");
-            return;
-        }
-        
-        if (!order.customerPhone || order.customerPhone.trim() === '') {
-            alert("Vui lòng nhập số điện thoại khách hàng!");
-            return;
+        if (!order.customerName || order.customerName.trim() === '') {
+            order.customerName = 'Khách lẻ';
         }
         
         const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-        if (!phoneRegex.test(order.customerPhone.trim())) {
-            alert("Số điện thoại không hợp lệ! Vui lòng nhập đúng định dạng (VD: 0912345678).");
+        const bError = document.getElementById('buyerPhoneError');
+        if (!order.customerPhone || order.customerPhone.trim() === '') {
+            bError.textContent = "Vui lòng nhập số điện thoại khách hàng!";
+            bError.style.display = 'block';
+            document.getElementById('buyerPhoneInput').focus();
             return;
+        }
+        
+        if (!phoneRegex.test(order.customerPhone.trim())) {
+            bError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
+            bError.style.display = 'block';
+            document.getElementById('buyerPhoneInput').focus();
+            return;
+        }
+        
+        if (order.isDelivery) {
+            const dError = document.getElementById('deliveryPhoneError');
+            if (!order.deliveryPhone || order.deliveryPhone.trim() === '') {
+                dError.textContent = "Vui lòng nhập số điện thoại người nhận!";
+                dError.style.display = 'block';
+                document.getElementById('customerPhoneInput').focus();
+                return;
+            }
+            if (!phoneRegex.test(order.deliveryPhone.trim())) {
+                dError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
+                dError.style.display = 'block';
+                document.getElementById('customerPhoneInput').focus();
+                return;
+            }
+            if (!order.deliveryAddress || order.deliveryAddress.trim() === '') {
+                alert("Vui lòng nhập địa chỉ cụ thể người nhận!");
+                return;
+            }
         }
         
         if (order.paymentMethod === 'TRANSFER') {

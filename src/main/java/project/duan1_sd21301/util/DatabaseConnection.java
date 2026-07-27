@@ -8,7 +8,7 @@ public class DatabaseConnection {
 
     // Cấu hình thông tin kết nối Database
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoats;encrypt=true;trustServerCertificate=true;loginTimeout=5;";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDatabase;encrypt=true;trustServerCertificate=true;loginTimeout=5;";
     private static final String USER = "sa";
     private static final String PASS = "123456";
 
@@ -17,7 +17,7 @@ public class DatabaseConnection {
             Class.forName(DRIVER_CLASS);
             DriverManager.setLoginTimeout(5);
         } catch (ClassNotFoundException e) {
-            System.err.println("Không tìm thấy Driver kết nối Database: " + e.getMessage());
+            System.err.println("Không tìm thấy Driver kết nối FamiCoatsDatabase: " + e.getMessage());
         }
     }
 
