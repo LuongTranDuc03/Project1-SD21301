@@ -7,6 +7,26 @@
     box-sizing: border-box;
 }
 
+/* Filter Grid Layout for Customer List */
+.filter-grid {
+    display: grid !important;
+    grid-template-columns: 1.5fr 1fr 1fr 1.8fr auto !important;
+    gap: 16px !important;
+    width: 100% !important;
+}
+
+@media (max-width: 992px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .filter-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 
 body {
     background-color: #F1F5F9;

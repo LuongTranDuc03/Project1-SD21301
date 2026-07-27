@@ -18,50 +18,6 @@
           rel="stylesheet">
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
-    <style>
-        /* Pagination Styling */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 20px 0;
-            margin-top: 10px;
-        }
-        .page-btn {
-            min-width: 32px;
-            height: 32px;
-            padding: 0 10px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            color: #475569;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-        .page-btn:hover:not(.disabled) {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-            color: #0f172a;
-        }
-        .page-btn.active {
-            background: #10b981;
-            border-color: #10b981;
-            color: white;
-        }
-        .page-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f1f5f9;
-            pointer-events: none;
-        }
-    </style>
     <link rel="stylesheet"
           href="${pageContext.request.contextPath}/assets/css/invoices/invoice-list.css?v=<%= System.currentTimeMillis() %>">
 </head>
@@ -129,18 +85,21 @@
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
-                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
+                    <span class="profile-avatar-mini">A</span>
+                    <span>Admin</span>
                 </div>
             </div>
         </header>
 
         <div class="content-wrapper">
             <div class="page-header"
-                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <div>
-                    <h1>Quản lý hoá đơn</h1>
-                    <div class="subtitle">Tổng <%= total %> hoá đơn</div>
+                    <h1 class="page-title-text">Quản lý hoá đơn</h1>
+                    <div class="page-subtitle-text">Tổng <strong>
+                        <%= total %>
+                    </strong> hoá đơn
+                    </div>
                 </div>
 
             </div>
@@ -498,22 +457,52 @@
                     </table>
 
                     <!-- KHU VỰC PHÂN TRANG: Hiển thị thông tin phân trang và các nút chuyển trang -->
-                    <div class="pagination-container">
-                        <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
-                        <% int startPage = Math.max(0, pageNo - 2);
-                            int endPage = Math.min(totalPages - 1, pageNo + 2);
-                            if (startPage > 0) {
-                        %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
-                        <% if (startPage > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <% }
-                            for (int i = startPage; i <= endPage; i++) { %>
-                        <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
-                        <% }
-                            if (endPage < totalPages - 1) {
-                                if (endPage < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
-                        <% } %>
-                        <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+                    <div class="il-pagination">
+                                                <span class="info">
+                                                    Hiển thị <strong>
+                                                        <%= total > 0 ? (pageNo * size + 1) : 0 %>-
+                                                            <%= Math.min((pageNo + 1) * size, (int)
+                                                                    total) %>
+                                                    </strong>
+                                                    trong tổng <strong>
+                                                        <%= String.format("%,d", total) %>
+                                                    </strong> đơn hàng
+                                                </span>
+                        <div class="paging-btns">
+                            <a href="<%= baseUrl %>page=<%= pageNo - 1 %>"
+                               class="pg-btn <%= pageNo == 0 ? " disabled"
+                                                        : "" %>">‹</a>
+                            <% int startPage = Math.max(0, pageNo - 2);
+                                int
+                                        endPage = Math.min(totalPages - 1, pageNo +
+                                        2);
+                                if (startPage > 0) {
+                            %><a href="<%= baseUrl %>page=0"
+                                 class="pg-btn">1</a>
+                            <% if (startPage > 1) { %><span
+                                style="padding:0 4px;color:#9ca3af">...</span>
+                            <% } %>
+                            <% }
+                                for (int i = startPage; i
+                                        <= endPage; i++) { %>
+                            <a href="<%= baseUrl %>page=<%= i %>"
+                               class="pg-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %>
+                            </a>
+                            <% }
+                                if (endPage < totalPages -
+                                        1) {
+                                    if (endPage <
+                                            totalPages - 2) { %><span
+                                style="padding:0 4px;color:#9ca3af">...</span>
+                            <% } %>
+                            <a href="<%= baseUrl %>page=<%= totalPages - 1 %>"
+                               class="pg-btn">
+                                <%= totalPages %>
+                            </a>
+                            <% } %>
+                            <a href="<%= baseUrl %>page=<%= pageNo + 1 %>"
+                               class="pg-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>">›</a>
+                        </div>
                     </div>
                 </div>
             </div>

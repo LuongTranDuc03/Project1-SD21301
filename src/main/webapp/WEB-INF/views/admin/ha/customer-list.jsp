@@ -122,10 +122,8 @@
                             /* Filter Grid Layout */
                             .filter-grid {
                                 display: grid;
-                                grid-template-columns: 2.5fr 1.5fr max-content max-content 110px;
-                                gap: 16px 40px;
-                                align-items: flex-end;
-                                width: 100%;
+                                grid-template-columns: 1.5fr 1fr 1fr 1.8fr auto;
+                                gap: 16px;
                             }
                             @media (max-width: 992px) {
                                 .filter-grid {
@@ -355,42 +353,69 @@
                                                 
                                                 <!-- Tìm kiếm -->
                                                 <div class="filter-field">
-                                                    <label for="searchInput">Tìm kiếm chung</label>
-                                                    <div style="position: relative; width: 100%;">
-                                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor"
-                                                            stroke-width="2.5" fill="none" stroke-linecap="round"
-                                                            stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8;">
-                                                            <circle cx="11" cy="11" r="8"></circle>
-                                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                    <label for="searchInput">Tìm kiếm</label>
+                                                    <div style="position: relative;">
+                                                        <input type="text"
+                                                            name="search"
+                                                            id="searchInput"
+                                                            class="filter-control"
+                                                            style="padding-left: 36px; width: 100%; box-sizing: border-box;"
+                                                            placeholder="Tìm tên, mã, số điện thoại..."
+                                                            value="${requestScope.searchVal}"
+                                                            oninput="debouncedSubmit()">
+                                                        <svg viewBox="0 0 24 24"
+                                                            width="16" height="16"
+                                                            stroke="#94a3b8"
+                                                            stroke-width="2"
+                                                            fill="none"
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);">
+                                                            <circle cx="11" cy="11"
+                                                                r="8"></circle>
+                                                            <line x1="21" y1="21"
+                                                                x2="16.65"
+                                                                y2="16.65"></line>
                                                         </svg>
-                                                        <input type="text" name="search" id="searchInput" class="filter-control"
-                                                            placeholder="Tìm mã, tên, SĐT, email..." value="${requestScope.searchVal}"
-                                                            style="padding-left: 36px;" oninput="debouncedSubmit()">
                                                     </div>
                                                 </div>
 
                                                 <!-- Bộ lọc địa chỉ -->
                                                 <div class="filter-field">
                                                     <label for="addressInput">Địa chỉ</label>
-                                                    <input type="text" name="filterAddress" id="addressInput" class="filter-control"
-                                                        placeholder="Nhập tỉnh/thành, địa chỉ..." value="${requestScope.filterAddressVal}"
-                                                        oninput="debouncedSubmit()">
+                                                    <div style="position: relative;">
+                                                        <input type="text" name="filterAddress" id="addressInput" class="filter-control"
+                                                            style="width: 100%; box-sizing: border-box;"
+                                                            placeholder="Nhập tỉnh/thành..." value="${requestScope.filterAddressVal}"
+                                                            oninput="debouncedSubmit()">
+                                                    </div>
                                                 </div>
 
                                                 <!-- Bộ lọc giới tính -->
                                                 <div class="filter-field">
                                                     <label>Giới tính</label>
-                                                    <div style="display: flex; align-items: center; gap: 16px; height: 38px;">
-                                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterGender" value="Tất cả" onchange="this.form.submit()" ${requestScope.filterGenderVal == null || requestScope.filterGenderVal == 'Tất cả' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
-                                                            Tất cả
+                                                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+                                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                            <input type="radio"
+                                                                name="filterGender"
+                                                                value="Tất cả"
+                                                                onchange="this.form.submit()"
+                                                                ${requestScope.filterGenderVal == null || requestScope.filterGenderVal == 'Tất cả' ? 'checked' : ''}> Tất cả
                                                         </label>
-                                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterGender" value="Nam" onchange="this.form.submit()" ${requestScope.filterGenderVal == 'Nam' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
+                                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                            <input type="radio"
+                                                                name="filterGender"
+                                                                value="Nam"
+                                                                onchange="this.form.submit()"
+                                                                ${requestScope.filterGenderVal == 'Nam' ? 'checked' : ''}>
                                                             Nam
                                                         </label>
-                                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterGender" value="Nữ" onchange="this.form.submit()" ${requestScope.filterGenderVal == 'Nữ' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
+                                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer;">
+                                                            <input type="radio"
+                                                                name="filterGender"
+                                                                value="Nữ"
+                                                                onchange="this.form.submit()"
+                                                                ${requestScope.filterGenderVal == 'Nữ' ? 'checked' : ''}>
                                                             Nữ
                                                         </label>
                                                     </div>
@@ -399,31 +424,52 @@
                                                 <!-- Bộ lọc trạng thái -->
                                                 <div class="filter-field">
                                                     <label>Trạng thái</label>
-                                                    <div style="display: flex; align-items: center; gap: 16px; height: 38px;">
-                                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterStatus" value="Tất cả" onchange="this.form.submit()" ${requestScope.filterStatusVal == null || requestScope.filterStatusVal == 'Tất cả' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
-                                                            Tất cả
+                                                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+                                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
+                                                            <input type="radio"
+                                                                name="filterStatus"
+                                                                value="Tất cả"
+                                                                onchange="this.form.submit()"
+                                                                ${requestScope.filterStatusVal == null || requestScope.filterStatusVal == 'Tất cả' ? 'checked' : ''}> Tất cả
                                                         </label>
-                                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterStatus" value="Hoạt động" onchange="this.form.submit()" ${requestScope.filterStatusVal == 'Hoạt động' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
-                                                            Hoạt động
+                                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
+                                                            <input type="radio"
+                                                                name="filterStatus"
+                                                                value="Hoạt động"
+                                                                onchange="this.form.submit()"
+                                                                ${requestScope.filterStatusVal == 'Hoạt động' ? 'checked' : ''}>
+                                                            Đang hoạt động
                                                         </label>
-                                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500; font-size: 13px; color: #1e293b;">
-                                                            <input type="radio" name="filterStatus" value="Khóa" onchange="this.form.submit()" ${requestScope.filterStatusVal == 'Khóa' ? 'checked' : ''} style="cursor: pointer; margin: 0;">
-                                                            Khóa
+                                                        <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: normal; color: #334155; cursor: pointer; white-space: nowrap;">
+                                                            <input type="radio"
+                                                                name="filterStatus"
+                                                                value="Khóa"
+                                                                onchange="this.form.submit()"
+                                                                ${requestScope.filterStatusVal == 'Khóa' ? 'checked' : ''}>
+                                                            Đã khóa
                                                         </label>
                                                     </div>
                                                 </div>
 
-                                                <!-- Nút Đặt lại (Luôn giữ chỗ để không vỡ Grid) -->
-                                                <div class="filter-field" style="justify-content: flex-end; align-items: flex-end;">
-                                                    <% if ((request.getAttribute("searchVal") !=null && !((String)request.getAttribute("searchVal")).isEmpty()) ||
-                                                           (request.getAttribute("filterGenderVal") !=null && !((String)request.getAttribute("filterGenderVal")).equals("Tất cả")) ||
-                                                           (request.getAttribute("filterAddressVal") !=null && !((String)request.getAttribute("filterAddressVal")).isEmpty()) ||
-                                                           (request.getAttribute("filterStatusVal") !=null && !((String)request.getAttribute("filterStatusVal")).equals("Tất cả"))) {
+                                                <!-- Nút Đặt lại ở vị trí cuối cùng (chỉ hiện khi có lọc) -->
+                                                <div class="filter-field" style="grid-column: -1; justify-content: flex-end; align-items: flex-end;">
+                                                    <% if ((request.getAttribute("searchVal") != null && !((String)request.getAttribute("searchVal")).trim().isEmpty()) ||
+                                                           (request.getAttribute("filterGenderVal") != null && !((String)request.getAttribute("filterGenderVal")).equals("Tất cả")) ||
+                                                           (request.getAttribute("filterAddressVal") != null && !((String)request.getAttribute("filterAddressVal")).trim().isEmpty()) ||
+                                                           (request.getAttribute("filterStatusVal") != null && !((String)request.getAttribute("filterStatusVal")).equals("Tất cả"))) {
                                                     %>
-                                                        <a href="<%= contextPath %>/admin/customers" class="btn-reset-filter" style="text-decoration: none;">
-                                                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg>
+                                                        <a href="<%= contextPath %>/admin/customers" class="btn-reset-filter"
+                                                            style="display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s; font-size: 13px; height: 38px; box-sizing: border-box; width: fit-content; text-decoration: none; white-space: nowrap;">
+                                                            <svg viewBox="0 0 24 24"
+                                                                width="14" height="14"
+                                                                stroke="currentColor"
+                                                                stroke-width="2.5"
+                                                                fill="none">
+                                                                <polyline points="1 4 1 10 7 10">
+                                                                </polyline>
+                                                                <path d="M3.51 15a9 9 0 1 0 .49-3.5">
+                                                                </path>
+                                                            </svg>
                                                             Đặt lại
                                                         </a>
                                                     <% } %>

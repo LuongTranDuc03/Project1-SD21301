@@ -8,7 +8,7 @@ public class DatabaseConnection {
 
     // Cấu hình thông tin kết nối Database
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDatabase;encrypt=true;trustServerCertificate=true;loginTimeout=5;";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoats;encrypt=true;trustServerCertificate=true;loginTimeout=5;";
     private static final String USER = "sa";
     private static final String PASS = "123456";
 
@@ -37,7 +37,7 @@ public class DatabaseConnection {
     public static void main(String[] args) {
         try (Connection conn = getConnection()) {
             if (conn != null) {
-                System.out.println("Kết nối tới FamiCoatsDatabase thành công!");
+                System.out.println("Kết nối tới Database thành công!");
             }
         } catch (SQLException e) {
             System.err.println("Kết nối thất bại: " + e.getMessage());

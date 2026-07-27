@@ -1,4 +1,4 @@
-package project.duan1_sd21301.controller.admin;
+package project.duan1_sd21301.controller.admin.luong;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
