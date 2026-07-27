@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%-- Import các lớp Model và thư viện Java cần thiết --%>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
 <%@ page import="java.util.List" %>
@@ -553,7 +553,7 @@
                                                                         <label class="switch" title="<%= (c.getStatus() != null && c.getStatus() == 1) ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
                                                                             <input type="checkbox"
                                                                                 <%= (c.getStatus() != null && c.getStatus() == 1) ? "checked" : "" %>
-                                                                                onchange="toggleCustomerStatus('<%= c.getId() %>')">
+                                                                                onchange="toggleCustomerStatus('<%= c.getId() %>', this)">
                                                                             <span class="slider"></span>
                                                                         </label>
                                                                     </div>
@@ -602,25 +602,43 @@
                             }
 
                             // Hàm gửi request thay đổi trạng thái hoạt động của khách hàng
-                            function toggleCustomerStatus(customerId) {
-                                const form = document.createElement('form');
-                                form.method = 'POST';
-                                form.action = '<%= contextPath %>/admin/customers';
+                            function toggleCustomerStatus(customerId, checkboxEl) {
+                                const isChecked = checkboxEl.checked;
+                                const targetStatusText = isChecked ? 'hoạt động' : 'khóa';
                                 
-                                const actionInput = document.createElement('input');
-                                actionInput.type = 'hidden';
-                                actionInput.name = 'action';
-                                actionInput.value = 'toggle-status';
-                                form.appendChild(actionInput);
-                                
-                                const idInput = document.createElement('input');
-                                idInput.type = 'hidden';
-                                idInput.name = 'id';
-                                idInput.value = customerId;
-                                form.appendChild(idInput);
-                                
-                                document.body.appendChild(form);
-                                form.submit();
+                                Swal.fire({
+                                    title: 'Xác nhận',
+                                    text: 'Bạn có muốn thay đổi trạng thái của khách hàng thành ' + targetStatusText + ' hay không?',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: 'Đồng ý',
+                                    cancelButtonText: 'Hủy'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        const form = document.createElement('form');
+                                        form.method = 'POST';
+                                        form.action = '<%= contextPath %>/admin/customers';
+                                        
+                                        const actionInput = document.createElement('input');
+                                        actionInput.type = 'hidden';
+                                        actionInput.name = 'action';
+                                        actionInput.value = 'toggle-status';
+                                        form.appendChild(actionInput);
+                                        
+                                        const idInput = document.createElement('input');
+                                        idInput.type = 'hidden';
+                                        idInput.name = 'id';
+                                        idInput.value = customerId;
+                                        form.appendChild(idInput);
+                                        
+                                        document.body.appendChild(form);
+                                        form.submit();
+                                    } else {
+                                        checkboxEl.checked = !isChecked; // Rollback
+                                    }
+                                });
                             }
 
                             // HÀM RETAIN FOCUS: Đưa con trỏ chuột về lại cuối ô tìm kiếm sau khi trang bị tải lại.
@@ -734,7 +752,7 @@
                         
                         <%-- Toast thông báo dùng chung --%>
                         <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
-                    </body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
 
-                    </html>
-
+</html>

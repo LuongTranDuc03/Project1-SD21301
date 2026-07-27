@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
     <%@ page import="project.duan1_sd21301.model.huy.Employee" %>
         <%@ page import="project.duan1_sd21301.model.huy.Role" %>
             <%@ page import="java.util.List" %>
@@ -355,7 +355,7 @@
                                                                                                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                                                                                 </a>
                                                                                                 <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
-                                                                                                    <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onchange="window.location.href='${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=<%= emp.getId() %>'">
+                                                                                                    <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onchange="toggleEmployeeStatus('<%= emp.getId() %>', this)">
                                                                                                     <span class="slider"></span>
                                                                                                 </label>
                                                                                             </div>
@@ -397,6 +397,28 @@
                                             }).then((result) => {
                                                 if (result.isConfirmed) {
                                                     window.location.href = url;
+                                                }
+                                            });
+                                        }
+
+                                        function toggleEmployeeStatus(empId, checkboxEl) {
+                                            const isChecked = checkboxEl.checked;
+                                            const targetStatusText = isChecked ? 'hoạt động' : 'khóa';
+                                            
+                                            Swal.fire({
+                                                title: 'Xác nhận',
+                                                text: 'Bạn có muốn thay đổi trạng thái của nhân viên thành ' + targetStatusText + ' hay không?',
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3B82F6',
+                                                cancelButtonColor: '#94A3B8',
+                                                confirmButtonText: 'Đồng ý',
+                                                cancelButtonText: 'Hủy'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    window.location.href = '${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=' + empId;
+                                                } else {
+                                                    checkboxEl.checked = !isChecked; // Rollback
                                                 }
                                             });
                                         }

@@ -75,20 +75,13 @@
             </div>
 
                         <% if ("created".equals(msg) || "updated".equals(msg)) { %>
-            <style>
-                @keyframes slideDownToast {
-                    from { top: -50px; opacity: 0; }
-                    to { top: 24px; opacity: 1; }
-                }
-            </style>
-            <div id="toastSuccess" style="position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #d1fae5;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;">
-                <svg viewBox="0 0 24 24" width="24" height="24" stroke="#10B981" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <div>
-                    <div style="font-weight:700;font-size:13px;color:#111827;">Thành công!</div>
-                    <div style="font-size:12px;color:#6b7280;"><%= "created".equals(msg) ? "Thêm phiếu giảm giá thành công." : "Cập nhật phiếu giảm giá thành công." %></div>
-                </div>
-                <button onclick="document.getElementById('toastSuccess').style.display='none'" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>
-            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    if (window.showToast) {
+                        window.showToast('<%= "created".equals(msg) ? "Thêm phiếu giảm giá thành công." : "Cập nhật trạng thái phiếu giảm giá thành công." %>', 'success');
+                    }
+                });
+            </script>
             <% } %>
 
             <!-- KHU VỰC TÌM KIẾM VÀ BỘ LỌC: Lọc theo mã, loại, trạng thái và ngày -->
@@ -272,7 +265,7 @@
                                     <input type="hidden" name="status" value="<%= isOn ? 0 : 1 %>">
                                     <label class="toggle-switch" title="<%= isOn ? "Tắt" : "Bật" %> phiếu">
                                         <input type="checkbox" <%= isOn ? "checked" : "" %>
-                                               onchange="if (<%= isExpired %> && this.checked) { showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!'); this.checked = false; } else { document.getElementById('toggleForm-<%= c.getId() %>').submit(); }">
+                                               onchange="toggleCouponStatus('<%= c.getId() %>', <%= isExpired %>, this)">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </form>
@@ -383,24 +376,44 @@
 
     // Hiển thị thông báo lỗi bằng toast
     function showErrorToast(msg) {
-        var oldToast = document.getElementById('toastError');
-        if (oldToast) oldToast.remove();
-        var toast = document.createElement('div');
-        toast.id = 'toastError';
-        toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #fecaca;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;';
-        toast.innerHTML = '<div style="width:24px;height:24px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="#ef4444" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>' +
-                          '<span style="font-size:14px;font-weight:500;color:#1f2937;">' + msg + '</span>' +
-                          '<button onclick="this.parentElement.remove()" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>';
-        document.body.appendChild(toast);
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.style.transition = 'opacity .4s';
-                toast.style.opacity = '0';
-                setTimeout(function() { if(toast.parentElement) toast.remove(); }, 450);
+        if (window.showToast) {
+            window.showToast(msg, 'error');
+        } else {
+            alert(msg);
+        }
+    }
+
+    function toggleCouponStatus(couponId, isExpired, checkboxEl) {
+        const isChecked = checkboxEl.checked;
+
+        if (isExpired && isChecked) {
+            showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!');
+            checkboxEl.checked = false;
+            return;
+        }
+
+        const targetStatusText = isChecked ? 'hoạt động' : 'vô hiệu hóa';
+
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Bạn có muốn thay đổi trạng thái của phiếu giảm giá thành ' + targetStatusText + ' hay không?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3B82F6',
+            cancelButtonColor: '#94A3B8',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('toggleForm-' + couponId).submit();
+            } else {
+                checkboxEl.checked = !isChecked; // Rollback
             }
-        }, 4000);
+        });
     }
 </script>
+<jsp:include page="/WEB-INF/views/layout/toast.jsp" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
 
