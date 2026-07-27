@@ -92,10 +92,28 @@
                     <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
                 </div>
                 <div class="card-body-content" id="filterCardBody">
-                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" class="filter-grid">
+                    <style>
+                        @media (max-width: 576px) {
+                            .filter-flex-grid {
+                                flex-direction: column;
+                                align-items: stretch !important;
+                            }
+                        }
+                        select.filter-control {
+                            appearance: none;
+                            -webkit-appearance: none;
+                            -moz-appearance: none;
+                            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+                            background-repeat: no-repeat;
+                            background-position: right 12px center;
+                            background-size: 16px;
+                            padding-right: 36px !important;
+                        }
+                    </style>
+                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" class="filter-flex-grid" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 20px;">
                         
                         <!-- Tìm kiếm -->
-                        <div class="filter-field" style="min-width: 250px;">
+                        <div class="filter-field" style="min-width: 315px;">
                             <label for="searchInput">Tìm kiếm</label>
                             <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Nhập mã / tên..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
                         </div>
@@ -103,7 +121,7 @@
 
                         
                         <!-- Loại giảm giá -->
-                        <div class="filter-field" style="min-width: 140px;">
+                        <div class="filter-field" style="min-width: 155px;">
                             <label for="filterType">Loại giảm</label>
                             <select name="discountType" id="filterType" class="filter-control" onchange="this.form.submit()">
                                 <option value="">Tất cả loại giảm</option>
@@ -116,7 +134,7 @@
                         </div>
 
                         <!-- Từ ngày -->
-                        <div class="filter-field" style="min-width: 160px;">
+                        <div class="filter-field" style="min-width: 175px;">
                             <label for="fromDateFilter">Từ ngày</label>
                             <div style="display: flex; gap: 8px;">
                                 <input type="date" id="fromDateFilter" name="fromDate" class="filter-control" value="<%= fromDate != null ? fromDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
@@ -127,7 +145,7 @@
                         </div>
                         
                         <!-- Đến ngày -->
-                        <div class="filter-field" style="min-width: 160px;">
+                        <div class="filter-field" style="min-width: 175px;">
                             <label for="toDateFilter">Đến ngày</label>
                             <div style="display: flex; gap: 8px;">
                                 <input type="date" id="toDateFilter" name="toDate" class="filter-control" value="<%= toDate != null ? toDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
@@ -143,13 +161,13 @@
                         <div class="filter-field">
                             <label>Trạng thái</label>
                             <input type="hidden" name="status" id="filterStatus" value="<%= curStatus != null ? curStatus : "" %>">
-                            <div style="display: flex; gap: 16px; align-items: center; padding: 10px 0;">
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                            <div style="display: flex; gap: 16px; align-items: center; height: 38px; padding: 0;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b; height: 100%;">
                                     <input type="radio" name="statusRadio" value="" onchange="document.getElementById('filterStatus').value=this.value; document.getElementById('searchForm').submit()" <%= curStatus == null ? "checked" : "" %>> Tất cả
                                 </label>
                                 <% if (statusLabels != null) {
                                     for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b; height: 100%;">
                                     <input type="radio" name="statusRadio" value="<%= e.getKey() %>" onchange="document.getElementById('filterStatus').value=this.value; document.getElementById('searchForm').submit()" <%= e.getKey().equals(curStatus) ? "checked" : "" %>> <%= e.getValue() %>
                                 </label>
                                 <%  }

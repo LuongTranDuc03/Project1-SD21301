@@ -580,8 +580,8 @@
                     
                     let maxLocalId = 0;
                     orders.forEach(o => {
-                        if (o.id && o.id.startsWith('HD')) {
-                            const num = parseInt(o.id.substring(2));
+                        if (o.id && o.id.startsWith('Đơn ')) {
+                            const num = parseInt(o.id.substring(4));
                             if (!isNaN(num) && num > maxLocalId) {
                                 maxLocalId = num;
                             }
