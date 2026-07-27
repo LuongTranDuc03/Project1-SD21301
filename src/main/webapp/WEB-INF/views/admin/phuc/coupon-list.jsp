@@ -280,24 +280,25 @@
                     <%  } %>
                     </tbody>
                 </table>
-                    <div class="pagination-container">
-                        <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
-                        <%
-                            int startP = Math.max(0, pageNo - 2);
-                            int endP   = Math.min(totalPages - 1, pageNo + 2);
-                            if (startP > 0) {
-                        %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
-                        <% if (startP > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <%  }
-                            for (int i = startP; i <= endP; i++) { %>
-                        <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
-                        <%  }
-                            if (endP < totalPages - 1) {
-                                if (endP < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
-                        <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
-                        <%  } %>
-                        <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
-                    </div>
+                </div>
+                <div class="pagination-container">
+                    <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+                    <%
+                        int startP = Math.max(0, pageNo - 2);
+                        int endP   = Math.min(totalPages - 1, pageNo + 2);
+                        if (startP > 0) {
+                    %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
+                    <% if (startP > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <%  }
+                        for (int i = startP; i <= endP; i++) { %>
+                    <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
+                    <%  }
+                        if (endP < totalPages - 1) {
+                            if (endP < totalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <a href="<%= baseUrl %>page=<%= totalPages - 1 %>" class="page-btn"><%= totalPages %></a>
+                    <%  } %>
+                    <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= totalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+                </div>
                 </div>
             </div>
         </div>
