@@ -96,6 +96,7 @@ public class CustomerController extends HttpServlet {
                     for (CustomerAddress a : cust.getAddresses()) {
                         a.setDefault(a.getCode().equals(addressCode));
                     }
+                    customerService.updateCustomer(cust);
                     session.setAttribute("toastMessage", "Thiết lập địa chỉ mặc định thành công!");
                     session.setAttribute("toastType", "success");
                 }

@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%-- Import các Model và lớp tiện ích phục vụ xử lý trên Form --%>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
 <%@ page import="project.duan1_sd21301.model.Address" %>
@@ -930,8 +930,8 @@
     function setDefaultAddress(button) {
         const card = button.closest('.address-card-row');
 
-        const otherTen = card.querySelector('input[name="diaChiKhacTen"]');
-        const otherSdt = card.querySelector('input[name="diaChiKhacSdt"]');
+        const otherTen = card.querySelector('input[name="otherRecipientName"]');
+        const otherSdt = card.querySelector('input[name="otherPhoneNumber"]');
         const otherHidden = card.querySelector('.other-address-hidden');
 
         const mainTen = document.getElementById('defaultAddressTen');

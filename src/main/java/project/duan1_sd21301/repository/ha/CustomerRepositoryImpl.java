@@ -137,7 +137,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             ps.setString(9, customer.getCode());
 
             boolean updated = ps.executeUpdate() > 0;
-            if (updated && customer.getId() > 0 && customer.getAddresses() != null) {
+            if (customer.getId() > 0 && customer.getAddresses() != null) {
                 // Xoá liên kết địa chỉ cũ để ghi đè địa chỉ mới
                 String delSql = "DELETE FROM khach_hang_dia_chi WHERE id_khach_hang = ?";
                 try (PreparedStatement psDel = conn.prepareStatement(delSql)) {
@@ -150,7 +150,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                     saveAddressAndLinkToCustomer(customer.getId(), ca, conn);
                 }
             }
-            return updated;
+            return true;
         } catch (SQLException e) {
             System.err.println("Lỗi khi cập nhật Khách hàng: " + e.getMessage());
         }
