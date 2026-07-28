@@ -1024,17 +1024,36 @@
             orders[orderIndex].customerPhone = phone;
             
             if (name !== 'Khách lẻ') {
-                orders[orderIndex].deliveryPhone = phone;
                 if (btnElement) {
                     const row = btnElement.closest('tr');
-                    orders[orderIndex].customerCode = row.children[0].textContent.trim();
-                    orders[orderIndex].province = row.getAttribute('data-prov') || '';
-                    orders[orderIndex].district = row.getAttribute('data-dist') || '';
-                    orders[orderIndex].ward = row.getAttribute('data-ward') || '';
-                    orders[orderIndex].deliveryAddress = row.getAttribute('data-detail') || '';
+                    const code = row.children[0].textContent.trim();
+                    orders[orderIndex].customerCode = code;
+                    
+                    let defAddr = null;
+                    if (customerAddressesMap[code] && customerAddressesMap[code].length > 0) {
+                        defAddr = customerAddressesMap[code].find(a => a.isDefault);
+                        if (!defAddr) defAddr = customerAddressesMap[code][0];
+                    }
+                    
+                    if (defAddr) {
+                        orders[orderIndex].recipientName = defAddr.name;
+                        orders[orderIndex].deliveryPhone = defAddr.phone;
+                        orders[orderIndex].province = defAddr.prov;
+                        orders[orderIndex].district = defAddr.dist;
+                        orders[orderIndex].ward = defAddr.ward;
+                        orders[orderIndex].deliveryAddress = defAddr.detail;
+                    } else {
+                        orders[orderIndex].recipientName = name;
+                        orders[orderIndex].deliveryPhone = phone;
+                        orders[orderIndex].province = row.getAttribute('data-prov') || '';
+                        orders[orderIndex].district = row.getAttribute('data-dist') || '';
+                        orders[orderIndex].ward = row.getAttribute('data-ward') || '';
+                        orders[orderIndex].deliveryAddress = row.getAttribute('data-detail') || '';
+                    }
                 }
             } else {
                 orders[orderIndex].customerCode = '';
+                orders[orderIndex].recipientName = 'Khách lẻ';
                 orders[orderIndex].deliveryPhone = '';
                 orders[orderIndex].province = '';
                 orders[orderIndex].district = '';
