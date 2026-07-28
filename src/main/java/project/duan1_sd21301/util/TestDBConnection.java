@@ -10,17 +10,17 @@ public class TestDBConnection {
         // Cấu hình thông tin kết nối Database
         String url = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDatabase;encrypt=true;trustServerCertificate=true;";
         String user = "sa";
-        String pass = "123456"; // Đổi lại mật khẩu sa của bạn nếu khác
+        String pass = "1234@"; // Đổi lại mật khẩu sa của bạn nếu khác
 
         System.out.println("==================================================");
-        System.out.println("Đang kiểm tra kết nối tới CSDL SQL Server: FamiCoatsDatabase...");
+        System.out.println("Đang kiểm tra kết nối tới CSDL SQL Server: FamiCoats...");
         System.out.println("==================================================");
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             try (Connection conn = DriverManager.getConnection(url, user, pass)) {
                 if (conn != null && !conn.isClosed()) {
-                    System.out.println("✅ KẾT NỐI THÀNH CÔNG TỚI DATABASE [FamiCoatsDatabase]!");
+                    System.out.println("✅ KẾT NỐI THÀNH CÔNG TỚI DATABASE [FamiCoats]!");
                     
                     // Đọc thử bảng dia_chi để xác nhận
                     try (Statement stmt = conn.createStatement();
