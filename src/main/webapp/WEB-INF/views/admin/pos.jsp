@@ -1739,8 +1739,12 @@
             checkoutAjax(order, finalTotal);
         }
     }
+    let isCheckingOut = false;
     
     function checkoutAjax(order, finalTotal) {
+        if (isCheckingOut) return;
+        isCheckingOut = true;
+        
         fetch(`\${window.location.origin}${pageContext.request.contextPath}/admin/pos/checkout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1748,6 +1752,7 @@
         })
         .then(res => res.json())
         .then(data => {
+            isCheckingOut = false;
             if (data.success) {
                 openSuccessInvoiceModal(order, finalTotal, data.invoiceCode);
                 // Clear order after success
@@ -1760,6 +1765,7 @@
             }
         })
         .catch(err => {
+            isCheckingOut = false;
             console.error(err);
             alert("Lỗi kết nối máy chủ!");
         });
