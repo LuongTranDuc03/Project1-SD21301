@@ -1822,7 +1822,7 @@
     <div class="pos-modal" style="width: 400px; text-align: center; padding: 24px; position: relative;">
         <h3 style="margin-bottom: 16px; font-size: 18px; color: #1e293b;">Thông báo</h3>
         <p id="customAlertMessage" style="color: #475569; margin-bottom: 24px; font-size: 14px; line-height: 1.5;"></p>
-        <button class="btn-primary" onclick="closeCustomAlert()" style="padding: 8px 24px;">Đóng</button>
+        <button class="btn-primary" onclick="closeCustomAlert()" style="padding: 8px 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">Đóng</button>
     </div>
 </div>
 

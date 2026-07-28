@@ -286,7 +286,7 @@ public class ProductController extends HttpServlet {
                         if (imagesParam != null && !imagesParam.trim().isEmpty()) {
                             detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
                         } else {
-                            detail.setImages(new ArrayList<>(Arrays.asList("anh-default.png")));
+                            detail.setImages(new ArrayList<>());
                         }
                     }
 
@@ -403,16 +403,14 @@ public class ProductController extends HttpServlet {
                     minPrice = p;
 
                 String imgStr = (variantImages != null && variantImages.length > i) ? variantImages[i]
-                        : "anh-default.png";
+                        : "";
                 List<String> imgList = new ArrayList<>();
-                if (imgStr != null && !imgStr.trim().isEmpty()) {
+                if (imgStr != null && !imgStr.trim().isEmpty() && !imgStr.trim().equals("anh-default.png")) {
                     for (String s : imgStr.split(",")) {
-                        if (!s.trim().isEmpty())
+                        if (!s.trim().isEmpty() && !s.trim().equals("anh-default.png"))
                             imgList.add(s.trim());
                     }
                 }
-                if (imgList.isEmpty())
-                    imgList.add("anh-default.png");
 
                 String detailCode = (code != null ? code : "CTSP") + "-" + colors[i] + "-" + sizes[i];
                 detailCode = detailCode.replaceAll("\\s+", "");
