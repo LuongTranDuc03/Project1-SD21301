@@ -63,6 +63,5 @@ public class AuthFilter implements Filter {
 
     @Override
     public void destroy() {
-        // Cleanup if needed
     }
 }

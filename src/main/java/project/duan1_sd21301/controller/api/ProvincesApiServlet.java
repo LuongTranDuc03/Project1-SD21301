@@ -15,12 +15,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * API Servlet làm cổng Proxy truy vấn dữ liệu Tỉnh/Thành, Quận/Huyện, Phường/Xã
- * từ dịch vụ https://provinces.open-api.vn/api/v1/
- * Tích hợp bộ nhớ đệm Cache trong bộ nhớ RAM để đảm bảo tốc độ phản hồi cực nhanh (dưới 10ms)
- * và giảm tải/tránh lỗi nghẽn khi gọi API ngoài.
- */
+
 @WebServlet(
     name = "ProvincesApiServlet",
     urlPatterns = {

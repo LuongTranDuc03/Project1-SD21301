@@ -386,7 +386,7 @@
                                      String statusClass = isAvailable ? "available" : "out_of_stock";
                                      String statusLabel = isAvailable ? "Còn hàng" : "Hết hàng";
                         %>
-                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-variantid="<%= v.getId() %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
+                        <tr class="variant-data-row" id="variant-row-<%= v.getId() %>" data-variantid="<%= v.getId() %>" data-code="<%= v.getCode() != null ? v.getCode() : "" %>" data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode().replace("\"", "&quot;") : "" %>" data-color="<%= v.getColor() != null ? v.getColor().replace("\"", "&quot;") : "" %>" data-size="<%= v.getSize() != null ? v.getSize().replace("\"", "&quot;") : "" %>" data-price="<%= v.getPrice() %>" data-stock="<%= v.getStock() %>" data-status="<%= isAvailable ? "AVAILABLE" : "OUT_OF_STOCK" %>">
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
                                 <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
@@ -471,7 +471,6 @@
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     </main>
 </div>
@@ -893,4 +892,40 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const savedOrders = localStorage.getItem('pos_orders');
+        if (savedOrders) {
+            try {
+                const orders = JSON.parse(savedOrders);
+                let reservedQty = {};
+                orders.forEach(o => {
+                    if (o.items) {
+                        o.items.forEach(i => {
+                            if (!reservedQty[i.code]) reservedQty[i.code] = 0;
+                            reservedQty[i.code] += i.quantity;
+                        });
+                    }
+                });
+                
+                const rows = document.querySelectorAll('.variant-data-row');
+                rows.forEach(row => {
+                    const code = row.getAttribute('data-code');
+                    if (code && reservedQty[code]) {
+                        const dbStock = parseInt(row.getAttribute('data-stock')) || 0;
+                        const available = Math.max(0, dbStock - reservedQty[code]);
+                        
+                        const stockTd = row.children[7];
+                        if (stockTd) {
+                            const span = stockTd.querySelector('span');
+                            if (span) span.textContent = available;
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Error parsing pos orders", e);
+            }
+        }
+    });
+</script>
 </html>

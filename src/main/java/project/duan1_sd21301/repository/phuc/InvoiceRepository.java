@@ -260,6 +260,10 @@ public class InvoiceRepository {
         invoice.setReceiverAddress(rs.getString("dia_chi_khach_nhan"));
         invoice.setSubtotal(rs.getDouble("tam_tinh"));
         invoice.setTotalAmount(rs.getDouble("tong_thanh_toan"));
+        invoice.setDiscountAmount(rs.getDouble("tien_giam_hoa_don"));
+        if (rs.wasNull()) invoice.setDiscountAmount(null);
+        invoice.setPaidAmount(rs.getDouble("da_thanh_toan"));
+        if (rs.wasNull()) invoice.setPaidAmount(null);
         Timestamp orderDate = rs.getTimestamp("ngay_dat_hang");
         if (orderDate != null)
             invoice.setOrderDate(orderDate.toLocalDateTime());
@@ -346,6 +350,31 @@ public class InvoiceRepository {
                 invoice.setCustomer(c);
             }
         }
+        
+        // Basic mapping for Coupon if joined
+        try {
+            int cpId = rs.getInt("cp_id");
+            if (!rs.wasNull()) {
+                project.duan1_sd21301.model.phuc.Coupon cp = new project.duan1_sd21301.model.phuc.Coupon();
+                cp.setId(cpId);
+                cp.setCode(rs.getString("cp_code"));
+                invoice.setCoupon(cp);
+            } else {
+                int directCpId = rs.getInt("id_ma_giam_gia");
+                if (!rs.wasNull()) {
+                    project.duan1_sd21301.model.phuc.Coupon cp = new project.duan1_sd21301.model.phuc.Coupon();
+                    cp.setId(directCpId);
+                    invoice.setCoupon(cp);
+                }
+            }
+        } catch (SQLException ignored) {
+            int directCpId = rs.getInt("id_ma_giam_gia");
+            if (!rs.wasNull()) {
+                project.duan1_sd21301.model.phuc.Coupon cp = new project.duan1_sd21301.model.phuc.Coupon();
+                cp.setId(directCpId);
+                invoice.setCoupon(cp);
+            }
+        }
 
         return invoice;
     }
@@ -354,11 +383,13 @@ public class InvoiceRepository {
         String sql = "SELECT hd.*, " +
                 "pm.id AS pm_id, pm.phuong_thuc_thanh_toan_code AS pm_code, pm.ten_phuong_thuc AS pm_name, " +
                 "ad.id AS ad_id, ad.tinh AS ad_province, ad.huyen AS ad_district, ad.xa AS ad_ward, ad.dia_chi_chi_tiet AS ad_street, " +
-                "c.id AS c_id, c.ho_ten AS c_name, c.email AS c_email, c.so_dien_thoai AS c_phone " +
+                "c.id AS c_id, c.ho_ten AS c_name, c.email AS c_email, c.so_dien_thoai AS c_phone, " +
+                "cp.id AS cp_id, cp.phieu_giam_gia_code AS cp_code " +
                 "FROM hoa_don hd " +
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
                 "LEFT JOIN dia_chi ad ON hd.id_dia_chi = ad.id " +
                 "LEFT JOIN khach_hang c ON hd.id_khach_hang = c.id " +
+                "LEFT JOIN phieu_giam_gia cp ON hd.id_ma_giam_gia = cp.id " +
                 "WHERE hd.id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
