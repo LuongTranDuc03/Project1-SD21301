@@ -206,18 +206,28 @@
                                 <span class="fin-label">Tạm tính</span>
                                 <span class="fin-value"><%= inv.getSubtotal() != null ? String.format("%,.0fđ", inv.getSubtotal()).replace(",", ".") : "—" %></span>
                             </div>
-                            <% if (inv.getDiscountAmount() != null && inv.getDiscountAmount() > 0) { %>
+                            <% 
+                                String discountDisplay = "0đ";
+                                String discountCodeName = (inv.getCoupon() != null) ? " (" + inv.getCoupon().getCode() + ")" : "";
+                                if (inv.getDiscountAmount() != null && inv.getDiscountAmount() > 0) {
+                                    discountDisplay = "-" + String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".");
+                                }
+                            %>
                             <div class="fin-row">
-                                <span class="fin-label">Giảm giá hoá đơn</span>
-                                <span class="fin-value" style="color:#22c55e;">-<%= String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".") %></span>
+                                <span class="fin-label">Giảm giá<%= discountCodeName %></span>
+                                <span class="fin-value" style="color:#22c55e;"><%= discountDisplay %></span>
                             </div>
-                            <% } %>
-                            <% if (orderType != null && orderType == 1 && inv.getShippingFee() != null && inv.getShippingFee() > 0) { %>
+                            
+                            <% 
+                                String shippingDisplay = "0đ";
+                                if (inv.getShippingFee() != null && inv.getShippingFee() > 0) {
+                                    shippingDisplay = "+" + String.format("%,.0fđ", inv.getShippingFee()).replace(",", ".");
+                                }
+                            %>
                             <div class="fin-row">
                                 <span class="fin-label">Phí vận chuyển</span>
-                                <span class="fin-value" style="color:#ef4444;">+<%= String.format("%,.0fđ", inv.getShippingFee()).replace(",", ".") %></span>
+                                <span class="fin-value" style="color:#ef4444;"><%= shippingDisplay %></span>
                             </div>
-                            <% } %>
                             <hr class="fin-divider">
                             <div class="fin-total">
                                 <span class="label">Tổng thanh toán</span>
@@ -280,7 +290,23 @@
                         </div>
                         <div class="contact-row">
                             <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            <span class="contact-value"><%= customerAddress %></span>
+                            <span class="contact-value" style="white-space: normal;"><%= customerAddress %></span>
+                        </div>
+                    </div>
+
+                    <div class="side-card">
+                        <div class="side-card-title">Thông tin giao hàng</div>
+                        <div class="kh-info-name" style="margin-bottom: 4px;font-weight: 600;font-size: 14px;color: #111827;">
+                            <%= (inv.getReceiverName() != null && !inv.getReceiverName().trim().isEmpty()) ? inv.getReceiverName() : customerName %>
+                        </div>
+                        <div class="kh-info-role" style="margin-bottom: 12px;">Người nhận</div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17z"/></svg>
+                            <span class="contact-value"><%= (inv.getReceiverPhone() != null && !inv.getReceiverPhone().trim().isEmpty()) ? inv.getReceiverPhone() : customerPhone %></span>
+                        </div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span class="contact-value" style="white-space: normal;"><%= (inv.getReceiverAddress() != null && !inv.getReceiverAddress().trim().isEmpty()) ? inv.getReceiverAddress() : (customerAddress.equals("—") ? "Khách nhận tại quầy" : customerAddress) %></span>
                         </div>
                     </div>
 
@@ -299,6 +325,17 @@
                             <span class="lbl">Trạng thái TT</span>
                             <span class="val <%= paid ? "paid" : "unpaid" %>"><%= paid ? "Đã thanh toán" : "Chưa thanh toán" %></span>
                         </div>
+                        <% if (paid) {
+                            java.time.LocalDateTime paymentTime = inv.getCompletionDate();
+                            if (paymentTime == null) paymentTime = inv.getConfirmDate();
+                            if (paymentTime == null) paymentTime = inv.getOrderDate();
+                            if (paymentTime != null) {
+                        %>
+                        <div class="pay-row" style="margin-top: 8px;">
+                            <span class="lbl" style="font-size: 12px; color: #6b7280;">TG thanh toán</span>
+                            <span class="val" style="font-size: 13px; color: #374151;"><%= paymentTime.format(dtfFull) %></span>
+                        </div>
+                        <% } } %>
                         <div class="pay-row" style="border-top:1px solid #f3f4f6;padding-top:10px;margin-top:4px;">
                             <span class="lbl" style="font-weight:700;color:#111827;">Tổng tiền</span>
                             <span class="val total"><%= inv.getTotalAmount() != null ? String.format("%,.0fđ", inv.getTotalAmount()).replace(",", ".") : "—" %></span>

@@ -608,6 +608,7 @@
         
         countTotalVariants();
         fetchProvinces();
+        updateAvailableStockDisplay();
     }
 
     // --- Order Tabs Logic ---
@@ -718,6 +719,7 @@
             alert('Vui lòng tạo đơn hàng trước!');
             return;
         }
+        updateAvailableStockDisplay();
         document.getElementById('variantModalOverlay').classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
@@ -725,6 +727,10 @@
     function closeVariantModal() {
         document.getElementById('variantModalOverlay').classList.remove('active');
         document.body.style.overflow = '';
+    }
+    
+    function closeInvoiceModal() {
+        location.reload();
     }
     
     // --- Filters Logic (Client-side) ---
@@ -814,26 +820,32 @@
         const existingItemIndex = order.items.findIndex(item => item.code === variantCode);
         
         if (existingItemIndex !== -1) {
-            if (order.items[existingItemIndex].quantity < stock) {
+            if (getAvailableStock(variantCode) >= 1) {
                 order.items[existingItemIndex].quantity += 1;
             } else {
                 alert("Số lượng vượt quá tồn kho!");
                 return;
             }
         } else {
-            order.items.push({
-                code: variantCode,
-                name: name,
-                color: color,
-                size: size,
-                price: price,
-                image: image,
-                stock: stock,
-                quantity: 1
-            });
+            if (getAvailableStock(variantCode) >= 1) {
+                order.items.push({
+                    code: variantCode,
+                    name: name,
+                    color: color,
+                    size: size,
+                    price: price,
+                    image: image,
+                    stock: stock,
+                    quantity: 1
+                });
+            } else {
+                alert("Sản phẩm này đã hết hàng (Tồn kho = 0)!");
+                return;
+            }
         }
         
         renderCurrentOrderItems();
+        updateAvailableStockDisplay();
         closeVariantModal();
     }
     
@@ -1469,11 +1481,20 @@
         if (!item) return;
         
         let newQty = item.quantity + change;
-        if (newQty > 0 && newQty <= item.stock) {
-            item.quantity = newQty;
-            renderCurrentOrderItems();
-        } else if (newQty > item.stock) {
-            alert("Số lượng vượt quá tồn kho!");
+        if (newQty > 0) {
+            if (change > 0) {
+                if (getAvailableStock(code) >= change) {
+                    item.quantity = newQty;
+                    renderCurrentOrderItems();
+                    updateAvailableStockDisplay();
+                } else {
+                    alert("Số lượng vượt quá tồn kho hiện có!");
+                }
+            } else {
+                item.quantity = newQty;
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+            }
         }
     }
     
@@ -1484,14 +1505,22 @@
         if (!item) return;
         
         let val = parseInt(value) || 1;
-        if (val > item.stock) {
-            alert("Số lượng vượt quá tồn kho!");
-            val = item.stock;
-        } else if (val < 1) {
-            val = 1;
+        if (val < 1) val = 1;
+        
+        let diff = val - item.quantity;
+        if (diff > 0) {
+            if (getAvailableStock(code) >= diff) {
+                item.quantity = val;
+            } else {
+                alert("Số lượng vượt quá tồn kho hiện có!");
+                val = item.quantity + getAvailableStock(code);
+                item.quantity = val;
+            }
+        } else {
+            item.quantity = val;
         }
-        item.quantity = val;
         renderCurrentOrderItems();
+        updateAvailableStockDisplay();
     }
     
     function removeItem(code) {
@@ -1500,6 +1529,7 @@
         
         order.items = order.items.filter(i => i.code !== code);
         renderCurrentOrderItems();
+        updateAvailableStockDisplay();
     }
     
     // --- QR and Success Modals ---
@@ -1738,6 +1768,7 @@
     
     function closeInvoiceModal() {
         document.getElementById('invoiceModal').classList.remove('active');
+        window.location.reload();
     }
 
     // Initialize
@@ -1863,6 +1894,47 @@
         }
     }
     
+    function getDbStock(variantCode) {
+        const row = document.querySelector('.variant-row[data-code="' + variantCode.replace(/"/g, '\\"') + '"]');
+        if (row) {
+            return parseInt(row.getAttribute('data-stock')) || 0;
+        }
+        let fallbackStock = 0;
+        orders.forEach(o => {
+            if (o.items) {
+                o.items.forEach(i => {
+                    if (i.code === variantCode && i.stock) fallbackStock = i.stock;
+                });
+            }
+        });
+        return fallbackStock;
+    }
+
+    function getAvailableStock(variantCode) {
+        let dbStock = getDbStock(variantCode);
+        let reserved = 0;
+        orders.forEach(o => {
+            if (o.items) {
+                o.items.forEach(i => {
+                    if (i.code === variantCode) reserved += i.quantity;
+                });
+            }
+        });
+        return Math.max(0, dbStock - reserved);
+    }
+
+    function updateAvailableStockDisplay() {
+        const rows = document.querySelectorAll('.variant-row');
+        rows.forEach(row => {
+            const code = row.getAttribute('data-code');
+            const available = getAvailableStock(code);
+            const stockTd = row.children[6];
+            if (stockTd) {
+                stockTd.textContent = available;
+            }
+        });
+    }
+
     // Override default alert globally in this page to catch all alerts
     window.alert = showCustomAlert;
 </script>
