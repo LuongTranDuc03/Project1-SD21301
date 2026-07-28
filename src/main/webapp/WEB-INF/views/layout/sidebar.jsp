@@ -48,6 +48,12 @@
         display: none !important;
     }
 </style>
+<script>
+    // Execute immediately to prevent FOUC (Flash of Unstyled Content)
+    if (localStorage.getItem("sidebar-collapsed") === "true") {
+        document.body.classList.add("sidebar-collapsed");
+    }
+</script>
 <aside class="sidebar">
     <!-- 1. Brand Header -->
     <div class="sidebar-header">
@@ -198,10 +204,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         const toggleBtn = document.getElementById("sidebar-toggle");
         
-        // Kiểm tra xem trạng thái collapsed trước đó có được lưu trong localStorage không
-        const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true";
-        if (isCollapsed) {
-            document.body.classList.add("sidebar-collapsed");
+        // Cập nhật icon dựa trên trạng thái hiện tại đã được set bởi inline script phía trên
+        if (document.body.classList.contains("sidebar-collapsed")) {
             updateToggleIcon(true);
         }
         

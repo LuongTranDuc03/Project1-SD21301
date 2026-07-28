@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
@@ -575,7 +575,10 @@
                 
                 if (!orders || !Array.isArray(orders) || orders.length === 0) {
                     orders = [];
-                    createOrder();
+                    currentOrderId = null;
+                    renderTabs();
+                    renderCurrentOrderItems();
+                    renderCheckoutState();
                 } else {
                     const exists = orders.find(o => o.id === currentOrderId);
                     if (!exists) {
@@ -596,6 +599,7 @@
                     
                     renderTabs();
                     renderCurrentOrderItems();
+                    renderCheckoutState();
                 }
             } catch (e) {
                 console.error("Error parsing pos orders", e);
@@ -698,16 +702,16 @@
             orders = orders.filter(o => o.id !== orderId);
             
             if (orders.length === 0) {
-                createOrder();
+                currentOrderId = null;
             } else {
                 if (currentOrderId === orderId) {
                     // Switch to the last available order
                     currentOrderId = orders[orders.length - 1].id;
                 }
-                renderTabs();
-                renderCurrentOrderItems();
-                renderCheckoutState();
             }
+            renderTabs();
+            renderCurrentOrderItems();
+            renderCheckoutState();
             saveOrdersToStorage();
         });
     }
@@ -850,12 +854,25 @@
     }
     
     function renderCurrentOrderItems() {
-        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
-        
-        const order = orders[orderIndex];
         const emptyState = document.getElementById('emptyState');
         const container = document.getElementById('addedProductsContainer');
+        
+        if (!currentOrderId || orders.length === 0) {
+            emptyState.style.display = 'flex';
+            container.style.display = 'none';
+            document.getElementById('checkoutGrid').style.display = 'none';
+            return;
+        }
+        
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) {
+            emptyState.style.display = 'flex';
+            container.style.display = 'none';
+            document.getElementById('checkoutGrid').style.display = 'none';
+            return;
+        }
+        
+        const order = orders[orderIndex];
         
         if (order.items.length === 0) {
             emptyState.style.display = 'flex';

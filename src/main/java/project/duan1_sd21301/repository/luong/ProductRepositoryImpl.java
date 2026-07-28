@@ -33,8 +33,49 @@ public class ProductRepositoryImpl implements ProductRepository {
 
             while (rs.next()) {
                 Product p = mapResultSetToProduct(rs);
-                p.setDetails(findDetailsByProductId(conn, p.getId()));
                 products.add(p);
+            }
+
+            if (!products.isEmpty()) {
+                // Batch Fetch Details
+                Map<Integer, List<ProductDetail>> detailsByProductId = new HashMap<>();
+                List<ProductDetail> allDetails = new ArrayList<>();
+                String detailSql = "SELECT ctsp.*, kt.ten_kich_thuoc, ms.ten_mau, kd.ten_kieu_dang " +
+                                   "FROM chi_tiet_san_pham ctsp " +
+                                   "LEFT JOIN kich_thuoc kt ON ctsp.id_kich_thuoc = kt.id " +
+                                   "LEFT JOIN mau_sac ms ON ctsp.id_mau_sac = ms.id " +
+                                   "LEFT JOIN kieu_dang kd ON ctsp.id_kieu_dang = kd.id " +
+                                   "ORDER BY ctsp.id ASC";
+                try (PreparedStatement detailPs = conn.prepareStatement(detailSql);
+                     ResultSet detailRs = detailPs.executeQuery()) {
+                    while (detailRs.next()) {
+                        ProductDetail pd = mapResultSetToProductDetail(detailRs);
+                        allDetails.add(pd);
+                        int productId = detailRs.getInt("id_san_pham");
+                        detailsByProductId.computeIfAbsent(productId, k -> new ArrayList<>()).add(pd);
+                    }
+                }
+
+                // Batch Fetch Images
+                Map<Integer, List<String>> imagesByDetailId = new HashMap<>();
+                String imageSql = "SELECT id_chi_tiet_san_pham, duong_dan FROM hinh_anh ORDER BY thu_tu ASC";
+                try (PreparedStatement imgPs = conn.prepareStatement(imageSql);
+                     ResultSet imgRs = imgPs.executeQuery()) {
+                    while (imgRs.next()) {
+                        int detailId = imgRs.getInt("id_chi_tiet_san_pham");
+                        String url = imgRs.getString("duong_dan");
+                        imagesByDetailId.computeIfAbsent(detailId, k -> new ArrayList<>()).add(url);
+                    }
+                }
+
+                // Associate Images -> Details
+                for (ProductDetail d : allDetails) {
+                    d.setImages(imagesByDetailId.getOrDefault(d.getId(), new ArrayList<>()));
+                }
+
+                for (Product p : products) {
+                    p.setDetails(detailsByProductId.getOrDefault(p.getId(), new ArrayList<>()));
+                }
             }
         } catch (SQLException e) {
             System.err.println("❌ ProductRepositoryImpl.findAll Error: " + e.getMessage());
@@ -43,7 +84,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Product p = mapResultSetToProduct(rs);
-                    p.setDetails(findDetailsByProductId(conn, p.getId()));
+                    p.setDetails(findDetailsByProductId(conn, p.getId())); // Fallback is fine with N+1
                     products.add(p);
                 }
             } catch (SQLException ex) {
