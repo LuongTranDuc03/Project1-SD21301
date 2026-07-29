@@ -43,20 +43,18 @@
             text-align: center;
         }
         .logo-box {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
+            width: 240px;
+            height: auto;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 24px;
-            backdrop-filter: blur(10px);
         }
-        .logo-box svg {
-            width: 48px;
-            height: 48px;
-            color: #fff;
+        .logo-box img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            object-fit: contain;
         }
         .login-left h1 {
             font-size: 32px;
@@ -331,12 +329,10 @@
         <div class="login-left">
             <div class="login-left-content">
                 <div class="logo-box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.38 3.46L16 2a8.5 8.5 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path>
-                    </svg>
+                    <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="FamiCoats Logo">
                 </div>
-                <h1>FamiCoats Admin</h1>
-                <p class="subtitle">Hệ thống quản lý bán hàng thời trang chuyên nghiệp</p>
+                <h2>FamiCoats Admin</h2>
+                <p class="subtitle" >Hệ thống quản lý bán hàng thời trang chuyên nghiệp</p>
                 
                 <ul class="feature-list">
                     <li>

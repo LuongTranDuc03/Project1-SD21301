@@ -58,15 +58,7 @@
     <!-- 1. Brand Header -->
     <div class="sidebar-header">
         <div class="brand">
-            <div class="brand-logo">
-                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20.38 3.46L16 2.14a2 2 0 0 0-1.16 0l-4.38 1.32a2 2 0 0 1-1.16 0L4.92 2.14a2 2 0 0 0-2.4 1.77L2 14a8 8 0 0 0 8 8h4a8 8 0 0 0 8-8l-.52-10.09a2 2 0 0 0-1.1-1.45z"></path>
-                </svg>
-            </div>
-            <div class="brand-name">
-                <h3>FamiCoats</h3>
-                <span>Admin Panel</span>
-            </div>
+            <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="FamiCoats Logo" class="brand-logo-img" />
         </div>
         <button class="toggle-btn" id="sidebar-toggle" title="Thu gọn / Mở rộng Sidebar">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">

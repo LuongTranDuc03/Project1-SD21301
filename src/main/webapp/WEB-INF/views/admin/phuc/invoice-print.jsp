@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-print.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-print.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body style="background:#F1F5F9;font-family:'Inter',sans-serif;">
 <%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu hiển thị trên hoá đơn in --%>
@@ -76,10 +76,8 @@
         <div class="doc-header">
             <div>
                 <div class="company-logo">
-                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2.14a2 2 0 0 0-1.16 0l-4.38 1.32a2 2 0 0 1-1.16 0L4.92 2.14a2 2 0 0 0-2.4 1.77L2 14a8 8 0 0 0 8 8h4a8 8 0 0 0 8-8l-.52-10.09a2 2 0 0 0-1.1-1.45z"/></svg>
+                    <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="FamiCoats Logo">
                 </div>
-                <div class="company-name">FamiCoats</div>
-                <div class="company-sub">Admin Panel</div>
                 <div class="company-info">
                     123 Lê Lợi, Quận 1, TP. Hồ Chí Minh<br>
                     Hotline: 1800 1234 &nbsp;|&nbsp; info@famicoats.vn<br>

@@ -1,5 +1,5 @@
 @import url('layout.css');
-@import url('sidebar.css');
+@import url('sidebar.css?v=2.2');
 @import url('common-components.css?v=1.2');
 
 /* Feature-based stylesheets */
