@@ -533,7 +533,7 @@
                     <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                     <div class="profile-pill">
                     <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
-                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
                 </div>
             </header>
@@ -737,13 +737,14 @@
             </div>
         </main>
     </div>
+
 <script>
         let selectedColors = [];
         let selectedSizes = [];
         let generatedVariants = {};
         let colorImages = {};
         let isFormDirty = false;
-        
+
         function validateForm() {
             var codeElem = document.getElementById("code");
             var code = codeElem ? codeElem.value : "";
@@ -801,7 +802,7 @@
 
             return true;
         }
-        
+
         window.openTagDropdown = function(dropdownId) {
             document.querySelectorAll('.tag-dropdown-menu').forEach(el => el.style.display = 'none');
             const dropdown = document.getElementById(dropdownId);
@@ -856,6 +857,7 @@
         function setupTagInput(inputId, containerId, dataArray, placeholderText) {
             const input = document.getElementById(inputId);
             const container = document.getElementById(containerId);
+            if (!input) return;
             
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -905,6 +907,7 @@
         function renderTags(containerId, dataArray, inputId, placeholderText) {
             const container = document.getElementById(containerId);
             const input = document.getElementById(inputId);
+            if (!container || !input) return;
             
             const oldTags = container.querySelectorAll('.tag-pill');
             oldTags.forEach(t => t.remove());
@@ -989,6 +992,7 @@
 
         function renderGeneratedTable() {
             const container = document.getElementById('generated-variants-container');
+            if (!container) return;
             container.innerHTML = '';
             
             Object.keys(generatedVariants).forEach((color, cIdx) => {
@@ -1022,7 +1026,7 @@
                                 <input type="text" class="form-input" value="\${v.size}" readonly style="background: #f8fafc; color: #475569; font-weight: 600; border-color: #e2e8f0; pointer-events: none; margin-bottom: 4px;">
                                 <input type="hidden" name="variantSize" value="\${v.size}">
                                 <input type="hidden" name="variantColor" value="\${color}">
-                                <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || 'anh-default.png'}">
+                                <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || ''}" data-color="\${color}">
                             </td>
                             <td style="width: 13%;">
                                 <input type="text" name="variantStyle" class="form-input style-input-\${cIdx}" placeholder="Ví dụ: Slim-fit" value="\${v.style || ''}" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">
@@ -1107,12 +1111,46 @@
             });
         }
 
+        function renderImagesSection() {
+            const section = document.getElementById('images-section');
+            const container = document.getElementById('images-by-color-container');
+            if (!section || !container) return;
+            
+            const colors = Object.keys(generatedVariants);
+            if (colors.length === 0) {
+                section.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            colors.forEach((color, idx) => {
+                const currentImg = colorImages[color];
+                const isValid = currentImg && currentImg !== 'null' && currentImg.trim() !== '';
+                const imgSrc = (isValid && (currentImg.startsWith('http://') || currentImg.startsWith('https://'))) 
+                    ? currentImg 
+                    : (isValid ? ('${pageContext.request.contextPath}/assets/img/' + currentImg) : '');
+                
+                const box = document.createElement('div');
+                box.style = 'width: 120px; text-align: center;';
+                box.innerHTML = `
+                    <div style="width: 120px; height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; position: relative;" onclick="document.getElementById('img-input-\${idx}').click()">
+                        \${imgSrc ? `<img id="sub-preview-\${idx}" src="\${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-size: 12px; color: #64748b;">\${color}</span>`}
+                    </div>
+                    <div style="margin-top: 6px; font-size: 13px; font-weight: 600; color: #334155;">\${color}</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+
         window.handleColorImageUpload = function(input, color, previewId) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById(previewId).src = e.target.result;
+                    const preview = document.getElementById(previewId);
+                    if (preview) preview.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
 
@@ -1127,18 +1165,17 @@
                 .then(data => {
                     if (data.success && data.url) {
                         colorImages[color] = data.url;
+                        document.querySelectorAll('input[name="variantImage"][data-color="' + color + '"]').forEach(imgInp => {
+                            imgInp.value = data.url;
+                        });
                         if (generatedVariants[color]) {
                             generatedVariants[color].forEach(v => {
                                 v.image = data.url;
                             });
                         }
-                        document.querySelectorAll('input[name="variantColor"]').forEach(inp => {
-                            if (inp.value === color) {
-                                const imgInp = inp.parentElement.querySelector('input[name="variantImage"]');
-                                if (imgInp) imgInp.value = data.url;
-                            }
-                        });
-                        document.getElementById(previewId).src = data.url;
+                        const preview = document.getElementById(previewId);
+                        if (preview) preview.src = data.url;
+                        renderImagesSection();
                     }
                 })
                 .catch(err => console.error("Cloudinary upload error:", err));
@@ -1152,7 +1189,8 @@
                 const file = input.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById(previewId).src = e.target.result;
+                    const preview = document.getElementById(previewId);
+                    if (preview) preview.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
 
@@ -1171,7 +1209,8 @@
                         if (hiddenInput) {
                             hiddenInput.value = data.url;
                         }
-                        document.getElementById(previewId).src = data.url;
+                        const preview = document.getElementById(previewId);
+                        if (preview) preview.src = data.url;
                     }
                 })
                 .catch(err => console.error("Cloudinary upload error:", err));
@@ -1251,10 +1290,11 @@
             document.querySelectorAll('.custom-select-options').forEach(opt => opt.style.display = 'none');
             document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
             
-            options.style.display = 'block';
-            wrapper.classList.add('open');
+            if (options) options.style.display = 'block';
+            if (wrapper) wrapper.classList.add('open');
             setTimeout(() => {
-                document.getElementById('origin-search').focus();
+                const searchEl = document.getElementById('origin-search');
+                if (searchEl) searchEl.focus();
             }, 10);
         };
 
@@ -1263,7 +1303,8 @@
             const wrapper = document.getElementById('origin-select-wrapper');
             const options = document.getElementById('origin-options');
             
-            if (options.style.display === 'none') {
+            if (!options || !wrapper) return;
+            if (options.style.display === 'none' || !options.style.display) {
                 openOriginSelect();
             } else {
                 options.style.display = 'none';
@@ -1277,17 +1318,18 @@
             const inputEl = document.getElementById('origin');
             const displayEl = document.getElementById('origin-display');
             
-            inputEl.value = originName;
-            displayEl.textContent = originName;
+            if (inputEl) inputEl.value = originName;
+            if (displayEl) displayEl.textContent = originName;
             
-            options.style.display = 'none';
-            wrapper.classList.remove('open');
+            if (options) options.style.display = 'none';
+            if (wrapper) wrapper.classList.remove('open');
             isFormDirty = true;
         };
 
         window.filterOriginOptions = function(searchText) {
             const list = document.getElementById('origin-list');
-            const items = list.querySelectorAll('.custom-select-option');
+            if (!list) return;
+            const items = list.querySelectorAll('.custom-select-option, .basic-select-option');
             const noResult = document.getElementById('origin-no-result');
             let hasResult = false;
             
@@ -1304,16 +1346,17 @@
             });
             
             if (hasResult) {
-                noResult.style.display = 'none';
+                if (noResult) noResult.style.display = 'none';
                 list.style.display = 'block';
             } else {
-                noResult.style.display = 'block';
+                if (noResult) noResult.style.display = 'block';
                 list.style.display = 'none';
             }
         };
 
         window.addNewOrigin = function() {
             const searchInput = document.getElementById('origin-search');
+            if (!searchInput) return;
             const newVal = searchInput.value.trim();
             if (newVal) {
                 const list = document.getElementById('origin-list');
@@ -1324,7 +1367,7 @@
                 newOption.style = 'padding: 4px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #e5e7eb;';
                 newOption.textContent = newVal;
                 
-                list.appendChild(newOption);
+                if (list) list.appendChild(newOption);
                 selectOriginOption(newVal);
                 
                 searchInput.value = '';
@@ -1340,10 +1383,11 @@
             document.querySelectorAll('.custom-select-options').forEach(opt => opt.style.display = 'none');
             document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
             
-            options.style.display = 'block';
-            wrapper.classList.add('open');
+            if (options) options.style.display = 'block';
+            if (wrapper) wrapper.classList.add('open');
             setTimeout(() => {
-                document.getElementById('brand-search').focus();
+                const searchEl = document.getElementById('brand-search');
+                if (searchEl) searchEl.focus();
             }, 10);
         };
 
@@ -1352,7 +1396,8 @@
             const wrapper = document.getElementById('brand-select-wrapper');
             const options = document.getElementById('brand-options');
             
-            if (options.style.display === 'none') {
+            if (!options || !wrapper) return;
+            if (options.style.display === 'none' || !options.style.display) {
                 openBrandSelect();
             } else {
                 options.style.display = 'none';
@@ -1360,23 +1405,24 @@
             }
         };
 
-        window.selectBrandOption = function(brandName) {
+        window.selectBrandOption = function(brandId, brandName) {
             const wrapper = document.getElementById('brand-select-wrapper');
             const options = document.getElementById('brand-options');
             const inputEl = document.getElementById('brand');
             const displayEl = document.getElementById('brand-display');
             
-            inputEl.value = brandName;
-            displayEl.textContent = brandName;
+            if (inputEl) inputEl.value = brandId;
+            if (displayEl) displayEl.textContent = brandId;
             
-            options.style.display = 'none';
-            wrapper.classList.remove('open');
+            if (options) options.style.display = 'none';
+            if (wrapper) wrapper.classList.remove('open');
             isFormDirty = true;
         };
 
         window.filterBrandOptions = function(searchText) {
             const list = document.getElementById('brand-list');
-            const items = list.querySelectorAll('.basic-select-option');
+            if (!list) return;
+            const items = list.querySelectorAll('.custom-select-option, .basic-select-option');
             const noResult = document.getElementById('brand-no-result');
             let hasResult = false;
             
@@ -1393,16 +1439,17 @@
             });
             
             if (hasResult) {
-                noResult.style.display = 'none';
+                if (noResult) noResult.style.display = 'none';
                 list.style.display = 'block';
             } else {
-                noResult.style.display = 'block';
+                if (noResult) noResult.style.display = 'block';
                 list.style.display = 'none';
             }
         };
 
         window.addNewBrand = function() {
             const searchInput = document.getElementById('brand-search');
+            if (!searchInput) return;
             const newVal = searchInput.value.trim();
             if (newVal) {
                 const list = document.getElementById('brand-list');
@@ -1413,7 +1460,7 @@
                 newOption.style = 'padding: 4px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #e5e7eb;';
                 newOption.textContent = newVal;
                 
-                list.appendChild(newOption);
+                if (list) list.appendChild(newOption);
                 selectBrandOption(newVal);
                 
                 searchInput.value = '';
@@ -1421,97 +1468,14 @@
             }
         };
 
-
-
-        // Đăng ký bộ lắng nghe sự kiện
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('productForm');
-            if (form) {
-                form.addEventListener('input', () => { isFormDirty = true; });
-                form.addEventListener('change', () => { isFormDirty = true; });
-                form.addEventListener('submit', () => { isFormDirty = false; });
-            }
-        });
-
-        document.addEventListener('click', function(event) {
-            // Đóng các dropdown Thương hiệu, Xuất xứ nếu click ra ngoài
-            if (!event.target.closest('#brand-select-wrapper')) {
-                const brandOptions = document.getElementById('brand-options');
-                if (brandOptions) brandOptions.style.display = 'none';
-                const brandWrapper = document.getElementById('brand-select-wrapper');
-                if (brandWrapper) brandWrapper.classList.remove('open');
-            }
-            if (!event.target.closest('#origin-select-wrapper')) {
-                const originOptions = document.getElementById('origin-options');
-                if (originOptions) originOptions.style.display = 'none';
-                const originWrapper = document.getElementById('origin-select-wrapper');
-                if (originWrapper) originWrapper.classList.remove('open');
-            }
-            // Đóng các dropdown tag Màu sắc, Kích cỡ
-            if (!event.target.closest('.tag-input-container') && !event.target.closest('.tag-dropdown-menu')) {
-                document.querySelectorAll('.tag-dropdown-menu').forEach(el => el.style.display = 'none');
-            }
-        });
-
-        // Xử lý confirm quay lại danh sách khi thêm mới sản phẩm
-        window.confirmBackToList = function(event) {
-            if (event) event.preventDefault();
-            const modal = document.getElementById('confirmBackModal');
-            modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.classList.add('active');
-            }, 10);
-        };
-
-        window.closeConfirmModal = function() {
-            const modal = document.getElementById('confirmBackModal');
-            modal.classList.remove('active');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 250);
-        };
-
-        // Xử lý confirm quay lại danh sách khi chỉnh sửa sản phẩm có thay đổi dữ liệu
-        window.handleEditBack = function(event) {
-            if (event) event.preventDefault();
-            if (isFormDirty) {
-                const modal = document.getElementById('editConfirmBackModal');
-                modal.style.display = 'flex';
-                setTimeout(() => {
-                    modal.classList.add('active');
-                }, 10);
-            } else {
-                proceedBackToList();
-            }
-        };
-
-        window.closeEditConfirmModal = function() {
-            const modal = document.getElementById('editConfirmBackModal');
-            modal.classList.remove('active');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 250);
-        };
-
-        window.saveAndGoBack = function() {
-            const form = document.getElementById('productForm');
-            if (form) {
-                if (typeof validateForm === 'function' && !validateForm()) {
-                    closeEditConfirmModal();
-                    return;
-                }
-                isFormDirty = false;
-                form.submit();
-            }
-        };
-
-        // Theo dõi thay đổi dữ liệu trong form
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('productForm');
             if (form) {
                 form.addEventListener('input', function() { isFormDirty = true; });
                 form.addEventListener('change', function() { isFormDirty = true; });
             }
+            setupTagInput('color-input', 'color-tags-container', selectedColors, 'Tìm và chọn màu sắc');
+            setupTagInput('size-input', 'size-tags-container', selectedSizes, 'Tìm và chọn kích cỡ');
         });
 
         // Xử lý nút Quay lại & Hủy bỏ
@@ -1582,7 +1546,7 @@
         window.proceedBackToList = function() {
             window.location.href = "${pageContext.request.contextPath}/admin/products";
         };
-    </script>
+</script>
 
     <!-- Modal Xác nhận quay lại khi Thêm mới -->
     <div id="confirmBackModal" class="confirm-modal-overlay" style="display: none;">
@@ -1669,4 +1633,3 @@
     <% } %>
 </body>
 </html>
-

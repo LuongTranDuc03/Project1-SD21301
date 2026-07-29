@@ -41,7 +41,7 @@
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
-                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
             </div>
         </header>
@@ -575,7 +575,10 @@
                 
                 if (!orders || !Array.isArray(orders) || orders.length === 0) {
                     orders = [];
-                    createOrder();
+                    currentOrderId = null;
+                    renderTabs();
+                    renderCurrentOrderItems();
+                    renderCheckoutState();
                 } else {
                     const exists = orders.find(o => o.id === currentOrderId);
                     if (!exists) {
@@ -596,6 +599,7 @@
                     
                     renderTabs();
                     renderCurrentOrderItems();
+                    renderCheckoutState();
                 }
             } catch (e) {
                 console.error("Error parsing pos orders", e);
@@ -698,16 +702,16 @@
             orders = orders.filter(o => o.id !== orderId);
             
             if (orders.length === 0) {
-                createOrder();
+                currentOrderId = null;
             } else {
                 if (currentOrderId === orderId) {
                     // Switch to the last available order
                     currentOrderId = orders[orders.length - 1].id;
                 }
-                renderTabs();
-                renderCurrentOrderItems();
-                renderCheckoutState();
             }
+            renderTabs();
+            renderCurrentOrderItems();
+            renderCheckoutState();
             saveOrdersToStorage();
         });
     }
@@ -850,12 +854,25 @@
     }
     
     function renderCurrentOrderItems() {
-        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
-        
-        const order = orders[orderIndex];
         const emptyState = document.getElementById('emptyState');
         const container = document.getElementById('addedProductsContainer');
+        
+        if (!currentOrderId || orders.length === 0) {
+            emptyState.style.display = 'flex';
+            container.style.display = 'none';
+            document.getElementById('checkoutGrid').style.display = 'none';
+            return;
+        }
+        
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) {
+            emptyState.style.display = 'flex';
+            container.style.display = 'none';
+            document.getElementById('checkoutGrid').style.display = 'none';
+            return;
+        }
+        
+        const order = orders[orderIndex];
         
         if (order.items.length === 0) {
             emptyState.style.display = 'flex';
@@ -1878,7 +1895,7 @@
     <div class="pos-modal" style="width: 400px; text-align: center; padding: 24px; position: relative;">
         <h3 style="margin-bottom: 16px; font-size: 18px; color: #1e293b;">Thông báo</h3>
         <p id="customAlertMessage" style="color: #475569; margin-bottom: 24px; font-size: 14px; line-height: 1.5;"></p>
-        <button class="btn-primary" onclick="closeCustomAlert()" style="padding: 8px 24px;">Đóng</button>
+        <button class="btn-primary" onclick="closeCustomAlert()" style="padding: 8px 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">Đóng</button>
     </div>
 </div>
 

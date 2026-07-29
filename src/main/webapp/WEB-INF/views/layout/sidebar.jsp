@@ -48,6 +48,12 @@
         display: none !important;
     }
 </style>
+<script>
+    // Execute immediately to prevent FOUC (Flash of Unstyled Content)
+    if (localStorage.getItem("sidebar-collapsed") === "true") {
+        document.body.classList.add("sidebar-collapsed");
+    }
+</script>
 <aside class="sidebar">
     <!-- 1. Brand Header -->
     <div class="sidebar-header">
@@ -110,8 +116,8 @@
                     </a>
                 </li>
                 <!-- Quản lý sản phẩm (Dropdown) -->
-                <li class="has-submenu <%= uri.contains("/admin/products") || uri.contains("/admin/variants") ? "submenu-open" : "" %>">
-                    <a href="javascript:void(0)" class="submenu-toggle" onclick="this.parentElement.classList.toggle('submenu-open')">
+                <li id="product-submenu" class="has-submenu <%= uri.contains("/admin/products") || uri.contains("/admin/variants") ? "submenu-open" : "" %>">
+                    <a href="javascript:void(0)" class="submenu-toggle" onclick="toggleProductSubmenu(this)">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         </span>
@@ -198,10 +204,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         const toggleBtn = document.getElementById("sidebar-toggle");
         
-        // Kiểm tra xem trạng thái collapsed trước đó có được lưu trong localStorage không
-        const isCollapsed = localStorage.getItem("sidebar-collapsed") === "true";
-        if (isCollapsed) {
-            document.body.classList.add("sidebar-collapsed");
+        // Cập nhật icon dựa trên trạng thái hiện tại đã được set bởi inline script phía trên
+        if (document.body.classList.contains("sidebar-collapsed")) {
             updateToggleIcon(true);
         }
         
@@ -228,5 +232,22 @@
                 `;
             }
         }
+        
+        // Quản lý trạng thái mở/đóng của submenu Quản lý sản phẩm
+        const productSubmenu = document.getElementById("product-submenu");
+        if (productSubmenu) {
+            const savedState = localStorage.getItem("product-submenu-open");
+            if (savedState === "true") {
+                productSubmenu.classList.add("submenu-open");
+            } else if (savedState === "false") {
+                productSubmenu.classList.remove("submenu-open");
+            }
+        }
+        
+        window.toggleProductSubmenu = function(el) {
+            const li = el.parentElement;
+            const isNowOpen = li.classList.toggle('submenu-open');
+            localStorage.setItem("product-submenu-open", isNowOpen);
+        };
     });
 </script>

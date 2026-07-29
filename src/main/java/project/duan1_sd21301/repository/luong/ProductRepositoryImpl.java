@@ -33,8 +33,49 @@ public class ProductRepositoryImpl implements ProductRepository {
 
             while (rs.next()) {
                 Product p = mapResultSetToProduct(rs);
-                p.setDetails(findDetailsByProductId(conn, p.getId()));
                 products.add(p);
+            }
+
+            if (!products.isEmpty()) {
+                // Batch Fetch Details
+                Map<Integer, List<ProductDetail>> detailsByProductId = new HashMap<>();
+                List<ProductDetail> allDetails = new ArrayList<>();
+                String detailSql = "SELECT ctsp.*, kt.ten_kich_thuoc, ms.ten_mau, kd.ten_kieu_dang " +
+                                   "FROM chi_tiet_san_pham ctsp " +
+                                   "LEFT JOIN kich_thuoc kt ON ctsp.id_kich_thuoc = kt.id " +
+                                   "LEFT JOIN mau_sac ms ON ctsp.id_mau_sac = ms.id " +
+                                   "LEFT JOIN kieu_dang kd ON ctsp.id_kieu_dang = kd.id " +
+                                   "ORDER BY ctsp.id ASC";
+                try (PreparedStatement detailPs = conn.prepareStatement(detailSql);
+                     ResultSet detailRs = detailPs.executeQuery()) {
+                    while (detailRs.next()) {
+                        ProductDetail pd = mapResultSetToProductDetail(detailRs);
+                        allDetails.add(pd);
+                        int productId = detailRs.getInt("id_san_pham");
+                        detailsByProductId.computeIfAbsent(productId, k -> new ArrayList<>()).add(pd);
+                    }
+                }
+
+                // Batch Fetch Images
+                Map<Integer, List<String>> imagesByDetailId = new HashMap<>();
+                String imageSql = "SELECT id_chi_tiet_san_pham, duong_dan FROM hinh_anh ORDER BY thu_tu ASC";
+                try (PreparedStatement imgPs = conn.prepareStatement(imageSql);
+                     ResultSet imgRs = imgPs.executeQuery()) {
+                    while (imgRs.next()) {
+                        int detailId = imgRs.getInt("id_chi_tiet_san_pham");
+                        String url = imgRs.getString("duong_dan");
+                        imagesByDetailId.computeIfAbsent(detailId, k -> new ArrayList<>()).add(url);
+                    }
+                }
+
+                // Associate Images -> Details
+                for (ProductDetail d : allDetails) {
+                    d.setImages(imagesByDetailId.getOrDefault(d.getId(), new ArrayList<>()));
+                }
+
+                for (Product p : products) {
+                    p.setDetails(detailsByProductId.getOrDefault(p.getId(), new ArrayList<>()));
+                }
             }
         } catch (SQLException e) {
             System.err.println("❌ ProductRepositoryImpl.findAll Error: " + e.getMessage());
@@ -43,7 +84,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Product p = mapResultSetToProduct(rs);
-                    p.setDetails(findDetailsByProductId(conn, p.getId()));
+                    p.setDetails(findDetailsByProductId(conn, p.getId())); // Fallback is fine with N+1
                     products.add(p);
                 }
             } catch (SQLException ex) {
@@ -983,7 +1024,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     String sqlSP1 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP001', N'Áo khoác da nam Premium', " + dmAoKhoacDa + ", " + thFamiCoats
-                            + ", N'Áo khoác da nam chất liệu da cừu tự nhiên cao cấp, bề mặt da mềm mịn.', N'Việt Nam', N'Chỉ giặt khô, không giặt máy.', 1850000, 324, 'AVAILABLE')";
+                            + ", N'Áo khoác da nam chất liệu da cừu tự nhiên cao cấp, bề mặt da mềm mịn.', N'Việt Nam', N'Chỉ giặt khô, không giặt máy.', 1850000, 324, 1)";
                     stmt.executeUpdate(sqlSP1, Statement.RETURN_GENERATED_KEYS);
                     int sp1Id = 1;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -994,16 +1035,16 @@ public class ProductRepositoryImpl implements ProductRepository {
                     String sqlCT1 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT001', " + sp1Id + ", " + ktM + ", " + msDen + ", " + kdSlim
-                            + ", 600000, 950000, 20, 0.8, 95, 48, 2.5, 'AVAILABLE'), " +
+                            + ", 600000, 950000, 20, 0.8, 95, 48, 2.5, 1), " +
                             "('CT002', " + sp1Id + ", " + ktL + ", " + msBe + ", " + kdOversize
-                            + ", 600000, 950000, 28, 0.85, 98, 50, 2.5, 'AVAILABLE')";
+                            + ", 600000, 950000, 28, 0.85, 98, 50, 2.5, 1)";
                     stmt.executeUpdate(sqlCT1);
 
                     // SP002
                     String sqlSP2 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP002', N'Bomber jacket oversize unisex', " + dmBomber + ", " + thZara
-                            + ", N'Áo bomber form rộng thời trang unisex thích hợp cho cả nam và nữ.', N'Nhập khẩu', N'Giặt máy chế độ nhẹ với nước ấm.', 1290000, 287, 'AVAILABLE')";
+                            + ", N'Áo bomber form rộng thời trang unisex thích hợp cho cả nam và nữ.', N'Nhập khẩu', N'Giặt máy chế độ nhẹ với nước ấm.', 1290000, 287, 1)";
                     stmt.executeUpdate(sqlSP2, Statement.RETURN_GENERATED_KEYS);
                     int sp2Id = 2;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -1014,16 +1055,16 @@ public class ProductRepositoryImpl implements ProductRepository {
                     String sqlCT2 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT003', " + sp2Id + ", " + ktL + ", " + msNavy + ", " + kdOversize
-                            + ", 500000, 799000, 18, 1.1, 75, 60, 5, 'AVAILABLE'), " +
+                            + ", 500000, 799000, 18, 1.1, 75, 60, 5, 1), " +
                             "('CT004', " + sp2Id + ", " + ktXL + ", " + msDen + ", " + kdOversize
-                            + ", 500000, 799000, 14, 1.2, 78, 62, 5, 'AVAILABLE')";
+                            + ", 500000, 799000, 14, 1.2, 78, 62, 5, 1)";
                     stmt.executeUpdate(sqlCT2);
 
                     // SP003
                     String sqlSP3 = "INSERT INTO san_pham (san_pham_code, ten_san_pham, id_danh_muc, id_thuong_hieu, mo_ta, xuat_xu, huong_dan_bao_quan, gia_ban, da_ban, trang_thai) "
                             +
                             "VALUES ('SP003', N'Áo denim wash nữ vintage', " + dmDenim + ", " + thLevis
-                            + ", N'Áo khoác bò denim dáng lửng phong cách retro vintage cho nữ.', N'Việt Nam', N'Giặt riêng bằng tay hoặc máy chế độ thường.', 890000, 241, 'AVAILABLE')";
+                            + ", N'Áo khoác bò denim dáng lửng phong cách retro vintage cho nữ.', N'Việt Nam', N'Giặt riêng bằng tay hoặc máy chế độ thường.', 890000, 241, 1)";
                     stmt.executeUpdate(sqlSP3, Statement.RETURN_GENERATED_KEYS);
                     int sp3Id = 3;
                     try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -1034,9 +1075,9 @@ public class ProductRepositoryImpl implements ProductRepository {
                     String sqlCT3 = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) VALUES "
                             +
                             "('CT005', " + sp3Id + ", " + ktM + ", " + msDen + ", " + kdVintage
-                            + ", 750000, 1200000, 10, 0.9, 100, 52, 1.8, 'AVAILABLE'), " +
+                            + ", 750000, 1200000, 10, 0.9, 100, 52, 1.8, 1), " +
                             "('CT006', " + sp3Id + ", " + ktL + ", " + msNavy + ", " + kdVintage
-                            + ", 750000, 1200000, 5, 0.95, 103, 54, 1.8, 'AVAILABLE')";
+                            + ", 750000, 1200000, 5, 0.95, 103, 54, 1.8, 1)";
                     stmt.executeUpdate(sqlCT3);
                 }
             } catch (SQLException ignored) {

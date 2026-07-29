@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
@@ -238,7 +238,7 @@
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
-                    <span>${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName : 'Hệ thống'}</span>
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
             </div>
         </header>
@@ -286,16 +286,16 @@
                     <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
                 </div>
                 <div class="card-body-content" id="filterCardBody">
-                    <div class="filter-grid">
+                    <div class="filter-grid-single-line" style="display: flex; flex-wrap: nowrap; align-items: flex-end; gap: 16px; width: 100%; overflow-x: auto; padding: 4px 0;">
                         <!-- Tìm kiếm -->
-                        <div class="filter-field">
-                            <label for="searchInput">Tìm kiếm</label>
-                            <input type="text" id="searchInput" class="filter-control" placeholder="Tìm theo mã SP, màu sắc..." oninput="applyFilters()">
+                        <div class="filter-field" style="flex: 2; min-width: 180px;">
+                            <label for="searchInput" style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Tìm kiếm</label>
+                            <input type="text" id="searchInput" class="filter-control" placeholder="Tìm theo mã SP, màu sắc..." oninput="applyFilters()" style="height: 38px; box-sizing: border-box;">
                         </div>
                         <!-- Kích cỡ -->
-                        <div class="filter-field">
-                            <label for="sizeFilter">Kích cỡ</label>
-                            <select id="sizeFilter" class="filter-control" onchange="applyFilters()">
+                        <div class="filter-field" style="flex: 1.2; min-width: 130px;">
+                            <label for="sizeFilter" style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Kích cỡ</label>
+                            <select id="sizeFilter" class="filter-control" onchange="applyFilters()" style="height: 38px; box-sizing: border-box;">
                                 <option value="">-- Tất cả kích cỡ --</option>
                                 <% for (String s : sizes) { %>
                                 <option value="<%= s %>"><%= s %></option>
@@ -303,36 +303,36 @@
                             </select>
                         </div>
                         <!-- Trạng thái -->
-                        <div class="filter-field">
-                            <label>Trạng thái</label>
+                        <div class="filter-field" style="flex: 0 0 auto; white-space: nowrap;">
+                            <label style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Trạng thái</label>
                             <input type="hidden" id="statusFilter" value="">
-                            <div style="display: flex; gap: 16px; align-items: center; padding: 10px 0; margin-left: 20px;">
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                            <div style="display: flex; gap: 12px; align-items: center; height: 38px; padding: 0 6px;">
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; color: #1e293b; margin: 0;">
                                     <input type="radio" name="statusRadio" value="" onchange="document.getElementById('statusFilter').value=this.value; applyFilters()" checked> Tất cả
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; color: #1e293b; margin: 0;">
                                     <input type="radio" name="statusRadio" value="AVAILABLE" onchange="document.getElementById('statusFilter').value=this.value; applyFilters()"> Còn hàng
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b;">
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer; color: #1e293b; margin: 0;">
                                     <input type="radio" name="statusRadio" value="OUT_OF_STOCK" onchange="document.getElementById('statusFilter').value=this.value; applyFilters()"> Hết hàng
                                 </label>
                             </div>
                         </div>
-                        <!-- Khoảng giá -->
-                        <div class="filter-field">
-                            <label id="priceLabel" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <!-- Khoảng giá (Đặt trước nút Đặt lại) -->
+                        <div class="filter-field" style="flex: 1.5; min-width: 170px;">
+                            <label id="priceLabel" style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px;">
                                 <span>Khoảng giá</span>
                                 <span id="priceRangeText" style="font-weight: 700; color: #10b981; font-size: 11px;"></span>
                             </label>
-                            <div class="price-slider-container">
+                            <div class="price-slider-container" style="height: 38px; display: flex; align-items: center; position: relative; width: 100%; margin: 0;">
                                 <div class="slider-track"></div>
                                 <input type="range" id="minPriceInput" min="<%= sliderMin %>" max="<%= sliderMax %>" step="1000" value="<%= sliderMin %>" oninput="updateSlider()">
                                 <input type="range" id="maxPriceInput" min="<%= sliderMin %>" max="<%= sliderMax %>" step="1000" value="<%= sliderMax %>" oninput="updateSlider()">
                             </div>
                         </div>
-                        <!-- Đặt lại -->
-                        <div class="filter-field" style="grid-column: 3; justify-content: flex-end; align-items: flex-end;">
-                            <button type="button" class="btn-reset-filter" onclick="resetFilters()" id="resetBtn" style="display: none; align-items: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s; font-size: 13px; width: fit-content; box-sizing: border-box; height: 38px;">
+                        <!-- Đặt lại (Ở cuối cùng) -->
+                        <div class="filter-field" style="flex: 0 0 auto; justify-content: flex-end;">
+                            <button type="button" class="btn-reset-filter" onclick="resetFilters()" id="resetBtn" style="visibility: hidden; display: flex; align-items: center; gap: 6px; padding: 0 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s; font-size: 13px; white-space: nowrap; box-sizing: border-box; height: 38px;">
                                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg>
                                 Đặt lại
                             </button>
@@ -795,8 +795,8 @@
             noResultsRow.style.display = visible.length === 0 ? '' : 'none';
         }
 
-        const hasFilter = keyword || sizeFilter || statusFilter || minPriceVal > SLIDER_MIN || maxPriceVal < SLIDER_MAX;
-        document.getElementById('resetBtn').style.display = hasFilter ? 'flex' : 'none';
+        const hasFilter = keyword || sizeFilter || statusFilter || (minPriceVal > SLIDER_MIN + 500) || (maxPriceVal < SLIDER_MAX - 500);
+        document.getElementById('resetBtn').style.visibility = hasFilter ? 'visible' : 'hidden';
 
         renderPagination(totalItems, totalPages);
     }
