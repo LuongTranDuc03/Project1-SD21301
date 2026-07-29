@@ -22,8 +22,10 @@
     Invoice inv = (Invoice) request.getAttribute("invoice");
     List<InvoiceDetail> detailList = (List<InvoiceDetail>) request.getAttribute("detailList");
     
-    // Lấy danh sách map hiển thị nhãn trạng thái
-    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    // Lấy danh sách map hiển thị nhãn trạng thái dựa theo loại đơn
+    Map<Integer, String> statusLabelsPos = (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
+    Map<Integer, String> statusLabelsOnline = (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline");
+    Map<Integer, String> statusLabels = (inv != null && inv.getOrderType() != null && inv.getOrderType() == 2) ? statusLabelsOnline : statusLabelsPos;
     
     // Format ngày tháng theo định dạng dd/MM/yyyy
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -46,10 +48,15 @@
     String badgeLabel  = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
 
     // Chuẩn bị thông tin khách hàng, fallback sang "—" nếu dữ liệu bị trống (null)
-    String customerName    = inv.getCustomerName()    != null ? inv.getCustomerName()    : "";
-    String customerPhone   = inv.getCustomerPhone()   != null ? inv.getCustomerPhone()   : "—";
-    String customerEmail   = inv.getCustomerEmail()   != null ? inv.getCustomerEmail()   : "—";
-    String customerAddress = inv.getCustomerAddress() != null ? inv.getCustomerAddress() : "—";
+    String customerName    = inv.getCustomerName()    != null && !inv.getCustomerName().trim().isEmpty() ? inv.getCustomerName()    : "Khách lẻ";
+    String customerPhone   = inv.getCustomerPhone()   != null && !inv.getCustomerPhone().trim().isEmpty() ? inv.getCustomerPhone()   : "—";
+    String customerEmail   = inv.getCustomerEmail()   != null && !inv.getCustomerEmail().trim().isEmpty() ? inv.getCustomerEmail()   : "—";
+    String customerAddress = inv.getCustomerAddress() != null && !inv.getCustomerAddress().trim().isEmpty() ? inv.getCustomerAddress() : "—";
+    
+    String receiverName    = inv.getReceiverName() != null && !inv.getReceiverName().trim().isEmpty() ? inv.getReceiverName() : customerName;
+    String receiverPhone   = inv.getReceiverPhone() != null && !inv.getReceiverPhone().trim().isEmpty() ? inv.getReceiverPhone() : "—";
+    String receiverAddress = inv.getAddressSnapshot() != null && !inv.getAddressSnapshot().trim().isEmpty() ? inv.getAddressSnapshot() : "—";
+    
     String payMethod       = inv.getPaymentMethod()   != null ? inv.getPaymentMethod().getName() : "—";
     String orderDate       = inv.getOrderDate()       != null ? inv.getOrderDate().format(dtf) : "—";
 %>
@@ -88,6 +95,7 @@
                 <div class="doc-title">HÓA ĐƠN</div>
                 <div class="doc-id">#HD-<%= inv.getId() %></div>
                 <div class="doc-date">Ngày: <%= orderDate %></div>
+                <div class="doc-date" style="margin-top:2px;">Loại: <%= (inv.getOrderType() != null && inv.getOrderType() == 2) ? "Online" : "Tại quầy" %></div>
                 <span class="doc-status <%= badgeClass %>"><%= badgeLabel %></span>
             </div>
         </div>
@@ -105,10 +113,10 @@
             </div>
             <div>
                 <div class="party-label">Địa chỉ giao hàng</div>
-                <div class="party-name"><%= customerName %></div>
+                <div class="party-name"><%= receiverName %></div>
                 <div class="party-info">
-                    <%= customerAddress %><br>
-                    SDT: <%= customerPhone %>
+                    <%= receiverAddress %><br>
+                    SDT: <%= receiverPhone %>
                 </div>
             </div>
         </div>
@@ -139,7 +147,11 @@
                             String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize() : "";
                             String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor() : "";
                             
-                            spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>";
+                            String imgUrl = (detail.getProductDetail().getImages() != null && !detail.getProductDetail().getImages().isEmpty()) 
+                                            ? detail.getProductDetail().getImages().get(0) : request.getContextPath() + "/assets/img/placeholder.png";
+                            spName = "<div style='display:flex; align-items:center; gap:10px;'>" +
+                                     "<img src='" + imgUrl + "' alt='sp' style='width:40px; height:40px; object-fit:cover; border-radius:4px; flex-shrink:0; border:1px solid #e5e7eb;'>" +
+                                     "<div>" + pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span></div></div>";
                         } else {
                             spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định";
                             if (detail.getVariantDescriptionSnapshot() != null) {
@@ -166,12 +178,27 @@
                 <span class="lbl">Tạm tính</span>
                 <span class="val"><%= inv.getSubtotal() != null ? String.format("%,.0fđ", inv.getSubtotal()).replace(",", ".") : "—" %></span>
             </div>
-            <% if (inv.getDiscountAmount() != null && inv.getDiscountAmount() > 0) { %>
+            <% 
+                String discountCodeName = (inv.getCoupon() != null) ? " (" + inv.getCoupon().getCode() + ")" : "";
+                String discountDisplay = "0đ";
+                if (inv.getDiscountAmount() != null && inv.getDiscountAmount() > 0) { 
+                    discountDisplay = "-" + String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".");
+                }
+            %>
             <div class="doc-fin-row">
-                <span class="lbl">Giảm giá</span>
-                <span class="val" style="color:#22c55e;">-<%= String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".") %></span>
+                <span class="lbl">Giảm giá<%= discountCodeName %></span>
+                <span class="val" style="color:#22c55e;"><%= discountDisplay %></span>
             </div>
-            <% } %>
+            <% 
+                String shippingDisplay = "0đ";
+                if (inv.getShippingFee() != null && inv.getShippingFee() > 0) { 
+                    shippingDisplay = "+" + String.format("%,.0fđ", inv.getShippingFee()).replace(",", ".");
+                }
+            %>
+            <div class="doc-fin-row">
+                <span class="lbl">Phí vận chuyển</span>
+                <span class="val" style="color:#ef4444;"><%= shippingDisplay %></span>
+            </div>
             <div class="doc-fin-total">
                 <span>TỔNG CỘNG</span>
                 <span class="val"><%= inv.getTotalAmount() != null ? String.format("%,.0fđ", inv.getTotalAmount()).replace(",", ".") : "—" %></span>

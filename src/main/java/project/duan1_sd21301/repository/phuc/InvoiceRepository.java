@@ -412,7 +412,8 @@ public class InvoiceRepository {
                 "pd.id AS pd_id, pd.chi_tiet_san_pham_code AS pd_code, pd.gia_ban AS pd_price, " +
                 "p.id AS p_id, p.ten_san_pham AS p_name, p.san_pham_code AS p_code, " +
                 "sz.id AS sz_id, sz.ten_kich_thuoc AS sz_name, " +
-                "c.id AS c_id, c.ten_mau AS c_name " +
+                "c.id AS c_id, c.ten_mau AS c_name, " +
+                "(SELECT TOP 1 duong_dan FROM hinh_anh WHERE id_chi_tiet_san_pham = pd.id ORDER BY thu_tu ASC) AS img_url " +
                 "FROM chi_tiet_hoa_don ct " +
                 "LEFT JOIN chi_tiet_san_pham pd ON ct.id_chi_tiet_san_pham = pd.id " +
                 "LEFT JOIN san_pham p ON pd.id_san_pham = p.id " +
@@ -459,6 +460,13 @@ public class InvoiceRepository {
                         int cId = rs.getInt("c_id");
                         if (!rs.wasNull()) {
                             pd.setColor(rs.getString("c_name"));
+                        }
+
+                        String imgUrl = rs.getString("img_url");
+                        if (imgUrl != null && !imgUrl.isEmpty()) {
+                            List<String> imgs = new ArrayList<>();
+                            imgs.add(imgUrl);
+                            pd.setImages(imgs);
                         }
 
                         detail.setProductDetail(pd);

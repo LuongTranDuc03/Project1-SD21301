@@ -167,7 +167,11 @@
                                             String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize() : "";
                                             String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor() : "";
                                             
-                                            spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>";
+                                            String imgUrl = (detail.getProductDetail() != null && detail.getProductDetail().getImages() != null && !detail.getProductDetail().getImages().isEmpty()) 
+                                                            ? detail.getProductDetail().getImages().get(0) : request.getContextPath() + "/assets/img/placeholder.png";
+                                            spName = "<div style='display:flex; align-items:center; gap:12px;'>" +
+                                                     "<img src='" + imgUrl + "' alt='sp' style='width:45px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0; border:1px solid #e5e7eb;'>" +
+                                                     "<div>" + pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span></div></div>";
                                         } else {
                                             spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định";
                                             String variants = "";

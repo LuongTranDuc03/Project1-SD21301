@@ -529,7 +529,7 @@
                             <td><%= v.getColor() != null ? v.getColor() : "" %></td>
                             <td><%= v.getSize() != null ? v.getSize() : "" %></td>
                             <td><%= v.getStock() %></td>
-                            <td style="font-weight: 600; color: #7f1d1d;"><%= String.format("%,.0f đ", v.getPrice()) %></td>
+                            <td style="font-weight: 600; color: #7f1d1d; white-space: nowrap;"><%= String.format("%,.0f đ", v.getPrice()) %></td>
                             <td>
                                 <button class="btn-add-variant" onclick="addVariantToOrder('<%= v.getCode() %>')" title="Thêm vào đơn">Thêm</button>
                             </td>
