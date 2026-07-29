@@ -39,7 +39,7 @@
             position: relative;
             width: 100%;
             min-height: calc(100vh - 130px);
-            border-radius: 20px;
+            border-radius: 8px;
             overflow: hidden;
             background: #0f172a url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
@@ -218,20 +218,16 @@
             <!-- 1. Thanh Navbar trên cùng -->
             <header class="navbar">
                 <div class="breadcrumb">
-                    <span>FamiCoats Admin</span> / <span class="active-crumb">Trang chủ</span>
+                    <span>FamiCoats</span> / <span class="active-crumb">Trang chủ</span>
                 </div>
                 <div class="navbar-right">
-                    <button class="notif-btn" title="Thông báo">
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                        </svg>
-                        <span class="notif-badge" style="width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; color: white; background: #ef4444; border-radius: 50%; font-weight: 700; top: 0; right: 0;">4</span>
+                    <button class="notif-btn">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span class="notif-badge"></span>
                     </button>
-                    <div class="date-pill"><%= formattedDate %></div>
+                    <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                     <div class="profile-pill">
-                        <span class="profile-avatar-mini" style="background: #ef4444; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;">A</span>
-                        <span><%= roleDisplay %></span>
+                        <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                     </div>
                 </div>
             </header>

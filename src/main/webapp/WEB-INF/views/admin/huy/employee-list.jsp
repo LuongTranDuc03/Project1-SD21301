@@ -56,8 +56,7 @@
                                                     </button>
                                                     <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                                                     <div class="profile-pill">
-                                                        <span class="profile-avatar-mini">A</span>
-                                                        <span>Admin</span>
+                                                        <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                                                     </div>
                                                 </div>
                                             </header>

@@ -44,7 +44,7 @@
     <main class="main-content">
         <header class="navbar">
             <div class="breadcrumb">
-                <span>FamiCoats Admin</span>
+                <span>FamiCoats</span>
                 <span style="margin:0 6px;color:#d1d5db">/</span>
                 <a href="${pageContext.request.contextPath}/admin/coupons" style="color:#6b7280;text-decoration:none;">Quản lý phiếu giảm giá</a>
                 <span style="margin:0 6px;color:#d1d5db">/</span>
@@ -57,7 +57,6 @@
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
             </div>

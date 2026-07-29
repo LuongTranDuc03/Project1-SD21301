@@ -50,8 +50,8 @@
     <main class="main-content">
                 <header class="navbar">
             <div class="breadcrumb">
-                <span>FamiCoats Admin</span>
-                <span style="margin:0 6px;color:#d1d5db">/</span>
+                <span>FamiCoats</span>
+                <span>/</span>
                 <span class="active-crumb">Quản lý phiếu giảm giá</span>
             </div>
             <div class="navbar-right">
@@ -61,8 +61,7 @@
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">A</span>
-                    <span>Admin</span>
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
             </div>
         </header>

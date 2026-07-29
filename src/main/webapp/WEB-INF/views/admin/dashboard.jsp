@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <!DOCTYPE html>
@@ -264,24 +264,15 @@
     <main class="main-content">
         <header class="navbar">
             <div class="breadcrumb">
-                <span>FamiCoats Admin</span>
-                <span style="margin:0 6px;color:#d1d5db">/</span>
-                <span class="active-crumb">Thống kê</span>
+                <span>FamiCoats</span> / <span class="active-crumb">Thống kê</span>
             </div>
             <div class="navbar-right">
-                <button class="notif-btn" aria-label="Thông báo">
-                    <svg viewBox="0 0 24 24" width="20" height="20"
-                         stroke="currentColor" stroke-width="2" fill="none"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                                d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
+                <button class="notif-btn">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                     <span class="notif-badge"></span>
                 </button>
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
             </div>

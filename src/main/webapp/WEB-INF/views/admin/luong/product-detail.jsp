@@ -601,7 +601,7 @@
             <!-- Navbar trên cùng -->
             <header class="navbar">
                 <div class="breadcrumb">
-                    <span>FamiCoats Admin</span> / <a href="${pageContext.request.contextPath}/admin/products" style="color: inherit; text-decoration: none;">Quản lý sản phẩm</a> / <span class="active-crumb">Chi tiết</span>
+                    <span>FamiCoats</span> / <a href="${pageContext.request.contextPath}/admin/products" style="color: inherit; text-decoration: none;">Quản lý sản phẩm</a> / <span class="active-crumb">Chi tiết</span>
                 </div>
                 <div class="navbar-right">
                     <button class="notif-btn">
@@ -610,7 +610,6 @@
                     </button>
                     <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                     <div class="profile-pill">
-                    <span class="profile-avatar-mini">${sessionScope.loggedInUser != null ? sessionScope.loggedInUser.fullName.substring(0, 1).toUpperCase() : 'U'}</span>
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
                 </div>
                 </div>
