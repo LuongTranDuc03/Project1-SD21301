@@ -382,9 +382,9 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="customerStatus">Trạng thái</label>
-                            <select name="trangThai" id="customerStatus" class="form-select">
-                                <option value="1" <%= (c != null && c.getStatus() != null && c.getStatus() == 1) ? "selected" : "" %>>Hoạt động</option>
-                                <option value="0" <%= (c != null && (c.getStatus() == null || c.getStatus() == 0)) ? "selected" : "" %>>Khóa</option>
+                            <select name="trangThai" id="customerStatus" class="form-select" <%= !isEdit ? "style='background-color: #f1f5f9; pointer-events: none;' readonly" : "" %>>
+                                <option value="1" <%= (!isEdit || (c != null && c.getStatus() != null && c.getStatus() == 1)) ? "selected" : "" %>>Hoạt động</option>
+                                <option value="0" <%= (isEdit && c != null && (c.getStatus() == null || c.getStatus() == 0)) ? "selected" : "" %>>Khóa</option>
                             </select>
                         </div>
                     </div>

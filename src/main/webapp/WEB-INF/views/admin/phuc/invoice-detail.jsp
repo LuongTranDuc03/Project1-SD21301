@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.phuc.Invoice" %>
 <%@ page import="project.duan1_sd21301.model.phuc.InvoiceDetail" %>
 <%@ page import="project.duan1_sd21301.model.phuc.InvoiceHistory" %>
@@ -104,12 +104,12 @@
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         In hoá đơn
                     </a>
-                    <%-- Chỉ hiện Cập nhật/Huỷ khi đơn chưa Hoàn thành/Huỷ/Hoàn trả --%>
-                    <% if (orderStatus < 3) { %>
+                    <%-- Chỉ hiện Cập nhật/Huỷ khi đơn chưa Hoàn thành/Huỷ/Hoàn trả (Mở cho cả đơn Hoàn thành == 3) --%>
+                    <% if (orderStatus <= 3) { %>
                     <button class="btn-action" style="background:#3b82f6;color:white;border:none;" onclick="openModal('update')">Cập nhật trạng thái</button>
                     <button class="btn-action btn-huy" onclick="openModal('cancel')">Huỷ đơn</button>
                     <% } %>
-                    <% if (orderStatus == 4) { %>
+                    <% if (orderStatus == 4 && paid) { %>
                     <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refund')">Hoàn tiền</button>
                     <% } %>
                 </div>
@@ -415,7 +415,7 @@
             <input type="hidden" name="newStatus" value="4">
             <div class="modal-field">
                 <label>Lý do huỷ đơn *</label>
-                <textarea name="note" rows="3" placeholder="Nhập lý do huỷ..."></textarea>
+                <textarea name="note" rows="3" placeholder="Nhập lý do huỷ..." required></textarea>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-cancel-m" onclick="closeModal('cancelModal')">Quay lại</button>

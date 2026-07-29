@@ -279,6 +279,7 @@ public class InvoiceRepository {
         invoice.setAddressSnapshot(rs.getString("dia_chi_snapshot"));
 
         invoice.setOrderStatus(rs.getObject("trang_thai_don_hang") != null ? rs.getInt("trang_thai_don_hang") : 0);
+        invoice.setPaymentStatus(rs.getObject("trang_thai_thanh_toan") != null ? rs.getInt("trang_thai_thanh_toan") : 0);
         invoice.setOrderType(rs.getObject("loai_hoa_don") != null ? rs.getInt("loai_hoa_don") : 1);
         invoice.setNote(rs.getString("ghi_chu"));
         invoice.setShippingFee(rs.getDouble("phi_van_chuyen"));

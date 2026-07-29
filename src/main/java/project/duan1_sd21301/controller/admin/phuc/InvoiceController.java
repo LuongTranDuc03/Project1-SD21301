@@ -54,6 +54,7 @@ public class InvoiceController extends HttpServlet {
         ORDER_STATUS_LABELS_POS.put(1, "Chờ giao hàng");
         ORDER_STATUS_LABELS_POS.put(3, "Hoàn thành");
         ORDER_STATUS_LABELS_POS.put(4, "Đã huỷ");
+        ORDER_STATUS_LABELS_POS.put(5, "Đã hoàn tiền");
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -279,12 +280,11 @@ public class InvoiceController extends HttpServlet {
                 .build();
 
         // Xác định xử lý kho:
-        // Hủy đơn/Hoàn tiền (→ 3, 4): hoàn kho; khôi phục từ hủy/hoàn tiền (3, 4 →
-        // khác): trừ kho
-        boolean isNewCancelOrRefund = (newStatus == 3 || newStatus == 4);
-        boolean isOldCancelOrRefund = (oldStatus == 3 || oldStatus == 4);
+        // Hủy đơn/Hoàn tiền (→ 4, 5): hoàn kho; khôi phục từ hủy/hoàn tiền (4, 5 → khác): trừ kho
+        boolean isNewCancelOrRefund = (newStatus == 4 || newStatus == 5);
+        boolean isOldCancelOrRefund = (oldStatus == 4 || oldStatus == 5);
 
-        boolean updateStock = isNewCancelOrRefund || (isOldCancelOrRefund && !isNewCancelOrRefund);
+        boolean updateStock = isNewCancelOrRefund != isOldCancelOrRefund;
         boolean increaseStock = isNewCancelOrRefund;
 
         List<InvoiceDetail> detailList = invoiceRepo.findDetailsByInvoiceId(id);
