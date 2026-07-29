@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.phuc.Coupon" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
@@ -66,8 +66,8 @@
         <div class="content-wrapper">
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <div>
-                    <h1 class="page-title-text"><%= isEdit ? "Chỉnh sửa phiếu giảm giá" : "Thêm phiếu giảm giá mới" %></h1>
-                    <div class="page-subtitle-text"><%= isEdit ? "Cập nhật thông tin phiếu giảm giá" : "Tạo chương trình giảm giá công khai mới" %></div>
+                    <h1><%= isEdit ? "Chỉnh sửa phiếu giảm giá" : "Thêm phiếu giảm giá mới" %></h1>
+                    <div class="subtitle"><%= isEdit ? "Cập nhật thông tin phiếu giảm giá" : "Tạo chương trình giảm giá công khai mới" %></div>
                 </div>
                 <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-reset">
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>

@@ -94,13 +94,10 @@
 
         <div class="content-wrapper">
             <div class="page-header"
-                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div>
-                    <h1 class="page-title-text">Quản lý hoá đơn</h1>
-                    <div class="page-subtitle-text">Tổng <strong>
-                        <%= total %>
-                    </strong> hoá đơn
-                    </div>
+                    <h1>Quản lý hoá đơn</h1>
+                    <div class="subtitle">Tổng <%= total %> hoá đơn</div>
                 </div>
 
             </div>

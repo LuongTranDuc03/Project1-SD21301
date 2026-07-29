@@ -336,27 +336,18 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     private boolean insertDetailInternal(Connection conn, ProductDetail detail) throws SQLException {
-        if (detail.getCode() == null || detail.getCode().trim().isEmpty()) {
-            detail.setCode("CT" + System.currentTimeMillis() % 100000);
+        String vCode = detail.getCode();
+        if (vCode == null || vCode.trim().isEmpty()) {
+            vCode = getNextProductDetailCode();
+            detail.setCode(vCode);
         }
+
         int sizeId = findOrCreateSize(conn, detail.getSize());
         int colorId = findOrCreateColor(conn, detail.getColor());
         int styleId = findOrCreateStyle(conn, detail.getStyle());
 
         String sql = "INSERT INTO chi_tiet_san_pham (chi_tiet_san_pham_code, id_san_pham, id_kich_thuoc, id_mau_sac, id_kieu_dang, ma_vach, gia_nhap, gia_ban, so_luong, trong_luong, chieu_dai, chieu_rong, do_day, trang_thai) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        String vCode = detail.getCode();
-        if (vCode == null || vCode.trim().isEmpty()) {
-            String pCode = (detail.getProduct() != null && detail.getProduct().getCode() != null)
-                    ? detail.getProduct().getCode()
-                    : "CTSP";
-            String color = detail.getColor() != null ? detail.getColor() : "";
-            String size = detail.getSize() != null ? detail.getSize() : "";
-            vCode = (pCode + "-" + color + "-" + size).replaceAll("\\s+", "");
-            if (vCode.length() > 50)
-                vCode = vCode.substring(0, 50);
-        }
 
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, vCode);
@@ -451,14 +442,8 @@ public class ProductRepositoryImpl implements ProductRepository {
 
             String vCode = detail.getCode();
             if (vCode == null || vCode.trim().isEmpty()) {
-                String pCode = (detail.getProduct() != null && detail.getProduct().getCode() != null)
-                        ? detail.getProduct().getCode()
-                        : "CTSP";
-                String color = detail.getColor() != null ? detail.getColor() : "";
-                String size = detail.getSize() != null ? detail.getSize() : "";
-                vCode = (pCode + "-" + color + "-" + size).replaceAll("\\s+", "");
-                if (vCode.length() > 50)
-                    vCode = vCode.substring(0, 50);
+                vCode = getNextProductDetailCode();
+                detail.setCode(vCode);
             }
 
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -836,7 +821,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             }
         } catch (SQLException ignored) {
         }
-        String sqlIns = "INSERT INTO xuat_xu (xuat_xu_code, ten_xuat_xu, trang_thai) VALUES (?, ?, N'Hoạt động')";
+        String sqlIns = "INSERT INTO xuat_xu (xuat_xu_code, ten_xuat_xu, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "XX" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -861,7 +846,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO danh_muc (danh_muc_code, ten_danh_muc, trang_thai) VALUES (?, ?, N'Hoạt động')";
+        String sqlIns = "INSERT INTO danh_muc (danh_muc_code, ten_danh_muc, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "DM" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -885,7 +870,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO thuong_hieu (thuong_hieu_code, ten_thuong_hieu, trang_thai) VALUES (?, ?, N'Hoạt động')";
+        String sqlIns = "INSERT INTO thuong_hieu (thuong_hieu_code, ten_thuong_hieu, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "TH" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -909,7 +894,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO kich_thuoc (kich_thuoc_code, ten_kich_thuoc, trang_thai) VALUES (?, ?, N'Hoạt động')";
+        String sqlIns = "INSERT INTO kich_thuoc (kich_thuoc_code, ten_kich_thuoc, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "KT" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -933,7 +918,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO mau_sac (mau_sac_code, ten_mau, trang_thai) VALUES (?, ?, N'Hoạt động')";
+        String sqlIns = "INSERT INTO mau_sac (mau_sac_code, ten_mau, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "MS" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -957,7 +942,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     return rs.getInt(1);
             }
         }
-        String sqlIns = "INSERT INTO kieu_dang (kieu_dang_code, ten_kieu_dang, trang_thai) VALUES (?, ?, N'Hoạt động')";
+        String sqlIns = "INSERT INTO kieu_dang (kieu_dang_code, ten_kieu_dang, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, "KD" + System.currentTimeMillis() % 100000);
             ps.setString(2, name.trim());
@@ -968,6 +953,27 @@ public class ProductRepositoryImpl implements ProductRepository {
             }
         }
         return 0;
+    }
+
+    private String getNextProductDetailCode() {
+        int max = 0;
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement("SELECT chi_tiet_san_pham_code FROM chi_tiet_san_pham");
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String ma = rs.getString("chi_tiet_san_pham_code");
+                if (ma != null && ma.startsWith("CTSP")) {
+                    try {
+                        int num = Integer.parseInt(ma.substring(4));
+                        if (num > max)
+                            max = num;
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return "CTSP" + String.format("%03d", max + 1);
     }
 
     private String getNextProductCode() {

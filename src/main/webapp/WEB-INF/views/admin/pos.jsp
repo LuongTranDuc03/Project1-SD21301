@@ -477,7 +477,8 @@
                     <thead>
                         <tr>
                             <th>STT</th>
-                            <th>Mã</th>
+                            <th>Mã SP</th>
+                            <th>Mã BT</th>
                             <th>Ảnh</th>
                             <th>Tên sản phẩm</th>
                             <th>Màu sắc</th>
@@ -508,6 +509,7 @@
                         %>
                         <tr class="variant-row" 
                             data-code="<%= v.getCode() != null ? v.getCode() : "" %>" 
+                            data-productcode="<%= p.getCode() != null ? p.getCode() : "" %>"
                             data-name="<%= p.getName() != null ? p.getName() : "" %>" 
                             data-color="<%= v.getColor() != null ? v.getColor() : "" %>" 
                             data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
@@ -515,7 +517,8 @@
                             data-stock="<%= v.getStock() %>"
                             data-image="<%= imageUrl %>">
                             <td><%= stt++ %></td>
-                            <td style="font-weight: 600;"><%= v.getCode() %></td>
+                            <td style="font-weight: 600; color: #475569;"><%= (p.getCode() != null) ? p.getCode() : "N/A" %></td>
+                            <td style="font-weight: 600; color: #475569;"><%= v.getCode() %></td>
                             <td>
                                 <% if (!imageUrl.isEmpty()) { %>
                                     <img src="<%= imageUrl %>" alt="Product Image" class="pos-product-img">
@@ -803,6 +806,7 @@
         }
         
         const name = row.getAttribute('data-name') || '';
+        const productCode = row.getAttribute('data-productcode') || '';
         const color = row.getAttribute('data-color') || '';
         const size = row.getAttribute('data-size') || '';
         const price = parseFloat(row.getAttribute('data-price')) || 0;
@@ -834,6 +838,7 @@
             if (getAvailableStock(variantCode) >= 1) {
                 order.items.push({
                     code: variantCode,
+                    productCode: productCode,
                     name: name,
                     color: color,
                     size: size,
@@ -898,7 +903,7 @@
                             imgHtml +
                             '<div class="pos-cart-item-info">' +
                                 '<div class="pos-cart-item-name">' + item.name + '</div>' +
-                                '<div class="pos-cart-item-variant">' + item.code + ' &bull; ' + item.color + ' &bull; ' + item.size + '</div>' +
+                                '<div class="pos-cart-item-variant">' + (item.productCode ? item.productCode + ' &bull; ' : '') + item.code + ' &bull; ' + item.color + ' &bull; ' + item.size + '</div>' +
                             '</div>' +
                         '</div>' +
                         '<div class="pos-cart-item-right">' +
@@ -1692,7 +1697,7 @@
                 tr.innerHTML = `
                     <td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">
                         <div>\${item.name}</div>
-                        <div style="font-size: 12px; color: #64748b;">\${item.code} &bull; \${item.color} &bull; \${item.size}</div>
+                        <div style="font-size: 12px; color: #64748b;">\${item.productCode ? item.productCode + ' &bull; ' : ''}\${item.code} &bull; \${item.color} &bull; \${item.size}</div>
                     </td>
                     <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: center;">\${item.quantity}</td>
                     <td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right;">\${item.price.toLocaleString('vi-VN')} đ</td>

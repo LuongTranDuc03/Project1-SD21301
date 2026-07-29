@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
@@ -290,7 +290,7 @@
                         <!-- Tìm kiếm -->
                         <div class="filter-field" style="flex: 2; min-width: 180px;">
                             <label for="searchInput" style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Tìm kiếm</label>
-                            <input type="text" id="searchInput" class="filter-control" placeholder="Tìm theo mã SP, màu sắc..." oninput="applyFilters()" style="height: 38px; box-sizing: border-box;">
+                            <input type="text" id="searchInput" class="filter-control" placeholder="Tìm mã SP, mã biến thể, màu sắc..." oninput="applyFilters()" style="height: 38px; box-sizing: border-box;">
                         </div>
                         <!-- Kích cỡ -->
                         <div class="filter-field" style="flex: 1.2; min-width: 130px;">
@@ -365,8 +365,9 @@
                     <table class="invoice-table" style="width: 100%; min-width: 900px;">
                         <thead>
                         <tr>
-                            <th style="text-align: center;">STT</th>
+                            <th style="text-align: center; width: 50px;">STT</th>
                             <th style="text-align: center;">Mã Sản Phẩm</th>
+                            <th style="text-align: center;">Mã Biến Thể</th>
                             <th style="text-align: center;">Hình ảnh</th>
                             <th style="text-align: center;">Màu sắc</th>
                             <th style="text-align: center;">Kích cỡ</th>
@@ -390,6 +391,9 @@
                             <td style="text-align: center; font-weight: 500; color: #64748b;"><%= stt++ %></td>
                             <td style="text-align: center;">
                                 <span class="product-id-text"><%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "N/A" %></span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="product-id-text"><%= v.getCode() != null ? v.getCode() : "N/A" %></span>
                             </td>
                             <td style="text-align: center;">
                                 <% 
@@ -417,10 +421,10 @@
                                 <span style="background-color: #f1f5f9; color: #475569; font-size: 12px; padding: 4px 8px; border-radius: 4px; font-weight: 600;"><%= v.getSize() != null ? v.getSize() : "" %></span>
                             </td>
                             <td style="text-align: center;">
-                                <span class="product-price" style="color: #059669;"><%= String.format("%,.0f", v.getImportPrice()) %> đ</span>
+                                <span class="product-price" style="color: #0f172a;"><%= String.format("%,.0f", v.getImportPrice()) %> đ</span>
                             </td>
                             <td style="text-align: center;">
-                                <span class="product-price"><%= String.format("%,.0f", v.getPrice()) %> đ</span>
+                                <span class="product-price" style="color: #0f172a;"><%= String.format("%,.0f", v.getPrice()) %> đ</span>
                             </td>
                             <td style="text-align: center;">
                                 <span style="font-weight: 600; color: #475569;"><%= v.getStock() %></span>
@@ -431,6 +435,7 @@
                             <td style="text-align: center;">
                                 <a href="javascript:void(0)" onclick="openEditVariantModal(this)" class="action-icon-btn edit-btn" title="Chỉnh sửa"
                                    data-variantid="<%= v.getId() %>"
+                                   data-variantcode="<%= v.getCode() != null ? v.getCode() : "" %>"
                                    data-productcode="<%= (v.getProduct() != null && v.getProduct().getCode() != null) ? v.getProduct().getCode() : "" %>"
                                    data-color="<%= v.getColor() != null ? v.getColor() : "" %>"
                                    data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
@@ -492,6 +497,10 @@
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
                         <input type="text" id="edit-productCode" name="productCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Biến Thể</label>
+                        <input type="text" id="edit-variantCode" name="variantCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
@@ -618,8 +627,9 @@
 
     function openEditVariantModal(btn) {
         document.getElementById('edit-variantId').value = btn.getAttribute('data-variantid') || '';
-        document.getElementById('edit-productCode').value = btn.getAttribute('data-productcode');
-        document.getElementById('edit-color').value = btn.getAttribute('data-color');
+        document.getElementById('edit-productCode').value = btn.getAttribute('data-productcode') || '';
+        document.getElementById('edit-variantCode').value = btn.getAttribute('data-variantcode') || '';
+        document.getElementById('edit-color').value = btn.getAttribute('data-color') || '';
         document.getElementById('edit-size').value = btn.getAttribute('data-size');
         document.getElementById('edit-style').value = btn.getAttribute('data-style');
         
@@ -743,10 +753,12 @@
         let visible = [];
 
         rows.forEach(row => {
-            const rowProductId = (row.dataset.productid || '').toLowerCase();
+            const rowProductCode = (row.dataset.productcode || '').toLowerCase();
+            const rowVariantCode = (row.dataset.code || '').toLowerCase();
             const rowColor = (row.dataset.color || '').toLowerCase();
             const matchSearch = !keyword ||
-                rowProductId.includes(keyword) ||
+                rowProductCode.includes(keyword) ||
+                rowVariantCode.includes(keyword) ||
                 rowColor.includes(keyword);
 
             const matchSize = !sizeFilter || row.dataset.size === sizeFilter;
