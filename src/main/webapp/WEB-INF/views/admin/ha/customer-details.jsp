@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
     <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
         <%@ page import="project.duan1_sd21301.model.Address" %>
             <%@ page import="java.util.List" %>
@@ -180,7 +180,7 @@
                                         <!-- 1. Thanh Navbar trên cùng -->
                                         <header class="navbar">
                                             <div class="breadcrumb">
-                                                <span>FamiCoats Admin</span> / <span>Quản lý khách hàng</span> / <span
+                                                <span>FamiCoats Admin</span> / <a href="${pageContext.request.contextPath}/admin/customers" style="color: #64748b; text-decoration: none;">Quản lý khách hàng</a> / <span
                                                     class="active-crumb">Chi tiết hồ sơ</span>
                                             </div>
                                             <div class="navbar-right">
@@ -241,7 +241,7 @@
                                                         <!-- Cột trái: Avatar và Tóm tắt dạng nền sáng tinh tế, không màu sắc -->
                                                         <div class="profile-card-left"
                                                             style="background-color: #ffffff; border: 1px solid #e2e8f0;">
-                                                            <img src="<%= c.getAvatar() %>" class="profile-avatar-large"
+                                                            <img src="<%= (c != null && c.getAvatar() != null && !c.getAvatar().isEmpty()) ? c.getAvatar() : "https://i.pravatar.cc/150?img=0" %>" onerror="this.src='https://i.pravatar.cc/150?img=0'" class="profile-avatar-large"
                                                                 alt="avatar" style="border: 2px solid #cbd5e1;">
                                                             <div class="profile-name">
                                                                 <%= c.getFullName() %>
@@ -413,27 +413,26 @@
                                                                                 <a href="<%= contextPath %>/admin/customers?action=edit-form&id=<%= c.getId() %>"
                                                                                     style="color: #0284c7; text-decoration: none;">Cập
                                                                                     nhật</a>
-                                                                                <span style="color: #cbd5e1;">|</span>
-                                                                                <!-- Form xóa địa chỉ phụ -->
-                                                                                <form
+                                                                                 <span style="color: #cbd5e1;">|</span>
+                                                                                 <form
                                                                                     action="<%= contextPath %>/admin/customers"
                                                                                     method="post"
                                                                                     onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')"
                                                                                     style="display: inline;">
                                                                                     <input type="hidden" name="action"
-                                                                                        value="delete-other-address">
+                                                                                        value="delete-address">
                                                                                     <input type="hidden" name="id"
                                                                                         value="<%= c.getId() %>">
-                                                                                    <input type="hidden" name="index"
-                                                                                        value="<%= i %>">
+                                                                                    <input type="hidden" name="addressCode"
+                                                                                        value="<%= otherAddr.getCode() %>">
                                                                                     <button type="submit"
-                                                                                        style="background: none; border: none; padding: 0; color: #0284c7; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: inline;">Xóa</button>
+                                                                                        style="background: none; border: none; padding: 0; color: #ef4444; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: inline;">Xóa</button>
                                                                                 </form>
                                                                             </div>
 
                                                                             <!-- Nút Thiết lập mặc định -->
-                                                                            <a href="<%= contextPath %>/admin/customers?action=set-default-address&id=<%= c.getId() %>&index=<%= i %>"
-                                                                                style="background-color: #ffffff; border: 1px solid #d1d5db; color: #374151; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 4px; text-decoration: none; display: inline-block; text-align: center; transition: background-color 0.2s; font-family: inherit;">
+                                                                            <a href="<%= contextPath %>/admin/customers?action=set-default-address&id=<%= c.getId() %>&addressCode=<%= otherAddr.getCode() %>"
+                                                                                style="background-color: #ffffff; border: 1px solid #d1d5db; color: #374151; font-size: 11px; padding: 4px 8px; border-radius: 4px; text-decoration: none; margin-top: 6px; display: inline-block; transition: background-color 0.2s; font-family: inherit;">
                                                                                 Thiết lập mặc định
                                                                             </a>
                                                                         </div>

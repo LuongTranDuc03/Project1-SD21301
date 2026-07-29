@@ -137,7 +137,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
             ps.setString(9, customer.getCode());
 
             boolean updated = ps.executeUpdate() > 0;
-            if (updated && customer.getId() > 0 && customer.getAddresses() != null) {
+            if (customer.getId() > 0 && customer.getAddresses() != null) {
                 // Xoá liên kết địa chỉ cũ để ghi đè địa chỉ mới
                 String delSql = "DELETE FROM khach_hang_dia_chi WHERE id_khach_hang = ?";
                 try (PreparedStatement psDel = conn.prepareStatement(delSql)) {
@@ -150,7 +150,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                     saveAddressAndLinkToCustomer(customer.getId(), ca, conn);
                 }
             }
-            return updated;
+            return true;
         } catch (SQLException e) {
             System.err.println("Lỗi khi cập nhật Khách hàng: " + e.getMessage());
         }
@@ -159,7 +159,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public boolean delete(int id) {
-        String sql = "DELETE FROM khach_hang WHERE id=?";
+        String sql = "UPDATE khach_hang SET trang_thai = 0 WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -241,7 +241,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                      "dc.id AS dc_id, dc.dia_chi_code, dc.tinh, dc.huyen, dc.xa, dc.dia_chi_chi_tiet " +
                      "FROM khach_hang_dia_chi khd " +
                      "JOIN dia_chi dc ON khd.id_dia_chi = dc.id " +
-                     "WHERE khd.id_khach_hang = ?";
+                     "WHERE khd.id_khach_hang = ? ORDER BY khd.mac_dinh DESC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerId);
             try (ResultSet rs = ps.executeQuery()) {

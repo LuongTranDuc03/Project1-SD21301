@@ -96,6 +96,7 @@ public class CustomerController extends HttpServlet {
                     for (CustomerAddress a : cust.getAddresses()) {
                         a.setDefault(a.getCode().equals(addressCode));
                     }
+                    customerService.updateCustomer(cust);
                     session.setAttribute("toastMessage", "Thiết lập địa chỉ mặc định thành công!");
                     session.setAttribute("toastType", "success");
                 }
@@ -225,7 +226,8 @@ public class CustomerController extends HttpServlet {
             } catch (Exception e) { e.printStackTrace(); }
 
             if ("add".equals(action) && (anhDaiDien == null || anhDaiDien.trim().isEmpty())) {
-                anhDaiDien = "https://i.pravatar.cc/150?img=" + (int)(Math.random() * 70);
+                String safeName = (hoTen != null && !hoTen.trim().isEmpty()) ? hoTen.trim().replace(" ", "+") : "U";
+                anhDaiDien = "https://ui-avatars.com/api/?name=" + safeName + "&background=random";
             }
 
             Date ngaySinh = null;
@@ -312,6 +314,7 @@ public class CustomerController extends HttpServlet {
                 Customer newC = Customer.builder()
                         .id(nextId).code(code).fullName(hoTen).email(email).phoneNumber(soDienThoai)
                         .dateOfBirth(ngaySinh).gender(gioiTinh).avatar(anhDaiDien).status(trangThai)
+                        .password("123456")
                         .addresses(addresses).build();
                 for (CustomerAddress a : newC.getAddresses()) a.setCustomer(newC);
                 

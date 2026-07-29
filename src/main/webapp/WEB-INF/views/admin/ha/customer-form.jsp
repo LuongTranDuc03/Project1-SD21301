@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%-- Import các Model và lớp tiện ích phục vụ xử lý trên Form --%>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
 <%@ page import="project.duan1_sd21301.model.Address" %>
@@ -277,7 +277,7 @@
         <!-- 1. Thanh Navbar trên cùng -->
         <header class="navbar">
             <div class="breadcrumb">
-                <span>FamiCoats Admin</span> / <span>Quản lý khách hàng</span> / <span class="active-crumb"><%= isEdit ? "Chỉnh sửa hồ sơ" : "Thêm mới" %></span>
+                <span>FamiCoats Admin</span> / <a href="<%= contextPath %>/admin/customers" style="color: #64748b; text-decoration: none;">Quản lý khách hàng</a> / <span class="active-crumb"><%= isEdit ? "Chỉnh sửa hồ sơ" : "Thêm mới" %></span>
             </div>
             <div class="navbar-right">
                 <button class="notif-btn">
@@ -300,7 +300,7 @@
                     <h1><%= isEdit ? "Cập nhật hồ sơ khách hàng" : "Thêm khách hàng mới" %></h1>
                     <div class="subtitle"><%= (c != null) ? "Chỉnh sửa các trường thông tin của " + c.getCode() : "Điền đầy đủ thông tin để lưu khách hàng" %></div>
                 </div>
-                <a href="<%= contextPath %>/admin/customers<%= (c != null) ? "?action=details&code=" + c.getCode() : "" %>" class="btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; padding: 10px 16px; font-weight: 600;">
+                <a href="<%= contextPath %>/admin/customers<%= (isEdit && c != null) ? "?action=details&code=" + c.getCode() : "" %>" class="btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; padding: 10px 16px; font-weight: 600;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     <span>Quay lại</span>
                 </a>
@@ -633,30 +633,19 @@
 
     async function getAllDistricts() {
         if (!_dCache) {
-            console.log('[Geo] Đang tải quận/huyện + phường/xã...');
-            // Dùng depth=2 để mỗi district có sẵn .wards → không cần gọi API thêm
-            const d = await geoGet('/api/v1/d?depth=2');
+            console.log('[Geo] Đang tải danh sách quận/huyện...');
+            // depth=1 (không cần wards, wards luôn rỗng trong bulk API)
+            const d = await geoGet('/api/v1/d?depth=1');
             _dCache = Array.isArray(d) ? d : [];
-            const sample = _dCache[0];
-            console.log('[Geo] Districts:', _dCache.length,
-                '| province_code:', sample?.province_code,
-                '| wards in 1st:', sample?.wards?.length ?? 'UNDEFINED');
+            console.log('[Geo] Districts loaded:', _dCache.length);
         }
         return _dCache;
     }
 
     async function getWards(districtCode) {
-        // 1. Thử lấy từ cache (district đã có .wards nếu load depth=2)
-        if (_dCache) {
-            const district = _dCache.find(d => String(d.code) === String(districtCode));
-            if (district && Array.isArray(district.wards) && district.wards.length > 0) {
-                console.log('[Geo] Wards từ cache:', district.wards.length);
-                return district.wards;
-            }
-        }
-        // 2. Fallback: gọi API trực tiếp
-        console.log('[Geo] Fallback: gọi API wards cho', districtCode);
-        const d = await geoGet(`/api/v1/d/${districtCode}?depth=2`);
+        // Bulk /api/v1/d?depth=2 luôn trả wards=[] → không dùng cache, luôn gọi API riêng lẻ
+        console.log('[Geo] Tải wards cho quận', districtCode);
+        const d = await geoGet('/api/v1/d/' + districtCode + '?depth=2');
         if (d && Array.isArray(d.wards) && d.wards.length > 0) {
             console.log('[Geo] Wards từ API:', d.wards.length);
             return d.wards;
@@ -682,20 +671,31 @@
         });
 
         function updateHiddenValue() {
-            const pVal  = provinceSel.value;
-            const dVal  = districtSel.value;
-            const wVal  = wardSel.value;
-            const pText = pVal ? (provinceSel.options[provinceSel.selectedIndex]?.text || '') : '';
-            const dText = dVal ? (districtSel.options[districtSel.selectedIndex]?.text || '') : '';
-            const wText = wVal ? (wardSel.options[wardSel.selectedIndex]?.text || '') : '';
-            const s     = streetInput.value.trim();
-            
+            let pText = '';
+            if (provinceSel.selectedIndex > 0) pText = provinceSel.options[provinceSel.selectedIndex].text;
+            let dText = '';
+            if (districtSel.selectedIndex > 0) dText = districtSel.options[districtSel.selectedIndex].text;
+            let wText = '';
+            if (wardSel.selectedIndex > 0) wText = wardSel.options[wardSel.selectedIndex].text;
+            const s = streetInput.value.trim();
+
             let parts = [];
             if (s) parts.push(s);
             if (wText) parts.push(wText);
             if (dText) parts.push(dText);
             if (pText) parts.push(pText);
             hiddenInput.value = parts.join(', ');
+
+            // Sync submit-province/district/ward hidden inputs trong cùng khối
+            const container = hiddenInput.closest('.form-card-body') || hiddenInput.closest('.address-card-row');
+            if (container) {
+                const hP = container.querySelector('.submit-province');
+                const hD = container.querySelector('.submit-district');
+                const hW = container.querySelector('.submit-ward');
+                if (hP) hP.value = pText;
+                if (hD) hD.value = dText;
+                if (hW) hW.value = wText;
+            }
         }
 
         function fillDistricts(pCode) {
@@ -720,7 +720,7 @@
             updateHiddenValue();
         });
 
-        // Chọn quận/huyện → load phường/xã qua proxy với log đầy đủ
+        // Chọn quận/huyện → load phường/xã từ API riêng lẻ (bulk API không trả về wards)
         districtSel.addEventListener('change', async () => {
             wardSel.innerHTML = '<option value="">Đang tải phường/xã...</option>';
             wardSel.disabled = true;
@@ -728,30 +728,18 @@
             console.log('[Ward] District selected, code =', dCode);
 
             if (dCode) {
-                // Bước 1: Thử lấy từ cache
-                const cached = _dCache?.find(d => String(d.code) === dCode);
-                if (cached?.wards?.length) {
-                    console.log('[Ward] Từ cache:', cached.wards.length, 'phường/xã');
-                    wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-                    cached.wards.forEach(w => {
+                // Luôn gọi API từng quận để lấy danh sách phường/xã (bulk /api/v1/d?depth=2 trả wards=[])
+                const data = await geoGet('/api/v1/d/' + dCode + '?depth=2');
+                wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                if (data && Array.isArray(data.wards) && data.wards.length > 0) {
+                    data.wards.forEach(w => {
                         const o = document.createElement('option');
                         o.value = w.code; o.textContent = w.name;
                         wardSel.appendChild(o);
                     });
+                    console.log('[Ward] Loaded', data.wards.length, 'phường/xã ✅');
                 } else {
-                    // Bước 2: Gọi trực tiếp qua geoGet (có fallback)
-                    const data = await geoGet('/api/v1/d/' + dCode + '?depth=2');
-                    wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
-                    if (data && Array.isArray(data.wards) && data.wards.length > 0) {
-                        data.wards.forEach(w => {
-                            const o = document.createElement('option');
-                            o.value = w.code; o.textContent = w.name;
-                            wardSel.appendChild(o);
-                        });
-                        console.log('[Ward] Loaded', data.wards.length, 'phường/xã ✅');
-                    } else {
-                        console.warn('[Ward] wards array rỗng hoặc không có!');
-                    }
+                    console.warn('[Ward] Không tải được phường/xã cho quận code:', dCode);
                 }
                 wardSel.disabled = false;
             }
@@ -804,6 +792,8 @@
                         } else {
                             wardSel.disabled = false;
                         }
+                        // Sau khi khôi phục đầy đủ, sync hidden inputs từ trạng thái dropdown
+                        updateHiddenValue();
                     }
                 }
             }
@@ -930,8 +920,8 @@
     function setDefaultAddress(button) {
         const card = button.closest('.address-card-row');
 
-        const otherTen = card.querySelector('input[name="diaChiKhacTen"]');
-        const otherSdt = card.querySelector('input[name="diaChiKhacSdt"]');
+        const otherTen = card.querySelector('input[name="otherRecipientName"]');
+        const otherSdt = card.querySelector('input[name="otherPhoneNumber"]');
         const otherHidden = card.querySelector('.other-address-hidden');
 
         const mainTen = document.getElementById('defaultAddressTen');
@@ -1094,10 +1084,16 @@
         // 5. Kiểm tra Địa chỉ mặc định (Tên người nhận, SĐT, Tỉnh, Huyện, Xã, Số nhà)
         const defTenInput   = document.getElementById('defaultAddressTen');
         const defSdtInput   = document.getElementById('defaultAddressSdt');
-        const defaultProv   = document.getElementById('defaultProvince');
-        const defaultDist   = document.getElementById('defaultDistrict');
-        const defaultWard   = document.getElementById('defaultWard');
+        const defaultProv   = document.getElementById('defaultProvince');   // select (code)
+        const defaultDist   = document.getElementById('defaultDistrict');   // select (code)
+        const defaultWard   = document.getElementById('defaultWard');       // select (code)
         const defaultStreet = document.getElementById('defaultAddressDetailInput');
+
+        // Hidden inputs chứa text name – kiểm tra fallback nếu select chưa được cập nhật (async chưa xong)
+        const defProvCardBody = defaultProv ? (defaultProv.closest('.form-card-body') || defaultProv.closest('.address-card-row')) : null;
+        const defProvHidden  = defProvCardBody ? defProvCardBody.querySelector('.submit-province') : null;
+        const defDistHidden  = defProvCardBody ? defProvCardBody.querySelector('.submit-district') : null;
+        const defWardHidden  = defProvCardBody ? defProvCardBody.querySelector('.submit-ward')     : null;
 
         if (defTenInput) {
             const ten = defTenInput.value.trim();
@@ -1123,15 +1119,15 @@
             }
         }
 
-        if (defaultProv && !defaultProv.value) {
+        if (defaultProv && !defaultProv.value && !(defProvHidden && defProvHidden.value)) {
             showFieldError(defaultProv, 'Vui lòng chọn Tỉnh/Thành phố');
             return false;
         }
-        if (defaultDist && !defaultDist.value) {
+        if (defaultDist && !defaultDist.value && !(defDistHidden && defDistHidden.value)) {
             showFieldError(defaultDist, 'Vui lòng chọn Quận/Huyện');
             return false;
         }
-        if (defaultWard && !defaultWard.value) {
+        if (defaultWard && !defaultWard.value && !(defWardHidden && defWardHidden.value)) {
             showFieldError(defaultWard, 'Vui lòng chọn Phường/Xã');
             return false;
         }
@@ -1211,14 +1207,22 @@
     }
 
     // Hàm nội bộ: cập nhật hidden với các trường đã chọn
+    // Nếu select không có lựa chọn (selectedIndex <= 0), giữ nguyên giá trị hidden cũ (không ghi đè rỗng)
     function _syncOneBlock(hidden, prov, dist, ward, street) {
         if (!hidden || !prov || !dist || !ward || !street) return;
-        const pVal = prov.value, dVal = dist.value, wVal = ward.value;
+
+        const container = hidden.closest('.form-card-body') || hidden.closest('.address-card-row');
+        const hP = container ? container.querySelector('.submit-province') : null;
+        const hD = container ? container.querySelector('.submit-district') : null;
+        const hW = container ? container.querySelector('.submit-ward') : null;
+
+        // Đọc text từ dropdown nếu có lựa chọn, nếu không giữ giá trị hidden cũ
+        let pText = (prov.selectedIndex > 0) ? prov.options[prov.selectedIndex].text : (hP ? hP.value : '');
+        let dText = (dist.selectedIndex > 0) ? dist.options[dist.selectedIndex].text : (hD ? hD.value : '');
+        let wText = (ward.selectedIndex > 0) ? ward.options[ward.selectedIndex].text : (hW ? hW.value : '');
+
         const s = street.value.trim();
-        const pText = pVal ? (prov.options[prov.selectedIndex]?.text || '') : '';
-        const dText = dVal ? (dist.options[dist.selectedIndex]?.text || '') : '';
-        const wText = wVal ? (ward.options[ward.selectedIndex]?.text || '') : '';
-        
+
         let parts = [];
         if (s) parts.push(s);
         if (wText) parts.push(wText);
@@ -1226,15 +1230,9 @@
         if (pText) parts.push(pText);
         hidden.value = parts.join(', ');
 
-        const container = hidden.closest('.form-card-body') || hidden.closest('.address-card-row');
-        if (container) {
-            const hP = container.querySelector('.submit-province');
-            const hD = container.querySelector('.submit-district');
-            const hW = container.querySelector('.submit-ward');
-            if (hP) hP.value = pText;
-            if (hD) hD.value = dText;
-            if (hW) hW.value = wText;
-        }
+        if (hP) hP.value = pText;
+        if (hD) hD.value = dText;
+        if (hW) hW.value = wText;
     }
 </script>
 
