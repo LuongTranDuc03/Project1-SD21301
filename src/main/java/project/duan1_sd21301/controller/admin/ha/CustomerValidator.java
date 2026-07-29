@@ -68,6 +68,15 @@ public class CustomerValidator {
             errors.add("Số điện thoại khách hàng không được để trống.");
         } else if (!phone.matches("^0\\d{9}$")) {
             errors.add("Số điện thoại khách hàng phải gồm đúng 10 số và bắt đầu bằng 0.");
+        } else if (customers != null) {
+            for (Customer c : customers) {
+                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
+                    if (c.getPhoneNumber() != null && c.getPhoneNumber().equals(phone.trim())) {
+                        errors.add("Số điện thoại đã được sử dụng cho một khách hàng khác.");
+                        break;
+                    }
+                }
+            }
         }
 
         // 5. Ngày sinh (Phải từ 18 tuổi trở lên)
@@ -132,30 +141,6 @@ public class CustomerValidator {
                     }
                     if (a.getDetailedAddress() == null || a.getDetailedAddress().trim().isEmpty()) {
                         errors.add(prefix + "Số nhà, tên đường không được để trống.");
-                    }
-                }
-            }
-        }
-
-        // 9. Email duy nhất
-        if (customers != null && email != null) {
-            for (Customer c : customers) {
-                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
-                    if (c.getEmail().equalsIgnoreCase(email.trim())) {
-                        errors.add("Email đã tồn tại.");
-                        break;
-                    }
-                }
-            }
-        }
-
-        // 10. Số điện thoại duy nhất
-        if (customers != null && phone != null) {
-            for (Customer c : customers) {
-                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
-                    if (c.getPhoneNumber().equals(phone.trim())) {
-                        errors.add("Số điện thoại đã tồn tại.");
-                        break;
                     }
                 }
             }

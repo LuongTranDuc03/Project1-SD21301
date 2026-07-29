@@ -159,7 +159,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
 
     @Override
     public boolean delete(int id) {
-        String sql = "DELETE FROM khach_hang WHERE id=?";
+        String sql = "UPDATE khach_hang SET trang_thai = 0 WHERE id=?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -241,7 +241,7 @@ public class CustomerRepositoryImpl implements CustomerRepository {
                      "dc.id AS dc_id, dc.dia_chi_code, dc.tinh, dc.huyen, dc.xa, dc.dia_chi_chi_tiet " +
                      "FROM khach_hang_dia_chi khd " +
                      "JOIN dia_chi dc ON khd.id_dia_chi = dc.id " +
-                     "WHERE khd.id_khach_hang = ?";
+                     "WHERE khd.id_khach_hang = ? ORDER BY khd.mac_dinh DESC";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerId);
             try (ResultSet rs = ps.executeQuery()) {

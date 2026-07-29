@@ -413,21 +413,20 @@
                                                                                 <a href="<%= contextPath %>/admin/customers?action=edit-form&id=<%= c.getId() %>"
                                                                                     style="color: #0284c7; text-decoration: none;">Cập
                                                                                     nhật</a>
-                                                                                <span style="color: #cbd5e1;">|</span>
-                                                                                <!-- Form xóa địa chỉ phụ -->
-                                                                                <form
+                                                                                 <span style="color: #cbd5e1;">|</span>
+                                                                                 <form
                                                                                     action="<%= contextPath %>/admin/customers"
                                                                                     method="post"
                                                                                     onsubmit="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')"
                                                                                     style="display: inline;">
                                                                                     <input type="hidden" name="action"
-                                                                                        value="delete-other-address">
+                                                                                        value="delete-address">
                                                                                     <input type="hidden" name="id"
                                                                                         value="<%= c.getId() %>">
-                                                                                    <input type="hidden" name="index"
-                                                                                        value="<%= i %>">
+                                                                                    <input type="hidden" name="addressCode"
+                                                                                        value="<%= otherAddr.getCode() %>">
                                                                                     <button type="submit"
-                                                                                        style="background: none; border: none; padding: 0; color: #0284c7; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: inline;">Xóa</button>
+                                                                                        style="background: none; border: none; padding: 0; color: #ef4444; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: inline;">Xóa</button>
                                                                                 </form>
                                                                             </div>
 
