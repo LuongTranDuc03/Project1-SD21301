@@ -565,6 +565,8 @@
         localStorage.setItem('pos_orders', JSON.stringify(orders));
         if (currentOrderId) {
             localStorage.setItem('pos_current_order_id', currentOrderId);
+        } else {
+            localStorage.removeItem('pos_current_order_id');
         }
     }
 
@@ -1286,7 +1288,21 @@
     
     function renderCheckoutState() {
         const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
+        if (orderIndex === -1) {
+            document.getElementById('customerNameInput').value = 'Khách lẻ';
+            document.getElementById('buyerPhoneInput').value = '';
+            document.getElementById('recipientNameInput').value = '';
+            document.getElementById('customerPhoneInput').value = '';
+            document.getElementById('customerAddressInput').value = '';
+            document.getElementById('shippingFeeInput').value = '';
+            document.getElementById('customerPayInput').value = '';
+            document.getElementById('discountCodeInput').value = '';
+            document.getElementById('orderNoteInput').value = '';
+            document.getElementById('summaryTotalItems').textContent = '0 đ';
+            document.getElementById('summaryTotalPayment').textContent = '0 đ';
+            document.getElementById('summaryChange').textContent = '0 đ';
+            return;
+        }
         const order = orders[orderIndex];
         
         const isFixedCustomer = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';

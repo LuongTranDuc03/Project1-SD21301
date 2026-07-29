@@ -841,6 +841,9 @@ input:checked+.slider:before {
 .summary-value {
     color: #0f172a;
     font-weight: 600;
+    word-break: break-all;
+    max-width: 65%;
+    text-align: right;
 }
 
 .summary-row.total-row {
