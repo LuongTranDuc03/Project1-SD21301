@@ -287,7 +287,24 @@ public class CustomerController extends HttpServlet {
                             .note(safe(otherNotes, i))
                             .address(Address.builder().code(oCode).province(safe(otherProvinces, i)).district(safe(otherDistricts, i)).ward(safe(otherWards, i)).detailedAddress(detail.trim()).build())
                             .build();
-                    addresses.add(otherAddr);
+
+                    // Kiểm tra trùng lặp
+                    boolean isDuplicate = false;
+                    for (CustomerAddress existingAddr : addresses) {
+                        if (existingAddr.getRecipientName().equalsIgnoreCase(otherAddr.getRecipientName())
+                                && existingAddr.getPhoneNumber().equalsIgnoreCase(otherAddr.getPhoneNumber())
+                                && existingAddr.getAddress().getProvince().equalsIgnoreCase(otherAddr.getAddress().getProvince())
+                                && existingAddr.getAddress().getDistrict().equalsIgnoreCase(otherAddr.getAddress().getDistrict())
+                                && existingAddr.getAddress().getWard().equalsIgnoreCase(otherAddr.getAddress().getWard())
+                                && existingAddr.getAddress().getDetailedAddress().equalsIgnoreCase(otherAddr.getAddress().getDetailedAddress())) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!isDuplicate) {
+                        addresses.add(otherAddr);
+                    }
                 }
             }
 
