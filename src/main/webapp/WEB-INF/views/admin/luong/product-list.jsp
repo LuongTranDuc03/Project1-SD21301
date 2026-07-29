@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.Product" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
@@ -580,7 +580,7 @@
                                     }
                                     double minPrice = prod.getPrice(); double maxPrice = prod.getPrice();
                                     if (prod.getDetails() != null && !prod.getDetails().isEmpty()) {
-                                        minPrice = Double.MAX_VALUE; maxPrice = Double.MIN_VALUE; for (ProductDetail d : prod.getDetails()) {
+                                        minPrice = Double.MAX_VALUE; maxPrice = 0.0; for (ProductDetail d : prod.getDetails()) {
                                             if (d.getPrice() < minPrice) {
                                                 minPrice = d.getPrice(); } if (d.getPrice() > maxPrice) { maxPrice = d.getPrice();
                                             }

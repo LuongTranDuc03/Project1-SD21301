@@ -372,7 +372,7 @@
                             <th style="text-align: center;">Màu sắc</th>
                             <th style="text-align: center;">Kích cỡ</th>
                             <th style="text-align: center;">Giá nhập</th>
-                            <th style="text-align: center;">Đơn giá</th>
+                            <th style="text-align: center;">Giá bán</th>
                             <th style="text-align: center;">Số lượng</th>
                             <th style="text-align: center;">Trạng thái</th>
                             <th style="text-align: center;">Hành động</th>
@@ -519,7 +519,7 @@
                         <input type="text" id="edit-importPrice" name="importPrice" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Đơn Giá (đ) <span style="color: red;">*</span></label>
+                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá bán (đ) <span style="color: red;">*</span></label>
                         <input type="text" id="edit-price" name="price" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
                     </div>
 
@@ -663,7 +663,7 @@
         var weight = document.getElementById('edit-weight').value;
 
         if (priceStr === "" || parseFloat(priceStr) < 0) {
-            alert("Đơn giá không được để trống và phải lớn hơn hoặc bằng 0.");
+            alert("Giá bán không được để trống và phải lớn hơn hoặc bằng 0.");
             return false;
         }
         if (stock === "" || parseInt(stock) < 0) {

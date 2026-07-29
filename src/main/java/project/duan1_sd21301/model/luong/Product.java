@@ -86,7 +86,7 @@ public class Product {
             return String.format("%,.0fđ", price).replace(",", ".");
         }
         double minPrice = Double.MAX_VALUE;
-        double maxPrice = Double.MIN_VALUE;
+        double maxPrice = 0.0;
         for (ProductDetail detail : details) {
             double p = detail.getPrice();
             if (p < minPrice)
@@ -94,7 +94,7 @@ public class Product {
             if (p > maxPrice)
                 maxPrice = p;
         }
-        if (minPrice == Double.MAX_VALUE || maxPrice == Double.MIN_VALUE) {
+        if (minPrice == Double.MAX_VALUE || maxPrice == 0.0) {
             return String.format("%,.0fđ", price).replace(",", ".");
         }
         if (Double.compare(minPrice, maxPrice) == 0) {
