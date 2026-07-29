@@ -68,7 +68,7 @@
         </header>
 
         <div class="content-wrapper">
-                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <div>
                     <h1 class="page-title-text">Quản lý phiếu giảm giá</h1>
                     <div class="page-subtitle-text">Tổng <strong><%= total %></strong> phiếu giảm giá</div>
