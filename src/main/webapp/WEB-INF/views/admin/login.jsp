@@ -49,12 +49,15 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 24px;
+            mix-blend-mode: screen;
         }
         .logo-box img {
             width: 100%;
             height: auto;
             border-radius: 4px;
             object-fit: contain;
+            filter: invert(1) brightness(1.2);
+            transform: translateX(-3px);
         }
         .login-left h1 {
             font-size: 32px;

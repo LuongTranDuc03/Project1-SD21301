@@ -258,10 +258,10 @@ body.sidebar-collapsed .sidebar-header {
 
 body.sidebar-collapsed .brand-logo-img {
     display: block;
-    width: 36px !important;
+    width: 38px !important;
     height: 48px !important;
     object-fit: cover;
-    object-position: left center;
+    object-position: left;
     border-radius: 4px;
     margin-left: 0;
 }
