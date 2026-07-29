@@ -2,6 +2,11 @@
 <%@ page import="project.duan1_sd21301.model.phuc.Coupon" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="project.duan1_sd21301.model.huy.Employee" %>
+<%
+    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+    boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
+%>
 <%@ page import="java.time.format.DateTimeFormatter" %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -189,6 +194,7 @@
 
             <!-- Thanh nút thao tác -->
             <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
+                <% if (isManager) { %>
                 <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>Xuất Excel</span>
@@ -197,6 +203,7 @@
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                     <span>Thêm phiếu giảm giá</span>
                 </a>
+                <% } %>
             </div>
 
             <!-- KHU VỰC BẢNG DỮ LIỆU PHIẾU GIẢM GIÁ: Hiển thị danh sách các mã giảm giá -->
@@ -280,6 +287,7 @@
                         <td><span class="badge-status <%= ttCls %>"><%= ttLbl %></span></td>
                         <td style="text-align:center;">
                             <div style="display:flex;gap:4px;justify-content:center;align-items:center;">
+                                <% if (isManager) { %>
                                 <a href="${pageContext.request.contextPath}/admin/coupons/edit?id=<%= c.getId() %>"
                                    class="action-icon-btn" title="Chỉnh sửa">
                                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -296,6 +304,7 @@
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </form>
+                                <% } %>
                             </div>
                         </td>
                     </tr>

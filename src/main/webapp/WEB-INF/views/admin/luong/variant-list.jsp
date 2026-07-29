@@ -1,6 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
 <%@ page import="java.util.List" %>
+<%@ page import="project.duan1_sd21301.model.huy.Employee" %>
+<%
+    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+    boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -432,6 +437,7 @@
                                 <span class="badge-status <%= statusClass %>"><%= statusLabel %></span>
                             </td>
                             <td style="text-align: center;">
+                                <% if (isManager) { %>
                                 <a href="javascript:void(0)" onclick="openEditVariantModal(this)" class="action-icon-btn edit-btn" title="Chỉnh sửa"
                                    data-variantid="<%= v.getId() %>"
                                    data-variantcode="<%= v.getCode() != null ? v.getCode() : "" %>"
@@ -454,6 +460,7 @@
                                     <input type="checkbox" onchange="toggleVariantStatus(this)" <%= statusClass.equals("available") ? "checked" : "" %>>
                                     <span class="slider"></span>
                                 </label>
+                                <% } %>
                             </td>
                         </tr>
                         <%

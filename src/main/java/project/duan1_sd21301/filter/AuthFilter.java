@@ -41,20 +41,46 @@ public class AuthFilter implements Filter {
         // --- Role-Based Authorization ---
         Employee user = (Employee) session.getAttribute("loggedInUser");
         
-        // Màn Quản lý nhân viên chỉ dành cho Admin hoặc Quản lý (Nhân viên tuyệt đối không được truy cập)
-        String roleName = user.getRoleName();
-        boolean isStaff = "Nhân viên".equalsIgnoreCase(roleName);
-        boolean isAdminOrManager = !isStaff && (
-            (user.getRole() != null && user.getRoleId() == 1) ||
-            (roleName != null && (roleName.equalsIgnoreCase("Admin") || roleName.equalsIgnoreCase("Quản lý")))
-        );
+        // 1 = Quản lý, 2 = Nhân viên
+        boolean isStaff = (user.getRoleId() == 2);
         
-        if (path.contains("/admin/employees") && !isAdminOrManager) {
-            // Không có quyền, chuyển về trang chủ (dashboard)
-            session.setAttribute("toastMessage", "Tài khoản Nhân viên không có quyền truy cập vào Quản lý nhân viên!");
-            session.setAttribute("toastType", "error");
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-            return;
+        if (isStaff) {
+            boolean isBlocked = false;
+            
+            // Block dashboard and employees
+            if (path.contains("/admin/dashboard") || path.contains("/admin/employees")) {
+                isBlocked = true;
+            }
+            // Block product and variant modifications
+            else if (path.contains("/admin/products/create") || path.contains("/admin/products/edit") || path.contains("/admin/products/delete") || path.contains("/admin/products/toggle") || path.contains("/admin/products/status")) {
+                isBlocked = true;
+            }
+            else if (path.contains("/admin/variants/create") || path.contains("/admin/variants/edit") || path.contains("/admin/variants/delete") || path.contains("/admin/variants/toggle") || path.contains("/admin/variants/status")) {
+                isBlocked = true;
+            }
+            // Block settings/account management
+            else if (path.contains("/admin/settings") || path.contains("/admin/accounts")) {
+                isBlocked = true;
+            }
+            // Block coupons
+            else if (path.contains("/admin/coupons")) {
+                // If they want to block all coupons module or just create/edit:
+                // Plan says block /admin/coupons
+                if (!path.endsWith("/admin/coupons/list") && !path.equals(request.getContextPath() + "/admin/coupons")) {
+                    isBlocked = true;
+                }
+            }
+            // Block customer edits
+            else if (path.contains("/admin/customers/edit") || path.contains("/admin/customers/delete")) {
+                isBlocked = true;
+            }
+            
+            if (isBlocked) {
+                session.setAttribute("toastMessage", "Tài khoản Nhân viên không có quyền truy cập chức năng này!");
+                session.setAttribute("toastType", "error");
+                response.sendRedirect(request.getContextPath() + "/admin/pos");
+                return;
+            }
         }
 
         // Chuyển tiếp request

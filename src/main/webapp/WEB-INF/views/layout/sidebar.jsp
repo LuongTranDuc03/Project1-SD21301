@@ -80,6 +80,11 @@
                         <span class="menu-text">Trang chủ</span>
                     </a>
                 </li>
+                <%
+                    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+                    boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
+                %>
+                <% if (isManager) { %>
                 <!-- Thống kê -->
                 <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/dashboard">
@@ -89,6 +94,7 @@
                         <span class="menu-text">Thống kê</span>
                     </a>
                 </li>
+                <% } %>
                 <!-- Bán hàng tại quầy -->
                 <li class="<%= uri.endsWith("/admin/pos") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/pos">
@@ -144,11 +150,7 @@
                     </a>
                 </li>
                 <%
-                    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
-                    String userRole = (loggedInUser != null && loggedInUser.getRole() != null && loggedInUser.getRole().getRoleName() != null)
-                                      ? loggedInUser.getRole().getRoleName() : "";
-                    boolean canManageEmployees = "Admin".equalsIgnoreCase(userRole) || "Quản lý".equalsIgnoreCase(userRole);
-                    if (canManageEmployees) {
+                    if (isManager) {
                 %>
                 <!-- Quản lý nhân viên -->
                 <li class="<%= uri.endsWith("/admin/employees") ? "active" : "" %>">
@@ -167,10 +169,12 @@
     <!-- 3. Sidebar Footer -->
     <div class="sidebar-footer">
         <div class="footer-links">
+            <% if (isManager) { %>
             <a href="<%= contextPath %>/admin/settings" class="footer-item <%= uri.endsWith("/admin/settings") ? "active-footer-link" : "" %>" style="display: flex; align-items: center; gap: 10px; color: <%= uri.endsWith("/admin/settings") ? "#ffffff" : "#9ca3af" %>; text-decoration: none;">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                 <span>Cài đặt</span>
             </a>
+            <% } %>
             <a href="<%= contextPath %>/logout" class="footer-item">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 <span>Đăng xuất</span>

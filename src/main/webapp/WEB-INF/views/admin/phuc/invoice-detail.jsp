@@ -5,6 +5,11 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="project.duan1_sd21301.model.huy.Employee" %>
+<%
+    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+    boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -106,9 +111,11 @@
                     <%-- Chỉ hiện Cập nhật/Huỷ khi đơn chưa Hoàn thành/Huỷ/Hoàn trả (Mở cho cả đơn Hoàn thành == 3) --%>
                     <% if (orderStatus <= 3) { %>
                     <button class="btn-action" style="background:#3b82f6;color:white;border:none;" onclick="openModal('update')">Cập nhật trạng thái</button>
+                    <% if (isManager) { %>
                     <button class="btn-action btn-huy" onclick="openModal('cancel')">Huỷ đơn</button>
                     <% } %>
-                    <% if (orderStatus == 4 && paid) { %>
+                    <% } %>
+                    <% if (orderStatus == 4 && paid && isManager) { %>
                     <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refund')">Hoàn tiền</button>
                     <% } %>
                 </div>
