@@ -18,6 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Nhúng CSS Custom -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .invoice-table th, .invoice-table td {
             border-bottom: 1px solid #f1f5f9;
@@ -496,7 +497,7 @@
             </button>
         </div>
         <div style="padding: 24px; overflow-y: auto;">
-            <form id="editVariantForm" action="${pageContext.request.contextPath}/admin/variants" method="POST" enctype="multipart/form-data" onsubmit="return validateEditVariantForm()">
+            <form id="editVariantForm" action="${pageContext.request.contextPath}/admin/variants" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" id="edit-variantId" name="variantId">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
@@ -556,7 +557,7 @@
                 </div>
                 <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
                     <button type="button" onclick="closeEditVariantModal()" style="padding: 8px 16px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;">Hủy bỏ</button>
-                    <button type="submit" style="padding: 8px 16px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;">Lưu thay đổi</button>
+                    <button type="button" onclick="confirmSaveVariant()" style="padding: 8px 16px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.2s;">Lưu thay đổi</button>
                 </div>
             </form>
         </div>
@@ -693,6 +694,26 @@
             return false;
         }
         return true;
+    }
+
+    function confirmSaveVariant() {
+        if (!validateEditVariantForm()) {
+            return;
+        }
+        Swal.fire({
+            title: 'Xác nhận lưu?',
+            text: 'Bạn có chắc chắn muốn lưu thông tin này?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3B82F6',
+            cancelButtonColor: '#94A3B8',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('editVariantForm').submit();
+            }
+        });
     }
 
     // ===== FILTER & SEARCH =====

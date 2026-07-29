@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <%-- KHU VỰC LOGIC JSP: Khởi tạo dữ liệu form và kiểm tra trạng thái Edit/Add --%>
@@ -277,14 +278,40 @@
             }
         }
 
-        // Remove dot formatting before submitting
-        var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
-        fields.forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el && el.value) {
-                el.value = el.value.replace(/\./g, '');
-            }
-        });
+        var isEdit = <%= isEdit %>;
+        if (isEdit) {
+            e.preventDefault(); // Chờ xác nhận
+            var form = this;
+            Swal.fire({
+                title: 'Xác nhận lưu?',
+                text: 'Bạn có chắc chắn muốn lưu thông tin này?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3B82F6',
+                cancelButtonColor: '#94A3B8',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
+                    fields.forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el && el.value) {
+                            el.value = el.value.replace(/\./g, '');
+                        }
+                    });
+                    form.submit();
+                }
+            });
+        } else {
+            var fields = ['discountValue', 'maxDiscountAmount', 'minOrderValue'];
+            fields.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && el.value) {
+                    el.value = el.value.replace(/\./g, '');
+                }
+            });
+        }
     });
 
     // Format số tiền nhập vào (thêm dấu chấm phân cách)

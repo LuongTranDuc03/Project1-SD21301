@@ -58,7 +58,7 @@
     <!-- 1. Brand Header -->
     <div class="sidebar-header">
         <div class="brand">
-            <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="FamiCoats Logo" class="brand-logo-img" />
+            <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="FamiCoats Logo" class="brand-logo-img" style="filter: invert(1); mix-blend-mode: screen; transform: translateX(-3px);" />
         </div>
         <button class="toggle-btn" id="sidebar-toggle" title="Thu gọn / Mở rộng Sidebar">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
