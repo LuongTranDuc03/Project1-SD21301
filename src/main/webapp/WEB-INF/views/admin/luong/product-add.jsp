@@ -1624,7 +1624,10 @@
                 renderImagesSection();
             }
         });
-        
+    </script>
+    <% } %>
+    
+    <script>
         function confirmSave() {
             if (!validateForm()) {
                 return;
@@ -1650,6 +1653,5 @@
             }
         }
     </script>
-    <% } %>
 </body>
 </html>
