@@ -353,7 +353,9 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label" for="customerCode">Mã khách hàng</label>
-                            <input type="text" name="code" id="customerCode" class="form-input" placeholder="Bỏ trống để tự sinh (Gợi ý: <%= request.getAttribute("nextCode") != null ? request.getAttribute("nextCode") : "KH005" %>)" value="<%= (c != null && c.getCode() != null) ? c.getCode() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %>>
+                            <input type="text" name="code" id="customerCode" class="form-input" 
+                                   value="<%= isEdit && c != null && c.getCode() != null ? c.getCode() : (request.getAttribute("nextCode") != null ? request.getAttribute("nextCode") : "") %>" 
+                                   readonly style="background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #475569;">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="customerName">Họ và tên<span class="required">*</span></label>

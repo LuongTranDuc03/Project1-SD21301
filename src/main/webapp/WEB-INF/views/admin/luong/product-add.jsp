@@ -580,8 +580,10 @@
                         <div class="form-card-body">
                             <div class="form-grid">
                             <div class="form-group">
-                                <label class="form-label" for="id">Mã sản phẩm <span style="color: red;">*</span></label>
-                                <input type="text" id="code" name="code" class="form-input" placeholder="Ví dụ: SP001" value="<%= product != null && product.getCode() != null ? product.getCode() : "" %>" <%= isEdit ? "readonly style='background-color: #f1f5f9; cursor: not-allowed;'" : "" %> required>
+                                <label class="form-label" for="code">Mã sản phẩm <span style="color: red;">*</span></label>
+                                <input type="text" id="code" name="code" class="form-input" 
+                                       value="<%= isEdit && product != null && product.getCode() != null ? product.getCode() : (request.getAttribute("nextCode") != null ? request.getAttribute("nextCode") : "") %>" 
+                                       readonly style="background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #475569;" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="name">Tên sản phẩm <span style="color: red;">*</span></label>

@@ -59,6 +59,8 @@ public class ProductController extends HttpServlet {
         }
 
         if ("add".equals(action)) {
+            String nextCode = generateNextProductCode(products);
+            request.setAttribute("nextCode", nextCode);
             request.setAttribute("pageTitle", "Thêm sản phẩm mới");
             request.setAttribute("categories", productService.getAllCategories());
             request.setAttribute("brands", productService.getAllBrands());
@@ -457,6 +459,10 @@ public class ProductController extends HttpServlet {
                 request.getSession().setAttribute("toastType", "success");
             }
         } else {
+            if (!isEdit && (code == null || code.trim().isEmpty())) {
+                code = generateNextProductCode(productService.getAllProducts());
+            }
+
             // Check code duplicate in DB
             if (code != null && productService.getProductByCode(code) != null) {
                 request.setAttribute("errorMessage", "Mã sản phẩm '" + code + "' đã tồn tại! Vui lòng chọn mã khác.");
@@ -508,5 +514,21 @@ public class ProductController extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/products");
+    }
+
+    private String generateNextProductCode(List<Product> products) {
+        int max = 0;
+        if (products != null) {
+            for (Product p : products) {
+                String c = p.getCode();
+                if (c != null && c.startsWith("SP")) {
+                    try {
+                        int n = Integer.parseInt(c.substring(2));
+                        if (n > max) max = n;
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+        return String.format("SP%03d", max + 1);
     }
 }
