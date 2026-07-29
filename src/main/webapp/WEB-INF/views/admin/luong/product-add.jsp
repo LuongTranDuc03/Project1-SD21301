@@ -34,6 +34,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Nhúng CSS Custom -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .form-card {
             background: #ffffff;
@@ -560,7 +561,7 @@
                     </div>
                 </div>
 
-                <form action="${pageContext.request.contextPath}/admin/products" method="POST" id="productForm" onsubmit="return validateForm()">
+                <form action="${pageContext.request.contextPath}/admin/products" method="POST" id="productForm">
                     <% if (request.getAttribute("errorMessage") != null) { %>
                         <div style="background-color: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; border: 1px solid #f87171; font-weight: 500;">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -720,7 +721,7 @@
                         <button type="button" class="btn-cancel" onclick="handleCancelBtn(event)" style="padding: 10px 24px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">
                             Hủy bỏ
                         </button>
-                        <button type="submit" class="btn-save" style="padding: 10px 24px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="btn-save" onclick="confirmSave()" style="padding: 10px 24px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px;">
                             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                             Lưu sản phẩm
                         </button>
@@ -1621,6 +1622,31 @@
                 renderImagesSection();
             }
         });
+        
+        function confirmSave() {
+            if (!validateForm()) {
+                return;
+            }
+            var isEdit = <%= isEdit %>;
+            if (isEdit) {
+                Swal.fire({
+                    title: 'Xác nhận lưu?',
+                    text: 'Bạn có chắc chắn muốn lưu thông tin này?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3B82F6',
+                    cancelButtonColor: '#94A3B8',
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('productForm').submit();
+                    }
+                });
+            } else {
+                document.getElementById('productForm').submit();
+            }
+        }
     </script>
     <% } %>
 </body>

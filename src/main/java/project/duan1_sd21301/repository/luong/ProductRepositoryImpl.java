@@ -488,7 +488,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             Map<Integer, ProductDetail> dbVariantMap = new HashMap<>();
             Map<String, Integer> dbKeyToIdMap = new HashMap<>();
 
-            String sql = "SELECT ct.id, kt.ten_kich_thuoc, ms.ten_mau_sac "
+            String sql = "SELECT ct.id, kt.ten_kich_thuoc, ms.ten_mau "
                     + "FROM chi_tiet_san_pham ct "
                     + "LEFT JOIN kich_thuoc kt ON ct.id_kich_thuoc = kt.id "
                     + "LEFT JOIN mau_sac ms ON ct.id_mau_sac = ms.id "
@@ -500,7 +500,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                     while (rs.next()) {
                         int dbId = rs.getInt("id");
                         String size = rs.getString("ten_kich_thuoc");
-                        String color = rs.getString("ten_mau_sac");
+                        String color = rs.getString("ten_mau");
                         if (size == null)
                             size = "";
                         if (color == null)

@@ -433,8 +433,8 @@
             <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
             <input type="hidden" name="newStatus" value="5">
             <div class="modal-field">
-                <label>Ghi chú (tuỳ chọn)</label>
-                <textarea name="note" rows="3" placeholder="Nhập ghi chú hoàn tiền..."></textarea>
+                <label>Lý do hoàn tiền *</label>
+                <textarea name="note" rows="3" placeholder="Nhập lý do hoàn tiền..." required></textarea>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-cancel-m" onclick="closeModal('refundModal')">Quay lại</button>

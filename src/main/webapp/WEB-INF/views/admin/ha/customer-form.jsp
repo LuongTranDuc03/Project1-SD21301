@@ -30,6 +30,7 @@
     <!-- Nhúng CSS Custom -->
     <link rel="stylesheet" href="<%= contextPath %>/assets/css/admin.css">
     <link rel="stylesheet" href="<%= contextPath %>/assets/css/customers/customer.css?v=<%= System.currentTimeMillis() %>">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         .form-card {
@@ -323,7 +324,7 @@
             </div>
             <% } %>
 
-            <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" novalidate onsubmit="return syncAllAddressBeforeSubmit()">
+            <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" novalidate>
                 <input type="hidden" name="action" value="<%= isEdit ? "edit" : "add" %>">
                 <!-- Trường ẩn giữ URL ảnh cũ khi chỉnh sửa và không upload tệp mới -->
                 <input type="hidden" name="anhDaiDien" value="<%= (c != null) ? c.getAvatar() : "" %>">
@@ -379,13 +380,17 @@
                             <label class="form-label" for="customerDob">Ngày sinh</label>
                             <input type="date" name="ngaySinh" id="customerDob" class="form-input" value="<%= (c != null && c.getDateOfBirth() != null) ? isoDf.format(c.getDateOfBirth()) : "" %>">
                         </div>
+                        <% if (isEdit) { %>
                         <div class="form-group">
                             <label class="form-label" for="customerStatus">Trạng thái</label>
-                            <select name="trangThai" id="customerStatus" class="form-select" <%= !isEdit ? "style='background-color: #f1f5f9; pointer-events: none;' readonly" : "" %>>
-                                <option value="1" <%= (!isEdit || (c != null && c.getStatus() != null && c.getStatus() == 1)) ? "selected" : "" %>>Hoạt động</option>
-                                <option value="0" <%= (isEdit && c != null && (c.getStatus() == null || c.getStatus() == 0)) ? "selected" : "" %>>Khóa</option>
+                            <select name="trangThai" id="customerStatus" class="form-select" style="background-color: #f1f5f9; pointer-events: none; -webkit-appearance: none; -moz-appearance: none; appearance: none;" readonly tabindex="-1">
+                                <option value="1" <%= (c != null && c.getStatus() != null && c.getStatus() == 1) ? "selected" : "" %>>Hoạt động</option>
+                                <option value="0" <%= (c != null && (c.getStatus() == null || c.getStatus() == 0)) ? "selected" : "" %>>Khóa</option>
                             </select>
                         </div>
+                        <% } else { %>
+                            <input type="hidden" name="trangThai" value="1">
+                        <% } %>
                     </div>
                     </div>
                 </div>
@@ -533,7 +538,7 @@
                     <a href="<%= contextPath %>/admin/customers" class="btn-cancel">
                         Hủy bỏ
                     </a>
-                    <button type="submit" class="btn-submit">
+                    <button type="button" class="btn-submit" onclick="confirmSave()">
                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                         Lưu thông tin
                     </button>
@@ -1203,6 +1208,31 @@
         });
 
         return true;
+    }
+
+    function confirmSave() {
+        if (!syncAllAddressBeforeSubmit()) {
+            return;
+        }
+        var isEdit = <%= isEdit %>;
+        if (isEdit) {
+            Swal.fire({
+                title: 'Xác nhận lưu?',
+                text: 'Bạn có chắc chắn muốn lưu thông tin này?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3B82F6',
+                cancelButtonColor: '#94A3B8',
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('customerForm').submit();
+                }
+            });
+        } else {
+            document.getElementById('customerForm').submit();
+        }
     }
 
     // Hàm nội bộ: cập nhật hidden với các trường đã chọn

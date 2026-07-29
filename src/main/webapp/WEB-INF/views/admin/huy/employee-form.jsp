@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
     <%@ page import="project.duan1_sd21301.model.huy.Employee" %>
         <%@ page import="project.duan1_sd21301.model.huy.Role" %>
             <%@ page import="java.util.List" %>
@@ -782,21 +782,27 @@
                                         if (!validateAllFieldsLive()) {
                                             return;
                                         }
-                                        Swal.fire({
-                                            title: 'Xác nhận lưu?',
-                                            text: "Bạn có chắc chắn muốn lưu thông tin này?",
-                                            icon: 'question',
-                                            showCancelButton: true,
-                                            confirmButtonColor: '#3B82F6',
-                                            cancelButtonColor: '#94A3B8',
-                                            confirmButtonText: 'Đồng ý',
-                                            cancelButtonText: 'Hủy'
-                                        }).then((result) => {
-                                            if (result.isConfirmed) {
-                                                if (typeof syncFullAddress === 'function') syncFullAddress();
-                                                form.submit();
-                                            }
-                                        });
+                                        var isEdit = <%= isEdit %>;
+                                        if (isEdit) {
+                                            Swal.fire({
+                                                title: 'Xác nhận lưu?',
+                                                text: "Bạn có chắc chắn muốn lưu thông tin này?",
+                                                icon: 'question',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3B82F6',
+                                                cancelButtonColor: '#94A3B8',
+                                                confirmButtonText: 'Đồng ý',
+                                                cancelButtonText: 'Hủy'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    if (typeof syncFullAddress === 'function') syncFullAddress();
+                                                    form.submit();
+                                                }
+                                            });
+                                        } else {
+                                            if (typeof syncFullAddress === 'function') syncFullAddress();
+                                            form.submit();
+                                        }
                                     }
                                 </script>
                                 <script src="https://unpkg.com/html5-qrcode"></script>
