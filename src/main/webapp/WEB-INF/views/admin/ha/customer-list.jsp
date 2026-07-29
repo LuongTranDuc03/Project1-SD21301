@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%-- Import các lớp Model và thư viện Java cần thiết --%>
 <%@ page import="project.duan1_sd21301.model.ha.Customer" %>
 <%@ page import="java.util.List" %>
@@ -503,16 +503,16 @@
                                             <table class="invoice-table">
                                                 <thead>
                                                     <tr>
-                                                        <th style="text-align: center; width: 60px;">STT</th>
-                                                        <th>MÃ KHÁCH HÀNG</th>
-                                                        <th>TÊN KHÁCH HÀNG</th>
-                                                        <th>SỐ ĐIỆN THOẠI</th>
-                                                        <th>EMAIL</th>
-                                                        <th>NGÀY SINH</th>
-                                                        <th>GIỚI TÍNH</th>
-                                                        <th>ĐỊA CHỈ MẶC ĐỊNH</th>
-                                                        <th style="text-align: center; width: 120px;">TRẠNG THÁI</th>
-                                                        <th style="text-align: center; width: 140px;">HÀNH ĐỘNG</th>
+                                                        <th style="text-align: center; width: 3%;">STT</th>
+                                                        <th style="width: 9%;">MÃ KHÁCH HÀNG</th>
+                                                        <th style="width: 12%;">TÊN KHÁCH HÀNG</th>
+                                                        <th style="width: 9%;">SỐ ĐIỆN THOẠI</th>
+                                                        <th style="width: 12%;">EMAIL</th>
+                                                        <th style="width: 8%;">NGÀY SINH</th>
+                                                        <th style="width: 6%;">GIỚI TÍNH</th>
+                                                        <th style="width: 25%;">ĐỊA CHỈ MẶC ĐỊNH</th>
+                                                        <th style="text-align: center; width: 8%;">TRẠNG THÁI</th>
+                                                        <th style="text-align: center; width: 8%;">HÀNH ĐỘNG</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="customerTableBody">
