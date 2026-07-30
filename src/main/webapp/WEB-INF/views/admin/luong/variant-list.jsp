@@ -431,7 +431,7 @@
                             <td style="text-align: center;">
                                 <span class="product-price" style="color: #0f172a;"><%= String.format("%,.0f", v.getPrice()) %> đ</span>
                             </td>
-                            <td style="text-align: center;">
+                            <td class="td-stock" style="text-align: center;">
                                 <span style="font-weight: 600; color: #475569;"><%= v.getStock() %></span>
                             </td>
                             <td style="text-align: center;">
@@ -954,7 +954,9 @@
                         const dbStock = parseInt(row.getAttribute('data-stock')) || 0;
                         const available = Math.max(0, dbStock - reservedQty[code]);
                         
-                        const stockTd = row.children[7];
+                        // Dùng class td-stock để chọn chính xác cột Số lượng,
+                        // tránh lỗi hardcoded index khi số cột bảng thay đổi
+                        const stockTd = row.querySelector('.td-stock');
                         if (stockTd) {
                             const span = stockTd.querySelector('span');
                             if (span) span.textContent = available;

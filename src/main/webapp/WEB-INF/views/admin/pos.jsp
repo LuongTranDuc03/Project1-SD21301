@@ -229,7 +229,7 @@
                             <span class="summary-value" id="summaryTotalItems">0 đ</span>
                         </div>
                         
-                        <div class="summary-row shipping-row" id="shippingRow" style="display: none;">
+                        <div class="summary-row" id="shippingRow">
                             <span class="summary-label">Phí vận chuyển</span>
                             <div class="shipping-fee-input">
                                 <input type="text" class="form-control text-right" id="shippingFeeInput" value="" placeholder="0" style="width: 80px;" oninput="updateCheckoutState()">
@@ -528,7 +528,7 @@
                             <td class="pos-product-name"><%= p.getName() %></td>
                             <td><%= v.getColor() != null ? v.getColor() : "" %></td>
                             <td><%= v.getSize() != null ? v.getSize() : "" %></td>
-                            <td><%= v.getStock() %></td>
+                            <td class="td-stock"><%= v.getStock() %></td>
                             <td style="font-weight: 600; color: #7f1d1d; white-space: nowrap;"><%= String.format("%,.0f đ", v.getPrice()) %></td>
                             <td>
                                 <button class="btn-add-variant" onclick="addVariantToOrder('<%= v.getCode() %>')" title="Thêm vào đơn">Thêm</button>
@@ -617,6 +617,14 @@
         countTotalVariants();
         fetchProvinces();
         updateAvailableStockDisplay();
+        
+        // Khởi tạo trạng thái phí vận chuyển: readonly mặc định (Tại quầy)
+        const shippingInput = document.getElementById('shippingFeeInput');
+        if (shippingInput) {
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
+        }
     }
 
     // --- Order Tabs Logic ---
@@ -938,16 +946,24 @@
         const isDelivery = toggle.checked;
         document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
         
+        const shippingInput = document.getElementById('shippingFeeInput');
         if (isDelivery) {
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
-            document.getElementById('shippingRow').style.display = 'flex';
+            // Cho phép nhập phí vận chuyển
+            shippingInput.removeAttribute('readonly');
+            shippingInput.style.backgroundColor = '';
+            shippingInput.style.color = '';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
-            document.getElementById('shippingRow').style.display = 'none';
+            // Khóa phí vận chuyển khi tại quầy
+            shippingInput.value = '';
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
         }
     }
     
@@ -1370,16 +1386,23 @@
         
         const isDelivery = toggle.checked;
         document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+        
+        const shippingInput = document.getElementById('shippingFeeInput');
         if (isDelivery) {
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
-            document.getElementById('shippingRow').style.display = 'flex';
+            shippingInput.removeAttribute('readonly');
+            shippingInput.style.backgroundColor = '';
+            shippingInput.style.color = '';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
-            document.getElementById('shippingRow').style.display = 'none';
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
+            if (!isDelivery) shippingInput.value = '';
         }
         
         document.getElementById('customerPhoneInput').value = order.deliveryPhone || '';
@@ -1990,7 +2013,8 @@
         rows.forEach(row => {
             const code = row.getAttribute('data-code');
             const available = getAvailableStock(code);
-            const stockTd = row.children[6];
+            // Dùng class 'td-stock' để chọn chính xác cột Số lượng, tránh lỗi index cứng
+            const stockTd = row.querySelector('.td-stock');
             if (stockTd) {
                 stockTd.textContent = available;
             }
