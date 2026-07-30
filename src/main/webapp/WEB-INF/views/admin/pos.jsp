@@ -708,7 +708,6 @@
                     
                     if (orders.length === 0) {
                         currentOrderId = null;
-                        await createOrder();
                     } else {
                         if (currentOrderId === orderId) {
                             currentOrderId = orders[orders.length - 1].id;
@@ -2090,16 +2089,7 @@
     }
 
     function getAvailableStock(variantCode) {
-        let dbStock = getDbStock(variantCode);
-        let reserved = 0;
-        orders.forEach(o => {
-            if (o.items) {
-                o.items.forEach(i => {
-                    if (i.code === variantCode) reserved += i.quantity;
-                });
-            }
-        });
-        return Math.max(0, dbStock - reserved);
+        return getDbStock(variantCode);
     }
 
     function updateAvailableStockDisplay() {

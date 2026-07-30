@@ -931,40 +931,4 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const savedOrders = localStorage.getItem('pos_orders');
-        if (savedOrders) {
-            try {
-                const orders = JSON.parse(savedOrders);
-                let reservedQty = {};
-                orders.forEach(o => {
-                    if (o.items) {
-                        o.items.forEach(i => {
-                            if (!reservedQty[i.code]) reservedQty[i.code] = 0;
-                            reservedQty[i.code] += i.quantity;
-                        });
-                    }
-                });
-                
-                const rows = document.querySelectorAll('.variant-data-row');
-                rows.forEach(row => {
-                    const code = row.getAttribute('data-code');
-                    if (code && reservedQty[code]) {
-                        const dbStock = parseInt(row.getAttribute('data-stock')) || 0;
-                        const available = Math.max(0, dbStock - reservedQty[code]);
-                        
-                        const stockTd = row.children[8];
-                        if (stockTd) {
-                            const span = stockTd.querySelector('span');
-                            if (span) span.textContent = available;
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error("Error parsing pos orders", e);
-            }
-        }
-    });
-</script>
 </html>
