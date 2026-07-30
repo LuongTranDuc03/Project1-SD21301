@@ -561,58 +561,45 @@
     let nextOrderId = parseInt('${nextOrderIndex}') || 1;
 
     function saveOrdersToStorage() {
-        localStorage.setItem('pos_orders', JSON.stringify(orders));
-        if (currentOrderId) {
-            localStorage.setItem('pos_current_order_id', currentOrderId);
-        } else {
-            localStorage.removeItem('pos_current_order_id');
-        }
+        // No longer using localStorage for orders, everything is on DB
     }
 
-    function initPOS() {
-        const savedOrders = localStorage.getItem('pos_orders');
-        if (savedOrders) {
-            try {
-                orders = JSON.parse(savedOrders);
-                currentOrderId = localStorage.getItem('pos_current_order_id');
-                
-                if (!orders || !Array.isArray(orders) || orders.length === 0) {
-                    orders = [];
-                    currentOrderId = null;
-                    renderTabs();
-                    renderCurrentOrderItems();
-                    renderCheckoutState();
-                } else {
-                    const exists = orders.find(o => o.id === currentOrderId);
-                    if (!exists) {
-                        currentOrderId = orders[0].id;
-                    }
-                    
-                    let maxLocalId = 0;
-                    orders.forEach(o => {
-                        if (o.id && o.id.startsWith('Đơn ')) {
-                            const num = parseInt(o.id.substring(4));
-                            if (!isNaN(num) && num > maxLocalId) {
-                                maxLocalId = num;
-                            }
-                        }
-                    });
-                    const serverNextId = parseInt('${nextOrderIndex}') || 1;
-                    nextOrderId = Math.max(serverNextId, maxLocalId + 1);
-                    
-                    renderTabs();
-                    renderCurrentOrderItems();
-                    renderCheckoutState();
-                }
-            } catch (e) {
-                console.error("Error parsing pos orders", e);
-                orders = [];
-                createOrder();
+    async function initPOS() {
+        try {
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/get-drafts'));
+            const data = await res.json();
+            if (data && data.length > 0) {
+                orders = data.map(d => ({
+                    id: d.id.toString(),
+                    name: d.code,
+                    items: d.items || [],
+                    customerName: 'Khách lẻ',
+                    customerCode: '',
+                    recipientName: '',
+                    customerPhone: '',
+                    isDelivery: false,
+                    deliveryPhone: '',
+                    deliveryAddress: '',
+                    province: '',
+                    district: '',
+                    ward: '',
+                    discountCode: '',
+                    discountValue: '',
+                    shippingFee: '',
+                    customerPay: '',
+                    paymentMethod: 'CASH'
+                }));
+                currentOrderId = orders[0].id;
+                renderTabs();
+                renderCurrentOrderItems();
+                renderCheckoutState();
+            } else {
+                await createOrder();
             }
-        } else {
-            createOrder();
+        } catch (e) {
+            console.error("Error loading drafts", e);
+            await createOrder();
         }
-        
         countTotalVariants();
         fetchProvinces();
         updateAvailableStockDisplay();
@@ -620,41 +607,46 @@
 
     // --- Order Tabs Logic ---
     
-    function createOrder() {
+    async function createOrder() {
         if (orders.length >= MAX_ORDERS) {
             alert("Chỉ được tạo tối đa " + MAX_ORDERS + " hóa đơn!");
             return;
         }
         
-        const newOrderId = "Đơn " + nextOrderId;
-        nextOrderId++;
-        
-        orders.push({
-            id: newOrderId,
-            name: newOrderId,
-            items: [],
-            customerName: 'Khách lẻ',
-            customerCode: '',
-            recipientName: '',
-            customerPhone: '',
-            isDelivery: false,
-            deliveryPhone: '',
-            deliveryAddress: '',
-            province: '',
-            district: '',
-            ward: '',
-            discountCode: '',
-            discountValue: '',
-            shippingFee: '',
-            customerPay: '',
-            paymentMethod: 'CASH'
-        });
-        
-        currentOrderId = newOrderId;
-        
-        renderTabs();
-        renderCurrentOrderItems();
-        renderCheckoutState();
+        try {
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/create-order'), { method: 'POST' });
+            const data = await res.json();
+            if (data && data.success) {
+                orders.push({
+                    id: data.id.toString(),
+                    name: data.code,
+                    items: [],
+                    customerName: 'Khách lẻ',
+                    customerCode: '',
+                    recipientName: '',
+                    customerPhone: '',
+                    isDelivery: false,
+                    deliveryPhone: '',
+                    deliveryAddress: '',
+                    province: '',
+                    district: '',
+                    ward: '',
+                    discountCode: '',
+                    discountValue: '',
+                    shippingFee: '',
+                    customerPay: '',
+                    paymentMethod: 'CASH'
+                });
+                currentOrderId = data.id.toString();
+                renderTabs();
+                renderCurrentOrderItems();
+                renderCheckoutState();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể tạo đơn hàng'));
+            }
+        } catch (e) {
+            console.error("Error creating order", e);
+        }
     }
     
     function renderTabs() {
@@ -699,23 +691,39 @@
             event.stopPropagation();
         }
         
-        showCustomConfirm('Bạn có chắc chắn muốn xóa thông tin hóa đơn này không?', function(result) {
+        showCustomConfirm('Bạn có chắc chắn muốn xóa thông tin hóa đơn này không?', async function(result) {
             if (!result) return;
             
-            orders = orders.filter(o => o.id !== orderId);
-            
-            if (orders.length === 0) {
-                currentOrderId = null;
-            } else {
-                if (currentOrderId === orderId) {
-                    // Switch to the last available order
-                    currentOrderId = orders[orders.length - 1].id;
+            try {
+                const fd = new URLSearchParams();
+                fd.append('invoiceId', orderId);
+                const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/delete-order'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: fd.toString()
+                });
+                const data = await res.json();
+                if (data && data.success) {
+                    orders = orders.filter(o => o.id !== orderId);
+                    
+                    if (orders.length === 0) {
+                        currentOrderId = null;
+                        await createOrder();
+                    } else {
+                        if (currentOrderId === orderId) {
+                            currentOrderId = orders[orders.length - 1].id;
+                        }
+                        renderTabs();
+                        renderCurrentOrderItems();
+                        renderCheckoutState();
+                    }
+                    updateAvailableStockDisplay();
+                } else {
+                    alert("Lỗi: " + (data.message || 'Không thể xóa đơn hàng'));
                 }
+            } catch (e) {
+                console.error("Error deleting order", e);
             }
-            renderTabs();
-            renderCurrentOrderItems();
-            renderCheckoutState();
-            saveOrdersToStorage();
         });
     }
 
@@ -793,7 +801,7 @@
         }
     }
     
-    function addVariantToOrder(variantCode) {
+    async function addVariantToOrder(variantCode) {
         if (!currentOrderId) {
             alert("Vui lòng tạo đơn hàng trước!");
             return;
@@ -827,35 +835,57 @@
         const order = orders[orderIndex];
         const existingItemIndex = order.items.findIndex(item => item.code === variantCode);
         
+        let newQty = 1;
         if (existingItemIndex !== -1) {
-            if (getAvailableStock(variantCode) >= 1) {
-                order.items[existingItemIndex].quantity += 1;
-            } else {
-                alert("Số lượng vượt quá tồn kho!");
-                return;
-            }
-        } else {
-            if (getAvailableStock(variantCode) >= 1) {
-                order.items.push({
-                    code: variantCode,
-                    productCode: productCode,
-                    name: name,
-                    color: color,
-                    size: size,
-                    price: price,
-                    image: image,
-                    stock: stock,
-                    quantity: 1
-                });
-            } else {
-                alert("Sản phẩm này đã hết hàng (Tồn kho = 0)!");
-                return;
-            }
+            newQty = order.items[existingItemIndex].quantity + 1;
         }
         
-        renderCurrentOrderItems();
-        updateAvailableStockDisplay();
-        closeVariantModal();
+        try {
+            const fd = new URLSearchParams();
+            fd.append('invoiceId', currentOrderId);
+            fd.append('variantCode', variantCode);
+            fd.append('quantity', newQty);
+            fd.append('variantName', name);
+            fd.append('price', price);
+            fd.append('colorSize', color + ' - ' + size);
+            
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/add-item'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: fd.toString()
+            });
+            const data = await res.json();
+            
+            if (data && data.success) {
+                if (existingItemIndex !== -1) {
+                    order.items[existingItemIndex].quantity = newQty;
+                } else {
+                    order.items.push({
+                        code: variantCode,
+                        productCode: productCode,
+                        name: name,
+                        color: color,
+                        size: size,
+                        price: price,
+                        image: image,
+                        stock: stock,
+                        quantity: 1
+                    });
+                }
+                
+                row.setAttribute('data-stock', stock - 1);
+                const stockCell = row.querySelector('.pos-stock-td');
+                if (stockCell) stockCell.textContent = stock - 1;
+                
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+                closeVariantModal();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể thêm sản phẩm'));
+            }
+        } catch (e) {
+            console.error("Error adding item", e);
+        }
     }
     
     function renderCurrentOrderItems() {
@@ -1529,7 +1559,7 @@
         saveOrdersToStorage();
     }
     
-    function updateItemQty(code, change) {
+    async function updateItemQty(code, change) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
@@ -1537,23 +1567,49 @@
         
         let newQty = item.quantity + change;
         if (newQty > 0) {
-            if (change > 0) {
-                if (getAvailableStock(code) >= change) {
+            if (change > 0 && getAvailableStock(code) < change) {
+                alert("Số lượng vượt quá tồn kho hiện có!");
+                return;
+            }
+            
+            try {
+                const fd = new URLSearchParams();
+                fd.append('invoiceId', currentOrderId);
+                fd.append('variantCode', code);
+                fd.append('quantity', newQty);
+                fd.append('variantName', item.name);
+                fd.append('price', item.price);
+                fd.append('colorSize', item.color + ' - ' + item.size);
+                
+                const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: fd.toString()
+                });
+                const data = await res.json();
+                if (data && data.success) {
                     item.quantity = newQty;
+                    
+                    const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+                    if (row) {
+                        const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                        row.setAttribute('data-stock', currentStock - change);
+                        const stockCell = row.querySelector('.pos-stock-td');
+                        if (stockCell) stockCell.textContent = currentStock - change;
+                    }
+                    
                     renderCurrentOrderItems();
                     updateAvailableStockDisplay();
                 } else {
-                    alert("Số lượng vượt quá tồn kho hiện có!");
+                    alert("Lỗi: " + (data.message || 'Không thể cập nhật số lượng'));
                 }
-            } else {
-                item.quantity = newQty;
-                renderCurrentOrderItems();
-                updateAvailableStockDisplay();
+            } catch (e) {
+                console.error(e);
             }
         }
     }
     
-    function setItemQty(code, value) {
+    async function setItemQty(code, value) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
@@ -1563,28 +1619,90 @@
         if (val < 1) val = 1;
         
         let diff = val - item.quantity;
-        if (diff > 0) {
-            if (getAvailableStock(code) >= diff) {
-                item.quantity = val;
-            } else {
-                alert("Số lượng vượt quá tồn kho hiện có!");
-                val = item.quantity + getAvailableStock(code);
-                item.quantity = val;
+        if (diff > 0 && getAvailableStock(code) < diff) {
+            alert("Số lượng vượt quá tồn kho hiện có!");
+            val = item.quantity + getAvailableStock(code);
+            diff = val - item.quantity;
+            if (diff === 0) {
+                renderCurrentOrderItems();
+                return;
             }
-        } else {
-            item.quantity = val;
         }
-        renderCurrentOrderItems();
-        updateAvailableStockDisplay();
+        
+        try {
+            const fd = new URLSearchParams();
+            fd.append('invoiceId', currentOrderId);
+            fd.append('variantCode', code);
+            fd.append('quantity', val);
+            fd.append('variantName', item.name);
+            fd.append('price', item.price);
+            fd.append('colorSize', item.color + ' - ' + item.size);
+            
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: fd.toString()
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                item.quantity = val;
+                
+                const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+                if (row) {
+                    const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                    row.setAttribute('data-stock', currentStock - diff);
+                    const stockCell = row.querySelector('.pos-stock-td');
+                    if (stockCell) stockCell.textContent = currentStock - diff;
+                }
+                
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể cập nhật số lượng'));
+                renderCurrentOrderItems();
+            }
+        } catch (e) {
+            console.error(e);
+            renderCurrentOrderItems();
+        }
     }
     
-    function removeItem(code) {
+    async function removeItem(code) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
+        const item = order.items.find(i => i.code === code);
+        if (!item) return;
         
-        order.items = order.items.filter(i => i.code !== code);
-        renderCurrentOrderItems();
-        updateAvailableStockDisplay();
+        try {
+            const fd = new URLSearchParams();
+            fd.append('invoiceId', currentOrderId);
+            fd.append('variantCode', code);
+            
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/remove-item'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: fd.toString()
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                order.items = order.items.filter(i => i.code !== code);
+                
+                const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+                if (row) {
+                    const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                    row.setAttribute('data-stock', currentStock + item.quantity);
+                    const stockCell = row.querySelector('.pos-stock-td');
+                    if (stockCell) stockCell.textContent = currentStock + item.quantity;
+                }
+                
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể xóa sản phẩm'));
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
     
     // --- QR and Success Modals ---

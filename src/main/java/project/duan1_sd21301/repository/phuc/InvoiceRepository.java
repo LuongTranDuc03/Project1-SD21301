@@ -523,7 +523,7 @@ public class InvoiceRepository {
                 "pm.id AS pm_id, pm.phuong_thuc_thanh_toan_code AS pm_code, pm.ten_phuong_thuc AS pm_name " +
                 "FROM hoa_don hd " +
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
-                "WHERE 1=1 ");
+                "WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_thanh_toan = 0) ");
 
         if (orderType != null)
             sql.append("AND hd.loai_hoa_don = ? ");
@@ -609,7 +609,7 @@ public class InvoiceRepository {
 
     public long countAll(Integer orderType, Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
             Integer paymentMethodId) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_thanh_toan = 0) ");
 
         if (orderType != null)
             sql.append("AND hd.loai_hoa_don = ? ");
