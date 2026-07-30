@@ -527,7 +527,7 @@
                             <td class="pos-product-name"><%= p.getName() %></td>
                             <td><%= v.getColor() != null ? v.getColor() : "" %></td>
                             <td><%= v.getSize() != null ? v.getSize() : "" %></td>
-                            <td><%= v.getStock() %></td>
+                            <td class="pos-stock-td"><%= v.getStock() %></td>
                             <td style="font-weight: 600; color: #7f1d1d; white-space: nowrap;"><%= String.format("%,.0f đ", v.getPrice()) %></td>
                             <td>
                                 <button class="btn-add-variant" onclick="addVariantToOrder('<%= v.getCode() %>')" title="Thêm vào đơn">Thêm</button>
@@ -1989,7 +1989,7 @@
         rows.forEach(row => {
             const code = row.getAttribute('data-code');
             const available = getAvailableStock(code);
-            const stockTd = row.children[6];
+            const stockTd = row.querySelector('.pos-stock-td');
             if (stockTd) {
                 stockTd.textContent = available;
             }

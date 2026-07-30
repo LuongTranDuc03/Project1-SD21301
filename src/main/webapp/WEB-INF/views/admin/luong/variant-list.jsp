@@ -954,7 +954,7 @@
                         const dbStock = parseInt(row.getAttribute('data-stock')) || 0;
                         const available = Math.max(0, dbStock - reservedQty[code]);
                         
-                        const stockTd = row.children[7];
+                        const stockTd = row.children[8];
                         if (stockTd) {
                             const span = stockTd.querySelector('span');
                             if (span) span.textContent = available;

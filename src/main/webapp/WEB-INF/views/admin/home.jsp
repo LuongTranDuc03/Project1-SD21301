@@ -7,8 +7,12 @@
     String contextPath = request.getContextPath();
     Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
     String roleDisplay = "Admin";
+    boolean isManager = false;
     if (loggedInUser != null && loggedInUser.getRoleName() != null && !loggedInUser.getRoleName().isEmpty()) {
         roleDisplay = loggedInUser.getRoleName();
+    }
+    if (loggedInUser != null && loggedInUser.getRoleId() == 1) {
+        isManager = true;
     }
     
     // Định dạng ngày hiện tại bằng Tiếng Việt (Ví dụ: Thứ Bảy, 25/07/2026)
@@ -138,8 +142,9 @@
         }
 
         .banner-actions-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 16px;
             width: 100%;
             max-width: 1100px;
@@ -162,7 +167,8 @@
             font-weight: 700;
             transition: all 0.25s ease;
             text-decoration: none;
-            width: 100%;
+            flex: 1 1 200px;
+            max-width: 260px;
             text-align: center;
         }
 
@@ -257,6 +263,15 @@
 
                         <!-- Nút tác vụ nhanh -->
                         <div class="banner-actions-row">
+                            <a href="${pageContext.request.contextPath}/admin/pos" class="btn-glass">
+                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="9" cy="21" r="1"></circle>
+                                    <circle cx="20" cy="21" r="1"></circle>
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                </svg>
+                                <span>Bán Hàng Tại Quầy</span>
+                            </a>
+                            <% if (isManager) { %>
                             <a href="${pageContext.request.contextPath}/admin/products" class="btn-glass">
                                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
@@ -265,6 +280,7 @@
                                 </svg>
                                 <span>Quản Lý Sản Phẩm</span>
                             </a>
+                            <% } %>
                             <a href="${pageContext.request.contextPath}/admin/customers" class="btn-glass">
                                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -272,6 +288,7 @@
                                 </svg>
                                 <span>Quản Lý Khách Hàng</span>
                             </a>
+                            <% if (isManager) { %>
                             <a href="${pageContext.request.contextPath}/admin/employees" class="btn-glass">
                                 <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -281,14 +298,7 @@
                                 </svg>
                                 <span>Quản Lý Nhân Viên</span>
                             </a>
-                            <a href="${pageContext.request.contextPath}/admin/pos" class="btn-glass">
-                                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="9" cy="21" r="1"></circle>
-                                    <circle cx="20" cy="21" r="1"></circle>
-                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                                </svg>
-                                <span>Bán Hàng Tại Quầy</span>
-                            </a>
+                            <% } %>
                         </div>
                     </div>
                 </div>
