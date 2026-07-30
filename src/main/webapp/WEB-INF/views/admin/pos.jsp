@@ -108,7 +108,7 @@
                             
                             <div class="form-group">
                                 <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="this.value = this.value.replace(/[^\p{L}\s]/gu, ''); updateCheckoutState()">
+                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="updateCheckoutState()">
                                 <div id="customerNameError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;">Tên khách hàng chỉ được chứa chữ cái và khoảng trắng</div>
                             </div>
                             
@@ -133,7 +133,7 @@
                             <div id="deliveryForm" style="display: none; flex-direction: column; gap: 12px;">
                                 <div class="form-group">
                                     <label class="form-label">Tên người nhận (nếu có)</label>
-                                    <input type="text" class="form-control" id="recipientNameInput" placeholder="Tên người nhận..." oninput="this.value = this.value.replace(/[^\p{L}\s]/gu, ''); updateCheckoutState()">
+                                    <input type="text" class="form-control" id="recipientNameInput" placeholder="Tên người nhận..." oninput="updateCheckoutState()">
                                 </div>
                                 
                                 <div class="form-group">

@@ -169,7 +169,7 @@ public class PosDraftService {
 
             // Find pdId
             int pdId = -1;
-            String findPd = "SELECT id FROM chi_tiet_san_pham WHERE p_barcode = ?";
+            String findPd = "SELECT id FROM chi_tiet_san_pham WHERE chi_tiet_san_pham_code = ?";
             try (PreparedStatement ps = conn.prepareStatement(findPd)) {
                 ps.setString(1, variantCode);
                 try (ResultSet rs = ps.executeQuery()) {
