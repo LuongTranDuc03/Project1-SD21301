@@ -69,7 +69,6 @@
                 <div class="pos-section-header">
                     <h3 class="pos-section-title">Sản phẩm</h3>
                     <div class="pos-actions">
-                        <button class="btn-scan-qr">Quét QR sản phẩm</button>
                         <button class="btn-add-product" onclick="openVariantModal()">Thêm sản phẩm</button>
                     </div>
                 </div>
