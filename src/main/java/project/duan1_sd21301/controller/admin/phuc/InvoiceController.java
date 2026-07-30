@@ -280,7 +280,8 @@ public class InvoiceController extends HttpServlet {
                 .build();
 
         // Xác định xử lý kho:
-        // Hủy đơn/Hoàn tiền (→ 4, 5): hoàn kho; khôi phục từ hủy/hoàn tiền (4, 5 → khác): trừ kho
+        // Hủy đơn/Hoàn tiền (→ 4, 5): hoàn kho; khôi phục từ hủy/hoàn tiền (4, 5 →
+        // khác): trừ kho
         boolean isNewCancelOrRefund = (newStatus == 4 || newStatus == 5);
         boolean isOldCancelOrRefund = (oldStatus == 4 || oldStatus == 5);
 
