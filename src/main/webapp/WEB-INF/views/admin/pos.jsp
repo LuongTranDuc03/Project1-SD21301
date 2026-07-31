@@ -69,7 +69,7 @@
                 <div class="pos-section-header">
                     <h3 class="pos-section-title">Sản phẩm</h3>
                     <div class="pos-actions">
-                        <button class="btn-scan-qr">Quét QR sản phẩm</button>
+                        <button class="btn-scan-qr" onclick="startCameraScan()">Quét QR sản phẩm</button>
                         <button class="btn-add-product" onclick="openVariantModal()">Thêm sản phẩm</button>
                     </div>
                 </div>
@@ -2030,6 +2030,99 @@
 
     // Override default alert globally in this page to catch all alerts
     window.alert = showCustomAlert;
+</script>
+
+<!-- Modal Scanner Camera -->
+<div id="qrCameraModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 600px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; position: relative;">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Đưa mã vạch vào khung hình</h3>
+        <div id="qrReader" style="width: 100%; max-width: 550px; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0;"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; width: 100%;">
+            <button id="btnToggleTorch" onclick="toggleTorch()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fef9c3; color: #854d0e; font-weight: 600; cursor: pointer;">🔦 Bật Đèn</button>
+            <button onclick="stopCameraScan()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #ef4444; color: #ffffff; font-weight: 600; cursor: pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    let html5QrCode = null;
+    let isScannerRunning = false;
+    let torchOn = false;
+
+    function startCameraScan() {
+        if (!currentOrderId) {
+            showCustomAlert('Vui lòng tạo đơn hàng trước khi quét sản phẩm!');
+            return;
+        }
+
+        if (isScannerRunning) return;
+
+        const modal = document.getElementById('qrCameraModal');
+        modal.style.display = 'flex';
+
+        html5QrCode = new Html5Qrcode("qrReader");
+        
+        const config = {
+            fps: 10,
+            qrbox: { width: 450, height: 250 },
+            aspectRatio: 1.0,
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            },
+            rememberLastUsedCamera: false
+        };
+
+        const onScanSuccess = (decodedText) => {
+            stopCameraScan();
+            // Tận dụng hàm addVariantToOrder đã có sẵn trong pos.jsp
+            addVariantToOrder(decodedText);
+        };
+
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+        .then(() => {
+            isScannerRunning = true;
+        })
+        .catch(() => {
+            // Nếu camera sau lỗi thì dùng camera trước
+            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {})
+            .then(() => {
+                isScannerRunning = true;
+            })
+            .catch((err) => {
+                console.error("Không mở được camera:", err);
+                modal.style.display = 'none';
+                showCustomAlert('Không thể mở Camera. Vui lòng kiểm tra quyền truy cập.');
+            });
+        });
+    }
+
+    async function toggleTorch() {
+        if (!html5QrCode) return;
+        try {
+            torchOn = !torchOn;
+            await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+            const btn = document.getElementById('btnToggleTorch');
+            btn.textContent = torchOn ? '🔦 Tắt Đèn' : '🔦 Bật Đèn';
+            btn.style.background = torchOn ? '#fde047' : '#fef9c3';
+        } catch(e) { console.log('Torch not supported'); }
+    }
+
+    function stopCameraScan() {
+        const modal = document.getElementById('qrCameraModal');
+        modal.style.display = 'none';
+        isScannerRunning = false;
+
+        if (html5QrCode) {
+            const instance = html5QrCode;
+            html5QrCode = null;
+            instance.stop()
+            .then(() => instance.clear())
+            .catch(() => {
+                try { instance.clear(); } catch(e) {}
+            });
+        }
+    }
 </script>
 
 </body>
