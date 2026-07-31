@@ -340,6 +340,7 @@
                         <input type="date" name="toDate" class="date-input" value="<%= request.getAttribute("toDate") %>">
                     </div>
                 </div>
+        
                 <div class="filter-btns">
                     <button type="submit" class="btn-loc">
                         <svg style="vertical-align: middle; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
@@ -427,6 +428,7 @@
                 </table>
             </div>
         </div>
+
 
         </div>
     </main>

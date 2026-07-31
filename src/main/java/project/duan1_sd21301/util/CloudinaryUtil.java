@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class CloudinaryUtil {
 
-    // Cấu hình Cloudinary Credentials
     // Lưu ý: Thay "d_cloud_name" bằng Cloud Name cụ thể trên tài khoản Cloudinary của bạn (ví dụ: dx123456)
     private static String cloudName = System.getenv("CLOUDINARY_CLOUD_NAME") != null 
             ? System.getenv("CLOUDINARY_CLOUD_NAME") : "hpjixeta";

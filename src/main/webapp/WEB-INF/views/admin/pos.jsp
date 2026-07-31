@@ -69,6 +69,7 @@
                 <div class="pos-section-header">
                     <h3 class="pos-section-title">Sản phẩm</h3>
                     <div class="pos-actions">
+                        <button class="btn-scan-qr" onclick="startCameraScan()">Quét QR sản phẩm</button>
                         <button class="btn-add-product" onclick="openVariantModal()">Thêm sản phẩm</button>
                     </div>
                 </div>
@@ -228,7 +229,7 @@
                             <span class="summary-value" id="summaryTotalItems">0 đ</span>
                         </div>
                         
-                        <div class="summary-row shipping-row" id="shippingRow" style="display: none;">
+                        <div class="summary-row" id="shippingRow">
                             <span class="summary-label">Phí vận chuyển</span>
                             <div class="shipping-fee-input">
                                 <input type="text" class="form-control text-right" id="shippingFeeInput" value="" placeholder="0" style="width: 80px;" oninput="updateCheckoutState()">
@@ -527,7 +528,7 @@
                             <td class="pos-product-name"><%= p.getName() %></td>
                             <td><%= v.getColor() != null ? v.getColor() : "" %></td>
                             <td><%= v.getSize() != null ? v.getSize() : "" %></td>
-                            <td class="pos-stock-td"><%= v.getStock() %></td>
+                            <td class="td-stock"><%= v.getStock() %></td>
                             <td style="font-weight: 600; color: #7f1d1d; white-space: nowrap;"><%= String.format("%,.0f đ", v.getPrice()) %></td>
                             <td>
                                 <button class="btn-add-variant" onclick="addVariantToOrder('<%= v.getCode() %>')" title="Thêm vào đơn">Thêm</button>
@@ -603,6 +604,14 @@
         countTotalVariants();
         fetchProvinces();
         updateAvailableStockDisplay();
+
+        // Khởi tạo trạng thái phí vận chuyển: readonly mặc định (Tại quầy)
+        const shippingInput = document.getElementById('shippingFeeInput');
+        if (shippingInput) {
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
+        }
     }
 
     // --- Order Tabs Logic ---
@@ -705,7 +714,7 @@
                 const data = await res.json();
                 if (data && data.success) {
                     orders = orders.filter(o => o.id !== orderId);
-                    
+
                     if (orders.length === 0) {
                         currentOrderId = null;
                     } else {
@@ -838,7 +847,7 @@
         if (existingItemIndex !== -1) {
             newQty = order.items[existingItemIndex].quantity + 1;
         }
-        
+
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
@@ -847,14 +856,14 @@
             fd.append('variantName', name);
             fd.append('price', price);
             fd.append('colorSize', color + ' - ' + size);
-            
+
             const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/add-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
             });
             const data = await res.json();
-            
+
             if (data && data.success) {
                 if (existingItemIndex !== -1) {
                     order.items[existingItemIndex].quantity = newQty;
@@ -871,11 +880,11 @@
                         quantity: 1
                     });
                 }
-                
+
                 row.setAttribute('data-stock', stock - 1);
                 const stockCell = row.querySelector('.pos-stock-td');
                 if (stockCell) stockCell.textContent = stock - 1;
-                
+
                 renderCurrentOrderItems();
                 updateAvailableStockDisplay();
                 closeVariantModal();
@@ -970,12 +979,19 @@
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
-            document.getElementById('shippingRow').style.display = 'flex';
+            // Cho phép nhập phí vận chuyển
+            shippingInput.removeAttribute('readonly');
+            shippingInput.style.backgroundColor = '';
+            shippingInput.style.color = '';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
-            document.getElementById('shippingRow').style.display = 'none';
+            // Khóa phí vận chuyển khi tại quầy
+            shippingInput.value = '';
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
         }
     }
     
@@ -1194,14 +1210,14 @@
                 sumTotal += (item.price * item.quantity);
             });
         }
-        
+
         const select = document.getElementById('discountCodeInput');
-        
+
         // --- SUGGESTION LOGIC ---
         if (select) {
             let maxPossibleDiscount = -1;
             let bestOptionIndices = [];
-            
+
             for (let i = 1; i < select.options.length; i++) {
                 let opt = select.options[i];
                 if (!opt.hasAttribute('data-original-text')) {
@@ -1211,17 +1227,17 @@
                 opt.style.backgroundColor = '';
                 opt.style.color = '';
                 opt.style.fontWeight = '';
-                
+
                 const type = parseInt(opt.getAttribute('data-type'));
                 const value = parseFloat(opt.getAttribute('data-value'));
                 const minOrder = parseFloat(opt.getAttribute('data-min'));
                 const maxDiscountOpt = parseFloat(opt.getAttribute('data-max'));
-                
+
                 let possibleDiscount = 0;
                 if (sumTotal > 0 && sumTotal >= minOrder) {
-                    if (type === 1) { 
+                    if (type === 1) {
                         possibleDiscount = value;
-                    } else if (type === 0) { 
+                    } else if (type === 0) {
                         possibleDiscount = sumTotal * (value / 100.0);
                         if (maxDiscountOpt > 0 && possibleDiscount > maxDiscountOpt) {
                             possibleDiscount = maxDiscountOpt;
@@ -1231,7 +1247,7 @@
                         possibleDiscount = sumTotal;
                     }
                 }
-                
+
                 if (possibleDiscount > 0) {
                     if (possibleDiscount > maxPossibleDiscount) {
                         maxPossibleDiscount = possibleDiscount;
@@ -1241,7 +1257,7 @@
                     }
                 }
             }
-            
+
             if (maxPossibleDiscount > 0) {
                 bestOptionIndices.forEach(idx => {
                     let bestOpt = select.options[idx];
@@ -1253,7 +1269,7 @@
             }
         }
         // --- END SUGGESTION LOGIC ---
-        
+
         // Cập nhật lại discount dựa trên tổng tiền hiện tại để đảm bảo luôn đúng % và điều kiện minOrder
         let discount = 0;
         if (order.discountCode && select) {
@@ -1456,16 +1472,23 @@
         
         const isDelivery = toggle.checked;
         document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+
+        const shippingInput = document.getElementById('shippingFeeInput');
         if (isDelivery) {
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
-            document.getElementById('shippingRow').style.display = 'flex';
+            shippingInput.removeAttribute('readonly');
+            shippingInput.style.backgroundColor = '';
+            shippingInput.style.color = '';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
-            document.getElementById('shippingRow').style.display = 'none';
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
+            if (!isDelivery) shippingInput.value = '';
         }
         
         document.getElementById('customerPhoneInput').value = order.deliveryPhone || '';
@@ -1628,7 +1651,7 @@
                 alert("Số lượng vượt quá tồn kho hiện có!");
                 return;
             }
-            
+
             try {
                 const fd = new URLSearchParams();
                 fd.append('invoiceId', currentOrderId);
@@ -1637,7 +1660,7 @@
                 fd.append('variantName', item.name);
                 fd.append('price', item.price);
                 fd.append('colorSize', item.color + ' - ' + item.size);
-                
+
                 const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1646,7 +1669,7 @@
                 const data = await res.json();
                 if (data && data.success) {
                     item.quantity = newQty;
-                    
+
                     const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
                     if (row) {
                         const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
@@ -1654,7 +1677,7 @@
                         const stockCell = row.querySelector('.pos-stock-td');
                         if (stockCell) stockCell.textContent = currentStock - change;
                     }
-                    
+
                     renderCurrentOrderItems();
                     updateAvailableStockDisplay();
                 } else {
@@ -1685,7 +1708,7 @@
                 return;
             }
         }
-        
+
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
@@ -1694,7 +1717,7 @@
             fd.append('variantName', item.name);
             fd.append('price', item.price);
             fd.append('colorSize', item.color + ' - ' + item.size);
-            
+
             const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1703,7 +1726,7 @@
             const data = await res.json();
             if (data && data.success) {
                 item.quantity = val;
-                
+
                 const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
                 if (row) {
                     const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
@@ -1711,7 +1734,7 @@
                     const stockCell = row.querySelector('.pos-stock-td');
                     if (stockCell) stockCell.textContent = currentStock - diff;
                 }
-                
+
                 renderCurrentOrderItems();
                 updateAvailableStockDisplay();
             } else {
@@ -1729,12 +1752,12 @@
         if (!order) return;
         const item = order.items.find(i => i.code === code);
         if (!item) return;
-        
+
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
             fd.append('variantCode', code);
-            
+
             const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/remove-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1743,7 +1766,7 @@
             const data = await res.json();
             if (data && data.success) {
                 order.items = order.items.filter(i => i.code !== code);
-                
+
                 const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
                 if (row) {
                     const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
@@ -1751,7 +1774,7 @@
                     const stockCell = row.querySelector('.pos-stock-td');
                     if (stockCell) stockCell.textContent = currentStock + item.quantity;
                 }
-                
+
                 renderCurrentOrderItems();
                 updateAvailableStockDisplay();
             } else {
@@ -2155,7 +2178,8 @@
         rows.forEach(row => {
             const code = row.getAttribute('data-code');
             const available = getAvailableStock(code);
-            const stockTd = row.querySelector('.pos-stock-td');
+            // Dùng class 'td-stock' để chọn chính xác cột Số lượng, tránh lỗi index cứng
+            const stockTd = row.querySelector('.td-stock');
             if (stockTd) {
                 stockTd.textContent = available;
             }
@@ -2164,6 +2188,99 @@
 
     // Override default alert globally in this page to catch all alerts
     window.alert = showCustomAlert;
+</script>
+
+<!-- Modal Scanner Camera -->
+<div id="qrCameraModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 600px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; position: relative;">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Đưa mã vạch vào khung hình</h3>
+        <div id="qrReader" style="width: 100%; max-width: 550px; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0;"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; width: 100%;">
+            <button id="btnToggleTorch" onclick="toggleTorch()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fef9c3; color: #854d0e; font-weight: 600; cursor: pointer;">🔦 Bật Đèn</button>
+            <button onclick="stopCameraScan()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #ef4444; color: #ffffff; font-weight: 600; cursor: pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    let html5QrCode = null;
+    let isScannerRunning = false;
+    let torchOn = false;
+
+    function startCameraScan() {
+        if (!currentOrderId) {
+            showCustomAlert('Vui lòng tạo đơn hàng trước khi quét sản phẩm!');
+            return;
+        }
+
+        if (isScannerRunning) return;
+
+        const modal = document.getElementById('qrCameraModal');
+        modal.style.display = 'flex';
+
+        html5QrCode = new Html5Qrcode("qrReader");
+
+        const config = {
+            fps: 10,
+            qrbox: { width: 450, height: 250 },
+            aspectRatio: 1.0,
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            },
+            rememberLastUsedCamera: false
+        };
+
+        const onScanSuccess = (decodedText) => {
+            stopCameraScan();
+            // Tận dụng hàm addVariantToOrder đã có sẵn trong pos.jsp
+            addVariantToOrder(decodedText);
+        };
+
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+        .then(() => {
+            isScannerRunning = true;
+        })
+        .catch(() => {
+            // Nếu camera sau lỗi thì dùng camera trước
+            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {})
+            .then(() => {
+                isScannerRunning = true;
+            })
+            .catch((err) => {
+                console.error("Không mở được camera:", err);
+                modal.style.display = 'none';
+                showCustomAlert('Không thể mở Camera. Vui lòng kiểm tra quyền truy cập.');
+            });
+        });
+    }
+
+    async function toggleTorch() {
+        if (!html5QrCode) return;
+        try {
+            torchOn = !torchOn;
+            await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+            const btn = document.getElementById('btnToggleTorch');
+            btn.textContent = torchOn ? '🔦 Tắt Đèn' : '🔦 Bật Đèn';
+            btn.style.background = torchOn ? '#fde047' : '#fef9c3';
+        } catch(e) { console.log('Torch not supported'); }
+    }
+
+    function stopCameraScan() {
+        const modal = document.getElementById('qrCameraModal');
+        modal.style.display = 'none';
+        isScannerRunning = false;
+
+        if (html5QrCode) {
+            const instance = html5QrCode;
+            html5QrCode = null;
+            instance.stop()
+            .then(() => instance.clear())
+            .catch(() => {
+                try { instance.clear(); } catch(e) {}
+            });
+        }
+    }
 </script>
 
 </body>
