@@ -1,25 +1,22 @@
 package project.duan1_sd21301.util;
 
-import project.duan1_sd21301.model.ha.Customer;
-import project.duan1_sd21301.repository.ha.CustomerRepositoryImpl;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class TestDB {
     public static void main(String[] args) {
-        CustomerRepositoryImpl repo = new CustomerRepositoryImpl();
-        Customer c = Customer.builder()
-            .code("KHTEST98")
-            .fullName("Test Khach Hang")
-            .email("test98@gmail.com")
-            .phoneNumber("0999999998")
-            .status(1)
-            .build();
-        
-        System.out.println("Trying to add...");
-        boolean res = repo.add(c);
-        System.out.println("Result: " + res);
-        
-        if (res) {
-            System.out.println("Added successfully with ID: " + c.getId());
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT chi_tiet_san_pham_code, so_luong FROM chi_tiet_san_pham WHERE chi_tiet_san_pham_code IN ('CTSP024', 'CTSP025')";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        System.out.println(rs.getString(1) + ": " + rs.getInt(2));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

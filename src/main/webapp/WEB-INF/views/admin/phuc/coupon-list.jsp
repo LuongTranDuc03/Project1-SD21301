@@ -113,6 +113,67 @@
                             background-size: 16px;
                             padding-right: 36px !important;
                         }
+                        
+                        /* Action Buttons Styling */
+                        .action-icon-btn {
+                            width: 32px !important;
+                            height: 32px !important;
+                            border-radius: 8px !important;
+                            border: 1px solid #e2e8f0 !important;
+                            background-color: #ffffff !important;
+                            color: #475569 !important;
+                            display: inline-flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            transition: all 0.2s ease !important;
+                            flex-shrink: 0 !important;
+                        }
+                        .action-icon-btn:hover {
+                            background-color: #f1f5f9 !important;
+                            color: #0f172a !important;
+                            border-color: #cbd5e1 !important;
+                            transform: translateY(-1px) !important;
+                        }
+
+                        /* Modern Switch Styling */
+                        .toggle-switch {
+                            position: relative;
+                            display: inline-block;
+                            width: 34px;
+                            height: 18px;
+                            flex-shrink: 0;
+                        }
+                        .toggle-switch input {
+                            opacity: 0;
+                            width: 0;
+                            height: 0;
+                        }
+                        .toggle-slider {
+                            position: absolute;
+                            cursor: pointer;
+                            top: 0; left: 0; right: 0; bottom: 0;
+                            background-color: #cbd5e1;
+                            transition: .2s;
+                            border-radius: 18px;
+                        }
+                        .toggle-slider:before {
+                            position: absolute;
+                            content: "";
+                            height: 12px;
+                            width: 12px;
+                            left: 3px;
+                            bottom: 3px;
+                            background-color: white;
+                            transition: .2s;
+                            border-radius: 50%;
+                            box-shadow: 0 1px 3px rgba(15,23,42,0.25);
+                        }
+                        .toggle-switch input:checked + .toggle-slider {
+                            background-color: #10b981;
+                        }
+                        .toggle-switch input:checked + .toggle-slider:before {
+                            transform: translateX(16px);
+                        }
                     </style>
                     <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" class="filter-flex-grid" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 20px;">
                         

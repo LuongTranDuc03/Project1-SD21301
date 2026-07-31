@@ -93,53 +93,69 @@ public class PosCheckoutService {
             
             double customerPay = finalTotal; // Assume full payment upon confirm for POS
 
-            // 6. Insert Invoice (hoa_don)
+            // 6. Insert or Update Invoice (hoa_don)
             String addressFull = "";
             if (orderDTO.isDelivery()) {
                 addressFull = orderDTO.getDeliveryAddress() + ", " + orderDTO.getWard() + ", " + orderDTO.getDistrict() + ", " + orderDTO.getProvince();
             }
             
-            String insertInvoiceSql = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_phuong_thuc_thanh_toan, id_ma_giam_gia, " +
-                    "loai_hoa_don, trang_thai_don_hang, trang_thai_thanh_toan, da_thanh_toan, " +
-                    "ten_khach_nhan, sdt_khach_nhan, dia_chi_khach_nhan, ghi_chu, " +
-                    "tong_so_luong, tam_tinh, tien_giam_hoa_don, tong_thanh_toan, phi_van_chuyen, " +
-                    "ngay_dat_hang, ngay_xac_nhan, ngay_hoan_thanh) " +
-                    "VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?)";
-                    
             int invoiceId = -1;
-            try (PreparedStatement ps = conn.prepareStatement(insertInvoiceSql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, invoiceCode);
-                if (customerId != null) ps.setInt(2, customerId); else ps.setNull(2, Types.INTEGER);
-                ps.setInt(3, loggedInUser.getId());
-                ps.setInt(4, paymentMethodId);
-                if (couponId != null) ps.setInt(5, couponId); else ps.setNull(5, Types.INTEGER);
-                ps.setInt(6, orderStatus);
-                ps.setDouble(7, customerPay);
-                ps.setString(8, orderDTO.isDelivery() ? orderDTO.getRecipientName() : null);
-                ps.setString(9, orderDTO.isDelivery() ? orderDTO.getDeliveryPhone() : null);
-                ps.setString(10, orderDTO.isDelivery() ? addressFull : null);
-                ps.setString(11, orderDTO.getNote());
-                ps.setInt(12, totalQuantity);
-                ps.setDouble(13, sumTotal);
-                ps.setDouble(14, discountAmt);
-                ps.setDouble(15, finalTotal);
-                ps.setDouble(16, shippingFee);
-                
-                if (!orderDTO.isDelivery()) {
-                    ps.setString(17, "GETDATE()"); // SQL will fail if setString for date function. We should use Timestamp.
-                } else {
-                    ps.setNull(17, Types.TIMESTAMP);
-                }
-                // Fix for GETDATE() parameter issue
+            boolean isDraft = false;
+            if (orderDTO.getId() != null && orderDTO.getId().matches("\\d+")) {
+                invoiceId = Integer.parseInt(orderDTO.getId());
+                isDraft = true;
             }
             
-            // Redoing insertInvoiceSql to fix Date param
-            String insertInvoiceSqlFixed = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_phuong_thuc_thanh_toan, id_ma_giam_gia, " +
-                    "loai_hoa_don, trang_thai_don_hang, trang_thai_thanh_toan, da_thanh_toan, " +
-                    "ten_khach_nhan, sdt_khach_nhan, dia_chi_khach_nhan, ghi_chu, " +
-                    "tong_so_luong, tam_tinh, tien_giam_hoa_don, tong_thanh_toan, phi_van_chuyen, " +
-                    "ngay_dat_hang, ngay_xac_nhan, ngay_hoan_thanh) " +
-                    "VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?)";
+            if (isDraft) {
+                // UPDATE existing draft invoice
+                String updateInvoiceSql = "UPDATE hoa_don SET id_khach_hang = ?, id_nhan_vien = ?, id_phuong_thuc_thanh_toan = ?, id_ma_giam_gia = ?, " +
+                        "trang_thai_don_hang = ?, trang_thai_thanh_toan = 1, da_thanh_toan = ?, " +
+                        "ten_khach_nhan = ?, sdt_khach_nhan = ?, dia_chi_khach_nhan = ?, ghi_chu = ?, " +
+                        "tong_so_luong = ?, tam_tinh = ?, tien_giam_hoa_don = ?, tong_thanh_toan = ?, phi_van_chuyen = ?, " +
+                        "ngay_xac_nhan = GETDATE(), ngay_hoan_thanh = ? WHERE id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updateInvoiceSql)) {
+                    if (customerId != null) ps.setInt(1, customerId); else ps.setNull(1, Types.INTEGER);
+                    ps.setInt(2, loggedInUser.getId());
+                    ps.setInt(3, paymentMethodId);
+                    if (couponId != null) ps.setInt(4, couponId); else ps.setNull(4, Types.INTEGER);
+                    ps.setInt(5, orderStatus);
+                    ps.setDouble(6, customerPay);
+                    ps.setString(7, orderDTO.isDelivery() ? orderDTO.getRecipientName() : orderDTO.getCustomerName());
+                    ps.setString(8, orderDTO.isDelivery() ? orderDTO.getDeliveryPhone() : orderDTO.getCustomerPhone());
+                    ps.setString(9, orderDTO.isDelivery() ? addressFull : null);
+                    ps.setString(10, orderDTO.getNote());
+                    ps.setInt(11, totalQuantity);
+                    ps.setDouble(12, sumTotal);
+                    ps.setDouble(13, discountAmt);
+                    ps.setDouble(14, finalTotal);
+                    ps.setDouble(15, shippingFee);
+                    
+                    if (!orderDTO.isDelivery()) {
+                        ps.setTimestamp(16, new Timestamp(System.currentTimeMillis()));
+                    } else {
+                        ps.setNull(16, Types.TIMESTAMP);
+                    }
+                    ps.setInt(17, invoiceId);
+                    ps.executeUpdate();
+                }
+                
+                // Get invoice code for response
+                try (PreparedStatement ps = conn.prepareStatement("SELECT hoa_don_code FROM hoa_don WHERE id = ?")) {
+                    ps.setInt(1, invoiceId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            invoiceCode = rs.getString(1);
+                        }
+                    }
+                }
+            } else {
+                // INSERT new invoice (fallback)
+                String insertInvoiceSqlFixed = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_phuong_thuc_thanh_toan, id_ma_giam_gia, " +
+                        "loai_hoa_don, trang_thai_don_hang, trang_thai_thanh_toan, da_thanh_toan, " +
+                        "ten_khach_nhan, sdt_khach_nhan, dia_chi_khach_nhan, ghi_chu, " +
+                        "tong_so_luong, tam_tinh, tien_giam_hoa_don, tong_thanh_toan, phi_van_chuyen, " +
+                        "ngay_dat_hang, ngay_xac_nhan, ngay_hoan_thanh) " +
+                        "VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?)";
                     
             try (PreparedStatement ps = conn.prepareStatement(insertInvoiceSqlFixed, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, invoiceCode);
@@ -172,40 +188,43 @@ public class PosCheckoutService {
                     }
                 }
             }
+            }
 
-            // 7. Insert Invoice Details and update stock
-            String detailSql = "INSERT INTO chi_tiet_hoa_don (chi_tiet_hoa_don_code, id_hoa_don, id_chi_tiet_san_pham, don_gia, so_luong, thanh_tien, ten_sp_tai_thoi_diem, mo_ta_variant) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            String stockSql = "UPDATE chi_tiet_san_pham SET so_luong = so_luong - ? WHERE id = ?";
-            
-            try (PreparedStatement psDetail = conn.prepareStatement(detailSql);
-                 PreparedStatement psStock = conn.prepareStatement(stockSql)) {
+            // 7. Insert Invoice Details and update stock (only if NOT draft)
+            if (!isDraft) {
+                String detailSql = "INSERT INTO chi_tiet_hoa_don (chi_tiet_hoa_don_code, id_hoa_don, id_chi_tiet_san_pham, don_gia, so_luong, thanh_tien, ten_sp_tai_thoi_diem, mo_ta_variant) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                String stockSql = "UPDATE chi_tiet_san_pham SET so_luong = so_luong - ? WHERE id = ?";
                 
-                int cthdIndex = 1;
-                for (PosOrderItemDTO item : orderDTO.getItems()) {
-                    Integer productDetailId = getProductDetailId(conn, item.getCode());
-                    if (productDetailId == null) {
-                        throw new SQLException("Product variant not found: " + item.getCode());
+                try (PreparedStatement psDetail = conn.prepareStatement(detailSql);
+                     PreparedStatement psStock = conn.prepareStatement(stockSql)) {
+                    
+                    int cthdIndex = 1;
+                    for (PosOrderItemDTO item : orderDTO.getItems()) {
+                        Integer productDetailId = getProductDetailId(conn, item.getCode());
+                        if (productDetailId == null) {
+                            throw new SQLException("Product variant not found: " + item.getCode());
+                        }
+                        
+                        // Insert detail
+                        String cthdCode = "CTHD" + System.currentTimeMillis() + "-" + cthdIndex++;
+                        psDetail.setString(1, cthdCode);
+                        psDetail.setInt(2, invoiceId);
+                        psDetail.setInt(3, productDetailId);
+                        psDetail.setDouble(4, item.getPrice());
+                        psDetail.setInt(5, item.getQuantity());
+                        psDetail.setDouble(6, item.getPrice() * item.getQuantity());
+                        psDetail.setString(7, item.getName());
+                        psDetail.setString(8, item.getColor() + " - " + item.getSize());
+                        psDetail.addBatch();
+                        
+                        // Update stock
+                        psStock.setInt(1, item.getQuantity());
+                        psStock.setInt(2, productDetailId);
+                        psStock.addBatch();
                     }
-                    
-                    // Insert detail
-                    String cthdCode = "CTHD" + System.currentTimeMillis() + "-" + cthdIndex++;
-                    psDetail.setString(1, cthdCode);
-                    psDetail.setInt(2, invoiceId);
-                    psDetail.setInt(3, productDetailId);
-                    psDetail.setDouble(4, item.getPrice());
-                    psDetail.setInt(5, item.getQuantity());
-                    psDetail.setDouble(6, item.getPrice() * item.getQuantity());
-                    psDetail.setString(7, item.getName());
-                    psDetail.setString(8, item.getColor() + " - " + item.getSize());
-                    psDetail.addBatch();
-                    
-                    // Update stock
-                    psStock.setInt(1, item.getQuantity());
-                    psStock.setInt(2, productDetailId);
-                    psStock.addBatch();
+                    psDetail.executeBatch();
+                    psStock.executeBatch();
                 }
-                psDetail.executeBatch();
-                psStock.executeBatch();
             }
 
             // 8. Insert Invoice History

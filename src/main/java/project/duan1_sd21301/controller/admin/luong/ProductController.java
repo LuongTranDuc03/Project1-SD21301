@@ -414,8 +414,18 @@ public class ProductController extends HttpServlet {
                     }
                 }
 
-                String detailCode = (code != null ? code : "CTSP") + "-" + colors[i] + "-" + sizes[i];
-                detailCode = detailCode.replaceAll("\\s+", "");
+                String detailCode = null;
+                if (isEdit && vId > 0) {
+                    Product existingProduct = productService.getProductByCode(code);
+                    if (existingProduct != null && existingProduct.getDetails() != null) {
+                        for (ProductDetail d : existingProduct.getDetails()) {
+                            if (d.getId() == vId) {
+                                detailCode = d.getCode();
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 ProductDetail detail = ProductDetail.builder()
                         .id(vId)
