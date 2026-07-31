@@ -319,8 +319,12 @@ public class PosDraftService {
                 
                 // Get items
                 List<Map<String, Object>> items = new ArrayList<>();
-                String itemSql = "SELECT ct.so_luong, ct.don_gia, ct.ten_sp_tai_thoi_diem, ct.mo_ta_variant, sp.chi_tiet_san_pham_code " +
-                                 "FROM chi_tiet_hoa_don ct JOIN chi_tiet_san_pham sp ON ct.id_chi_tiet_san_pham = sp.id " +
+                String itemSql = "SELECT ct.so_luong, ct.don_gia, ct.ten_sp_tai_thoi_diem, ct.mo_ta_variant, sp.chi_tiet_san_pham_code, " +
+                                 "sp.so_luong as stock, p.san_pham_code as productCode, " +
+                                 "(SELECT TOP 1 h.duong_dan FROM hinh_anh h WHERE h.id_chi_tiet_san_pham = sp.id ORDER BY h.thu_tu ASC) as image " +
+                                 "FROM chi_tiet_hoa_don ct " +
+                                 "JOIN chi_tiet_san_pham sp ON ct.id_chi_tiet_san_pham = sp.id " +
+                                 "JOIN san_pham p ON sp.id_san_pham = p.id " +
                                  "WHERE ct.id_hoa_don = ?";
                 try (PreparedStatement psItem = conn.prepareStatement(itemSql)) {
                     psItem.setInt(1, rs.getInt("id"));
@@ -328,7 +332,10 @@ public class PosDraftService {
                         while (rsItem.next()) {
                             Map<String, Object> item = new HashMap<>();
                             item.put("code", rsItem.getString("chi_tiet_san_pham_code"));
+                            item.put("productCode", rsItem.getString("productCode"));
                             item.put("name", rsItem.getString("ten_sp_tai_thoi_diem"));
+                            item.put("image", rsItem.getString("image"));
+                            item.put("stock", rsItem.getInt("stock"));
                             
                             // parse color/size from mo_ta_variant (e.g. "Red - L")
                             String desc = rsItem.getString("mo_ta_variant");

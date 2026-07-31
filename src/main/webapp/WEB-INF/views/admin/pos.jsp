@@ -712,10 +712,10 @@
                         if (currentOrderId === orderId) {
                             currentOrderId = orders[orders.length - 1].id;
                         }
-                        renderTabs();
-                        renderCurrentOrderItems();
-                        renderCheckoutState();
                     }
+                    renderTabs();
+                    renderCurrentOrderItems();
+                    renderCheckoutState();
                     updateAvailableStockDisplay();
                 } else {
                     alert("Lỗi: " + (data.message || 'Không thể xóa đơn hàng'));
@@ -1195,8 +1195,66 @@
             });
         }
         
-        // Cập nhật lại discount dựa trên tổng tiền hiện tại để đảm bảo luôn đúng % và điều kiện minOrder
         const select = document.getElementById('discountCodeInput');
+        
+        // --- SUGGESTION LOGIC ---
+        if (select) {
+            let maxPossibleDiscount = -1;
+            let bestOptionIndices = [];
+            
+            for (let i = 1; i < select.options.length; i++) {
+                let opt = select.options[i];
+                if (!opt.hasAttribute('data-original-text')) {
+                    opt.setAttribute('data-original-text', opt.text);
+                }
+                opt.text = opt.getAttribute('data-original-text');
+                opt.style.backgroundColor = '';
+                opt.style.color = '';
+                opt.style.fontWeight = '';
+                
+                const type = parseInt(opt.getAttribute('data-type'));
+                const value = parseFloat(opt.getAttribute('data-value'));
+                const minOrder = parseFloat(opt.getAttribute('data-min'));
+                const maxDiscountOpt = parseFloat(opt.getAttribute('data-max'));
+                
+                let possibleDiscount = 0;
+                if (sumTotal > 0 && sumTotal >= minOrder) {
+                    if (type === 1) { 
+                        possibleDiscount = value;
+                    } else if (type === 0) { 
+                        possibleDiscount = sumTotal * (value / 100.0);
+                        if (maxDiscountOpt > 0 && possibleDiscount > maxDiscountOpt) {
+                            possibleDiscount = maxDiscountOpt;
+                        }
+                    }
+                    if (possibleDiscount > sumTotal) {
+                        possibleDiscount = sumTotal;
+                    }
+                }
+                
+                if (possibleDiscount > 0) {
+                    if (possibleDiscount > maxPossibleDiscount) {
+                        maxPossibleDiscount = possibleDiscount;
+                        bestOptionIndices = [i];
+                    } else if (possibleDiscount === maxPossibleDiscount) {
+                        bestOptionIndices.push(i);
+                    }
+                }
+            }
+            
+            if (maxPossibleDiscount > 0) {
+                bestOptionIndices.forEach(idx => {
+                    let bestOpt = select.options[idx];
+                    bestOpt.text = bestOpt.getAttribute('data-original-text') + ' (Gợi ý)';
+                    bestOpt.style.backgroundColor = '#e6f4ea';
+                    bestOpt.style.color = '#137333';
+                    bestOpt.style.fontWeight = 'bold';
+                });
+            }
+        }
+        // --- END SUGGESTION LOGIC ---
+        
+        // Cập nhật lại discount dựa trên tổng tiền hiện tại để đảm bảo luôn đúng % và điều kiện minOrder
         let discount = 0;
         if (order.discountCode && select) {
             let option = null;
