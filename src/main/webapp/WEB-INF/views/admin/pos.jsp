@@ -561,7 +561,46 @@
     let nextOrderId = parseInt('${nextOrderIndex}') || 1;
 
     function saveOrdersToStorage() {
-        // No longer using localStorage for orders, everything is on DB
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+
+        let validName = order.recipientName || order.customerName || '';
+        if (validName && validName.trim() !== '' && validName !== 'Khách lẻ' && !/^[\p{L}\s]+$/u.test(validName.trim())) {
+            validName = ''; 
+        }
+
+        let validPhone = order.deliveryPhone || order.customerPhone || '';
+        const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+        if (validPhone && validPhone.trim() !== '' && !phoneRegex.test(validPhone.trim())) {
+            validPhone = ''; 
+        }
+
+        try {
+            const formData = new URLSearchParams();
+            formData.append('invoiceId', order.id);
+            formData.append('customerName', validName);
+            formData.append('customerPhone', validPhone);
+            formData.append('couponCode', order.discountCode || '');
+            formData.append('shippingFee', order.shippingFee || '');
+            formData.append('customerPay', order.customerPay || '');
+
+            fetch(window.location.pathname.replace('/pos', '/pos/api/update-invoice-info'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            })
+            .then(res => {
+                if (!res.ok) console.error("Error saving draft: ", res.status);
+            })
+            .catch(err => {
+                console.error("Lỗi mạng khi lưu dữ liệu ngầm:", err);
+            });
+        } catch(e) {
+            console.error("Error saving invoice info:", e);
+        }
     }
 
     async function initPOS() {
@@ -1337,9 +1376,32 @@
         
         order.isDelivery = document.getElementById('deliveryToggle').checked;
         const nameInput = document.getElementById('customerNameInput');
-        if (nameInput) order.customerName = nameInput.value;
+        if (nameInput) {
+            order.customerName = nameInput.value;
+            const nameError = document.getElementById('customerNameError');
+            if (nameError) {
+                if (order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ' && !/^[\p{L}\s]+$/u.test(order.customerName.trim())) {
+                    nameError.style.display = 'block';
+                } else {
+                    nameError.style.display = 'none';
+                }
+            }
+        }
+        
         const buyerPhone = document.getElementById('buyerPhoneInput');
-        if (buyerPhone) order.customerPhone = buyerPhone.value;
+        if (buyerPhone) {
+            order.customerPhone = buyerPhone.value;
+            const phoneError = document.getElementById('buyerPhoneError');
+            const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+            if (phoneError && order.customerPhone && order.customerPhone.trim() !== '') {
+                if (!phoneRegex.test(order.customerPhone.trim())) {
+                    phoneError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
+                    phoneError.style.display = 'block';
+                } else {
+                    phoneError.style.display = 'none';
+                }
+            }
+        }
         
         const recInput = document.getElementById('recipientNameInput');
         if (recInput) order.recipientName = recInput.value;

@@ -324,7 +324,7 @@
             </div>
             <% } %>
 
-            <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" novalidate>
+            <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" novalidate onsubmit="return syncAllAddressBeforeSubmit();">
                 <input type="hidden" name="action" value="<%= isEdit ? "edit" : "add" %>">
                 <!-- Trường ẩn giữ URL ảnh cũ khi chỉnh sửa và không upload tệp mới -->
                 <input type="hidden" name="anhDaiDien" value="<%= (c != null) ? c.getAvatar() : "" %>">
