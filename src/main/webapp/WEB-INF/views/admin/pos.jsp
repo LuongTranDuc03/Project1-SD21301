@@ -608,10 +608,17 @@
             } catch (e) {
                 console.error("Error parsing pos orders", e);
                 orders = [];
-                createOrder();
+                currentOrderId = null;
+                renderTabs();
+                renderCurrentOrderItems();
+                renderCheckoutState();
             }
         } else {
-            createOrder();
+            orders = [];
+            currentOrderId = null;
+            renderTabs();
+            renderCurrentOrderItems();
+            renderCheckoutState();
         }
         
         countTotalVariants();
