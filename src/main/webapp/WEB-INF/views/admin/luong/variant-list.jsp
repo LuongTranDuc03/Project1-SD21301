@@ -1192,7 +1192,7 @@
                                         Mã Barcode</h4>
                                     <div id="barcodeContainer"
                                         style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                                        <svg id="barcodeRenderArea" style="max-width: 100%;"></svg>
+                                        <img id="barcodeRenderArea" style="max-width: 100%;">
                                         <div id="barcodeTextInfo"
                                             style="margin-top: 16px; font-size: 13px; color: #475569; text-align: center; font-weight: 500; line-height: 1.6;">
                                         </div>
