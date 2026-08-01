@@ -24,51 +24,45 @@
 
                         <body style="background:#F1F5F9;font-family:'Inter',sans-serif;">
                             <%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu hiển thị trên hoá đơn in --%>
-                                <% // Lấy thông tin hoá đơn và chi tiết hoá đơn từ Request Invoice inv=(Invoice)
-                                    request.getAttribute("invoice"); List<InvoiceDetail> detailList = (List
-                                    <InvoiceDetail>) request.getAttribute("detailList");
+                            <%
+                                // Lấy thông tin hoá đơn và chi tiết hoá đơn từ Request
+                                Invoice inv = (Invoice) request.getAttribute("invoice");
+                                List<InvoiceDetail> detailList = (List<InvoiceDetail>) request.getAttribute("detailList");
 
-                                        // Lấy danh sách map hiển thị nhãn trạng thái
-                                        Map<Integer, String> statusLabels = (Map<Integer, String>)
-                                                request.getAttribute("orderStatusLabels");
+                                // Lấy danh sách map hiển thị nhãn trạng thái
+                                Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
 
-                                                // Format ngày tháng theo định dạng dd/MM/yyyy
-                                                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                                // Format ngày tháng theo định dạng dd/MM/yyyy
+                                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-                                                // Nếu không tìm thấy hoá đơn, điều hướng về trang danh sách
-                                                if (inv == null) { response.sendRedirect(request.getContextPath() +
-                                                "/admin/invoices"); return; }
+                                // Nếu không tìm thấy hoá đơn, điều hướng về trang danh sách
+                                if (inv == null) { 
+                                    response.sendRedirect(request.getContextPath() + "/admin/invoices"); 
+                                    return; 
+                                }
 
-                                                int orderStatus = inv.getOrderStatus();
+                                int orderStatus = inv.getOrderStatus();
 
-                                                // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
-                                                java.util.function.Function<Integer, String> bClassFn = (s) -> {
-                                                    if (s == null) return "cho-xu-ly";
-                                                    if (s == 4) return "da-huy";
-                                                    if (s == 3) return "hoan-thanh";
-                                                    if (s == 2) return "dang-giao";
-                                                    if (s == 1) return "da-xac-nhan";
-                                                    return "cho-xu-ly";
-                                                    };
-                                                    String badgeClass = bClassFn.apply(orderStatus);
-                                                    String badgeLabel = statusLabels != null ?
-                                                    statusLabels.getOrDefault(orderStatus, "?") : "?";
+                                // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
+                                java.util.function.Function<Integer, String> bClassFn = (s) -> {
+                                    if (s == null) return "cho-xu-ly";
+                                    if (s == 4) return "da-huy";
+                                    if (s == 3) return "hoan-thanh";
+                                    if (s == 2) return "dang-giao";
+                                    if (s == 1) return "da-xac-nhan";
+                                    return "cho-xu-ly";
+                                };
+                                String badgeClass = bClassFn.apply(orderStatus);
+                                String badgeLabel = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
 
-                                                    // Chuẩn bị thông tin khách hàng, fallback sang "—" nếu dữ liệu bị
-                                                    trống (null)
-                                                    String customerName = inv.getCustomerName() != null ?
-                                                    inv.getCustomerName() : "";
-                                                    String customerPhone = inv.getCustomerPhone() != null ?
-                                                    inv.getCustomerPhone() : "—";
-                                                    String customerEmail = inv.getCustomerEmail() != null ?
-                                                    inv.getCustomerEmail() : "—";
-                                                    String customerAddress = inv.getCustomerAddress() != null ?
-                                                    inv.getCustomerAddress() : "—";
-                                                    String payMethod = inv.getPaymentMethod() != null ?
-                                                    inv.getPaymentMethod().getName() : "—";
-                                                    String orderDate = inv.getOrderDate() != null ?
-                                                    inv.getOrderDate().format(dtf) : "—";
-                                                    %>
+                                // Chuẩn bị thông tin khách hàng, fallback sang "-" nếu dữ liệu bị trống (null)
+                                String customerName = inv.getCustomerName() != null ? inv.getCustomerName() : "";
+                                String customerPhone = inv.getCustomerPhone() != null ? inv.getCustomerPhone() : "—";
+                                String customerEmail = inv.getCustomerEmail() != null ? inv.getCustomerEmail() : "—";
+                                String customerAddress = inv.getCustomerAddress() != null ? inv.getCustomerAddress() : "—";
+                                String payMethod = inv.getPaymentMethod() != null ? inv.getPaymentMethod().getName() : "—";
+                                String orderDate = inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—";
+                            %>
 
                                                     <!-- KHU VỰC TOPBAR: Chứa nút quay lại và nút "In ngay" (Thanh này sẽ tự động ẩn đi khi in nhờ CSS) -->
                                                     <div class="print-topbar">
@@ -165,43 +159,27 @@
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    <% if (detailList !=null && !detailList.isEmpty()) {
-                                                                        int idx=1; for (InvoiceDetail detail :
-                                                                        detailList) { String
-                                                                        unitPrice=detail.getUnitPrice() !=null ?
-                                                                        String.format("%,.0fđ",
-                                                                        detail.getUnitPrice()).replace(",", "." ) : "—"
-                                                                        ; String totalPrice=detail.getTotalPrice()
-                                                                        !=null ? String.format("%,.0fđ",
-                                                                        detail.getTotalPrice()).replace(",", "." ) : "—"
-                                                                        ; String spName; if (detail.getProductDetail()
-                                                                        !=null) { String
-                                                                        pName=detail.getProductDetail().getProduct()
-                                                                        !=null ?
-                                                                        detail.getProductDetail().getProduct().getName()
-                                                                        : "Sản phẩm không xác định" ; String
-                                                                        pCode=detail.getProductDetail().getProduct()
-                                                                        !=null ?
-                                                                        detail.getProductDetail().getProduct().getCode()
-                                                                        : "?" ; String
-                                                                        vCode=detail.getProductDetail().getCode();
-                                                                        String size=detail.getProductDetail().getSize()
-                                                                        !=null ? detail.getProductDetail().getSize()
-                                                                        : "" ; String
-                                                                        color=detail.getProductDetail().getColor()
-                                                                        !=null ? detail.getProductDetail().getColor()
-                                                                        : "" ; spName=pName + " (" + pCode
-                                                                        + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: "
-                                                                        + vCode + " | " + size + " / " + color
-                                                                        + "</span>" ; } else {
-                                                                        spName=detail.getProductNameSnapshot() !=null ?
-                                                                        detail.getProductNameSnapshot()
-                                                                        : "Sản phẩm không xác định" ; if
-                                                                        (detail.getVariantDescriptionSnapshot() !=null)
-                                                                        { spName
-                                                                        +="<br><span style='font-size:11px;color:#6b7280;'>"
-                                                                        + detail.getVariantDescriptionSnapshot()
-                                                                        + "</span>" ; } } %>
+                                                                    <% 
+                                                                    if (detailList != null && !detailList.isEmpty()) {
+                                                                        int idx = 1; 
+                                                                        for (InvoiceDetail detail : detailList) { 
+                                                                            String unitPrice = detail.getUnitPrice() != null ? String.format("%,.0fđ", detail.getUnitPrice()).replace(",", ".") : "—"; 
+                                                                            String totalPrice = detail.getTotalPrice() != null ? String.format("%,.0fđ", detail.getTotalPrice()).replace(",", ".") : "—"; 
+                                                                            String spName; 
+                                                                            if (detail.getProductDetail() != null) { 
+                                                                                String pName = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getName() : "Sản phẩm không xác định"; 
+                                                                                String pCode = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getCode() : "?"; 
+                                                                                String vCode = detail.getProductDetail().getCode();
+                                                                                String size = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize() : ""; 
+                                                                                String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor() : ""; 
+                                                                                spName = pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span>"; 
+                                                                            } else {
+                                                                                spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định"; 
+                                                                                if (detail.getVariantDescriptionSnapshot() != null) { 
+                                                                                    spName += "<br><span style='font-size:11px;color:#6b7280;'>" + detail.getVariantDescriptionSnapshot() + "</span>"; 
+                                                                                } 
+                                                                            } 
+                                                                    %>
                                                                         <tr>
                                                                             <td style="color:#9ca3af;">
                                                                                 <%= idx++ %>
@@ -234,22 +212,23 @@
                                                                 <div class="doc-fin-row">
                                                                     <span class="lbl">Tạm tính</span>
                                                                     <span class="val">
-                                                                        <%= inv.getSubtotal() !=null ?
-                                                                            String.format("%,.0fđ",
-                                                                            inv.getSubtotal()).replace(",", "." ) : "—"
-                                                                            %>
+                                                                        <%= inv.getSubtotal() != null ? String.format("%,.0fđ", inv.getSubtotal()).replace(",", ".") : "0đ" %>
                                                                     </span>
                                                                 </div>
-                                                                <% if (inv.getDiscountAmount() !=null &&
-                                                                    inv.getDiscountAmount()> 0) { %>
-                                                                    <div class="doc-fin-row">
-                                                                        <span class="lbl">Giảm giá</span>
-                                                                        <span class="val" style="color:#22c55e;">-<%=
-                                                                                String.format("%,.0fđ",
-                                                                                inv.getDiscountAmount()).replace(",", "."
-                                                                                ) %></span>
-                                                                    </div>
-                                                                    <% } %>
+                                                                
+                                                                <div class="doc-fin-row">
+                                                                    <span class="lbl">Giảm giá</span>
+                                                                    <span class="val" style="color:#22c55e;">
+                                                                        <%= (inv.getDiscountAmount() != null && inv.getDiscountAmount() > 0) ? "-" : "" %><%= inv.getDiscountAmount() != null ? String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".") : "0đ" %>
+                                                                    </span>
+                                                                </div>
+                                                                
+                                                                <div class="doc-fin-row">
+                                                                    <span class="lbl">Phí vận chuyển</span>
+                                                                    <span class="val">
+                                                                        <%= inv.getShippingFee() != null ? String.format("%,.0fđ", inv.getShippingFee()).replace(",", ".") : "0đ" %>
+                                                                    </span>
+                                                                </div>
                                                                         <div class="doc-fin-total">
                                                                             <span>TỔNG CỘNG</span>
                                                                             <span class="val">
