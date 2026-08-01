@@ -24,7 +24,8 @@ public class PosDraftService {
 
     public Map<String, Object> createDraftOrder(Employee loggedInUser) {
         Map<String, Object> result = new HashMap<>();
-        String sql = "INSERT INTO hoa_don (hoa_don_code, id_nhan_vien, loai_hoa_don, trang_thai_don_hang, trang_thai_thanh_toan, " +
+        String sql = "INSERT INTO hoa_don (hoa_don_code, id_nhan_vien, loai_hoa_don, trang_thai_don_hang, trang_thai_thanh_toan, "
+                +
                 "ten_khach_nhan, tam_tinh, tong_thanh_toan, tong_so_luong, ngay_dat_hang) VALUES (?, ?, 0, 0, 0, N'Khách lẻ', 0, 0, 0, GETDATE())";
         try (Connection conn = DatabaseConnection.getConnection()) {
             String code = generateInvoiceCode(conn);
@@ -52,7 +53,8 @@ public class PosDraftService {
         return result;
     }
 
-    public Map<String, Object> addOrUpdateItem(int invoiceId, String variantCode, int quantity, String variantName, double price, String colorSize) {
+    public Map<String, Object> addOrUpdateItem(int invoiceId, String variantCode, int quantity, String variantName,
+            double price, String colorSize) {
         Map<String, Object> result = new HashMap<>();
         Connection conn = null;
         try {
@@ -139,7 +141,7 @@ public class PosDraftService {
                     ps.executeUpdate();
                 }
             }
-            
+
             // 6. Update invoice total
             updateInvoiceTotal(conn, invoiceId);
 
@@ -148,13 +150,21 @@ public class PosDraftService {
         } catch (Exception e) {
             e.printStackTrace();
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             result.put("success", false);
             result.put("message", e.getMessage());
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return result;
@@ -223,22 +233,32 @@ public class PosDraftService {
         } catch (Exception e) {
             e.printStackTrace();
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             result.put("success", false);
             result.put("message", e.getMessage());
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return result;
     }
 
     private void updateInvoiceTotal(Connection conn, int invoiceId) throws SQLException {
-        String sql = "UPDATE hoa_don SET tong_so_luong = (SELECT ISNULL(SUM(so_luong), 0) FROM chi_tiet_hoa_don WHERE id_hoa_don = ?), " +
+        String sql = "UPDATE hoa_don SET tong_so_luong = (SELECT ISNULL(SUM(so_luong), 0) FROM chi_tiet_hoa_don WHERE id_hoa_don = ?), "
+                +
                 "tam_tinh = (SELECT ISNULL(SUM(thanh_tien), 0) FROM chi_tiet_hoa_don WHERE id_hoa_don = ?), " +
-                "tong_thanh_toan = (SELECT ISNULL(SUM(thanh_tien), 0) FROM chi_tiet_hoa_don WHERE id_hoa_don = ?) + ISNULL(phi_van_chuyen, 0) - ISNULL(tien_giam_hoa_don, 0) " +
+                "tong_thanh_toan = (SELECT ISNULL(SUM(thanh_tien), 0) FROM chi_tiet_hoa_don WHERE id_hoa_don = ?) + ISNULL(phi_van_chuyen, 0) - ISNULL(tien_giam_hoa_don, 0) "
+                +
                 "WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, invoiceId);
@@ -248,14 +268,14 @@ public class PosDraftService {
             ps.executeUpdate();
         }
     }
-    
+
     public Map<String, Object> deleteDraftOrder(int invoiceId) {
         Map<String, Object> result = new HashMap<>();
         Connection conn = null;
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
-            
+
             // 1. Restore stock
             String getItems = "SELECT id_chi_tiet_san_pham, so_luong FROM chi_tiet_hoa_don WHERE id_hoa_don = ?";
             try (PreparedStatement ps = conn.prepareStatement(getItems)) {
@@ -272,33 +292,41 @@ public class PosDraftService {
                     }
                 }
             }
-            
+
             // 2. Delete details
             String delDetails = "DELETE FROM chi_tiet_hoa_don WHERE id_hoa_don = ?";
             try (PreparedStatement ps = conn.prepareStatement(delDetails)) {
                 ps.setInt(1, invoiceId);
                 ps.executeUpdate();
             }
-            
+
             // 3. Delete invoice
             String delInvoice = "DELETE FROM hoa_don WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(delInvoice)) {
                 ps.setInt(1, invoiceId);
                 ps.executeUpdate();
             }
-            
+
             conn.commit();
             result.put("success", true);
         } catch (Exception e) {
             e.printStackTrace();
             if (conn != null) {
-                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
             result.put("success", false);
             result.put("message", e.getMessage());
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return result;
@@ -306,26 +334,29 @@ public class PosDraftService {
 
     public List<Map<String, Object>> getPendingDrafts() {
         List<Map<String, Object>> drafts = new ArrayList<>();
-        // Select invoices that are POS (loai_hoa_don=0) and unpaid (trang_thai_thanh_toan=0) 
+        // Select invoices that are POS (loai_hoa_don=0) and unpaid
+        // (trang_thai_thanh_toan=0)
         // and created today (optional, but good for cleanup)
         String sql = "SELECT id, hoa_don_code FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_thanh_toan = 0";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> draft = new HashMap<>();
                 draft.put("id", rs.getInt("id"));
                 draft.put("code", rs.getString("hoa_don_code"));
-                
+
                 // Get items
                 List<Map<String, Object>> items = new ArrayList<>();
-                String itemSql = "SELECT ct.so_luong, ct.don_gia, ct.ten_sp_tai_thoi_diem, ct.mo_ta_variant, sp.chi_tiet_san_pham_code, " +
-                                 "sp.so_luong as stock, p.san_pham_code as productCode, " +
-                                 "(SELECT TOP 1 h.duong_dan FROM hinh_anh h WHERE h.id_chi_tiet_san_pham = sp.id ORDER BY h.thu_tu ASC) as image " +
-                                 "FROM chi_tiet_hoa_don ct " +
-                                 "JOIN chi_tiet_san_pham sp ON ct.id_chi_tiet_san_pham = sp.id " +
-                                 "JOIN san_pham p ON sp.id_san_pham = p.id " +
-                                 "WHERE ct.id_hoa_don = ?";
+                String itemSql = "SELECT ct.so_luong, ct.don_gia, ct.ten_sp_tai_thoi_diem, ct.mo_ta_variant, sp.chi_tiet_san_pham_code, "
+                        +
+                        "sp.so_luong as stock, p.san_pham_code as productCode, " +
+                        "(SELECT TOP 1 h.duong_dan FROM hinh_anh h WHERE h.id_chi_tiet_san_pham = sp.id ORDER BY h.thu_tu ASC) as image "
+                        +
+                        "FROM chi_tiet_hoa_don ct " +
+                        "JOIN chi_tiet_san_pham sp ON ct.id_chi_tiet_san_pham = sp.id " +
+                        "JOIN san_pham p ON sp.id_san_pham = p.id " +
+                        "WHERE ct.id_hoa_don = ?";
                 try (PreparedStatement psItem = conn.prepareStatement(itemSql)) {
                     psItem.setInt(1, rs.getInt("id"));
                     try (ResultSet rsItem = psItem.executeQuery()) {
@@ -336,7 +367,7 @@ public class PosDraftService {
                             item.put("name", rsItem.getString("ten_sp_tai_thoi_diem"));
                             item.put("image", rsItem.getString("image"));
                             item.put("stock", rsItem.getInt("stock"));
-                            
+
                             // parse color/size from mo_ta_variant (e.g. "Red - L")
                             String desc = rsItem.getString("mo_ta_variant");
                             if (desc != null && desc.contains(" - ")) {
@@ -347,7 +378,7 @@ public class PosDraftService {
                                 item.put("color", "");
                                 item.put("size", desc);
                             }
-                            
+
                             item.put("price", rsItem.getDouble("don_gia"));
                             item.put("quantity", rsItem.getInt("so_luong"));
                             items.add(item);
@@ -366,9 +397,9 @@ public class PosDraftService {
     public void cleanupOldDrafts() {
         String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_thanh_toan = 0 AND CONVERT(date, ngay_dat_hang) < CONVERT(date, GETDATE())";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(findSql);
-             ResultSet rs = ps.executeQuery()) {
-            
+                PreparedStatement ps = conn.prepareStatement(findSql);
+                ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 int id = rs.getInt("id");
                 deleteDraftOrder(id);
@@ -377,5 +408,81 @@ public class PosDraftService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-}
+    }}
+
+    
+    
+        
+    
+    
+
+    
+        
+        
+        // 
+        
+        
+        
+                
+                
+            
+                
+                
+                
+
+                
+                
+                
+                        
+                        
+                        
+                
+                    
+                    
+                        
+                            
+                            
+                            
+
+                            
+                            
+                            
+                                
+                                
+                                
+                            
+                                
+                                
+                            
+
+                            
+                            
+                            
+                        
+                    
+                
+                
+                
+            
+        
+            
+        
+        
+    
+
+    
+        
+        
+                
+                
+
+            
+                
+                
+                
+            
+        
+            
+        
+    
+

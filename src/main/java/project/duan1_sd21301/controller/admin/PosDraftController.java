@@ -28,7 +28,8 @@ public class PosDraftController extends HttpServlet {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String uri = request.getRequestURI();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -42,11 +43,12 @@ public class PosDraftController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String uri = request.getRequestURI();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        
+
         Employee loggedInUser = (Employee) request.getSession().getAttribute("loggedInUser");
 
         try {
@@ -54,7 +56,7 @@ public class PosDraftController extends HttpServlet {
 
             if (uri.endsWith("/create-order")) {
                 result = draftService.createDraftOrder(loggedInUser);
-                
+
             } else if (uri.endsWith("/add-item") || uri.endsWith("/update-item")) {
                 int invoiceId = Integer.parseInt(request.getParameter("invoiceId"));
                 String variantCode = request.getParameter("variantCode");
@@ -62,18 +64,18 @@ public class PosDraftController extends HttpServlet {
                 String variantName = request.getParameter("variantName");
                 double price = Double.parseDouble(request.getParameter("price"));
                 String colorSize = request.getParameter("colorSize");
-                
+
                 result = draftService.addOrUpdateItem(invoiceId, variantCode, quantity, variantName, price, colorSize);
-                
+
             } else if (uri.endsWith("/remove-item")) {
                 int invoiceId = Integer.parseInt(request.getParameter("invoiceId"));
                 String variantCode = request.getParameter("variantCode");
-                
+
                 result = draftService.removeItem(invoiceId, variantCode);
-                
+
             } else if (uri.endsWith("/delete-order")) {
                 int invoiceId = Integer.parseInt(request.getParameter("invoiceId"));
-                
+
                 result = draftService.deleteDraftOrder(invoiceId);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
