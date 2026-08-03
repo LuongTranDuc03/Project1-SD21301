@@ -26,16 +26,6 @@ public class DailyCleanupListener implements ServletContextListener {
         // Chạy ngay khi start server để dọn dẹp các đơn cũ
         draftService.cleanupOldDrafts();
 
-        // Reset lại toàn bộ trạng thái đơn online từ Chờ xác nhận (0) -> Đã xác nhận (1)
-        try (java.sql.Connection conn = project.duan1_sd21301.util.DatabaseConnection.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(
-                     "UPDATE hoa_don SET trang_thai_don_hang = 1 WHERE loai_hoa_don = 2 AND trang_thai_don_hang = 0")) {
-            int rowsUpdated = ps.executeUpdate();
-            System.out.println("Đã reset " + rowsUpdated + " đơn hàng online từ Chờ xác nhận sang Đã xác nhận.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // Tính thời gian từ hiện tại đến nửa đêm
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay();

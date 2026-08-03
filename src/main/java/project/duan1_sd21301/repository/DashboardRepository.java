@@ -220,6 +220,7 @@ public class DashboardRepository {
             "       p.san_pham_code AS productCode, " +
             "       pd.chi_tiet_san_pham_code AS variantCode, " +
             "       p.ten_san_pham AS productName, " +
+            "       th.ten_thuong_hieu AS brandName, " +
             "       ISNULL(ms.ten_mau, '') + ' - ' + ISNULL(kt.ten_kich_thuoc, '') + ' - ' + ISNULL(kd.ten_kieu_dang, '') AS attributes, " +
             "       pd.so_luong AS stock, " +
             "       ( " +
@@ -249,6 +250,7 @@ public class DashboardRepository {
             "   LEFT JOIN kich_thuoc kt ON pd.id_kich_thuoc = kt.id " +
             "   LEFT JOIN mau_sac ms ON pd.id_mau_sac = ms.id " +
             "   LEFT JOIN kieu_dang kd ON pd.id_kieu_dang = kd.id " +
+            "   LEFT JOIN thuong_hieu th ON p.id_thuong_hieu = th.id " +
             "   WHERE pd.trang_thai = 1 AND p.trang_thai = 1 "
         );
         
@@ -306,6 +308,7 @@ public class DashboardRepository {
                     map.put("productCode", rs.getString("productCode"));
                     map.put("variantCode", rs.getString("variantCode"));
                     map.put("productName", rs.getString("productName"));
+                    map.put("brandName", rs.getString("brandName"));
                     
                     String attributes = rs.getString("attributes");
                     // Format cleanup if some are empty
@@ -402,7 +405,7 @@ public class DashboardRepository {
 
     public List<Map<String, Object>> getBrands() {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT id, ten_thuong_hieu FROM thuong_hieu ORDER BY ten_thuong_hieu";
+        String sql = "SELECT MIN(id) as id, ten_thuong_hieu FROM thuong_hieu GROUP BY ten_thuong_hieu ORDER BY ten_thuong_hieu";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
