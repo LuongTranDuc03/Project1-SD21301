@@ -203,19 +203,21 @@
                     <div class="coupon-section">
                         <div class="coupon-inputs">
                             <div class="form-group" style="flex: 1; width: 100%;">
-                                <label>Mã phiếu giảm giá</label>
-                                <select class="form-control" id="discountCodeInput" onchange="applyDiscountSelect()" style="text-transform: uppercase;">
-                                    <option value="">-- Chọn mã giảm giá --</option>
+                                <label>Mã phiếu giảm giá (Tự động áp dụng)</label>
+                                <input type="text" class="form-control" id="discountCodeDisplay" readonly style="background-color: #e6f4ea; font-weight: bold; color: #137333;">
+                                <input type="hidden" id="discountCodeInput" value="">
+                                <div id="availableCoupons" style="display: none;">
                                     <c:forEach var="c" items="${activeCoupons}">
-                                        <option value="${c.code}" 
+                                        <div class="coupon-item"
+                                            data-code="${c.code}" 
+                                            data-name="${c.name}"
                                             data-type="${c.discountType}" 
                                             data-value="${c.discountValue}" 
                                             data-min="${c.minOrderValue != null ? c.minOrderValue : 0}" 
                                             data-max="${c.maxDiscountAmount != null ? c.maxDiscountAmount : 0}">
-                                            ${c.code} - ${c.name}
-                                        </option>
+                                        </div>
                                     </c:forEach>
-                                </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -837,7 +839,7 @@
         }
     }
     
-    async function addVariantToOrder(variantCode) {
+    function addVariantToOrder(variantCode) {
         if (!currentOrderId) {
             alert("Vui lòng tạo đơn hàng trước!");
             return;
@@ -876,6 +878,31 @@
             newQty = order.items[existingItemIndex].quantity + 1;
         }
         
+        // Optimistic UI Update
+        if (existingItemIndex !== -1) {
+            order.items[existingItemIndex].quantity = newQty;
+        } else {
+            order.items.push({
+                code: variantCode,
+                productCode: productCode,
+                name: name,
+                color: color,
+                size: size,
+                price: price,
+                image: image,
+                stock: stock,
+                quantity: 1
+            });
+        }
+        
+        row.setAttribute('data-stock', stock - 1);
+        const stockCell = row.querySelector('.pos-stock-td');
+        if (stockCell) stockCell.textContent = stock - 1;
+        
+        renderCurrentOrderItems();
+        updateAvailableStockDisplay();
+        closeVariantModal();
+        
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
@@ -885,40 +912,16 @@
             fd.append('price', price);
             fd.append('colorSize', color + ' - ' + size);
             
-            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/add-item'), {
+            // Fire and forget
+            fetch(window.location.pathname.replace('/pos', '/pos/api/add-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
-            });
-            const data = await res.json();
-            
-            if (data && data.success) {
-                if (existingItemIndex !== -1) {
-                    order.items[existingItemIndex].quantity = newQty;
-                } else {
-                    order.items.push({
-                        code: variantCode,
-                        productCode: productCode,
-                        name: name,
-                        color: color,
-                        size: size,
-                        price: price,
-                        image: image,
-                        stock: stock,
-                        quantity: 1
-                    });
+            }).then(res => res.json()).then(data => {
+                if (!data || !data.success) {
+                    alert("Lỗi khi thêm: " + (data.message || 'Không thể thêm sản phẩm'));
                 }
-                
-                row.setAttribute('data-stock', stock - 1);
-                const stockCell = row.querySelector('.pos-stock-td');
-                if (stockCell) stockCell.textContent = stock - 1;
-                
-                renderCurrentOrderItems();
-                updateAvailableStockDisplay();
-                closeVariantModal();
-            } else {
-                alert("Lỗi: " + (data.message || 'Không thể thêm sản phẩm'));
-            }
+            }).catch(e => console.error("Add item error:", e));
         } catch (e) {
             console.error("Error adding item", e);
         }
@@ -993,7 +996,7 @@
             container.innerHTML = html;
             
             // Re-apply discount logic based on new total, which will also update the summary
-            applyDiscountSelect();
+            updateTotals();
         }
         saveOrdersToStorage();
     }
@@ -1232,27 +1235,21 @@
             });
         }
         
-        const select = document.getElementById('discountCodeInput');
+        const couponItems = document.querySelectorAll('#availableCoupons .coupon-item');
         
-        // --- SUGGESTION LOGIC ---
-        if (select) {
-            let maxPossibleDiscount = -1;
-            let bestOptionIndices = [];
-            
-            for (let i = 1; i < select.options.length; i++) {
-                let opt = select.options[i];
-                if (!opt.hasAttribute('data-original-text')) {
-                    opt.setAttribute('data-original-text', opt.text);
-                }
-                opt.text = opt.getAttribute('data-original-text');
-                opt.style.backgroundColor = '';
-                opt.style.color = '';
-                opt.style.fontWeight = '';
-                
-                const type = parseInt(opt.getAttribute('data-type'));
-                const value = parseFloat(opt.getAttribute('data-value'));
-                const minOrder = parseFloat(opt.getAttribute('data-min'));
-                const maxDiscountOpt = parseFloat(opt.getAttribute('data-max'));
+        // --- AUTO-APPLY LOGIC ---
+        let maxPossibleDiscount = -1;
+        let bestCouponCode = '';
+        let bestCouponName = '';
+        
+        if (couponItems && couponItems.length > 0) {
+            couponItems.forEach(item => {
+                const code = item.getAttribute('data-code');
+                const name = item.getAttribute('data-name');
+                const type = parseInt(item.getAttribute('data-type'));
+                const value = parseFloat(item.getAttribute('data-value'));
+                const minOrder = parseFloat(item.getAttribute('data-min'));
+                const maxDiscountOpt = parseFloat(item.getAttribute('data-max'));
                 
                 let possibleDiscount = 0;
                 if (sumTotal > 0 && sumTotal >= minOrder) {
@@ -1272,61 +1269,28 @@
                 if (possibleDiscount > 0) {
                     if (possibleDiscount > maxPossibleDiscount) {
                         maxPossibleDiscount = possibleDiscount;
-                        bestOptionIndices = [i];
-                    } else if (possibleDiscount === maxPossibleDiscount) {
-                        bestOptionIndices.push(i);
+                        bestCouponCode = code;
+                        bestCouponName = name;
                     }
                 }
-            }
-            
-            if (maxPossibleDiscount > 0) {
-                bestOptionIndices.forEach(idx => {
-                    let bestOpt = select.options[idx];
-                    bestOpt.text = bestOpt.getAttribute('data-original-text') + ' (Gợi ý)';
-                    bestOpt.style.backgroundColor = '#e6f4ea';
-                    bestOpt.style.color = '#137333';
-                    bestOpt.style.fontWeight = 'bold';
-                });
-            }
+            });
         }
-        // --- END SUGGESTION LOGIC ---
         
-        // Cập nhật lại discount dựa trên tổng tiền hiện tại để đảm bảo luôn đúng % và điều kiện minOrder
+        const discountInput = document.getElementById('discountCodeInput');
+        const discountDisplay = document.getElementById('discountCodeDisplay');
+        
         let discount = 0;
-        if (order.discountCode && select) {
-            let option = null;
-            for (let i = 0; i < select.options.length; i++) {
-                if (select.options[i].value === order.discountCode) {
-                    option = select.options[i];
-                    break;
-                }
-            }
-            if (option) {
-                const type = parseInt(option.getAttribute('data-type'));
-                const value = parseFloat(option.getAttribute('data-value'));
-                const minOrder = parseFloat(option.getAttribute('data-min'));
-                const maxDiscount = parseFloat(option.getAttribute('data-max'));
-                if (sumTotal > 0 && sumTotal >= minOrder) {
-                    if (type === 1) { // VND
-                        discount = value;
-                    } else if (type === 0) { // %
-                        discount = sumTotal * (value / 100.0);
-                        if (maxDiscount > 0 && discount > maxDiscount) {
-                            discount = maxDiscount;
-                        }
-                    }
-                    if (discount > sumTotal) {
-                        discount = sumTotal; // Không giảm quá tổng tiền hàng
-                    }
-                } else {
-                    // Không đủ điều kiện nữa thì gỡ bỏ
-                    order.discountCode = '';
-                    if (select.value === option.value) select.value = '';
-                }
-            } else {
-                order.discountCode = '';
-            }
+        if (bestCouponCode) {
+            order.discountCode = bestCouponCode;
+            discount = maxPossibleDiscount;
+            if (discountInput) discountInput.value = bestCouponCode;
+            if (discountDisplay) discountDisplay.value = bestCouponCode + ' - ' + bestCouponName;
+        } else {
+            order.discountCode = '';
+            if (discountInput) discountInput.value = '';
+            if (discountDisplay) discountDisplay.value = 'Không đủ điều kiện áp dụng mã';
         }
+        
         order.discountValue = discount.toString();
 
         document.getElementById('summaryTotalItems').textContent = sumTotal.toLocaleString('vi-VN') + ' đ';
@@ -1633,76 +1597,8 @@
 
     }
     
-    function applyDiscountSelect() {
-        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
-        const order = orders[orderIndex];
-        
-        let sumTotal = 0;
-        if (order.items) {
-            order.items.forEach(item => {
-                sumTotal += (item.price * item.quantity);
-            });
-        }
-        
-        const select = document.getElementById('discountCodeInput');
-        const option = select.options[select.selectedIndex];
-        
-        if (!option.value) {
-            order.discountCode = '';
-            order.discountValue = '0';
-            updateTotals();
-            saveOrdersToStorage();
-            return;
-        }
-        
-        if (sumTotal === 0) {
-            alert('Giỏ hàng đang trống, không thể áp dụng mã giảm giá!');
-            select.value = '';
-            order.discountCode = '';
-            order.discountValue = '0';
-            updateTotals();
-            saveOrdersToStorage();
-            return;
-        }
-        
-        const type = parseInt(option.getAttribute('data-type'));
-        const value = parseFloat(option.getAttribute('data-value'));
-        const minOrder = parseFloat(option.getAttribute('data-min'));
-        const maxDiscount = parseFloat(option.getAttribute('data-max'));
-        
-        if (sumTotal < minOrder) {
-            alert('Đơn hàng chưa đạt giá trị tối thiểu ' + minOrder.toLocaleString('vi-VN') + ' đ để áp dụng mã này!');
-            select.value = '';
-            order.discountCode = '';
-            order.discountValue = '0';
-            updateTotals();
-            saveOrdersToStorage();
-            return;
-        }
-        
-        let discountAmt = 0;
-        if (type === 1) { // VND
-            discountAmt = value;
-        } else if (type === 0) { // %
-            discountAmt = sumTotal * (value / 100.0);
-            if (maxDiscount > 0 && discountAmt > maxDiscount) {
-                discountAmt = maxDiscount;
-            }
-        }
-        
-        if (discountAmt > sumTotal) {
-            discountAmt = sumTotal; // Không giảm quá tổng tiền hàng
-        }
-        
-        order.discountCode = option.value;
-        order.discountValue = discountAmt.toString();
-        
-        updateTotals();
-        saveOrdersToStorage();
-    }
-    
-    async function updateItemQty(code, change) {
+
+    function updateItemQty(code, change) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
@@ -1715,6 +1611,18 @@
                 return;
             }
             
+            // Optimistic UI Update
+            item.quantity = newQty;
+            const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+            if (row) {
+                const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                row.setAttribute('data-stock', currentStock - change);
+                const stockCell = row.querySelector('.pos-stock-td');
+                if (stockCell) stockCell.textContent = currentStock - change;
+            }
+            renderCurrentOrderItems();
+            updateAvailableStockDisplay();
+            
             try {
                 const fd = new URLSearchParams();
                 fd.append('invoiceId', currentOrderId);
@@ -1724,35 +1632,23 @@
                 fd.append('price', item.price);
                 fd.append('colorSize', item.color + ' - ' + item.size);
                 
-                const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
+                // Fire and forget (async background update)
+                fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: fd.toString()
-                });
-                const data = await res.json();
-                if (data && data.success) {
-                    item.quantity = newQty;
-                    
-                    const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
-                    if (row) {
-                        const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
-                        row.setAttribute('data-stock', currentStock - change);
-                        const stockCell = row.querySelector('.pos-stock-td');
-                        if (stockCell) stockCell.textContent = currentStock - change;
+                }).then(res => res.json()).then(data => {
+                    if (!data || !data.success) {
+                        alert("Lỗi khi lưu: " + (data.message || 'Không thể cập nhật số lượng'));
                     }
-                    
-                    renderCurrentOrderItems();
-                    updateAvailableStockDisplay();
-                } else {
-                    alert("Lỗi: " + (data.message || 'Không thể cập nhật số lượng'));
-                }
+                }).catch(e => console.error("Update error:", e));
             } catch (e) {
                 console.error(e);
             }
         }
     }
     
-    async function setItemQty(code, value) {
+    function setItemQty(code, value) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
@@ -1772,6 +1668,18 @@
             }
         }
         
+        // Optimistic UI Update
+        item.quantity = val;
+        const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+        if (row) {
+            const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+            row.setAttribute('data-stock', currentStock - diff);
+            const stockCell = row.querySelector('.pos-stock-td');
+            if (stockCell) stockCell.textContent = currentStock - diff;
+        }
+        renderCurrentOrderItems();
+        updateAvailableStockDisplay();
+        
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
@@ -1781,68 +1689,54 @@
             fd.append('price', item.price);
             fd.append('colorSize', item.color + ' - ' + item.size);
             
-            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
+            // Fire and forget (async background update)
+            fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
-            });
-            const data = await res.json();
-            if (data && data.success) {
-                item.quantity = val;
-                
-                const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
-                if (row) {
-                    const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
-                    row.setAttribute('data-stock', currentStock - diff);
-                    const stockCell = row.querySelector('.pos-stock-td');
-                    if (stockCell) stockCell.textContent = currentStock - diff;
+            }).then(res => res.json()).then(data => {
+                if (!data || !data.success) {
+                    alert("Lỗi khi lưu: " + (data.message || 'Không thể cập nhật số lượng'));
                 }
-                
-                renderCurrentOrderItems();
-                updateAvailableStockDisplay();
-            } else {
-                alert("Lỗi: " + (data.message || 'Không thể cập nhật số lượng'));
-                renderCurrentOrderItems();
-            }
+            }).catch(e => console.error("Update error:", e));
         } catch (e) {
             console.error(e);
-            renderCurrentOrderItems();
         }
     }
     
-    async function removeItem(code) {
+    function removeItem(code) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
         if (!item) return;
+        
+        // Optimistic UI Update
+        order.items = order.items.filter(i => i.code !== code);
+        const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+        if (row) {
+            const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+            row.setAttribute('data-stock', currentStock + item.quantity);
+            const stockCell = row.querySelector('.pos-stock-td');
+            if (stockCell) stockCell.textContent = currentStock + item.quantity;
+        }
+        renderCurrentOrderItems();
+        updateAvailableStockDisplay();
         
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
             fd.append('variantCode', code);
             
-            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/remove-item'), {
+            // Fire and forget
+            fetch(window.location.pathname.replace('/pos', '/pos/api/remove-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
-            });
-            const data = await res.json();
-            if (data && data.success) {
-                order.items = order.items.filter(i => i.code !== code);
-                
-                const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
-                if (row) {
-                    const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
-                    row.setAttribute('data-stock', currentStock + item.quantity);
-                    const stockCell = row.querySelector('.pos-stock-td');
-                    if (stockCell) stockCell.textContent = currentStock + item.quantity;
+            }).then(res => res.json()).then(data => {
+                if (!data || !data.success) {
+                    alert("Lỗi khi xóa: " + (data.message || 'Không thể xóa sản phẩm'));
                 }
-                
-                renderCurrentOrderItems();
-                updateAvailableStockDisplay();
-            } else {
-                alert("Lỗi: " + (data.message || 'Không thể xóa sản phẩm'));
-            }
+            }).catch(e => console.error("Remove error:", e));
         } catch (e) {
             console.error(e);
         }
@@ -2081,7 +1975,16 @@
                 else switchOrder(orders[0].id);
                 saveOrdersToStorage();
             } else {
-                alert("Lỗi thanh toán: " + data.message);
+                if (data.message && data.message.startsWith("COUPON_CHANGED:")) {
+                    const errorDetails = data.message.replace("COUPON_CHANGED:", "");
+                    showCustomConfirm(errorDetails + " Bạn có muốn hệ thống tự động cập nhật và áp dụng phiếu giảm giá phù hợp nhất không?", function(result) {
+                        if (result) {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    alert("Lỗi thanh toán: " + (data.message || "Thất bại"));
+                }
             }
         })
         .catch(err => {

@@ -61,6 +61,13 @@ public class PosDraftService {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
+            // 0. Lock invoice to prevent deadlock
+            String lockSql = "SELECT id FROM hoa_don WITH (UPDLOCK, ROWLOCK) WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(lockSql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {}
+            }
+
             // 1. Get Product Detail ID and current stock
             Integer pdId = null;
             int currentStock = 0;
@@ -177,6 +184,13 @@ public class PosDraftService {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
 
+            // 0. Lock invoice to prevent deadlock
+            String lockSql = "SELECT id FROM hoa_don WITH (UPDLOCK, ROWLOCK) WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(lockSql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {}
+            }
+
             // Find pdId
             int pdId = -1;
             String findPd = "SELECT id FROM chi_tiet_san_pham WHERE chi_tiet_san_pham_code = ?";
@@ -275,6 +289,13 @@ public class PosDraftService {
         try {
             conn = DatabaseConnection.getConnection();
             conn.setAutoCommit(false);
+
+            // 0. Lock invoice to prevent deadlock
+            String lockSql = "SELECT id FROM hoa_don WITH (UPDLOCK, ROWLOCK) WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(lockSql)) {
+                ps.setInt(1, invoiceId);
+                try (ResultSet rs = ps.executeQuery()) {}
+            }
 
             // 1. Restore stock
             String getItems = "SELECT id_chi_tiet_san_pham, so_luong FROM chi_tiet_hoa_don WHERE id_hoa_don = ?";
