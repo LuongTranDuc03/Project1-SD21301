@@ -180,7 +180,9 @@
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
+            min-width: 0;
         }
         .data-card-header {
             background: #f8fafc;
@@ -207,10 +209,15 @@
             font-size: 12px;
             font-weight: 600;
         }
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
         .data-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            white-space: nowrap;
         }
         .data-table th {
             padding: 12px 16px;
@@ -365,31 +372,33 @@
                     </div>
                     <button class="btn-top">Top 5</button>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Sản phẩm</th>
-                            <th style="text-align:center;">Đã bán</th>
-                            <th style="text-align:right;">Tồn</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% 
-                           List<Map<String, Object>> topProducts = (List<Map<String, Object>>) request.getAttribute("topProducts");
-                           if (topProducts != null && !topProducts.isEmpty()) { 
-                               for (Map<String, Object> p : topProducts) {
-                        %>
-                        <tr>
-                            <td><%= p.get("name") %></td>
-                            <td style="text-align:center;"><%= p.get("quantity") %></td>
-                            <td style="text-align:right;"><%= p.get("stock") %></td>
-                        </tr>
-                        <%     }
-                           } else { %>
-                           <tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>
-                           <% } %>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th style="text-align:center;">Đã bán</th>
+                                <th style="text-align:right;">Tồn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% 
+                               List<Map<String, Object>> topProducts = (List<Map<String, Object>>) request.getAttribute("topProducts");
+                               if (topProducts != null && !topProducts.isEmpty()) { 
+                                   for (Map<String, Object> p : topProducts) {
+                            %>
+                            <tr>
+                                <td><%= p.get("name") %></td>
+                                <td style="text-align:center;"><%= p.get("quantity") %></td>
+                                <td style="text-align:right;"><%= p.get("stock") %></td>
+                            </tr>
+                            <%     }
+                               } else { %>
+                               <tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>
+                               <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Top Customers -->
@@ -401,31 +410,33 @@
                     </div>
                     <button class="btn-top">Top chi tiêu</button>
                 </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Khách hàng</th>
-                            <th style="text-align:center;">Số đơn</th>
-                            <th style="text-align:right;">Tổng chi tiêu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% 
-                           List<Map<String, Object>> topCustomers = (List<Map<String, Object>>) request.getAttribute("topCustomers");
-                           if (topCustomers != null && !topCustomers.isEmpty()) { 
-                               for (Map<String, Object> c : topCustomers) {
-                        %>
-                        <tr>
-                            <td><%= c.get("name") %></td>
-                            <td style="text-align:center;"><%= c.get("orders") %></td>
-                            <td style="text-align:right;"><%= format.format(c.get("spent")) %> đ</td>
-                        </tr>
-                        <%     }
-                           } else { %>
-                           <tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>
-                           <% } %>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Khách hàng</th>
+                                <th style="text-align:center;">Số đơn</th>
+                                <th style="text-align:right;">Tổng chi tiêu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% 
+                               List<Map<String, Object>> topCustomers = (List<Map<String, Object>>) request.getAttribute("topCustomers");
+                               if (topCustomers != null && !topCustomers.isEmpty()) { 
+                                   for (Map<String, Object> c : topCustomers) {
+                            %>
+                            <tr>
+                                <td><%= c.get("name") %></td>
+                                <td style="text-align:center;"><%= c.get("orders") %></td>
+                                <td style="text-align:right;"><%= format.format(c.get("spent")) %> đ</td>
+                            </tr>
+                            <%     }
+                               } else { %>
+                               <tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>
+                               <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 

@@ -594,6 +594,7 @@
                                                         <th>Mã SP</th>
                                                         <th>Mã CT SP</th>
                                                         <th>Sản phẩm</th>
+                                                        <th>Thương hiệu</th>
                                                         <th>Thuộc tính</th>
                                                         <th class="center" title="Nhập / Bán / Tồn thật">Nhập · Bán ·
                                                             Tồn</th>
@@ -632,6 +633,11 @@
                                                                     <td>
                                                                         <div class="product-name">
                                                                             <%= stat.get("productName") %>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="brand-name" style="color: var(--ink-600); font-size: 13px; font-weight: 500;">
+                                                                            <%= stat.get("brandName") != null ? stat.get("brandName") : "Không có" %>
                                                                         </div>
                                                                     </td>
                                                                     <td>
@@ -676,7 +682,7 @@
                                                                 </tr>
                                                                 <% } } else { %>
                                                                     <tr>
-                                                                        <td colspan="7"
+                                                                        <td colspan="8"
                                                                             style="padding: 40px; text-align: center; color: var(--ink-400);">
                                                                             Không có biến thể nào phù hợp với bộ lọc.
                                                                         </td>

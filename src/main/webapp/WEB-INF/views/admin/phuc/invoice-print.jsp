@@ -29,8 +29,10 @@
                                 Invoice inv = (Invoice) request.getAttribute("invoice");
                                 List<InvoiceDetail> detailList = (List<InvoiceDetail>) request.getAttribute("detailList");
 
-                                // Lấy danh sách map hiển thị nhãn trạng thái
-                                Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+                                // Lấy danh sách map hiển thị nhãn trạng thái dựa trên loại hoá đơn
+                                Map<Integer, String> statusLabels = (inv != null && inv.getOrderType() != null && inv.getOrderType() == 2) ? 
+                                    (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline") : 
+                                    (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
 
                                 // Format ngày tháng theo định dạng dd/MM/yyyy
                                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -119,6 +121,9 @@
                                                                     <span class="doc-status <%= badgeClass %>">
                                                                         <%= badgeLabel %>
                                                                     </span>
+                                                                    <div style="margin-top: 10px;">
+                                                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=HD-<%= inv.getId() %>" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px;">
+                                                                    </div>
                                                                 </div>
                                                             </div>
 
