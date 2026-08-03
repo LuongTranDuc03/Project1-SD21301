@@ -203,22 +203,39 @@
                         </div>
                     </div>
                     
-                    <div class="coupon-section">
+                    <div class="coupon-section" style="padding-bottom: 0;">
                         <div class="coupon-inputs">
-                            <div class="form-group" style="flex: 1; width: 100%;">
-                                <label>Mã phiếu giảm giá</label>
-                                <select class="form-control" id="discountCodeInput" onchange="applyDiscountSelect()" style="text-transform: uppercase;">
+                            <div class="form-group" style="flex: 1; width: 100%; margin-bottom: 5px;">
+                                <label style="display: flex; align-items: center; margin-bottom: 10px; color: #1e293b;">
+                                    <i class="fa-solid fa-ticket" style="color: #10b981; margin-right: 8px;"></i> Ưu đãi tốt nhất (Tự động áp dụng)
+                                </label>
+                                
+                                <select class="form-control" id="discountCodeInput" style="display: none;">
                                     <option value="">-- Chọn mã giảm giá --</option>
                                     <c:forEach var="c" items="${activeCoupons}">
                                         <option value="${c.code}" 
                                             data-type="${c.discountType}" 
                                             data-value="${c.discountValue}" 
                                             data-min="${c.minOrderValue != null ? c.minOrderValue : 0}" 
-                                            data-max="${c.maxDiscountAmount != null ? c.maxDiscountAmount : 0}">
+                                            data-max="${c.maxDiscountAmount != null ? c.maxDiscountAmount : 0}"
+                                            data-name="${c.name}">
                                             ${c.code} - ${c.name}
                                         </option>
                                     </c:forEach>
                                 </select>
+                                
+                                <div id="autoCouponDisplay" style="display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 15px; color: #64748b; font-weight: 500; font-size: 14px; transition: all 0.3s ease;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div id="couponDisplayIcon" style="background: #cbd5e1; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                                            <i class="fa-solid fa-gift"></i>
+                                        </div>
+                                        <div style="text-align: left;">
+                                            <div id="couponDisplayName" style="font-weight: 700; color: #475569; font-size: 15px;">Chưa có ưu đãi</div>
+                                            <div id="couponDisplayDesc" style="font-size: 12px; color: #64748b; margin-top: 2px;">Mua thêm để nhận khuyến mãi</div>
+                                        </div>
+                                    </div>
+                                    <div id="couponDisplayAmount" style="font-size: 16px; font-weight: 700; color: #b91c1c;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1261,11 +1278,11 @@
 
         const select = document.getElementById('discountCodeInput');
 
-        // --- SUGGESTION LOGIC ---
-        if (select) {
-            let maxPossibleDiscount = -1;
-            let bestOptionIndices = [];
+        // --- SUGGESTION & AUTO-APPLY LOGIC ---
+        let maxPossibleDiscount = -1;
+        let bestOptionIndices = [];
 
+        if (select) {
             for (let i = 1; i < select.options.length; i++) {
                 let opt = select.options[i];
                 if (!opt.hasAttribute('data-original-text')) {
@@ -1354,7 +1371,57 @@
                 order.discountCode = '';
             }
         }
+        
+        // AUTO-APPLY BEST COUPON
+        // Nếu không có phiếu nào được chọn, hoặc phiếu hiện tại không phải là phiếu tốt nhất, và có phiếu tốt nhất
+        if (select && maxPossibleDiscount > 0 && maxPossibleDiscount > discount && !order.manualDiscountSelection) {
+            let bestOpt = select.options[bestOptionIndices[0]];
+            select.value = bestOpt.value;
+            order.discountCode = bestOpt.value;
+            discount = maxPossibleDiscount;
+        } else if (select) {
+            select.value = order.discountCode || '';
+        }
+
         order.discountValue = discount.toString();
+
+        // Update Auto Coupon UI Display
+        const couponDisplayBlock = document.getElementById('autoCouponDisplay');
+        if (couponDisplayBlock && select) {
+            if (discount > 0 && order.discountCode) {
+                let opt = select.options[select.selectedIndex];
+                let name = opt.getAttribute('data-name') || opt.text;
+                let cleanName = name.replace(' (Gợi ý)', '').trim();
+                
+                document.getElementById('couponDisplayName').textContent = order.discountCode;
+                document.getElementById('couponDisplayName').style.color = '#15803d';
+                document.getElementById('couponDisplayDesc').textContent = cleanName;
+                document.getElementById('couponDisplayDesc').style.color = '#166534';
+                
+                document.getElementById('couponDisplayAmount').textContent = '-' + discount.toLocaleString('vi-VN') + ' đ';
+                
+                couponDisplayBlock.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)';
+                couponDisplayBlock.style.borderColor = '#22c55e';
+                
+                const icon = document.getElementById('couponDisplayIcon');
+                icon.style.background = '#22c55e';
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                document.getElementById('couponDisplayName').textContent = 'Chưa có ưu đãi';
+                document.getElementById('couponDisplayName').style.color = '#475569';
+                document.getElementById('couponDisplayDesc').textContent = 'Mua thêm để nhận khuyến mãi';
+                document.getElementById('couponDisplayDesc').style.color = '#64748b';
+                
+                document.getElementById('couponDisplayAmount').textContent = '';
+                
+                couponDisplayBlock.style.background = '#f1f5f9';
+                couponDisplayBlock.style.borderColor = '#cbd5e1';
+                
+                const icon = document.getElementById('couponDisplayIcon');
+                icon.style.background = '#cbd5e1';
+                icon.innerHTML = '<i class="fa-solid fa-gift"></i>';
+            }
+        }
 
         document.getElementById('summaryTotalItems').textContent = sumTotal.toLocaleString('vi-VN') + ' đ';
         
@@ -2062,7 +2129,12 @@
                 else switchOrder(orders[0].id);
                 saveOrdersToStorage();
             } else {
-                alert("Lỗi thanh toán: " + data.message);
+                if (data.message && data.message.includes("COUPON_CHANGED:")) {
+                    let msg = data.message.split("COUPON_CHANGED:")[1];
+                    showCouponChangedModal(msg);
+                } else {
+                    alert("Lỗi thanh toán: " + data.message);
+                }
             }
         })
         .catch(err => {
@@ -2176,7 +2248,26 @@
     </div>
 </div>
 
+<!-- Coupon Changed Modal -->
+<div class="pos-modal-overlay" id="couponChangedModal" style="z-index: 10001;">
+    <div class="pos-modal" style="width: 450px; text-align: center; padding: 30px 24px; position: relative;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: #fee2e2; color: #ef4444; font-size: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px auto;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 style="margin-bottom: 16px; font-size: 18px; color: #1e293b;">Thông tin phiếu giảm giá đã thay đổi</h3>
+        <p id="couponChangedMessage" style="color: #475569; margin-bottom: 24px; font-size: 14px; line-height: 1.5;"></p>
+        <button class="btn-primary" onclick="window.location.reload()" style="padding: 10px 24px; width: 100%; display: flex; align-items: center; justify-content: center; margin: 0 auto; background: #3b82f6; border-color: #3b82f6; font-weight: 600;">
+            <i class="fa-solid fa-rotate-right" style="margin-right: 8px;"></i> Nhận phiếu giảm giá mới
+        </button>
+    </div>
+</div>
+
 <script>
+    function showCouponChangedModal(message) {
+        document.getElementById('couponChangedMessage').textContent = message;
+        document.getElementById('couponChangedModal').classList.add('active');
+    }
+
     function showCustomAlert(message) {
         document.getElementById('customAlertMessage').textContent = message;
         document.getElementById('customAlertModal').classList.add('active');
