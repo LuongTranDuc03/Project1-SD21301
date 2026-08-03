@@ -31,7 +31,7 @@ public class PosController extends HttpServlet {
         request.setAttribute("products", productService.getAllProducts());
         request.setAttribute("colors", productService.getAllColors());
         request.setAttribute("sizes", productService.getAllSizes());
-        request.setAttribute("customers", customerRepository.findAll());
+        request.setAttribute("customers", customerRepository.findActive());
         request.setAttribute("activeCoupons", couponRepository.findActive());
         request.setAttribute("categories", productService.getAllCategories());
         

@@ -31,6 +31,24 @@ public class CustomerRepositoryImpl implements CustomerRepository {
     }
 
     @Override
+    public List<Customer> findActive() {
+        List<Customer> list = new ArrayList<>();
+        String sql = "SELECT id, khach_hang_code, ho_ten, email, mat_khau, so_dien_thoai, ngay_sinh, gioi_tinh, anh_dai_dien, trang_thai FROM khach_hang WHERE trang_thai = 1 ORDER BY id DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Customer c = mapResultSetToCustomer(rs);
+                c.setAddresses(findAddressesByCustomerId(c.getId(), conn));
+                list.add(c);
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi đọc danh sách Khách hàng hoạt động từ Database: " + e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
     public Customer findById(int id) {
         String sql = "SELECT id, khach_hang_code, ho_ten, email, mat_khau, so_dien_thoai, ngay_sinh, gioi_tinh, anh_dai_dien, trang_thai FROM khach_hang WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();

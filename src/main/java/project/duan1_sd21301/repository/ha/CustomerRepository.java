@@ -11,4 +11,5 @@ public interface CustomerRepository {
     boolean add(Customer customer);
     boolean update(Customer customer);
     boolean delete(int id);
+    List<Customer> findActive();
 }
