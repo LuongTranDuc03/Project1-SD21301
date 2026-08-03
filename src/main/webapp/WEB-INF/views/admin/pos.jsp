@@ -420,13 +420,18 @@
                     <select id="colorFilter" class="pos-filter-select" onchange="filterVariants()">
                         <option value="">Tất cả màu</option>
                         <% 
-                        List<String> colors = (List<String>) request.getAttribute("colors");
-                        if (colors != null) {
-                            for (String color : colors) {
-                                if (color != null && !color.trim().isEmpty()) {
+                        List<String> reqColors = (List<String>) request.getAttribute("colors");
+                        if (reqColors != null) {
+                            java.util.Set<String> uniqueColors = new java.util.LinkedHashSet<>();
+                            for (String c : reqColors) {
+                                if (c != null && !c.trim().isEmpty()) {
+                                    uniqueColors.add(c.trim());
+                                }
+                            }
+                            for (String color : uniqueColors) {
                         %>
                         <option value="<%= color %>"><%= color %></option>
-                        <%      }
+                        <%  
                             }
                         }
                         %>
@@ -438,13 +443,18 @@
                     <select id="sizeFilter" class="pos-filter-select" onchange="filterVariants()">
                         <option value="">Tất cả kích cỡ</option>
                         <% 
-                        List<String> sizes = (List<String>) request.getAttribute("sizes");
-                        if (sizes != null) {
-                            for (String size : sizes) {
-                                if (size != null && !size.trim().isEmpty()) {
+                        List<String> reqSizes = (List<String>) request.getAttribute("sizes");
+                        if (reqSizes != null) {
+                            java.util.Set<String> uniqueSizes = new java.util.LinkedHashSet<>();
+                            for (String s : reqSizes) {
+                                if (s != null && !s.trim().isEmpty()) {
+                                    uniqueSizes.add(s.trim());
+                                }
+                            }
+                            for (String size : uniqueSizes) {
                         %>
                         <option value="<%= size %>"><%= size %></option>
-                        <%      }
+                        <%  
                             }
                         }
                         %>
@@ -452,17 +462,23 @@
                 </div>
                 
                 <div class="pos-filter-group">
-                    <label class="pos-filter-label">Sản phẩm</label>
-                    <select id="productFilter" class="pos-filter-select" onchange="filterVariants()">
-                        <option value="">Tất cả sản phẩm</option>
+                    <label class="pos-filter-label">Danh mục</label>
+                    <select id="categoryFilter" class="pos-filter-select" onchange="filterVariants()">
+                        <option value="">Tất cả danh mục</option>
                         <% 
-                        List<Product> products = (List<Product>) request.getAttribute("products");
-                        if (products != null) {
-                            for (Product p : products) {
-                                if (p.getStatus() == null || p.getStatus() != 1) continue;
+                        List<String> reqCategories = (List<String>) request.getAttribute("categories");
+                        if (reqCategories != null) {
+                            java.util.Set<String> uniqueCategories = new java.util.LinkedHashSet<>();
+                            for (String c : reqCategories) {
+                                if (c != null && !c.trim().isEmpty()) {
+                                    uniqueCategories.add(c.trim());
+                                }
+                            }
+                            for (String category : uniqueCategories) {
                         %>
-                        <option value="<%= p.getName() %>"><%= p.getName() %></option>
-                        <%  }
+                        <option value="<%= category %>"><%= category %></option>
+                        <%  
+                            }
                         }
                         %>
                     </select>
@@ -489,6 +505,7 @@
                     </thead>
                     <tbody id="variantsTableBody">
                         <% 
+                        List<Product> products = (List<Product>) request.getAttribute("products");
                         if (products != null) {
                             int stt = 1;
                             for (Product p : products) {
@@ -512,6 +529,7 @@
                             data-name="<%= p.getName() != null ? p.getName() : "" %>" 
                             data-color="<%= v.getColor() != null ? v.getColor() : "" %>" 
                             data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
+                            data-category="<%= p.getCategory() != null ? p.getCategory().trim() : "" %>"
                             data-price="<%= v.getPrice() %>"
                             data-stock="<%= v.getStock() %>"
                             data-image="<%= imageUrl %>">
@@ -762,32 +780,33 @@
         document.getElementById('variantSearch').value = '';
         document.getElementById('colorFilter').value = '';
         document.getElementById('sizeFilter').value = '';
-        document.getElementById('productFilter').value = '';
+        document.getElementById('categoryFilter').value = '';
         filterVariants();
     }
     
     function filterVariants() {
-        const searchText = document.getElementById('variantSearch').value.toLowerCase();
-        const colorVal = document.getElementById('colorFilter').value.toLowerCase();
-        const sizeVal = document.getElementById('sizeFilter').value.toLowerCase();
-        const productVal = document.getElementById('productFilter').value.toLowerCase();
+        const searchText = document.getElementById('variantSearch').value.trim().toLowerCase();
+        const colorVal = document.getElementById('colorFilter').value.trim().toLowerCase();
+        const sizeVal = document.getElementById('sizeFilter').value.trim().toLowerCase();
+        const categoryVal = document.getElementById('categoryFilter').value.trim().toLowerCase();
         
         const rows = document.querySelectorAll('.variant-row');
         let visibleCount = 0;
         
         rows.forEach(row => {
-            const code = (row.getAttribute('data-code') || '').toLowerCase();
-            const name = (row.getAttribute('data-name') || '').toLowerCase();
-            const color = (row.getAttribute('data-color') || '').toLowerCase();
-            const size = (row.getAttribute('data-size') || '').toLowerCase();
+            const code = (row.getAttribute('data-code') || '').trim().toLowerCase();
+            const name = (row.getAttribute('data-name') || '').trim().toLowerCase();
+            const color = (row.getAttribute('data-color') || '').trim().toLowerCase();
+            const size = (row.getAttribute('data-size') || '').trim().toLowerCase();
+            const category = (row.getAttribute('data-category') || '').trim().toLowerCase();
             
             // Search text matches any of these fields
             const matchSearch = !searchText || code.includes(searchText) || name.includes(searchText) || color.includes(searchText) || size.includes(searchText);
             const matchColor = !colorVal || color === colorVal;
             const matchSize = !sizeVal || size === sizeVal;
-            const matchProduct = !productVal || name === productVal;
+            const matchCategory = !categoryVal || category === categoryVal;
             
-            if (matchSearch && matchColor && matchSize && matchProduct) {
+            if (matchSearch && matchColor && matchSize && matchCategory) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -795,10 +814,14 @@
             }
         });
         
-        document.getElementById('totalVariantsCount').textContent = visibleCount;
+        const countElem = document.getElementById('totalVariantsCount');
+        if (countElem) countElem.textContent = visibleCount;
         
         // Basic pagination info update (mocked since it's just client-side filtering without actual pages right now)
-        document.getElementById('paginationInfo').innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">\${visibleCount}</span> biến thể`;
+        const pagInfo = document.getElementById('paginationInfo');
+        if (pagInfo) {
+            pagInfo.innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">${visibleCount}</span> biến thể`;
+        }
     }
     
     function countTotalVariants() {

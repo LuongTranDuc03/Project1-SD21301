@@ -9,6 +9,7 @@
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/login.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/luong/product-add.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/luong" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/luong/variant-list.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/luong" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/phuc/invoice-list.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/phuc" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/pos.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin" />
         <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin/product-add.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/admin" />
       </map>

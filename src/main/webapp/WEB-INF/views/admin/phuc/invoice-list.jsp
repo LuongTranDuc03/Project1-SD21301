@@ -438,8 +438,8 @@
                 </div>
             </div>
             </div>
-    </main>
-</div>
+        </div>
+</main>
 
 <%-- KHU VỰC JAVASCRIPT: Xử lý đồng hồ, submit form tìm kiếm và các sự kiện UI khác --%>
 <script>
