@@ -50,3 +50,25 @@
     cursor: not-allowed;
     pointer-events: none;
 }
+
+/* Đảm bảo danh sách chọn (Select2 & combobox) luôn thả xuống dưới */
+.select2-container--open .select2-dropdown {
+    top: 100% !important;
+    bottom: auto !important;
+}
+
+.select2-container--open .select2-dropdown--above {
+    top: 100% !important;
+    bottom: auto !important;
+    border-top: none !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    border-radius: 0 0 8px 8px !important;
+}
+
+/* Đảm bảo các khung card chứa form chọn địa chỉ (Khách hàng, Nhân viên, POS) không bị overflow: hidden ép lật danh sách lên trên */
+.form-card,
+.custom-card,
+.card-body-content,
+.form-card-body {
+    overflow: visible !important;
+}

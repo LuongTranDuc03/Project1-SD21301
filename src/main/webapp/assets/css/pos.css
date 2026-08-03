@@ -699,11 +699,22 @@ textarea {
     font-size: 13px;
 }
 
-/* Delivery Form */
+.customer-info-basic {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    width: 280px;
+    box-sizing: border-box;
+}
+
 .customer-address-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-row {
@@ -713,10 +724,12 @@ textarea {
 
 .form-row .form-group {
     flex: 1;
+    min-width: 0;
 }
 
 .form-row.three-cols .form-group {
     flex: 1;
+    min-width: 0;
 }
 
 .form-group label {

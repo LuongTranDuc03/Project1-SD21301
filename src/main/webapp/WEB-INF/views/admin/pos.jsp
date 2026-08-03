@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/pos.css?v=1.0">
     <!-- Nhúng FontAwesome để dùng icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="${pageContext.request.contextPath}/assets/js/address-dropdown.js?v=1.4" charset="UTF-8"></script>
 </head>
 <body style="background-color: #f8fafc; margin: 0; font-family: 'Inter', sans-serif;">
 
@@ -101,7 +102,7 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 10px;">
+                    <div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; padding-top: 10px;">
                         <!-- Cột trái: Thông tin khách hàng (người mua) -->
                         <div class="customer-info-basic" style="display: flex; flex-direction: column; gap: 12px;">
                             <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Người mua hàng</h4>

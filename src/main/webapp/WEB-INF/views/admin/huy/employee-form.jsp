@@ -52,6 +52,7 @@
                                 </script>
                                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
                                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/employees/employee-form.css">
+                                <script src="${pageContext.request.contextPath}/assets/js/address-dropdown.js?v=1.4" charset="UTF-8"></script>
                             </head>
 
                             <body>

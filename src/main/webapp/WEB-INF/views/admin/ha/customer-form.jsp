@@ -31,13 +31,14 @@
     <link rel="stylesheet" href="<%= contextPath %>/assets/css/admin.css">
     <link rel="stylesheet" href="<%= contextPath %>/assets/css/customers/customer.css?v=<%= System.currentTimeMillis() %>">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%= contextPath %>/assets/js/address-dropdown.js?v=1.4" charset="UTF-8"></script>
 
     <style>
         .form-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible !important;
             margin-bottom: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
