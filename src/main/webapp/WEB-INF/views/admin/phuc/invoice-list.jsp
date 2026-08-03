@@ -141,7 +141,7 @@
                         <!-- Tìm kiếm -->
                         <div class="filter-field" style="min-width: 315px;">
                             <label for="searchInput">Tìm kiếm</label>
-                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Tên KH, SĐT hoặc mã HD..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
+                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Tên KH, SĐT hoặc mã HD..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off">
                         </div>
 
 
@@ -438,8 +438,8 @@
                 </div>
             </div>
             </div>
-    </main>
-</div>
+        </div>
+</main>
 
 <%-- KHU VỰC JAVASCRIPT: Xử lý đồng hồ, submit form tìm kiếm và các sự kiện UI khác --%>
 <script>
@@ -467,44 +467,34 @@
     (function () {
         var input = document.getElementById('searchInput');
         var form = document.getElementById('searchForm');
-        var box = document.getElementById('searchBox');
-        var clearBtn = document.getElementById('clearBtn');
-        var btnReset = document.getElementById('btnReset');
-        if (input.value.length > 0) {
-            input.focus();
-            input.setSelectionRange(input.value.length, input.value.length);
-        }
-
-        function updateClearBtn() {
-            box.classList.toggle('has-value', input.value.trim().length > 0);
-        }
-
-        updateClearBtn();
-        input.addEventListener('input', function () {
-            updateClearBtn();
-            clearTimeout(window._searchTimer);
-            window._searchTimer = setTimeout(function () {
-                form.submit();
-            }, 400);
-        });
-        clearBtn.addEventListener('click', function () {
-            input.value = '';
-            updateClearBtn();
-            clearTimeout(window._searchTimer);
-            form.submit();
-        });
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                input.value = '';
-                updateClearBtn();
-                clearTimeout(window._searchTimer);
-                form.submit();
+        if (input && form) {
+            // Tự động focus lại vào ô tìm kiếm nếu có giá trị, hoặc vừa tìm kiếm với chuỗi rỗng (xoá hết từ khoá)
+            var urlParams = new URLSearchParams(window.location.search);
+            if (input.value.length > 0 || urlParams.has('q')) {
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
             }
-            if (e.key === 'Enter') {
+
+            input.addEventListener('input', function () {
                 clearTimeout(window._searchTimer);
-                form.submit();
-            }
-        });
+                window._searchTimer = setTimeout(function () {
+                    form.submit();
+                }, 450);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    input.value = '';
+                    clearTimeout(window._searchTimer);
+                    form.submit();
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    clearTimeout(window._searchTimer);
+                    form.submit();
+                }
+            });
+        }
     })();
 
     function toggleFilterCard() {

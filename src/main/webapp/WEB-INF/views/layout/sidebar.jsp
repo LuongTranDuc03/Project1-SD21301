@@ -84,17 +84,26 @@
                     Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
                     boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
                 %>
-                <% if (isManager) { %>
-                <!-- Thống kê -->
-                <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">
-                    <a href="<%= contextPath %>/admin/dashboard">
-                        <span class="menu-icon">
-                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                        </span>
-                        <span class="menu-text">Thống kê</span>
-                    </a>
-                </li>
-                <% } %>
+                  <% if (isManager) { %>
+                  <!-- Thống kê (Dropdown) -->
+                  <li id="stats-submenu" class="has-submenu <%= uri.contains("/admin/dashboard") || uri.contains("/admin/inventory-dashboard") ? "submenu-open" : "" %>">
+                      <a href="javascript:void(0)" class="submenu-toggle" onclick="toggleStatsSubmenu(this)">
+                          <span class="menu-icon">
+                              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                          </span>
+                          <span class="menu-text">Thống kê</span>
+                          <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      </a>
+                      <ul class="submenu">
+                          <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">
+                              <a href="<%= contextPath %>/admin/dashboard">Thống kê doanh thu</a>
+                          </li>
+                          <li class="<%= uri.endsWith("/admin/inventory-dashboard") ? "active" : "" %>">
+                              <a href="<%= contextPath %>/admin/inventory-dashboard">Thống kê tồn kho</a>
+                          </li>
+                      </ul>
+                  </li>
+                  <% } %>
                 <!-- Bán hàng tại quầy -->
                 <li class="<%= uri.endsWith("/admin/pos") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/pos">
@@ -244,6 +253,23 @@
             const li = el.parentElement;
             const isNowOpen = li.classList.toggle('submenu-open');
             localStorage.setItem("product-submenu-open", isNowOpen);
+        };
+        
+        // Quản lý trạng thái mở/đóng của submenu Thống kê
+        const statsSubmenu = document.getElementById("stats-submenu");
+        if (statsSubmenu) {
+            const savedStatsState = localStorage.getItem("stats-submenu-open");
+            if (savedStatsState === "true") {
+                statsSubmenu.classList.add("submenu-open");
+            } else if (savedStatsState === "false") {
+                statsSubmenu.classList.remove("submenu-open");
+            }
+        }
+        
+        window.toggleStatsSubmenu = function(el) {
+            const li = el.parentElement;
+            const isNowOpen = li.classList.toggle('submenu-open');
+            localStorage.setItem("stats-submenu-open", isNowOpen);
         };
     });
 </script>

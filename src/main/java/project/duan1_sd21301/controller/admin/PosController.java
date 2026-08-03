@@ -33,6 +33,7 @@ public class PosController extends HttpServlet {
         request.setAttribute("sizes", productService.getAllSizes());
         request.setAttribute("customers", customerRepository.findAll());
         request.setAttribute("activeCoupons", couponRepository.findActive());
+        request.setAttribute("categories", productService.getAllCategories());
         
         long totalInvoices = invoiceRepository.countAll(null, null, null, null, null, null);
         request.setAttribute("nextOrderIndex", totalInvoices + 1);

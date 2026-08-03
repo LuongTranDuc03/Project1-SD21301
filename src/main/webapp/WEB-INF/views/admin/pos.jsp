@@ -19,7 +19,6 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/pos.css?v=1.0">
     <!-- Nhúng FontAwesome để dùng icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="${pageContext.request.contextPath}/assets/js/address-dropdown.js?v=1.4" charset="UTF-8"></script>
 </head>
 <body style="background-color: #f8fafc; margin: 0; font-family: 'Inter', sans-serif;">
 
@@ -70,6 +69,7 @@
                 <div class="pos-section-header">
                     <h3 class="pos-section-title">Sản phẩm</h3>
                     <div class="pos-actions">
+                        <button class="btn-scan-qr" onclick="startCameraScan()">Quét QR sản phẩm</button>
                         <button class="btn-add-product" onclick="openVariantModal()">Thêm sản phẩm</button>
                     </div>
                 </div>
@@ -102,18 +102,18 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; padding-top: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 10px;">
                         <!-- Cột trái: Thông tin khách hàng (người mua) -->
                         <div class="customer-info-basic" style="display: flex; flex-direction: column; gap: 12px;">
                             <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Người mua hàng</h4>
                             
-                            <div class="form-group" id="customerNameGroup">
+                            <div class="form-group">
                                 <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerNameInput" value="Khách lẻ" placeholder="Khách lẻ" disabled style="background-color: #e2e8f0; color: #64748b; cursor: not-allowed;" oninput="updateCheckoutState()">
+                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="updateCheckoutState()">
                                 <div id="customerNameError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;">Tên khách hàng chỉ được chứa chữ cái và khoảng trắng</div>
                             </div>
                             
-                            <div class="form-group" id="buyerPhoneGroup" style="display: none;">
+                            <div class="form-group">
                                 <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); document.getElementById('buyerPhoneError').style.display='none'; updateCheckoutState()">
                                 <div id="buyerPhoneError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;"></div>
@@ -121,7 +121,10 @@
                             
                             <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
                             
-
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label class="form-label">Ghi chú đơn hàng</label>
+                                <textarea class="form-control" id="orderNoteInput" rows="2" placeholder="Ghi chú (Tùy chọn)..." oninput="updateCheckoutState()" style="resize: none;"></textarea>
+                            </div>
                         </div>
                         
                         <!-- Cột phải: Địa chỉ giao hàng -->
@@ -203,21 +206,19 @@
                     <div class="coupon-section">
                         <div class="coupon-inputs">
                             <div class="form-group" style="flex: 1; width: 100%;">
-                                <label>Mã phiếu giảm giá (Tự động áp dụng)</label>
-                                <input type="text" class="form-control" id="discountCodeDisplay" readonly style="background-color: #e6f4ea; font-weight: bold; color: #137333;">
-                                <input type="hidden" id="discountCodeInput" value="">
-                                <div id="availableCoupons" style="display: none;">
+                                <label>Mã phiếu giảm giá</label>
+                                <select class="form-control" id="discountCodeInput" onchange="applyDiscountSelect()" style="text-transform: uppercase;">
+                                    <option value="">-- Chọn mã giảm giá --</option>
                                     <c:forEach var="c" items="${activeCoupons}">
-                                        <div class="coupon-item"
-                                            data-code="${c.code}" 
-                                            data-name="${c.name}"
+                                        <option value="${c.code}" 
                                             data-type="${c.discountType}" 
                                             data-value="${c.discountValue}" 
                                             data-min="${c.minOrderValue != null ? c.minOrderValue : 0}" 
                                             data-max="${c.maxDiscountAmount != null ? c.maxDiscountAmount : 0}">
-                                        </div>
+                                            ${c.code} - ${c.name}
+                                        </option>
                                     </c:forEach>
-                                </div>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -228,7 +229,7 @@
                             <span class="summary-value" id="summaryTotalItems">0 đ</span>
                         </div>
                         
-                        <div class="summary-row shipping-row" id="shippingRow" style="display: none;">
+                        <div class="summary-row" id="shippingRow">
                             <span class="summary-label">Phí vận chuyển</span>
                             <div class="shipping-fee-input">
                                 <input type="text" class="form-control text-right" id="shippingFeeInput" value="" placeholder="0" style="width: 80px;" oninput="updateCheckoutState()">
@@ -419,13 +420,18 @@
                     <select id="colorFilter" class="pos-filter-select" onchange="filterVariants()">
                         <option value="">Tất cả màu</option>
                         <% 
-                        List<String> colors = (List<String>) request.getAttribute("colors");
-                        if (colors != null) {
-                            for (String color : colors) {
-                                if (color != null && !color.trim().isEmpty()) {
+                        List<String> reqColors = (List<String>) request.getAttribute("colors");
+                        if (reqColors != null) {
+                            java.util.Set<String> uniqueColors = new java.util.LinkedHashSet<>();
+                            for (String c : reqColors) {
+                                if (c != null && !c.trim().isEmpty()) {
+                                    uniqueColors.add(c.trim());
+                                }
+                            }
+                            for (String color : uniqueColors) {
                         %>
                         <option value="<%= color %>"><%= color %></option>
-                        <%      }
+                        <%  
                             }
                         }
                         %>
@@ -437,13 +443,18 @@
                     <select id="sizeFilter" class="pos-filter-select" onchange="filterVariants()">
                         <option value="">Tất cả kích cỡ</option>
                         <% 
-                        List<String> sizes = (List<String>) request.getAttribute("sizes");
-                        if (sizes != null) {
-                            for (String size : sizes) {
-                                if (size != null && !size.trim().isEmpty()) {
+                        List<String> reqSizes = (List<String>) request.getAttribute("sizes");
+                        if (reqSizes != null) {
+                            java.util.Set<String> uniqueSizes = new java.util.LinkedHashSet<>();
+                            for (String s : reqSizes) {
+                                if (s != null && !s.trim().isEmpty()) {
+                                    uniqueSizes.add(s.trim());
+                                }
+                            }
+                            for (String size : uniqueSizes) {
                         %>
                         <option value="<%= size %>"><%= size %></option>
-                        <%      }
+                        <%  
                             }
                         }
                         %>
@@ -451,17 +462,23 @@
                 </div>
                 
                 <div class="pos-filter-group">
-                    <label class="pos-filter-label">Sản phẩm</label>
-                    <select id="productFilter" class="pos-filter-select" onchange="filterVariants()">
-                        <option value="">Tất cả sản phẩm</option>
+                    <label class="pos-filter-label">Danh mục</label>
+                    <select id="categoryFilter" class="pos-filter-select" onchange="filterVariants()">
+                        <option value="">Tất cả danh mục</option>
                         <% 
-                        List<Product> products = (List<Product>) request.getAttribute("products");
-                        if (products != null) {
-                            for (Product p : products) {
-                                if (p.getStatus() == null || p.getStatus() != 1) continue;
+                        List<String> reqCategories = (List<String>) request.getAttribute("categories");
+                        if (reqCategories != null) {
+                            java.util.Set<String> uniqueCategories = new java.util.LinkedHashSet<>();
+                            for (String c : reqCategories) {
+                                if (c != null && !c.trim().isEmpty()) {
+                                    uniqueCategories.add(c.trim());
+                                }
+                            }
+                            for (String category : uniqueCategories) {
                         %>
-                        <option value="<%= p.getName() %>"><%= p.getName() %></option>
-                        <%  }
+                        <option value="<%= category %>"><%= category %></option>
+                        <%  
+                            }
                         }
                         %>
                     </select>
@@ -488,6 +505,7 @@
                     </thead>
                     <tbody id="variantsTableBody">
                         <% 
+                        List<Product> products = (List<Product>) request.getAttribute("products");
                         if (products != null) {
                             int stt = 1;
                             for (Product p : products) {
@@ -511,6 +529,7 @@
                             data-name="<%= p.getName() != null ? p.getName() : "" %>" 
                             data-color="<%= v.getColor() != null ? v.getColor() : "" %>" 
                             data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
+                            data-category="<%= p.getCategory() != null ? p.getCategory().trim() : "" %>"
                             data-price="<%= v.getPrice() %>"
                             data-stock="<%= v.getStock() %>"
                             data-image="<%= imageUrl %>">
@@ -527,7 +546,7 @@
                             <td class="pos-product-name"><%= p.getName() %></td>
                             <td><%= v.getColor() != null ? v.getColor() : "" %></td>
                             <td><%= v.getSize() != null ? v.getSize() : "" %></td>
-                            <td class="pos-stock-td"><%= v.getStock() %></td>
+                            <td class="td-stock"><%= v.getStock() %></td>
                             <td style="font-weight: 600; color: #7f1d1d; white-space: nowrap;"><%= String.format("%,.0f đ", v.getPrice()) %></td>
                             <td>
                                 <button class="btn-add-variant" onclick="addVariantToOrder('<%= v.getCode() %>')" title="Thêm vào đơn">Thêm</button>
@@ -560,47 +579,20 @@
     const MAX_ORDERS = 10;
     let nextOrderId = parseInt('${nextOrderIndex}') || 1;
 
+    let autoSaveTimeout = null;
     function saveOrdersToStorage() {
-        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
-        const order = orders[orderIndex];
-
-        let validName = order.recipientName || order.customerName || '';
-        if (validName && validName.trim() !== '' && validName !== 'Khách lẻ' && !/^[\p{L}\s]+$/u.test(validName.trim())) {
-            validName = ''; 
-        }
-
-        let validPhone = order.deliveryPhone || order.customerPhone || '';
-        const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-        if (validPhone && validPhone.trim() !== '' && !phoneRegex.test(validPhone.trim())) {
-            validPhone = ''; 
-        }
-
-        try {
-            const formData = new URLSearchParams();
-            formData.append('invoiceId', order.id);
-            formData.append('customerName', validName);
-            formData.append('customerPhone', validPhone);
-            formData.append('couponCode', order.discountCode || '');
-            formData.append('shippingFee', order.shippingFee || '');
-            formData.append('customerPay', order.customerPay || '');
-
-            fetch(window.location.pathname.replace('/pos', '/pos/api/update-invoice-info'), {
+        if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            if (!currentOrderId) return;
+            const order = orders.find(o => o.id === currentOrderId);
+            if (!order) return;
+            
+            fetch(window.location.pathname.replace('/pos', '/pos/api/update-draft-info'), {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: formData.toString()
-            })
-            .then(res => {
-                if (!res.ok) console.error("Error saving draft: ", res.status);
-            })
-            .catch(err => {
-                console.error("Lỗi mạng khi lưu dữ liệu ngầm:", err);
-            });
-        } catch(e) {
-            console.error("Error saving invoice info:", e);
-        }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order)
+            }).catch(err => console.error('Auto-save error:', err));
+        }, 800);
     }
 
     async function initPOS() {
@@ -608,26 +600,39 @@
             const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/get-drafts'));
             const data = await res.json();
             if (data && data.length > 0) {
-                orders = data.map(d => ({
-                    id: d.id.toString(),
-                    name: d.code,
-                    items: d.items || [],
-                    customerName: 'Khách lẻ',
-                    customerCode: '',
-                    recipientName: '',
-                    customerPhone: '',
-                    isDelivery: false,
-                    deliveryPhone: '',
-                    deliveryAddress: '',
-                    province: '',
-                    district: '',
-                    ward: '',
-                    discountCode: '',
-                    discountValue: '',
-                    shippingFee: '',
-                    customerPay: '',
-                    paymentMethod: 'CASH'
-                }));
+                orders = data.map(d => {
+                    let addrStr = d.deliveryAddress || '';
+                    let parts = addrStr.split(', ');
+                    let p = '', dist = '', w = '', a = addrStr;
+                    if (parts.length >= 4) {
+                        p = parts.pop();
+                        dist = parts.pop();
+                        w = parts.pop();
+                        a = parts.join(', ');
+                    }
+                    
+                    return {
+                        id: d.id.toString(),
+                        name: d.code,
+                        items: d.items || [],
+                        customerName: d.customerName || 'Khách lẻ',
+                        customerCode: d.customerCode || '',
+                        recipientName: d.recipientName || '',
+                        customerPhone: d.customerPhone || '',
+                        isDelivery: !!d.isDelivery,
+                        deliveryPhone: d.deliveryPhone || '',
+                        deliveryAddress: a,
+                        province: p,
+                        district: dist,
+                        ward: w,
+                        discountCode: d.discountCode || '',
+                        discountValue: d.discountValue || '',
+                        shippingFee: d.shippingFee || '',
+                        note: d.note || '',
+                        customerPay: '',
+                        paymentMethod: 'CASH'
+                    };
+                });
                 currentOrderId = orders[0].id;
                 renderTabs();
                 renderCurrentOrderItems();
@@ -642,6 +647,14 @@
         countTotalVariants();
         fetchProvinces();
         updateAvailableStockDisplay();
+
+        // Khởi tạo trạng thái phí vận chuyển: readonly mặc định (Tại quầy)
+        const shippingInput = document.getElementById('shippingFeeInput');
+        if (shippingInput) {
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
+        }
     }
 
     // --- Order Tabs Logic ---
@@ -744,7 +757,7 @@
                 const data = await res.json();
                 if (data && data.success) {
                     orders = orders.filter(o => o.id !== orderId);
-                    
+
                     if (orders.length === 0) {
                         currentOrderId = null;
                     } else {
@@ -792,32 +805,33 @@
         document.getElementById('variantSearch').value = '';
         document.getElementById('colorFilter').value = '';
         document.getElementById('sizeFilter').value = '';
-        document.getElementById('productFilter').value = '';
+        document.getElementById('categoryFilter').value = '';
         filterVariants();
     }
     
     function filterVariants() {
-        const searchText = document.getElementById('variantSearch').value.toLowerCase();
-        const colorVal = document.getElementById('colorFilter').value.toLowerCase();
-        const sizeVal = document.getElementById('sizeFilter').value.toLowerCase();
-        const productVal = document.getElementById('productFilter').value.toLowerCase();
+        const searchText = document.getElementById('variantSearch').value.trim().toLowerCase();
+        const colorVal = document.getElementById('colorFilter').value.trim().toLowerCase();
+        const sizeVal = document.getElementById('sizeFilter').value.trim().toLowerCase();
+        const categoryVal = document.getElementById('categoryFilter').value.trim().toLowerCase();
         
         const rows = document.querySelectorAll('.variant-row');
         let visibleCount = 0;
         
         rows.forEach(row => {
-            const code = (row.getAttribute('data-code') || '').toLowerCase();
-            const name = (row.getAttribute('data-name') || '').toLowerCase();
-            const color = (row.getAttribute('data-color') || '').toLowerCase();
-            const size = (row.getAttribute('data-size') || '').toLowerCase();
+            const code = (row.getAttribute('data-code') || '').trim().toLowerCase();
+            const name = (row.getAttribute('data-name') || '').trim().toLowerCase();
+            const color = (row.getAttribute('data-color') || '').trim().toLowerCase();
+            const size = (row.getAttribute('data-size') || '').trim().toLowerCase();
+            const category = (row.getAttribute('data-category') || '').trim().toLowerCase();
             
             // Search text matches any of these fields
             const matchSearch = !searchText || code.includes(searchText) || name.includes(searchText) || color.includes(searchText) || size.includes(searchText);
             const matchColor = !colorVal || color === colorVal;
             const matchSize = !sizeVal || size === sizeVal;
-            const matchProduct = !productVal || name === productVal;
+            const matchCategory = !categoryVal || category === categoryVal;
             
-            if (matchSearch && matchColor && matchSize && matchProduct) {
+            if (matchSearch && matchColor && matchSize && matchCategory) {
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -825,10 +839,14 @@
             }
         });
         
-        document.getElementById('totalVariantsCount').textContent = visibleCount;
+        const countElem = document.getElementById('totalVariantsCount');
+        if (countElem) countElem.textContent = visibleCount;
         
         // Basic pagination info update (mocked since it's just client-side filtering without actual pages right now)
-        document.getElementById('paginationInfo').innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">\${visibleCount}</span> biến thể`;
+        const pagInfo = document.getElementById('paginationInfo');
+        if (pagInfo) {
+            pagInfo.innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">${visibleCount}</span> biến thể`;
+        }
     }
     
     function countTotalVariants() {
@@ -839,7 +857,7 @@
         }
     }
     
-    function addVariantToOrder(variantCode) {
+    async function addVariantToOrder(variantCode) {
         if (!currentOrderId) {
             alert("Vui lòng tạo đơn hàng trước!");
             return;
@@ -877,32 +895,7 @@
         if (existingItemIndex !== -1) {
             newQty = order.items[existingItemIndex].quantity + 1;
         }
-        
-        // Optimistic UI Update
-        if (existingItemIndex !== -1) {
-            order.items[existingItemIndex].quantity = newQty;
-        } else {
-            order.items.push({
-                code: variantCode,
-                productCode: productCode,
-                name: name,
-                color: color,
-                size: size,
-                price: price,
-                image: image,
-                stock: stock,
-                quantity: 1
-            });
-        }
-        
-        row.setAttribute('data-stock', stock - 1);
-        const stockCell = row.querySelector('.pos-stock-td');
-        if (stockCell) stockCell.textContent = stock - 1;
-        
-        renderCurrentOrderItems();
-        updateAvailableStockDisplay();
-        closeVariantModal();
-        
+
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
@@ -911,17 +904,41 @@
             fd.append('variantName', name);
             fd.append('price', price);
             fd.append('colorSize', color + ' - ' + size);
-            
-            // Fire and forget
-            fetch(window.location.pathname.replace('/pos', '/pos/api/add-item'), {
+
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/add-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
-            }).then(res => res.json()).then(data => {
-                if (!data || !data.success) {
-                    alert("Lỗi khi thêm: " + (data.message || 'Không thể thêm sản phẩm'));
+            });
+            const data = await res.json();
+
+            if (data && data.success) {
+                if (existingItemIndex !== -1) {
+                    order.items[existingItemIndex].quantity = newQty;
+                } else {
+                    order.items.push({
+                        code: variantCode,
+                        productCode: productCode,
+                        name: name,
+                        color: color,
+                        size: size,
+                        price: price,
+                        image: image,
+                        stock: stock,
+                        quantity: 1
+                    });
                 }
-            }).catch(e => console.error("Add item error:", e));
+
+                row.setAttribute('data-stock', stock - 1);
+                const stockCell = row.querySelector('.pos-stock-td');
+                if (stockCell) stockCell.textContent = stock - 1;
+
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+                closeVariantModal();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể thêm sản phẩm'));
+            }
         } catch (e) {
             console.error("Error adding item", e);
         }
@@ -996,7 +1013,7 @@
             container.innerHTML = html;
             
             // Re-apply discount logic based on new total, which will also update the summary
-            updateTotals();
+            applyDiscountSelect();
         }
         saveOrdersToStorage();
     }
@@ -1010,12 +1027,19 @@
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
-            document.getElementById('shippingRow').style.display = 'flex';
+            // Cho phép nhập phí vận chuyển
+            shippingInput.removeAttribute('readonly');
+            shippingInput.style.backgroundColor = '';
+            shippingInput.style.color = '';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
-            document.getElementById('shippingRow').style.display = 'none';
+            // Khóa phí vận chuyển khi tại quầy
+            shippingInput.value = '';
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
         }
     }
     
@@ -1234,28 +1258,34 @@
                 sumTotal += (item.price * item.quantity);
             });
         }
-        
-        const couponItems = document.querySelectorAll('#availableCoupons .coupon-item');
-        
-        // --- AUTO-APPLY LOGIC ---
-        let maxPossibleDiscount = -1;
-        let bestCouponCode = '';
-        let bestCouponName = '';
-        
-        if (couponItems && couponItems.length > 0) {
-            couponItems.forEach(item => {
-                const code = item.getAttribute('data-code');
-                const name = item.getAttribute('data-name');
-                const type = parseInt(item.getAttribute('data-type'));
-                const value = parseFloat(item.getAttribute('data-value'));
-                const minOrder = parseFloat(item.getAttribute('data-min'));
-                const maxDiscountOpt = parseFloat(item.getAttribute('data-max'));
-                
+
+        const select = document.getElementById('discountCodeInput');
+
+        // --- SUGGESTION LOGIC ---
+        if (select) {
+            let maxPossibleDiscount = -1;
+            let bestOptionIndices = [];
+
+            for (let i = 1; i < select.options.length; i++) {
+                let opt = select.options[i];
+                if (!opt.hasAttribute('data-original-text')) {
+                    opt.setAttribute('data-original-text', opt.text);
+                }
+                opt.text = opt.getAttribute('data-original-text');
+                opt.style.backgroundColor = '';
+                opt.style.color = '';
+                opt.style.fontWeight = '';
+
+                const type = parseInt(opt.getAttribute('data-type'));
+                const value = parseFloat(opt.getAttribute('data-value'));
+                const minOrder = parseFloat(opt.getAttribute('data-min'));
+                const maxDiscountOpt = parseFloat(opt.getAttribute('data-max'));
+
                 let possibleDiscount = 0;
                 if (sumTotal > 0 && sumTotal >= minOrder) {
-                    if (type === 1) { 
+                    if (type === 1) {
                         possibleDiscount = value;
-                    } else if (type === 0) { 
+                    } else if (type === 0) {
                         possibleDiscount = sumTotal * (value / 100.0);
                         if (maxDiscountOpt > 0 && possibleDiscount > maxDiscountOpt) {
                             possibleDiscount = maxDiscountOpt;
@@ -1265,32 +1295,65 @@
                         possibleDiscount = sumTotal;
                     }
                 }
-                
+
                 if (possibleDiscount > 0) {
                     if (possibleDiscount > maxPossibleDiscount) {
                         maxPossibleDiscount = possibleDiscount;
-                        bestCouponCode = code;
-                        bestCouponName = name;
+                        bestOptionIndices = [i];
+                    } else if (possibleDiscount === maxPossibleDiscount) {
+                        bestOptionIndices.push(i);
                     }
                 }
-            });
+            }
+
+            if (maxPossibleDiscount > 0) {
+                bestOptionIndices.forEach(idx => {
+                    let bestOpt = select.options[idx];
+                    bestOpt.text = bestOpt.getAttribute('data-original-text') + ' (Gợi ý)';
+                    bestOpt.style.backgroundColor = '#e6f4ea';
+                    bestOpt.style.color = '#137333';
+                    bestOpt.style.fontWeight = 'bold';
+                });
+            }
         }
-        
-        const discountInput = document.getElementById('discountCodeInput');
-        const discountDisplay = document.getElementById('discountCodeDisplay');
-        
+        // --- END SUGGESTION LOGIC ---
+
+        // Cập nhật lại discount dựa trên tổng tiền hiện tại để đảm bảo luôn đúng % và điều kiện minOrder
         let discount = 0;
-        if (bestCouponCode) {
-            order.discountCode = bestCouponCode;
-            discount = maxPossibleDiscount;
-            if (discountInput) discountInput.value = bestCouponCode;
-            if (discountDisplay) discountDisplay.value = bestCouponCode + ' - ' + bestCouponName;
-        } else {
-            order.discountCode = '';
-            if (discountInput) discountInput.value = '';
-            if (discountDisplay) discountDisplay.value = 'Không đủ điều kiện áp dụng mã';
+        if (order.discountCode && select) {
+            let option = null;
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === order.discountCode) {
+                    option = select.options[i];
+                    break;
+                }
+            }
+            if (option) {
+                const type = parseInt(option.getAttribute('data-type'));
+                const value = parseFloat(option.getAttribute('data-value'));
+                const minOrder = parseFloat(option.getAttribute('data-min'));
+                const maxDiscount = parseFloat(option.getAttribute('data-max'));
+                if (sumTotal > 0 && sumTotal >= minOrder) {
+                    if (type === 1) { // VND
+                        discount = value;
+                    } else if (type === 0) { // %
+                        discount = sumTotal * (value / 100.0);
+                        if (maxDiscount > 0 && discount > maxDiscount) {
+                            discount = maxDiscount;
+                        }
+                    }
+                    if (discount > sumTotal) {
+                        discount = sumTotal; // Không giảm quá tổng tiền hàng
+                    }
+                } else {
+                    // Không đủ điều kiện nữa thì gỡ bỏ
+                    order.discountCode = '';
+                    if (select.value === option.value) select.value = '';
+                }
+            } else {
+                order.discountCode = '';
+            }
         }
-        
         order.discountValue = discount.toString();
 
         document.getElementById('summaryTotalItems').textContent = sumTotal.toLocaleString('vi-VN') + ' đ';
@@ -1338,32 +1401,9 @@
         
         order.isDelivery = document.getElementById('deliveryToggle').checked;
         const nameInput = document.getElementById('customerNameInput');
-        if (nameInput) {
-            order.customerName = nameInput.value;
-            const nameError = document.getElementById('customerNameError');
-            if (nameError) {
-                if (order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ' && !/^[\p{L}\s]+$/u.test(order.customerName.trim())) {
-                    nameError.style.display = 'block';
-                } else {
-                    nameError.style.display = 'none';
-                }
-            }
-        }
-        
+        if (nameInput) order.customerName = nameInput.value;
         const buyerPhone = document.getElementById('buyerPhoneInput');
-        if (buyerPhone) {
-            order.customerPhone = buyerPhone.value;
-            const phoneError = document.getElementById('buyerPhoneError');
-            const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-            if (phoneError && order.customerPhone && order.customerPhone.trim() !== '') {
-                if (!phoneRegex.test(order.customerPhone.trim())) {
-                    phoneError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
-                    phoneError.style.display = 'block';
-                } else {
-                    phoneError.style.display = 'none';
-                }
-            }
-        }
+        if (buyerPhone) order.customerPhone = buyerPhone.value;
         
         const recInput = document.getElementById('recipientNameInput');
         if (recInput) order.recipientName = recInput.value;
@@ -1390,8 +1430,7 @@
         order.shippingFee = document.getElementById('shippingFeeInput').value;
         order.customerPay = document.getElementById('customerPayInput').value;
         order.discountCode = document.getElementById('discountCodeInput').value;
-        const noteEl = document.getElementById('orderNoteInput');
-        order.note = noteEl ? noteEl.value : '';
+        order.note = document.getElementById('orderNoteInput').value;
         
         updateTotals();
         saveOrdersToStorage();
@@ -1408,8 +1447,7 @@
             document.getElementById('shippingFeeInput').value = '';
             document.getElementById('customerPayInput').value = '';
             document.getElementById('discountCodeInput').value = '';
-            const noteElReset = document.getElementById('orderNoteInput');
-            if (noteElReset) noteElReset.value = '';
+            document.getElementById('orderNoteInput').value = '';
             document.getElementById('summaryTotalItems').textContent = '0 đ';
             document.getElementById('summaryTotalPayment').textContent = '0 đ';
             document.getElementById('summaryChange').textContent = '0 đ';
@@ -1417,52 +1455,29 @@
         }
         const order = orders[orderIndex];
         
-        const isKhachLe = !order.customerName || order.customerName.trim() === '' || order.customerName === 'Khách lẻ';
-        const isFixedCustomer = !isKhachLe;
+        const isFixedCustomer = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';
 
         const nameInput = document.getElementById('customerNameInput');
         if (nameInput) {
-            if (isKhachLe) {
-                nameInput.value = 'Khách lẻ';
-                nameInput.setAttribute('disabled', 'disabled');
-                nameInput.style.backgroundColor = '#e2e8f0';
-                nameInput.style.color = '#64748b';
-                nameInput.style.cursor = 'not-allowed';
+            nameInput.value = order.customerName || 'Khách lẻ';
+            if (isFixedCustomer) {
+                nameInput.setAttribute('readonly', true);
+                nameInput.style.backgroundColor = '#f3f4f6'; // Thêm màu nền xám để biểu thị không sửa được
             } else {
-                nameInput.value = order.customerName;
-                nameInput.setAttribute('readonly', 'readonly');
-                nameInput.removeAttribute('disabled');
-                nameInput.style.backgroundColor = '#f3f4f6';
-                nameInput.style.color = '';
-                nameInput.style.cursor = '';
+                nameInput.removeAttribute('readonly');
+                nameInput.style.backgroundColor = '';
             }
         }
         
-        const buyerPhoneGroup = document.getElementById('buyerPhoneGroup');
         const buyerPhoneInput = document.getElementById('buyerPhoneInput');
-        if (buyerPhoneGroup) {
-            if (isKhachLe) {
-                buyerPhoneGroup.style.display = 'none';
+        if (buyerPhoneInput) {
+            buyerPhoneInput.value = order.customerPhone || '';
+            if (isFixedCustomer) {
+                buyerPhoneInput.setAttribute('readonly', true);
+                buyerPhoneInput.style.backgroundColor = '#f3f4f6';
             } else {
-                buyerPhoneGroup.style.display = 'block';
-                if (buyerPhoneInput) {
-                    buyerPhoneInput.value = order.customerPhone || '';
-                    buyerPhoneInput.setAttribute('readonly', 'readonly');
-                    buyerPhoneInput.style.backgroundColor = '#f3f4f6';
-                }
-            }
-        }
-
-        const orderNoteGroup = document.getElementById('orderNoteGroup');
-        const orderNoteInput = document.getElementById('orderNoteInput');
-        if (orderNoteGroup) {
-            if (isKhachLe) {
-                orderNoteGroup.style.display = 'none';
-            } else {
-                orderNoteGroup.style.display = 'block';
-                if (orderNoteInput) {
-                    orderNoteInput.value = order.note || '';
-                }
+                buyerPhoneInput.removeAttribute('readonly');
+                buyerPhoneInput.style.backgroundColor = '';
             }
         }
         
@@ -1505,16 +1520,23 @@
         
         const isDelivery = toggle.checked;
         document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+
+        const shippingInput = document.getElementById('shippingFeeInput');
         if (isDelivery) {
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
-            document.getElementById('shippingRow').style.display = 'flex';
+            shippingInput.removeAttribute('readonly');
+            shippingInput.style.backgroundColor = '';
+            shippingInput.style.color = '';
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
-            document.getElementById('shippingRow').style.display = 'none';
+            shippingInput.setAttribute('readonly', true);
+            shippingInput.style.backgroundColor = '#f3f4f6';
+            shippingInput.style.color = '#94a3b8';
+            if (!isDelivery) shippingInput.value = '';
         }
         
         document.getElementById('customerPhoneInput').value = order.deliveryPhone || '';
@@ -1592,13 +1614,80 @@
         document.getElementById('shippingFeeInput').value = order.shippingFee || '';
         document.getElementById('customerPayInput').value = order.customerPay || '';
         document.getElementById('discountCodeInput').value = order.discountCode || '';
-        const noteInputRender = document.getElementById('orderNoteInput');
-        if (noteInputRender) noteInputRender.value = order.note || '';
+        document.getElementById('orderNoteInput').value = order.note || '';
 
     }
     
-
-    function updateItemQty(code, change) {
+    function applyDiscountSelect() {
+        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+        if (orderIndex === -1) return;
+        const order = orders[orderIndex];
+        
+        let sumTotal = 0;
+        if (order.items) {
+            order.items.forEach(item => {
+                sumTotal += (item.price * item.quantity);
+            });
+        }
+        
+        const select = document.getElementById('discountCodeInput');
+        const option = select.options[select.selectedIndex];
+        
+        if (!option.value) {
+            order.discountCode = '';
+            order.discountValue = '0';
+            updateTotals();
+            saveOrdersToStorage();
+            return;
+        }
+        
+        if (sumTotal === 0) {
+            alert('Giỏ hàng đang trống, không thể áp dụng mã giảm giá!');
+            select.value = '';
+            order.discountCode = '';
+            order.discountValue = '0';
+            updateTotals();
+            saveOrdersToStorage();
+            return;
+        }
+        
+        const type = parseInt(option.getAttribute('data-type'));
+        const value = parseFloat(option.getAttribute('data-value'));
+        const minOrder = parseFloat(option.getAttribute('data-min'));
+        const maxDiscount = parseFloat(option.getAttribute('data-max'));
+        
+        if (sumTotal < minOrder) {
+            alert('Đơn hàng chưa đạt giá trị tối thiểu ' + minOrder.toLocaleString('vi-VN') + ' đ để áp dụng mã này!');
+            select.value = '';
+            order.discountCode = '';
+            order.discountValue = '0';
+            updateTotals();
+            saveOrdersToStorage();
+            return;
+        }
+        
+        let discountAmt = 0;
+        if (type === 1) { // VND
+            discountAmt = value;
+        } else if (type === 0) { // %
+            discountAmt = sumTotal * (value / 100.0);
+            if (maxDiscount > 0 && discountAmt > maxDiscount) {
+                discountAmt = maxDiscount;
+            }
+        }
+        
+        if (discountAmt > sumTotal) {
+            discountAmt = sumTotal; // Không giảm quá tổng tiền hàng
+        }
+        
+        order.discountCode = option.value;
+        order.discountValue = discountAmt.toString();
+        
+        updateTotals();
+        saveOrdersToStorage();
+    }
+    
+    async function updateItemQty(code, change) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
@@ -1610,19 +1699,7 @@
                 alert("Số lượng vượt quá tồn kho hiện có!");
                 return;
             }
-            
-            // Optimistic UI Update
-            item.quantity = newQty;
-            const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
-            if (row) {
-                const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
-                row.setAttribute('data-stock', currentStock - change);
-                const stockCell = row.querySelector('.pos-stock-td');
-                if (stockCell) stockCell.textContent = currentStock - change;
-            }
-            renderCurrentOrderItems();
-            updateAvailableStockDisplay();
-            
+
             try {
                 const fd = new URLSearchParams();
                 fd.append('invoiceId', currentOrderId);
@@ -1631,24 +1708,36 @@
                 fd.append('variantName', item.name);
                 fd.append('price', item.price);
                 fd.append('colorSize', item.color + ' - ' + item.size);
-                
-                // Fire and forget (async background update)
-                fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
+
+                const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: fd.toString()
-                }).then(res => res.json()).then(data => {
-                    if (!data || !data.success) {
-                        alert("Lỗi khi lưu: " + (data.message || 'Không thể cập nhật số lượng'));
+                });
+                const data = await res.json();
+                if (data && data.success) {
+                    item.quantity = newQty;
+
+                    const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+                    if (row) {
+                        const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                        row.setAttribute('data-stock', currentStock - change);
+                        const stockCell = row.querySelector('.pos-stock-td');
+                        if (stockCell) stockCell.textContent = currentStock - change;
                     }
-                }).catch(e => console.error("Update error:", e));
+
+                    renderCurrentOrderItems();
+                    updateAvailableStockDisplay();
+                } else {
+                    alert("Lỗi: " + (data.message || 'Không thể cập nhật số lượng'));
+                }
             } catch (e) {
                 console.error(e);
             }
         }
     }
     
-    function setItemQty(code, value) {
+    async function setItemQty(code, value) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
@@ -1667,19 +1756,7 @@
                 return;
             }
         }
-        
-        // Optimistic UI Update
-        item.quantity = val;
-        const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
-        if (row) {
-            const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
-            row.setAttribute('data-stock', currentStock - diff);
-            const stockCell = row.querySelector('.pos-stock-td');
-            if (stockCell) stockCell.textContent = currentStock - diff;
-        }
-        renderCurrentOrderItems();
-        updateAvailableStockDisplay();
-        
+
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
@@ -1688,55 +1765,69 @@
             fd.append('variantName', item.name);
             fd.append('price', item.price);
             fd.append('colorSize', item.color + ' - ' + item.size);
-            
-            // Fire and forget (async background update)
-            fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
+
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/update-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
-            }).then(res => res.json()).then(data => {
-                if (!data || !data.success) {
-                    alert("Lỗi khi lưu: " + (data.message || 'Không thể cập nhật số lượng'));
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                item.quantity = val;
+
+                const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+                if (row) {
+                    const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                    row.setAttribute('data-stock', currentStock - diff);
+                    const stockCell = row.querySelector('.pos-stock-td');
+                    if (stockCell) stockCell.textContent = currentStock - diff;
                 }
-            }).catch(e => console.error("Update error:", e));
+
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể cập nhật số lượng'));
+                renderCurrentOrderItems();
+            }
         } catch (e) {
             console.error(e);
+            renderCurrentOrderItems();
         }
     }
     
-    function removeItem(code) {
+    async function removeItem(code) {
         const order = orders.find(o => o.id === currentOrderId);
         if (!order) return;
         const item = order.items.find(i => i.code === code);
         if (!item) return;
-        
-        // Optimistic UI Update
-        order.items = order.items.filter(i => i.code !== code);
-        const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
-        if (row) {
-            const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
-            row.setAttribute('data-stock', currentStock + item.quantity);
-            const stockCell = row.querySelector('.pos-stock-td');
-            if (stockCell) stockCell.textContent = currentStock + item.quantity;
-        }
-        renderCurrentOrderItems();
-        updateAvailableStockDisplay();
-        
+
         try {
             const fd = new URLSearchParams();
             fd.append('invoiceId', currentOrderId);
             fd.append('variantCode', code);
-            
-            // Fire and forget
-            fetch(window.location.pathname.replace('/pos', '/pos/api/remove-item'), {
+
+            const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/remove-item'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: fd.toString()
-            }).then(res => res.json()).then(data => {
-                if (!data || !data.success) {
-                    alert("Lỗi khi xóa: " + (data.message || 'Không thể xóa sản phẩm'));
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                order.items = order.items.filter(i => i.code !== code);
+
+                const row = document.querySelector(`.variant-row[data-code="` + code.replace(/"/g, '\\"') + `"]`);
+                if (row) {
+                    const currentStock = parseInt(row.getAttribute('data-stock')) || 0;
+                    row.setAttribute('data-stock', currentStock + item.quantity);
+                    const stockCell = row.querySelector('.pos-stock-td');
+                    if (stockCell) stockCell.textContent = currentStock + item.quantity;
                 }
-            }).catch(e => console.error("Remove error:", e));
+
+                renderCurrentOrderItems();
+                updateAvailableStockDisplay();
+            } else {
+                alert("Lỗi: " + (data.message || 'Không thể xóa sản phẩm'));
+            }
         } catch (e) {
             console.error(e);
         }
@@ -1893,24 +1984,20 @@
             order.customerName = 'Khách lẻ';
         }
         
-        const isKhachLe = !order.customerName || order.customerName.trim() === '' || order.customerName === 'Khách lẻ';
+        const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+        const bError = document.getElementById('buyerPhoneError');
+        if (!order.customerPhone || order.customerPhone.trim() === '') {
+            bError.textContent = "Vui lòng nhập số điện thoại khách hàng!";
+            bError.style.display = 'block';
+            document.getElementById('buyerPhoneInput').focus();
+            return;
+        }
         
-        if (!isKhachLe) {
-            const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-            const bError = document.getElementById('buyerPhoneError');
-            if (!order.customerPhone || order.customerPhone.trim() === '') {
-                bError.textContent = "Vui lòng nhập số điện thoại khách hàng!";
-                bError.style.display = 'block';
-                document.getElementById('buyerPhoneInput').focus();
-                return;
-            }
-            
-            if (!phoneRegex.test(order.customerPhone.trim())) {
-                bError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
-                bError.style.display = 'block';
-                document.getElementById('buyerPhoneInput').focus();
-                return;
-            }
+        if (!phoneRegex.test(order.customerPhone.trim())) {
+            bError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
+            bError.style.display = 'block';
+            document.getElementById('buyerPhoneInput').focus();
+            return;
         }
         
         if (order.isDelivery) {
@@ -1975,16 +2062,7 @@
                 else switchOrder(orders[0].id);
                 saveOrdersToStorage();
             } else {
-                if (data.message && data.message.startsWith("COUPON_CHANGED:")) {
-                    const errorDetails = data.message.replace("COUPON_CHANGED:", "");
-                    showCustomConfirm(errorDetails + " Bạn có muốn hệ thống tự động cập nhật và áp dụng phiếu giảm giá phù hợp nhất không?", function(result) {
-                        if (result) {
-                            window.location.reload();
-                        }
-                    });
-                } else {
-                    alert("Lỗi thanh toán: " + (data.message || "Thất bại"));
-                }
+                alert("Lỗi thanh toán: " + data.message);
             }
         })
         .catch(err => {
@@ -2148,7 +2226,8 @@
         rows.forEach(row => {
             const code = row.getAttribute('data-code');
             const available = getAvailableStock(code);
-            const stockTd = row.querySelector('.pos-stock-td');
+            // Dùng class 'td-stock' để chọn chính xác cột Số lượng, tránh lỗi index cứng
+            const stockTd = row.querySelector('.td-stock');
             if (stockTd) {
                 stockTd.textContent = available;
             }
@@ -2157,6 +2236,99 @@
 
     // Override default alert globally in this page to catch all alerts
     window.alert = showCustomAlert;
+</script>
+
+<!-- Modal Scanner Camera -->
+<div id="qrCameraModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 600px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; align-items: center; position: relative;">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 16px;">Đưa mã vạch vào khung hình</h3>
+        <div id="qrReader" style="width: 100%; max-width: 550px; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0;"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; width: 100%;">
+            <button id="btnToggleTorch" onclick="toggleTorch()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fef9c3; color: #854d0e; font-weight: 600; cursor: pointer;">🔦 Bật Đèn</button>
+            <button onclick="stopCameraScan()" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #ef4444; color: #ffffff; font-weight: 600; cursor: pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+    let html5QrCode = null;
+    let isScannerRunning = false;
+    let torchOn = false;
+
+    function startCameraScan() {
+        if (!currentOrderId) {
+            showCustomAlert('Vui lòng tạo đơn hàng trước khi quét sản phẩm!');
+            return;
+        }
+
+        if (isScannerRunning) return;
+
+        const modal = document.getElementById('qrCameraModal');
+        modal.style.display = 'flex';
+
+        html5QrCode = new Html5Qrcode("qrReader");
+
+        const config = {
+            fps: 10,
+            qrbox: { width: 450, height: 250 },
+            aspectRatio: 1.0,
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            },
+            rememberLastUsedCamera: false
+        };
+
+        const onScanSuccess = (decodedText) => {
+            stopCameraScan();
+            // Tận dụng hàm addVariantToOrder đã có sẵn trong pos.jsp
+            addVariantToOrder(decodedText);
+        };
+
+        html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
+        .then(() => {
+            isScannerRunning = true;
+        })
+        .catch(() => {
+            // Nếu camera sau lỗi thì dùng camera trước
+            html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {})
+            .then(() => {
+                isScannerRunning = true;
+            })
+            .catch((err) => {
+                console.error("Không mở được camera:", err);
+                modal.style.display = 'none';
+                showCustomAlert('Không thể mở Camera. Vui lòng kiểm tra quyền truy cập.');
+            });
+        });
+    }
+
+    async function toggleTorch() {
+        if (!html5QrCode) return;
+        try {
+            torchOn = !torchOn;
+            await html5QrCode.applyVideoConstraints({ advanced: [{ torch: torchOn }] });
+            const btn = document.getElementById('btnToggleTorch');
+            btn.textContent = torchOn ? '🔦 Tắt Đèn' : '🔦 Bật Đèn';
+            btn.style.background = torchOn ? '#fde047' : '#fef9c3';
+        } catch(e) { console.log('Torch not supported'); }
+    }
+
+    function stopCameraScan() {
+        const modal = document.getElementById('qrCameraModal');
+        modal.style.display = 'none';
+        isScannerRunning = false;
+
+        if (html5QrCode) {
+            const instance = html5QrCode;
+            html5QrCode = null;
+            instance.stop()
+            .then(() => instance.clear())
+            .catch(() => {
+                try { instance.clear(); } catch(e) {}
+            });
+        }
+    }
 </script>
 
 </body>

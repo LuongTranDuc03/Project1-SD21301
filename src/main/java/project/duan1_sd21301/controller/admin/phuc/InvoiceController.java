@@ -42,7 +42,6 @@ public class InvoiceController extends HttpServlet {
     private static final Map<Integer, String> ORDER_STATUS_LABELS_POS;
     static {
         ORDER_STATUS_LABELS_ONLINE = new LinkedHashMap<>();
-        ORDER_STATUS_LABELS_ONLINE.put(0, "Chờ xác nhận");
         ORDER_STATUS_LABELS_ONLINE.put(1, "Đã xác nhận");
         ORDER_STATUS_LABELS_ONLINE.put(2, "Đang giao");
         ORDER_STATUS_LABELS_ONLINE.put(3, "Hoàn thành");
@@ -269,6 +268,11 @@ public class InvoiceController extends HttpServlet {
 
         int oldStatus = invoice.getOrderStatus();
 
+        if (oldStatus == 3 && newStatus < 3) {
+            response.sendRedirect(request.getContextPath() + "/admin/invoices/detail?id=" + id + "&error=cannot_revert");
+            return;
+        }
+
         // Ghi lịch sử
         InvoiceHistory history = InvoiceHistory.builder()
                 .invoice(invoice)
@@ -280,7 +284,8 @@ public class InvoiceController extends HttpServlet {
                 .build();
 
         // Xác định xử lý kho:
-        // Hủy đơn/Hoàn tiền (→ 4, 5): hoàn kho; khôi phục từ hủy/hoàn tiền (4, 5 → khác): trừ kho
+        // Hủy đơn/Hoàn tiền (→ 4, 5): hoàn kho; khôi phục từ hủy/hoàn tiền (4, 5 →
+        // khác): trừ kho
         boolean isNewCancelOrRefund = (newStatus == 4 || newStatus == 5);
         boolean isOldCancelOrRefund = (oldStatus == 4 || oldStatus == 5);
 

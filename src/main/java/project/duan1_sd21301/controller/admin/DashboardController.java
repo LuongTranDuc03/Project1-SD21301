@@ -74,7 +74,7 @@ public class DashboardController extends HttpServlet {
         request.setAttribute("fromDate", fromDate != null ? fromDate : "");
         request.setAttribute("toDate", toDate != null ? toDate : "");
 
-        request.setAttribute("pageTitle", "Thống kê");
+        request.setAttribute("pageTitle", "Thống kê doanh thu");
         request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
     }
 }

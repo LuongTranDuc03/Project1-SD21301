@@ -180,7 +180,7 @@
                         <!-- Tìm kiếm -->
                         <div class="filter-field" style="min-width: 315px;">
                             <label for="searchInput">Tìm kiếm</label>
-                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Nhập mã / tên..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off" onchange="document.getElementById('searchForm').submit()">
+                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Nhập mã / tên..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off">
                         </div>
 
 
@@ -423,30 +423,38 @@
         if (el) el.textContent = days[d.getDay()] + ', ' + dd + '/' + mm + '/' + d.getFullYear();
     })();
 
-    // Xử lý tìm kiếm với delay (debounce) và nút xoá
+    // Xử lý tìm kiếm với delay (debounce)
     (function () {
-        var input    = document.getElementById('searchInput');
-        var form     = document.getElementById('searchForm');
-        var box      = document.getElementById('searchBox');
-        var clearBtn = document.getElementById('clearBtn');
-        var timer    = null;
+        var input = document.getElementById('searchInput');
+        var form = document.getElementById('searchForm');
+        var timer = null;
 
-        // Cập nhật trạng thái hiển thị của nút xoá tìm kiếm
-        function updateClearBtn() { box.classList.toggle('has-value', input.value.trim().length > 0); }
-        updateClearBtn();
+        if (input && form) {
+            // Tự động focus lại vào ô tìm kiếm nếu có giá trị, hoặc vừa tìm kiếm với chuỗi rỗng (xoá hết từ khoá)
+            var urlParams = new URLSearchParams(window.location.search);
+            if (input.value.length > 0 || urlParams.has('q')) {
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
 
-        input.addEventListener('input', function () {
-            updateClearBtn();
-            clearTimeout(timer);
-            timer = setTimeout(function () { form.submit(); }, 450);
-        });
-        clearBtn.addEventListener('click', function () {
-            input.value = ''; updateClearBtn(); clearTimeout(timer); form.submit();
-        });
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') { input.value = ''; updateClearBtn(); clearTimeout(timer); form.submit(); }
-            if (e.key === 'Enter')  { clearTimeout(timer); form.submit(); }
-        });
+            input.addEventListener('input', function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () { form.submit(); }, 450);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    input.value = '';
+                    clearTimeout(timer);
+                    form.submit();
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(timer);
+                    form.submit();
+                }
+            });
+        }
     })();
 
     // Xử lý tự động ẩn thông báo thành công sau 3 giây
@@ -509,6 +517,8 @@
             }
         });
     }
+
+
 </script>
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
