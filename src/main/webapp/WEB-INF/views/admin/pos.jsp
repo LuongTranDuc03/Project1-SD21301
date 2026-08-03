@@ -106,13 +106,13 @@
                         <div class="customer-info-basic" style="display: flex; flex-direction: column; gap: 12px;">
                             <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Người mua hàng</h4>
                             
-                            <div class="form-group">
+                            <div class="form-group" id="customerNameGroup">
                                 <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="updateCheckoutState()">
+                                <input type="text" class="form-control" id="customerNameInput" value="Khách lẻ" placeholder="Khách lẻ" disabled style="background-color: #e2e8f0; color: #64748b; cursor: not-allowed;" oninput="updateCheckoutState()">
                                 <div id="customerNameError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;">Tên khách hàng chỉ được chứa chữ cái và khoảng trắng</div>
                             </div>
                             
-                            <div class="form-group">
+                            <div class="form-group" id="buyerPhoneGroup" style="display: none;">
                                 <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); document.getElementById('buyerPhoneError').style.display='none'; updateCheckoutState()">
                                 <div id="buyerPhoneError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;"></div>
@@ -120,10 +120,7 @@
                             
                             <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
                             
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label class="form-label">Ghi chú đơn hàng</label>
-                                <textarea class="form-control" id="orderNoteInput" rows="2" placeholder="Ghi chú (Tùy chọn)..." oninput="updateCheckoutState()" style="resize: none;"></textarea>
-                            </div>
+
                         </div>
                         
                         <!-- Cột phải: Địa chỉ giao hàng -->
@@ -1428,7 +1425,8 @@
         order.shippingFee = document.getElementById('shippingFeeInput').value;
         order.customerPay = document.getElementById('customerPayInput').value;
         order.discountCode = document.getElementById('discountCodeInput').value;
-        order.note = document.getElementById('orderNoteInput').value;
+        const noteEl = document.getElementById('orderNoteInput');
+        order.note = noteEl ? noteEl.value : '';
         
         updateTotals();
         saveOrdersToStorage();
@@ -1445,7 +1443,8 @@
             document.getElementById('shippingFeeInput').value = '';
             document.getElementById('customerPayInput').value = '';
             document.getElementById('discountCodeInput').value = '';
-            document.getElementById('orderNoteInput').value = '';
+            const noteElReset = document.getElementById('orderNoteInput');
+            if (noteElReset) noteElReset.value = '';
             document.getElementById('summaryTotalItems').textContent = '0 đ';
             document.getElementById('summaryTotalPayment').textContent = '0 đ';
             document.getElementById('summaryChange').textContent = '0 đ';
@@ -1453,29 +1452,52 @@
         }
         const order = orders[orderIndex];
         
-        const isFixedCustomer = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';
+        const isKhachLe = !order.customerName || order.customerName.trim() === '' || order.customerName === 'Khách lẻ';
+        const isFixedCustomer = !isKhachLe;
 
         const nameInput = document.getElementById('customerNameInput');
         if (nameInput) {
-            nameInput.value = order.customerName || 'Khách lẻ';
-            if (isFixedCustomer) {
-                nameInput.setAttribute('readonly', true);
-                nameInput.style.backgroundColor = '#f3f4f6'; // Thêm màu nền xám để biểu thị không sửa được
+            if (isKhachLe) {
+                nameInput.value = 'Khách lẻ';
+                nameInput.setAttribute('disabled', 'disabled');
+                nameInput.style.backgroundColor = '#e2e8f0';
+                nameInput.style.color = '#64748b';
+                nameInput.style.cursor = 'not-allowed';
             } else {
-                nameInput.removeAttribute('readonly');
-                nameInput.style.backgroundColor = '';
+                nameInput.value = order.customerName;
+                nameInput.setAttribute('readonly', 'readonly');
+                nameInput.removeAttribute('disabled');
+                nameInput.style.backgroundColor = '#f3f4f6';
+                nameInput.style.color = '';
+                nameInput.style.cursor = '';
             }
         }
         
+        const buyerPhoneGroup = document.getElementById('buyerPhoneGroup');
         const buyerPhoneInput = document.getElementById('buyerPhoneInput');
-        if (buyerPhoneInput) {
-            buyerPhoneInput.value = order.customerPhone || '';
-            if (isFixedCustomer) {
-                buyerPhoneInput.setAttribute('readonly', true);
-                buyerPhoneInput.style.backgroundColor = '#f3f4f6';
+        if (buyerPhoneGroup) {
+            if (isKhachLe) {
+                buyerPhoneGroup.style.display = 'none';
             } else {
-                buyerPhoneInput.removeAttribute('readonly');
-                buyerPhoneInput.style.backgroundColor = '';
+                buyerPhoneGroup.style.display = 'block';
+                if (buyerPhoneInput) {
+                    buyerPhoneInput.value = order.customerPhone || '';
+                    buyerPhoneInput.setAttribute('readonly', 'readonly');
+                    buyerPhoneInput.style.backgroundColor = '#f3f4f6';
+                }
+            }
+        }
+
+        const orderNoteGroup = document.getElementById('orderNoteGroup');
+        const orderNoteInput = document.getElementById('orderNoteInput');
+        if (orderNoteGroup) {
+            if (isKhachLe) {
+                orderNoteGroup.style.display = 'none';
+            } else {
+                orderNoteGroup.style.display = 'block';
+                if (orderNoteInput) {
+                    orderNoteInput.value = order.note || '';
+                }
             }
         }
         
@@ -1605,7 +1627,8 @@
         document.getElementById('shippingFeeInput').value = order.shippingFee || '';
         document.getElementById('customerPayInput').value = order.customerPay || '';
         document.getElementById('discountCodeInput').value = order.discountCode || '';
-        document.getElementById('orderNoteInput').value = order.note || '';
+        const noteInputRender = document.getElementById('orderNoteInput');
+        if (noteInputRender) noteInputRender.value = order.note || '';
 
     }
     
@@ -1975,20 +1998,24 @@
             order.customerName = 'Khách lẻ';
         }
         
-        const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-        const bError = document.getElementById('buyerPhoneError');
-        if (!order.customerPhone || order.customerPhone.trim() === '') {
-            bError.textContent = "Vui lòng nhập số điện thoại khách hàng!";
-            bError.style.display = 'block';
-            document.getElementById('buyerPhoneInput').focus();
-            return;
-        }
+        const isKhachLe = !order.customerName || order.customerName.trim() === '' || order.customerName === 'Khách lẻ';
         
-        if (!phoneRegex.test(order.customerPhone.trim())) {
-            bError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
-            bError.style.display = 'block';
-            document.getElementById('buyerPhoneInput').focus();
-            return;
+        if (!isKhachLe) {
+            const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+            const bError = document.getElementById('buyerPhoneError');
+            if (!order.customerPhone || order.customerPhone.trim() === '') {
+                bError.textContent = "Vui lòng nhập số điện thoại khách hàng!";
+                bError.style.display = 'block';
+                document.getElementById('buyerPhoneInput').focus();
+                return;
+            }
+            
+            if (!phoneRegex.test(order.customerPhone.trim())) {
+                bError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
+                bError.style.display = 'block';
+                document.getElementById('buyerPhoneInput').focus();
+                return;
+            }
         }
         
         if (order.isDelivery) {
