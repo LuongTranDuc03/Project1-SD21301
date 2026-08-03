@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/pos.css?v=1.0">
     <!-- Nhúng FontAwesome để dùng icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="${pageContext.request.contextPath}/assets/js/address-dropdown.js?v=1.4" charset="UTF-8"></script>
 </head>
 <body style="background-color: #f8fafc; margin: 0; font-family: 'Inter', sans-serif;">
 
@@ -102,29 +103,24 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 10px;">
+                    <div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; padding-top: 10px;">
                         <!-- Cột trái: Thông tin khách hàng (người mua) -->
                         <div class="customer-info-basic" style="display: flex; flex-direction: column; gap: 12px;">
                             <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Người mua hàng</h4>
                             
-                            <div class="form-group">
+                            <div class="form-group" id="customerNameGroup">
                                 <label class="form-label">Tên khách hàng <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="customerNameInput" placeholder="Khách lẻ" oninput="updateCheckoutState()">
+                                <input type="text" class="form-control" id="customerNameInput" value="Khách lẻ" placeholder="Khách lẻ" disabled style="background-color: #e2e8f0; color: #64748b; cursor: not-allowed;" oninput="updateCheckoutState()">
                                 <div id="customerNameError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;">Tên khách hàng chỉ được chứa chữ cái và khoảng trắng</div>
                             </div>
                             
-                            <div class="form-group">
+                            <div class="form-group" id="buyerPhoneGroup" style="display: none;">
                                 <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="buyerPhoneInput" placeholder="SĐT người mua..." oninput="this.value = this.value.replace(/[^0-9]/g, ''); document.getElementById('buyerPhoneError').style.display='none'; updateCheckoutState()">
                                 <div id="buyerPhoneError" class="text-danger" style="display: none; font-size: 12px; margin-top: 5px;"></div>
                             </div>
                             
                             <p class="text-muted" id="deliveryHintText" style="margin-top: 10px; margin-bottom: 0; font-size: 13px;">Tại quầy: khách tự mang về, không cần lưu địa chỉ.</p>
-                            
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label class="form-label">Ghi chú đơn hàng</label>
-                                <textarea class="form-control" id="orderNoteInput" rows="2" placeholder="Ghi chú (Tùy chọn)..." oninput="updateCheckoutState()" style="resize: none;"></textarea>
-                            </div>
                         </div>
                         
                         <!-- Cột phải: Địa chỉ giao hàng -->
@@ -158,13 +154,13 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Quận/Huyện <span class="text-danger">*</span></label>
-                                        <select class="form-control" id="districtSelect" onchange="fetchWards(this.value); updateCheckoutState()">
+                                        <select class="form-control" id="districtSelect" disabled onchange="fetchWards(this.value); updateCheckoutState()">
                                             <option value="">Chọn Quận/Huyện...</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label>Xã/Phường <span class="text-danger">*</span></label>
-                                        <select class="form-control" id="wardSelect" onchange="updateCheckoutState()">
+                                        <select class="form-control" id="wardSelect" disabled onchange="updateCheckoutState()">
                                             <option value="">Chọn Xã/Phường...</option>
                                         </select>
                                     </div>
@@ -1064,10 +1060,23 @@
     function fetchDistricts(provinceCode) {
         const select = document.getElementById('districtSelect');
         const wardSelect = document.getElementById('wardSelect');
+        if (!select || !wardSelect) return;
+
         select.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
         wardSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
         
-        if (!provinceCode) return;
+        if (!provinceCode) {
+            select.disabled = true;
+            wardSelect.disabled = true;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+        }
+        
+        select.disabled = false;
+        wardSelect.disabled = true;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
         
         fetch(`https://provinces.open-api.vn/api/p/\${provinceCode}?depth=2`)
             .then(res => res.json())
@@ -1080,15 +1089,25 @@
                         select.appendChild(opt);
                     });
                 }
+                select.dispatchEvent(new Event('change', { bubbles: true }));
             })
             .catch(err => console.error("Error fetching districts:", err));
     }
     
     function fetchWards(districtCode) {
         const select = document.getElementById('wardSelect');
+        if (!select) return;
+
         select.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
         
-        if (!districtCode) return;
+        if (!districtCode) {
+            select.disabled = true;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+        }
+        
+        select.disabled = false;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
         
         fetch(`https://provinces.open-api.vn/api/d/\${districtCode}?depth=2`)
             .then(res => res.json())
@@ -1101,6 +1120,7 @@
                         select.appendChild(opt);
                     });
                 }
+                select.dispatchEvent(new Event('change', { bubbles: true }));
             })
             .catch(err => console.error("Error fetching wards:", err));
     }
@@ -1430,7 +1450,8 @@
         order.shippingFee = document.getElementById('shippingFeeInput').value;
         order.customerPay = document.getElementById('customerPayInput').value;
         order.discountCode = document.getElementById('discountCodeInput').value;
-        order.note = document.getElementById('orderNoteInput').value;
+        const noteEl = document.getElementById('orderNoteInput');
+        order.note = noteEl ? noteEl.value : '';
         
         updateTotals();
         saveOrdersToStorage();
@@ -1447,7 +1468,8 @@
             document.getElementById('shippingFeeInput').value = '';
             document.getElementById('customerPayInput').value = '';
             document.getElementById('discountCodeInput').value = '';
-            document.getElementById('orderNoteInput').value = '';
+            const noteElReset = document.getElementById('orderNoteInput');
+            if (noteElReset) noteElReset.value = '';
             document.getElementById('summaryTotalItems').textContent = '0 đ';
             document.getElementById('summaryTotalPayment').textContent = '0 đ';
             document.getElementById('summaryChange').textContent = '0 đ';
@@ -1455,29 +1477,40 @@
         }
         const order = orders[orderIndex];
         
-        const isFixedCustomer = order.customerName && order.customerName.trim() !== '' && order.customerName !== 'Khách lẻ';
+        const isKhachLe = !order.customerName || order.customerName.trim() === '' || order.customerName === 'Khách lẻ';
+        const isFixedCustomer = !isKhachLe;
 
         const nameInput = document.getElementById('customerNameInput');
         if (nameInput) {
-            nameInput.value = order.customerName || 'Khách lẻ';
-            if (isFixedCustomer) {
-                nameInput.setAttribute('readonly', true);
-                nameInput.style.backgroundColor = '#f3f4f6'; // Thêm màu nền xám để biểu thị không sửa được
+            if (isKhachLe) {
+                nameInput.value = 'Khách lẻ';
+                nameInput.setAttribute('disabled', 'disabled');
+                nameInput.style.backgroundColor = '#e2e8f0';
+                nameInput.style.color = '#64748b';
+                nameInput.style.cursor = 'not-allowed';
             } else {
-                nameInput.removeAttribute('readonly');
-                nameInput.style.backgroundColor = '';
+                nameInput.value = order.customerName;
+                nameInput.setAttribute('readonly', 'readonly');
+                nameInput.removeAttribute('disabled');
+                nameInput.style.backgroundColor = '#f3f4f6';
+                nameInput.style.color = '#1e293b';
+                nameInput.style.cursor = 'default';
             }
         }
         
+        const buyerPhoneGroup = document.getElementById('buyerPhoneGroup');
         const buyerPhoneInput = document.getElementById('buyerPhoneInput');
-        if (buyerPhoneInput) {
-            buyerPhoneInput.value = order.customerPhone || '';
-            if (isFixedCustomer) {
-                buyerPhoneInput.setAttribute('readonly', true);
-                buyerPhoneInput.style.backgroundColor = '#f3f4f6';
+        if (buyerPhoneGroup) {
+            if (isKhachLe) {
+                buyerPhoneGroup.style.display = 'none';
+                if (buyerPhoneInput) buyerPhoneInput.value = '';
             } else {
-                buyerPhoneInput.removeAttribute('readonly');
-                buyerPhoneInput.style.backgroundColor = '';
+                buyerPhoneGroup.style.display = 'block';
+                if (buyerPhoneInput) {
+                    buyerPhoneInput.value = order.customerPhone || '';
+                    buyerPhoneInput.setAttribute('readonly', 'readonly');
+                    buyerPhoneInput.style.backgroundColor = '#f3f4f6';
+                }
             }
         }
         
@@ -1565,29 +1598,34 @@
             apiBlock.style.display = 'flex';
             fixedBlock.style.display = 'none';
             
-            document.getElementById('provinceSelect').value = order.provinceCode || '';
+            const pSelect = document.getElementById('provinceSelect');
+            const dSelect = document.getElementById('districtSelect');
+            const wSelect = document.getElementById('wardSelect');
+
+            pSelect.value = order.provinceCode || '';
             
             if (order.provinceCode) {
+                dSelect.disabled = false;
                 fetch(`https://provinces.open-api.vn/api/p/\${order.provinceCode}?depth=2`)
                     .then(res => res.json())
                     .then(data => {
-                        const select = document.getElementById('districtSelect');
-                        select.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
+                        dSelect.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
                         if (data && data.districts) {
                             data.districts.forEach(d => {
                                 const opt = document.createElement('option');
                                 opt.value = d.code;
                                 opt.text = d.name;
-                                select.appendChild(opt);
+                                dSelect.appendChild(opt);
                             });
                         }
-                        select.value = order.districtCode || '';
+                        dSelect.value = order.districtCode || '';
+                        dSelect.dispatchEvent(new Event('change', { bubbles: true }));
                         
                         if (order.districtCode) {
+                            wSelect.disabled = false;
                             fetch(`https://provinces.open-api.vn/api/d/\${order.districtCode}?depth=2`)
                                 .then(res => res.json())
                                 .then(data2 => {
-                                    const wSelect = document.getElementById('wardSelect');
                                     wSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
                                     if (data2 && data2.wards) {
                                         data2.wards.forEach(w => {
@@ -1598,23 +1636,32 @@
                                         });
                                     }
                                     wSelect.value = order.wardCode || '';
+                                    wSelect.dispatchEvent(new Event('change', { bubbles: true }));
                                 })
                                 .catch(err => console.error(err));
                         } else {
-                            document.getElementById('wardSelect').innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+                            wSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+                            wSelect.disabled = true;
+                            wSelect.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     })
                     .catch(err => console.error(err));
             } else {
-                document.getElementById('districtSelect').innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
-                document.getElementById('wardSelect').innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+                dSelect.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
+                dSelect.disabled = true;
+                dSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+                wSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+                wSelect.disabled = true;
+                wSelect.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
         
         document.getElementById('shippingFeeInput').value = order.shippingFee || '';
         document.getElementById('customerPayInput').value = order.customerPay || '';
         document.getElementById('discountCodeInput').value = order.discountCode || '';
-        document.getElementById('orderNoteInput').value = order.note || '';
+        const noteElSet = document.getElementById('orderNoteInput');
+        if (noteElSet) noteElSet.value = order.note || '';
 
     }
     
