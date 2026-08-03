@@ -950,6 +950,7 @@
                                                                                                                                             <%= v.getThickness()
                                                                                                                                                 %>
                                                                                                                                                 "
+                                                                                                                                                data-image="<%= fullImgSrc %>"
                                                                                                                                                 style="text-decoration:
                                                                                                                                                 none;
                                                                                                                                                 display:
@@ -1037,7 +1038,7 @@
                         <div id="editVariantModal"
                             style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
                             <div
-                                style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh;">
+                                style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh;">
                                 <div
                                     style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border-radius: 12px 12px 0 0;">
                                     <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Chỉnh sửa
@@ -1057,112 +1058,102 @@
                                         enctype="multipart/form-data">
                                         <input type="hidden" name="action" value="edit">
                                         <input type="hidden" id="edit-variantId" name="variantId">
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã
-                                                    Sản Phẩm</label>
-                                                <input type="text" id="edit-productCode" name="productCode"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
+                                        <div style="display: flex; gap: 24px;">
+                                            <!-- Left Pane: Image -->
+                                            <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                                                <label style="font-size: 13px; margin-bottom: 16px; display: block; color: #475569; font-weight: 600;">Hình Ảnh Biến Thể</label>
+                                                <div style="width: 100%; height: 280px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; background-color: #f8fafc; position: relative;">
+                                                    <img id="edit-variantImagePreview" src="" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+                                                    <span id="edit-variantImagePlaceholder" style="color: #94a3b8; font-size: 13px;">Không có ảnh</span>
+                                                </div>
+                                                <div style="width: 100%; display: flex; flex-direction: row; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; background: #fff;">
+                                                    <input type="file" id="edit-variantImage" name="variantImage" accept="image/*" style="display: none;" onchange="previewEditVariantImage(event)">
+                                                    <button type="button" onclick="document.getElementById('edit-variantImage').click()" style="padding: 8px 12px; border: none; border-right: 1px solid #cbd5e1; background: #f8fafc; color: #475569; font-weight: 600; font-size: 12px; cursor: pointer; flex-shrink: 0; transition: background 0.2s;">Chọn tệp</button>
+                                                    <span id="edit-variantImageFileName" style="padding: 8px 12px; font-size: 12px; color: #64748b; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center;">Không có tệp nào được chọn</span>
+                                                </div>
+                                                <p style="font-size: 11px; color: #94a3b8; margin-top: 12px; text-align: center; width: 100%;">Tải lên ảnh mới sẽ thay thế ảnh cũ (nếu có).</p>
                                             </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã
-                                                    Biến Thể</label>
-                                                <input type="text" id="edit-variantCode" name="variantCode"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu
-                                                    Dáng</label>
-                                                <input type="text" id="edit-style" name="style"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Màu
-                                                    sắc</label>
-                                                <input type="text" id="edit-color" name="color"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích
-                                                    cỡ</label>
-                                                <input type="text" id="edit-size" name="size"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá
-                                                    Nhập (đ) <span style="color: red;">*</span></label>
-                                                <input type="text" id="edit-importPrice" name="importPrice"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    required
-                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá
-                                                    bán (đ) <span style="color: red;">*</span></label>
-                                                <input type="text" id="edit-price" name="price"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    required
-                                                    oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
-                                            </div>
-
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Số
-                                                    Lượng <span style="color: red;">*</span></label>
-                                                <input type="number" id="edit-stock" name="stock"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    min="0" step="1" required>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều
-                                                    Dài (cm)</label>
-                                                <input type="number" id="edit-length" name="length"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    min="0" step="0.1">
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều
-                                                    Rộng (cm)</label>
-                                                <input type="number" id="edit-width" name="width"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    min="0" step="0.1">
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ
-                                                    Dày (cm)</label>
-                                                <input type="number" id="edit-thickness" name="thickness"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    min="0" step="0.01">
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng
-                                                    Lượng (g)</label>
-                                                <input type="number" id="edit-weight" name="weight"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"
-                                                    min="0" step="0.01">
-                                            </div>
-                                            <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Hình
-                                                    Ảnh Biến Thể (Upload Cloudinary)</label>
-                                                <input type="file" id="edit-variantImage" name="variantImage"
-                                                    accept="image/*"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
+                                            
+                                            <!-- Right Pane: Form Fields -->
+                                            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: flex-start;">
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
+                                                    <input type="text" id="edit-productCode" name="productCode"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Biến Thể</label>
+                                                    <input type="text" id="edit-variantCode" name="variantCode"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
+                                                    <input type="text" id="edit-style" name="style"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Màu sắc</label>
+                                                    <input type="text" id="edit-color" name="color"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích cỡ</label>
+                                                    <input type="text" id="edit-size" name="size"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá Nhập (đ) <span style="color: red;">*</span></label>
+                                                    <input type="text" id="edit-importPrice" name="importPrice"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required
+                                                        oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá bán (đ) <span style="color: red;">*</span></label>
+                                                    <input type="text" id="edit-price" name="price"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" required
+                                                        oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',')">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Số Lượng <span style="color: red;">*</span></label>
+                                                    <input type="number" id="edit-stock" name="stock"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="1" required>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Dài (cm)</label>
+                                                    <input type="number" id="edit-length" name="length"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.1">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Rộng (cm)</label>
+                                                    <input type="number" id="edit-width" name="width"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.1">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ Dày (cm)</label>
+                                                    <input type="number" id="edit-thickness" name="thickness"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.01">
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng Lượng (g)</label>
+                                                    <input type="number" id="edit-weight" name="weight"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.01">
+                                                </div>
                                             </div>
                                         </div>
                                         <div
@@ -1183,7 +1174,7 @@
                         <div id="viewVariantModal"
                             style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
                             <div id="viewVariantModalContent"
-                                style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh; position: relative;">
+                                style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh; position: relative;">
                                 <!-- Right pane (Absolute positioned to slide out) -->
                                 <div id="view-barcodePane"
                                     style="position: absolute; top: 0; right: 0; width: 320px; height: 100%; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; align-items: center; background-color: #f8fafc; overflow-y: auto; z-index: 1; transform: translateX(0); opacity: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; pointer-events: none; box-shadow: 10px 0 25px rgba(0,0,0,0.05);">
@@ -1226,114 +1217,101 @@
                                 <div
                                     style="display: flex; flex-direction: row; flex: 1; position: relative; z-index: 2; background: #fff; border-radius: 0 0 12px 12px;">
                                     <div style="flex: 1; padding: 24px; overflow-y: auto; width: 100%;">
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã
-                                                    Sản Phẩm</label>
-                                                <input type="text" id="view-productCode"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
+                                        <div style="display: flex; gap: 24px;">
+                                            <!-- Left Pane: Image -->
+                                            <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                                                <label style="font-size: 13px; margin-bottom: 16px; display: block; color: #475569; font-weight: 600;">Hình Ảnh Biến Thể</label>
+                                                <div style="width: 100%; height: 280px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; background-color: #f8fafc; position: relative;">
+                                                    <img id="view-variantImage" src="" alt="Hình ảnh biến thể" style="max-width: 100%; max-height: 100%; border-radius: 8px; display: none; object-fit: contain;">
+                                                    <span id="view-variantImagePlaceholder" style="color: #94a3b8; font-size: 13px;">Không có ảnh</span>
+                                                </div>
                                             </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã
-                                                    Biến Thể</label>
-                                                <input type="text" id="view-variantCode"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu
-                                                    Dáng</label>
-                                                <input type="text" id="view-style"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Màu
-                                                    sắc</label>
-                                                <input type="text" id="view-color"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích
-                                                    cỡ</label>
-                                                <input type="text" id="view-size"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá
-                                                    Nhập (đ)</label>
-                                                <input type="text" id="view-importPrice"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá
-                                                    bán (đ)</label>
-                                                <input type="text" id="view-price"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Số
-                                                    Lượng</label>
-                                                <input type="text" id="view-stock"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều
-                                                    Dài (cm)</label>
-                                                <input type="text" id="view-length"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều
-                                                    Rộng (cm)</label>
-                                                <input type="text" id="view-width"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ
-                                                    Dày (cm)</label>
-                                                <input type="text" id="view-thickness"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng
-                                                    Lượng (g)</label>
-                                                <input type="text" id="view-weight"
-                                                    style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                    readonly>
-                                            </div>
-                                            <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
-                                                <label class="form-label"
-                                                    style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Hình
-                                                    Ảnh Biến Thể</label>
-                                                <div id="view-variantImageContainer"
-                                                    style="padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; text-align: center; height: 160px; display: flex; justify-content: center; align-items: center;">
-                                                    <img id="view-variantImage" src="" alt="Hình ảnh biến thể"
-                                                        style="max-width: 120px; max-height: 120px; border-radius: 8px; display: none; object-fit: contain;">
-                                                    <div id="view-variantImagePlaceholder"
-                                                        style="color: #94a3b8; font-size: 13px; padding: 20px 0;">Không
-                                                        có hình ảnh</div>
+                                            
+                                            <!-- Right Pane: Form Fields -->
+                                            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: flex-start;">
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
+                                                    <input type="text" id="view-productCode"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Biến Thể</label>
+                                                    <input type="text" id="view-variantCode"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
+                                                    <input type="text" id="view-style"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Màu sắc</label>
+                                                    <input type="text" id="view-color"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích cỡ</label>
+                                                    <input type="text" id="view-size"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá Nhập (đ)</label>
+                                                    <input type="text" id="view-importPrice"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá bán (đ)</label>
+                                                    <input type="text" id="view-price"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Số Lượng</label>
+                                                    <input type="text" id="view-stock"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Dài (cm)</label>
+                                                    <input type="text" id="view-length"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Rộng (cm)</label>
+                                                    <input type="text" id="view-width"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ Dày (cm)</label>
+                                                    <input type="text" id="view-thickness"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
+                                                </div>
+                                                <div class="form-group" style="margin-bottom: 0;">
+                                                    <label class="form-label"
+                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng Lượng (g)</label>
+                                                    <input type="text" id="view-weight"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
+                                                        readonly>
                                                 </div>
                                             </div>
                                         </div>
@@ -1477,17 +1455,42 @@
                                 document.getElementById('edit-style').value = btn.getAttribute('data-style');
 
                                 var rawImportPrice = btn.getAttribute('data-importprice');
+                                if (rawImportPrice) rawImportPrice = rawImportPrice.trim();
                                 document.getElementById('edit-importPrice').value = rawImportPrice ? rawImportPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
 
                                 var rawPrice = btn.getAttribute('data-price');
+                                if (rawPrice) rawPrice = rawPrice.trim();
                                 document.getElementById('edit-price').value = rawPrice ? rawPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
 
+                                var stock = btn.getAttribute('data-stock');
+                                document.getElementById('edit-stock').value = stock ? stock.trim() : '';
+                                
+                                var weight = btn.getAttribute('data-weight');
+                                document.getElementById('edit-weight').value = weight ? weight.trim() : '';
+                                
+                                var length = btn.getAttribute('data-length');
+                                document.getElementById('edit-length').value = length ? length.trim() : '';
+                                
+                                var width = btn.getAttribute('data-width');
+                                document.getElementById('edit-width').value = width ? width.trim() : '';
+                                
+                                var thickness = btn.getAttribute('data-thickness');
+                                document.getElementById('edit-thickness').value = thickness ? thickness.trim() : '';
 
-                                document.getElementById('edit-stock').value = btn.getAttribute('data-stock');
-                                document.getElementById('edit-weight').value = btn.getAttribute('data-weight');
-                                document.getElementById('edit-length').value = btn.getAttribute('data-length');
-                                document.getElementById('edit-width').value = btn.getAttribute('data-width');
-                                document.getElementById('edit-thickness').value = btn.getAttribute('data-thickness');
+                                var imgUrl = btn.getAttribute('data-image');
+                                var imgEl = document.getElementById('edit-variantImagePreview');
+                                var placeholderEl = document.getElementById('edit-variantImagePlaceholder');
+                                if (imgUrl && imgUrl.trim() !== '' && imgUrl !== 'null') {
+                                    imgEl.src = imgUrl;
+                                    imgEl.style.display = 'inline-block';
+                                    placeholderEl.style.display = 'none';
+                                } else {
+                                    imgEl.src = '';
+                                    imgEl.style.display = 'none';
+                                    placeholderEl.style.display = 'inline-block';
+                                }
+                                document.getElementById('edit-variantImageFileName').textContent = 'Không có tệp nào được chọn';
+                                document.getElementById('edit-variantImage').value = '';
 
                                 var modal = document.getElementById('editVariantModal');
                                 modal.style.display = 'flex';
@@ -1501,16 +1504,27 @@
                                 document.getElementById('view-style').value = btn.getAttribute('data-style') || '';
 
                                 var rawImportPrice = btn.getAttribute('data-importprice');
+                                if (rawImportPrice) rawImportPrice = rawImportPrice.trim();
                                 document.getElementById('view-importPrice').value = rawImportPrice ? rawImportPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
 
                                 var rawPrice = btn.getAttribute('data-price');
+                                if (rawPrice) rawPrice = rawPrice.trim();
                                 document.getElementById('view-price').value = rawPrice ? rawPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
 
-                                document.getElementById('view-stock').value = btn.getAttribute('data-stock') || '';
-                                document.getElementById('view-weight').value = btn.getAttribute('data-weight') || '';
-                                document.getElementById('view-length').value = btn.getAttribute('data-length') || '';
-                                document.getElementById('view-width').value = btn.getAttribute('data-width') || '';
-                                document.getElementById('view-thickness').value = btn.getAttribute('data-thickness') || '';
+                                var stock = btn.getAttribute('data-stock');
+                                document.getElementById('view-stock').value = stock ? stock.trim() : '';
+                                
+                                var weight = btn.getAttribute('data-weight');
+                                document.getElementById('view-weight').value = weight ? weight.trim() : '';
+                                
+                                var length = btn.getAttribute('data-length');
+                                document.getElementById('view-length').value = length ? length.trim() : '';
+                                
+                                var width = btn.getAttribute('data-width');
+                                document.getElementById('view-width').value = width ? width.trim() : '';
+                                
+                                var thickness = btn.getAttribute('data-thickness');
+                                document.getElementById('view-thickness').value = thickness ? thickness.trim() : '';
 
                                 var imgUrl = btn.getAttribute('data-image');
                                 var imgEl = document.getElementById('view-variantImage');
