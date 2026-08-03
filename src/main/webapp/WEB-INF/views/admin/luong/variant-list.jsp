@@ -404,8 +404,9 @@
                                 <% 
                                     String imgUrl = (v.getImages() != null && !v.getImages().isEmpty()) ? v.getImages().get(0) : null;
                                     boolean hasValidImg = imgUrl != null && !imgUrl.trim().isEmpty() && !"null".equalsIgnoreCase(imgUrl.trim());
+                                    String fullImgSrc = "";
                                     if (hasValidImg) {
-                                        String fullImgSrc = (imgUrl.startsWith("http://") || imgUrl.startsWith("https://")) 
+                                        fullImgSrc = (imgUrl.startsWith("http://") || imgUrl.startsWith("https://")) 
                                             ? imgUrl 
                                             : request.getContextPath() + "/assets/img/" + imgUrl;
                                  %>
@@ -446,6 +447,7 @@
                                    data-color="<%= v.getColor() != null ? v.getColor() : "" %>"
                                    data-size="<%= v.getSize() != null ? v.getSize() : "" %>"
                                    data-style="<%= v.getStyle() != null ? v.getStyle() : "" %>"
+                                   data-image="<%= hasValidImg ? fullImgSrc : "" %>"
                                    data-importprice="<%= String.format("%.0f", v.getImportPrice()) %>"
                                    data-price="<%= String.format("%.0f", v.getPrice()) %>"
 
@@ -500,7 +502,23 @@
             <form id="editVariantForm" action="${pageContext.request.contextPath}/admin/variants" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" id="edit-variantId" name="variantId">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div style="display: flex; gap: 24px; align-items: flex-start;">
+                    <!-- LEFT COLUMN: Image Preview -->
+                    <div style="width: 250px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0;">
+                        <label class="form-label" style="font-size: 14px; margin-bottom: 0; display: block; color: #475569; font-weight: 600; text-align: center;">Hình Ảnh Biến Thể</label>
+                        <div id="edit-imagePreviewContainer" style="width: 250px; height: 280px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: #f8fafc; position: relative;">
+                            <img id="edit-imagePreview" src="" style="width: 100%; height: 100%; object-fit: contain; display: none;">
+                            <div id="edit-imagePlaceholder" style="color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                <span style="font-size: 13px;">Chưa có ảnh</span>
+                            </div>
+                        </div>
+                        <input type="file" id="edit-variantImage" name="variantImage" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; background: #fff;" onchange="previewEditImage(this)">
+                        <span style="font-size: 11px; color: #64748b; text-align: center;">Tải lên ảnh mới sẽ thay thế ảnh cũ (nếu có).</span>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Form Inputs -->
+                    <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
                         <input type="text" id="edit-productCode" name="productCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
@@ -550,9 +568,6 @@
                         <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng Lượng (g)</label>
                         <input type="number" id="edit-weight" name="weight" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;" min="0" step="0.01">
                     </div>
-                    <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
-                        <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Hình Ảnh Biến Thể (Upload Cloudinary)</label>
-                        <input type="file" id="edit-variantImage" name="variantImage" accept="image/*" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
                     </div>
                 </div>
                 <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
@@ -637,8 +652,22 @@
         document.getElementById('edit-productCode').value = btn.getAttribute('data-productcode') || '';
         document.getElementById('edit-variantCode').value = btn.getAttribute('data-variantcode') || '';
         document.getElementById('edit-color').value = btn.getAttribute('data-color') || '';
-        document.getElementById('edit-size').value = btn.getAttribute('data-size');
-        document.getElementById('edit-style').value = btn.getAttribute('data-style');
+        document.getElementById('edit-size').value = btn.getAttribute('data-size') || '';
+        document.getElementById('edit-style').value = btn.getAttribute('data-style') || '';
+        
+        var imgUrl = btn.getAttribute('data-image');
+        var previewImg = document.getElementById('edit-imagePreview');
+        var placeholder = document.getElementById('edit-imagePlaceholder');
+        document.getElementById('edit-variantImage').value = ''; // Reset file input
+        if (imgUrl && imgUrl.trim() !== '') {
+            previewImg.src = imgUrl;
+            previewImg.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+            placeholder.style.display = 'flex';
+        }
         
         var rawImportPrice = btn.getAttribute('data-importprice');
         document.getElementById('edit-importPrice').value = rawImportPrice ? rawImportPrice.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
@@ -659,6 +688,23 @@
     
     function closeEditVariantModal() {
         document.getElementById('editVariantModal').style.display = 'none';
+    }
+
+    function previewEditImage(input) {
+        var previewImg = document.getElementById('edit-imagePreview');
+        var placeholder = document.getElementById('edit-imagePlaceholder');
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            // Revert back to original image if needed, or hide if none
+            // Here we just keep the currently displayed image if cancel is pressed
+        }
     }
 
     function validateEditVariantForm() {

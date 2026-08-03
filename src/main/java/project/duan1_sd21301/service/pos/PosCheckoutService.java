@@ -24,10 +24,19 @@ public class PosCheckoutService {
                 customerId = getCustomerId(conn, orderDTO.getCustomerCode());
             }
 
-            // 3. Lookup Coupon ID & Update Usage
+            // 3. Recalculate totals first so we can validate coupon conditions
+            int totalQuantity = 0;
+            double sumTotal = 0;
+            for (PosOrderItemDTO item : orderDTO.getItems()) {
+                totalQuantity += item.getQuantity();
+                sumTotal += (item.getPrice() * item.getQuantity());
+            }
+
+            // 4. Lookup Coupon ID & Validate Usage/Expiration/Changes
             Integer couponId = null;
+            double discountAmt = 0;
             if (orderDTO.getDiscountCode() != null && !orderDTO.getDiscountCode().trim().isEmpty()) {
-                String couponSql = "SELECT id, so_luong, da_su_dung, han_su_dung_moi_khach FROM phieu_giam_gia WHERE phieu_giam_gia_code = ?";
+                String couponSql = "SELECT id, so_luong, da_su_dung, han_su_dung_moi_khach, trang_thai, ngay_ket_thuc, gia_tri_don_hang_toi_thieu, loai_giam, gia_tri_giam, giam_toi_da FROM phieu_giam_gia WHERE phieu_giam_gia_code = ?";
                 try (PreparedStatement ps = conn.prepareStatement(couponSql)) {
                     ps.setString(1, orderDTO.getDiscountCode());
                     try (ResultSet rs = ps.executeQuery()) {
@@ -36,6 +45,23 @@ public class PosCheckoutService {
                             int soLuong = rs.getInt("so_luong");
                             int daSuDung = rs.getInt("da_su_dung");
                             int hanSuDungMoiKhach = rs.getInt("han_su_dung_moi_khach");
+                            int trangThai = rs.getInt("trang_thai");
+                            Timestamp ngayKetThuc = rs.getTimestamp("ngay_ket_thuc");
+                            double donToiThieu = rs.getDouble("gia_tri_don_hang_toi_thieu");
+                            int loaiGiam = rs.getInt("loai_giam");
+                            double giaTriGiam = rs.getDouble("gia_tri_giam");
+                            double giamToiDa = rs.getDouble("giam_toi_da");
+                            
+                            // Check status and expiration
+                            if (trangThai != 1) {
+                                throw new RuntimeException("COUPON_CHANGED:Phiếu giảm giá đã thay đổi trạng thái không kích hoạt.");
+                            }
+                            if (ngayKetThuc != null && ngayKetThuc.before(new java.util.Date())) {
+                                throw new RuntimeException("COUPON_CHANGED:Phiếu giảm giá đã hết hạn.");
+                            }
+                            if (sumTotal < donToiThieu) {
+                                throw new RuntimeException("COUPON_CHANGED:Phiếu giảm giá đã thay đổi điều kiện đơn tối thiểu.");
+                            }
                             
                             // Check total quantity
                             if (rs.getObject("so_luong") != null && daSuDung >= soLuong) {
@@ -59,6 +85,29 @@ public class PosCheckoutService {
                                 }
                             }
                             
+                            // Recalculate discount value
+                            double expectedDiscount = 0;
+                            if (loaiGiam == 1) { // Fixed Amount
+                                expectedDiscount = giaTriGiam;
+                            } else if (loaiGiam == 0) { // Percentage
+                                expectedDiscount = sumTotal * (giaTriGiam / 100.0);
+                                if (giamToiDa > 0 && expectedDiscount > giamToiDa) {
+                                    expectedDiscount = giamToiDa;
+                                }
+                            }
+                            if (expectedDiscount > sumTotal) {
+                                expectedDiscount = sumTotal;
+                            }
+                            
+                            double frontendDiscount = 0;
+                            try { frontendDiscount = Double.parseDouble(orderDTO.getDiscountValue()); } catch(Exception ignored) {}
+                            
+                            // If calculated discount differs from what frontend sent, it means the coupon config was changed by admin
+                            if (Math.abs(expectedDiscount - frontendDiscount) > 1.0) {
+                                throw new RuntimeException("COUPON_CHANGED:Phiếu giảm giá đã bị thay đổi giá trị hoặc thông tin.");
+                            }
+                            
+                            discountAmt = expectedDiscount;
                             updateCouponUsage(conn, couponId);
                         } else {
                             throw new RuntimeException("Mã giảm giá không tồn tại!");
@@ -67,24 +116,14 @@ public class PosCheckoutService {
                 }
             }
 
-            // 4. Lookup Payment Method ID
+            // 5. Lookup Payment Method ID
             String paymentMethod = orderDTO.getPaymentMethod() != null ? orderDTO.getPaymentMethod() : "CASH";
             int paymentMethodId = paymentMethod.equals("TRANSFER") ? 2 : 1; 
             String paymentMethodName = paymentMethod.equals("TRANSFER") ? "Chuyển khoản" : "Tiền mặt";
 
-            // 5. Determine Order Status
+            // 6. Determine Order Status
             int orderStatus = orderDTO.isDelivery() ? 1 : 3; // 1: Đã xác nhận (Giao hàng), 3: Hoàn thành (Tại quầy)
             
-            // Recalculate totals for safety
-            int totalQuantity = 0;
-            double sumTotal = 0;
-            for (PosOrderItemDTO item : orderDTO.getItems()) {
-                totalQuantity += item.getQuantity();
-                sumTotal += (item.getPrice() * item.getQuantity());
-            }
-            
-            double discountAmt = 0;
-            try { discountAmt = Double.parseDouble(orderDTO.getDiscountValue()); } catch(Exception ignored) {}
             double shippingFee = 0;
             try { shippingFee = Double.parseDouble(orderDTO.getShippingFee()); } catch(Exception ignored) {}
             
