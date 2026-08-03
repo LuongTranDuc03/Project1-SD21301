@@ -62,7 +62,9 @@ public class InvoiceRepository {
                 ps.setTimestamp(11, Timestamp.valueOf(invoice.getOrderDate()));
             else
                 ps.setNull(11, Types.TIMESTAMP);
-            ps.setInt(12, invoice.getOrderStatus() != null ? invoice.getOrderStatus() : 0);
+            int orderType = invoice.getOrderType() != null ? invoice.getOrderType() : 1;
+            int orderStatus = invoice.getOrderStatus() != null ? invoice.getOrderStatus() : (orderType == 1 ? 1 : 0);
+            ps.setInt(12, orderStatus);
             ps.setString(13, invoice.getNote());
             if (invoice.getExpectedDeliveryDate() != null)
                 ps.setTimestamp(14, Timestamp.valueOf(invoice.getExpectedDeliveryDate()));
@@ -73,7 +75,7 @@ public class InvoiceRepository {
             else
                 ps.setNull(15, Types.TIMESTAMP);
             ps.setString(16, invoice.getAddressSnapshot());
-            ps.setInt(17, invoice.getOrderType() != null ? invoice.getOrderType() : 1);
+            ps.setInt(17, orderType);
             ps.setDouble(18, invoice.getShippingFee() != null ? invoice.getShippingFee() : 0.0);
 
             int rows = ps.executeUpdate();
@@ -131,7 +133,9 @@ public class InvoiceRepository {
                 ps.setTimestamp(11, Timestamp.valueOf(invoice.getOrderDate()));
             else
                 ps.setNull(11, Types.TIMESTAMP);
-            ps.setInt(12, invoice.getOrderStatus() != null ? invoice.getOrderStatus() : 0);
+            int orderType = invoice.getOrderType() != null ? invoice.getOrderType() : 1;
+            int orderStatus = invoice.getOrderStatus() != null ? invoice.getOrderStatus() : (orderType == 1 ? 1 : 0);
+            ps.setInt(12, orderStatus);
             ps.setString(13, invoice.getNote());
             if (invoice.getExpectedDeliveryDate() != null)
                 ps.setTimestamp(14, Timestamp.valueOf(invoice.getExpectedDeliveryDate()));
@@ -142,7 +146,7 @@ public class InvoiceRepository {
             else
                 ps.setNull(15, Types.TIMESTAMP);
             ps.setString(16, invoice.getAddressSnapshot());
-            ps.setInt(17, invoice.getOrderType() != null ? invoice.getOrderType() : 1);
+            ps.setInt(17, orderType);
             ps.setDouble(18, invoice.getShippingFee() != null ? invoice.getShippingFee() : 0.0);
             ps.setInt(19, invoice.getId());
 
@@ -523,7 +527,7 @@ public class InvoiceRepository {
                 "pm.id AS pm_id, pm.phuong_thuc_thanh_toan_code AS pm_code, pm.ten_phuong_thuc AS pm_name " +
                 "FROM hoa_don hd " +
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
-                "WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_thanh_toan = 0) ");
+                "WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 0) ");
 
         if (orderType != null)
             sql.append("AND hd.loai_hoa_don = ? ");
@@ -609,7 +613,7 @@ public class InvoiceRepository {
 
     public long countAll(Integer orderType, Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
             Integer paymentMethodId) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_thanh_toan = 0) ");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 0) ");
 
         if (orderType != null)
             sql.append("AND hd.loai_hoa_don = ? ");

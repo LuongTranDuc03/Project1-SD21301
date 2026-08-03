@@ -1,5 +1,6 @@
 package project.duan1_sd21301.service.pos;
 
+import project.duan1_sd21301.dto.pos.PosOrderRequestDTO;
 import project.duan1_sd21301.model.huy.Employee;
 import project.duan1_sd21301.util.DatabaseConnection;
 
@@ -300,6 +301,19 @@ public class PosDraftService {
                 ps.executeUpdate();
             }
 
+            // 2.5 Delete history to prevent FK constraints
+            String delHistory = "DELETE FROM lich_su_hoa_don WHERE id_hoa_don = ?";
+            try (PreparedStatement ps = conn.prepareStatement(delHistory)) {
+                ps.setInt(1, invoiceId);
+                ps.executeUpdate();
+            }
+
+            String delPaymentHistory = "DELETE FROM lich_su_thanh_toan WHERE id_hoa_don = ?";
+            try (PreparedStatement ps = conn.prepareStatement(delPaymentHistory)) {
+                ps.setInt(1, invoiceId);
+                ps.executeUpdate();
+            }
+
             // 3. Delete invoice
             String delInvoice = "DELETE FROM hoa_don WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(delInvoice)) {
@@ -332,19 +346,116 @@ public class PosDraftService {
         return result;
     }
 
-    public List<Map<String, Object>> getPendingDrafts() {
-        List<Map<String, Object>> drafts = new ArrayList<>();
-        // Select invoices that are POS (loai_hoa_don=0) and unpaid
-        // (trang_thai_thanh_toan=0)
-        // and created today (optional, but good for cleanup)
-        String sql = "SELECT id, hoa_don_code FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_thanh_toan = 0";
+    public Map<String, Object> updateDraftInfo(PosOrderRequestDTO dto) {
+        Map<String, Object> result = new HashMap<>();
+        if (dto.getId() == null || dto.getId().trim().isEmpty()) {
+            result.put("success", false);
+            result.put("message", "Invalid invoice ID");
+            return result;
+        }
+
+        int invoiceId = Integer.parseInt(dto.getId());
+
+        String sql = "UPDATE hoa_don SET " +
+                "id_khach_hang = (SELECT id FROM khach_hang WHERE khach_hang_code = ?), " +
+                "id_ma_giam_gia = (SELECT id FROM phieu_giam_gia WHERE phieu_giam_gia_code = ?), " +
+                "ghi_chu = ?, ten_khach_nhan = ?, sdt_khach_nhan = ?, dia_chi_khach_nhan = ?, phi_van_chuyen = ?, loai_hoa_don = ? " +
+                "WHERE id = ?";
+
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> draft = new HashMap<>();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            String cusCode = dto.getCustomerCode();
+            if (cusCode == null || cusCode.trim().isEmpty() || cusCode.equals("Khách lẻ")) {
+                ps.setNull(1, Types.VARCHAR);
+            } else {
+                ps.setString(1, cusCode);
+            }
+
+            String disCode = dto.getDiscountCode();
+            if (disCode == null || disCode.trim().isEmpty()) {
+                ps.setNull(2, Types.VARCHAR);
+            } else {
+                ps.setString(2, disCode);
+            }
+
+            ps.setString(3, dto.getNote());
+            
+            if (dto.isDelivery()) {
+                ps.setString(4, dto.getRecipientName());
+                ps.setString(5, dto.getDeliveryPhone());
+                String addressFull = "";
+                if (dto.getDeliveryAddress() != null) addressFull += dto.getDeliveryAddress();
+                if (dto.getWard() != null) addressFull += ", " + dto.getWard();
+                if (dto.getDistrict() != null) addressFull += ", " + dto.getDistrict();
+                if (dto.getProvince() != null) addressFull += ", " + dto.getProvince();
+                ps.setString(6, addressFull);
+                
+                double ship = 0;
+                try { ship = Double.parseDouble(dto.getShippingFee()); } catch(Exception ignored){}
+                ps.setDouble(7, ship);
+                ps.setInt(8, 0); // Still 0 for POS draft
+            } else {
+                ps.setNull(4, Types.VARCHAR);
+                ps.setNull(5, Types.VARCHAR);
+                ps.setNull(6, Types.VARCHAR);
+                ps.setDouble(7, 0);
+                ps.setInt(8, 0);
+            }
+
+            ps.setInt(9, invoiceId);
+
+            ps.executeUpdate();
+            result.put("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    public List<Map<String, Object>> getPendingDrafts(int employeeId) {
+        List<Map<String, Object>> drafts = new ArrayList<>();
+        // Select invoices that are POS (loai_hoa_don=0) and unpaid (trang_thai_don_hang=0)
+        // created by the specific employee
+        String sql = "SELECT hd.id, hd.hoa_don_code, hd.ghi_chu, hd.ten_khach_nhan, hd.sdt_khach_nhan, hd.dia_chi_khach_nhan, hd.phi_van_chuyen, " +
+                     "kh.khach_hang_code, kh.ho_ten as ten_khach_hang, kh.so_dien_thoai as sdt_khach_hang, " +
+                     "pg.phieu_giam_gia_code, pg.gia_tri_giam " +
+                     "FROM hoa_don hd " +
+                     "LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id " +
+                     "LEFT JOIN phieu_giam_gia pg ON hd.id_ma_giam_gia = pg.id " +
+                     "WHERE hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 0 AND hd.id_nhan_vien = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, employeeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> draft = new HashMap<>();
                 draft.put("id", rs.getInt("id"));
                 draft.put("code", rs.getString("hoa_don_code"));
+                
+                draft.put("customerCode", rs.getString("khach_hang_code") != null ? rs.getString("khach_hang_code") : "");
+                draft.put("customerName", rs.getString("ten_khach_hang") != null ? rs.getString("ten_khach_hang") : "Khách lẻ");
+                draft.put("customerPhone", rs.getString("sdt_khach_hang") != null ? rs.getString("sdt_khach_hang") : "");
+                
+                draft.put("discountCode", rs.getString("phieu_giam_gia_code") != null ? rs.getString("phieu_giam_gia_code") : "");
+                draft.put("discountValue", rs.getString("gia_tri_giam") != null ? rs.getString("gia_tri_giam") : "");
+                
+                draft.put("note", rs.getString("ghi_chu") != null ? rs.getString("ghi_chu") : "");
+                
+                draft.put("recipientName", rs.getString("ten_khach_nhan") != null ? rs.getString("ten_khach_nhan") : "");
+                draft.put("deliveryPhone", rs.getString("sdt_khach_nhan") != null ? rs.getString("sdt_khach_nhan") : "");
+                
+                String addressFull = rs.getString("dia_chi_khach_nhan");
+                draft.put("deliveryAddress", addressFull != null ? addressFull : "");
+                
+                boolean isDelivery = (addressFull != null && !addressFull.trim().isEmpty()) || 
+                                     (rs.getString("ten_khach_nhan") != null && !rs.getString("ten_khach_nhan").trim().isEmpty());
+                draft.put("isDelivery", isDelivery);
+                
+                double shippingFee = rs.getDouble("phi_van_chuyen");
+                draft.put("shippingFee", shippingFee > 0 ? String.valueOf(shippingFee) : "");
 
                 // Get items
                 List<Map<String, Object>> items = new ArrayList<>();
@@ -388,6 +499,7 @@ public class PosDraftService {
                 draft.put("items", items);
                 drafts.add(draft);
             }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -395,7 +507,7 @@ public class PosDraftService {
     }
 
     public void cleanupOldDrafts() {
-        String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_thanh_toan = 0 AND CONVERT(date, ngay_dat_hang) < CONVERT(date, GETDATE())";
+        String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_don_hang = 0 AND DATEDIFF(hour, ngay_dat_hang, GETDATE()) >= 24";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(findSql);
                 ResultSet rs = ps.executeQuery()) {

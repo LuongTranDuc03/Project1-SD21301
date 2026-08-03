@@ -109,13 +109,13 @@
                         In hoá đơn
                     </a>
                     <%-- Chỉ hiện Cập nhật/Huỷ khi đơn chưa Hoàn thành/Huỷ/Hoàn trả (Mở cho cả đơn Hoàn thành == 3) --%>
-                    <% if (orderStatus <= 3) { %>
+                    <% if (orderStatus < 3) { %>
                     <button class="btn-action" style="background:#3b82f6;color:white;border:none;" onclick="openModal('update')">Cập nhật trạng thái</button>
-                    <% if (isManager) { %>
+                    <% } %>
+                    <% if (orderStatus <= 3 && isManager) { %>
                     <button class="btn-action btn-huy" onclick="openModal('cancel')">Huỷ đơn</button>
                     <% } %>
-                    <% } %>
-                    <% if (orderStatus == 4 && paid && isManager) { %>
+                    <% if (orderStatus == 4 && isManager) { %>
                     <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refund')">Hoàn tiền</button>
                     <% } %>
                 </div>
@@ -260,8 +260,8 @@
                                 <%
                                     if (historyList != null && !historyList.isEmpty()) {
                                         for (InvoiceHistory h : historyList) {
-                                            String newLabel = statusLabels != null ? statusLabels.getOrDefault(h.getNewStatus(), "?") : "?";
-                                            String oldLabel = statusLabels != null ? statusLabels.getOrDefault(h.getOldStatus(), "?") : "?";
+                                            String newLabel = statusLabels != null && statusLabels.containsKey(h.getNewStatus()) ? statusLabels.get(h.getNewStatus()) : (h.getNewStatus() == 0 ? "Chờ xác nhận" : (h.getNewStatus() == -1 ? "Khởi tạo" : "?"));
+                                            String oldLabel = statusLabels != null && statusLabels.containsKey(h.getOldStatus()) ? statusLabels.get(h.getOldStatus()) : (h.getOldStatus() == 0 ? "Chờ xác nhận" : (h.getOldStatus() == -1 ? "Khởi tạo" : "?"));
                                             String timeStr  = h.getUpdatedAt() != null ? h.getUpdatedAt().format(dtfFull) : "";
                                 %>
                                 <li class="tl-item">

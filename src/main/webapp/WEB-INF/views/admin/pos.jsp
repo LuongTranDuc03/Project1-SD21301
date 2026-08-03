@@ -579,8 +579,20 @@
     const MAX_ORDERS = 10;
     let nextOrderId = parseInt('${nextOrderIndex}') || 1;
 
+    let autoSaveTimeout = null;
     function saveOrdersToStorage() {
-        // No longer using localStorage for orders, everything is on DB
+        if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+        autoSaveTimeout = setTimeout(() => {
+            if (!currentOrderId) return;
+            const order = orders.find(o => o.id === currentOrderId);
+            if (!order) return;
+            
+            fetch(window.location.pathname.replace('/pos', '/pos/api/update-draft-info'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order)
+            }).catch(err => console.error('Auto-save error:', err));
+        }, 800);
     }
 
     async function initPOS() {
@@ -588,26 +600,39 @@
             const res = await fetch(window.location.pathname.replace('/pos', '/pos/api/get-drafts'));
             const data = await res.json();
             if (data && data.length > 0) {
-                orders = data.map(d => ({
-                    id: d.id.toString(),
-                    name: d.code,
-                    items: d.items || [],
-                    customerName: 'Khách lẻ',
-                    customerCode: '',
-                    recipientName: '',
-                    customerPhone: '',
-                    isDelivery: false,
-                    deliveryPhone: '',
-                    deliveryAddress: '',
-                    province: '',
-                    district: '',
-                    ward: '',
-                    discountCode: '',
-                    discountValue: '',
-                    shippingFee: '',
-                    customerPay: '',
-                    paymentMethod: 'CASH'
-                }));
+                orders = data.map(d => {
+                    let addrStr = d.deliveryAddress || '';
+                    let parts = addrStr.split(', ');
+                    let p = '', dist = '', w = '', a = addrStr;
+                    if (parts.length >= 4) {
+                        p = parts.pop();
+                        dist = parts.pop();
+                        w = parts.pop();
+                        a = parts.join(', ');
+                    }
+                    
+                    return {
+                        id: d.id.toString(),
+                        name: d.code,
+                        items: d.items || [],
+                        customerName: d.customerName || 'Khách lẻ',
+                        customerCode: d.customerCode || '',
+                        recipientName: d.recipientName || '',
+                        customerPhone: d.customerPhone || '',
+                        isDelivery: !!d.isDelivery,
+                        deliveryPhone: d.deliveryPhone || '',
+                        deliveryAddress: a,
+                        province: p,
+                        district: dist,
+                        ward: w,
+                        discountCode: d.discountCode || '',
+                        discountValue: d.discountValue || '',
+                        shippingFee: d.shippingFee || '',
+                        note: d.note || '',
+                        customerPay: '',
+                        paymentMethod: 'CASH'
+                    };
+                });
                 currentOrderId = orders[0].id;
                 renderTabs();
                 renderCurrentOrderItems();

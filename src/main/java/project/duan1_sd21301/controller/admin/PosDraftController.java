@@ -20,7 +20,8 @@ import java.util.Map;
         "/admin/pos/api/update-item",
         "/admin/pos/api/remove-item",
         "/admin/pos/api/delete-order",
-        "/admin/pos/api/get-drafts"
+        "/admin/pos/api/get-drafts",
+        "/admin/pos/api/update-draft-info"
 })
 public class PosDraftController extends HttpServlet {
 
@@ -35,7 +36,9 @@ public class PosDraftController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         if (uri.endsWith("/get-drafts")) {
-            List<Map<String, Object>> drafts = draftService.getPendingDrafts();
+            Employee loggedInUser = (Employee) request.getSession().getAttribute("loggedInUser");
+            int employeeId = loggedInUser != null ? loggedInUser.getId() : -1;
+            List<Map<String, Object>> drafts = draftService.getPendingDrafts(employeeId);
             mapper.writeValue(response.getWriter(), drafts);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -77,6 +80,9 @@ public class PosDraftController extends HttpServlet {
                 int invoiceId = Integer.parseInt(request.getParameter("invoiceId"));
 
                 result = draftService.deleteDraftOrder(invoiceId);
+            } else if (uri.endsWith("/update-draft-info")) {
+                project.duan1_sd21301.dto.pos.PosOrderRequestDTO orderDTO = mapper.readValue(request.getReader(), project.duan1_sd21301.dto.pos.PosOrderRequestDTO.class);
+                result = draftService.updateDraftInfo(orderDTO);
             } else {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
