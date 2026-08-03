@@ -1174,211 +1174,107 @@
                         <div id="viewVariantModal"
                             style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
                             <div id="viewVariantModalContent"
-                                style="background: #ffffff; border-radius: 12px; width: 90%; max-width: 800px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh; position: relative;">
-                                <!-- Right pane (Absolute positioned to slide out) -->
-                                <div id="view-barcodePane"
-                                    style="position: absolute; top: 0; right: 0; width: 320px; height: 100%; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; align-items: center; background-color: #f8fafc; overflow-y: auto; z-index: 1; transform: translateX(0); opacity: 0; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s; pointer-events: none; box-shadow: 10px 0 25px rgba(0,0,0,0.05);">
-                                    <h4
-                                        style="margin: 0 0 20px 0; font-size: 15px; font-weight: 700; color: #1e293b; text-align: center;">
-                                        Mã Barcode</h4>
-                                    <div id="barcodeContainer"
-                                        style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                                        <img id="barcodeRenderArea" style="max-width: 100%;">
-                                        <div id="barcodeTextInfo"
-                                            style="margin-top: 16px; font-size: 13px; color: #475569; text-align: center; font-weight: 500; line-height: 1.6;">
-                                        </div>
-                                    </div>
-                                    <button type="button" onclick="downloadBarcodeImage()"
-                                        style="margin-top: 16px; width: 100%; padding: 10px; background-color: #3b82f6; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: background 0.2s;">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor"
-                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="7 10 12 15 17 10"></polyline>
-                                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                                        </svg>
-                                        Lưu thành ảnh
-                                    </button>
-                                </div>
-
-                                <!-- Left Pane (Main Content) -->
-                                <div
-                                    style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border-radius: 12px 12px 0 0; position: relative; z-index: 2;">
-                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Xem chi
-                                        tiết biến thể</h3>
+                                style="background: #ffffff; border-radius: 12px; width: 95%; max-width: 1000px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh;">
+                                
+                                <!-- Header -->
+                                <div style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border-radius: 12px 12px 0 0;">
+                                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b;">Xem chi tiết biến thể</h3>
                                     <button type="button" onclick="closeViewVariantModal()"
                                         style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 6px; transition: background 0.2s;">
-                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
-                                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                             <line x1="18" y1="6" x2="6" y2="18"></line>
                                             <line x1="6" y1="6" x2="18" y2="18"></line>
                                         </svg>
                                     </button>
                                 </div>
-                                <div
-                                    style="display: flex; flex-direction: row; flex: 1; position: relative; z-index: 2; background: #fff; border-radius: 0 0 12px 12px;">
-                                    <div style="flex: 1; padding: 24px; overflow-y: auto; width: 100%;">
-                                        <div style="display: flex; gap: 24px;">
-                                            <!-- Left Pane: Image -->
-                                            <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
-                                                <label style="font-size: 13px; margin-bottom: 16px; display: block; color: #475569; font-weight: 600;">Hình Ảnh Biến Thể</label>
-                                                <div style="width: 100%; height: 280px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; background-color: #f8fafc; position: relative;">
-                                                    <img id="view-variantImage" src="" alt="Hình ảnh biến thể" style="max-width: 100%; max-height: 100%; border-radius: 8px; display: none; object-fit: contain;">
-                                                    <span id="view-variantImagePlaceholder" style="color: #94a3b8; font-size: 13px;">Không có ảnh</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Right Pane: Form Fields -->
-                                            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: flex-start;">
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
-                                                    <input type="text" id="view-productCode"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Biến Thể</label>
-                                                    <input type="text" id="view-variantCode"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
-                                                    <input type="text" id="view-style"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Màu sắc</label>
-                                                    <input type="text" id="view-color"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích cỡ</label>
-                                                    <input type="text" id="view-size"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá Nhập (đ)</label>
-                                                    <input type="text" id="view-importPrice"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá bán (đ)</label>
-                                                    <input type="text" id="view-price"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Số Lượng</label>
-                                                    <input type="text" id="view-stock"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Dài (cm)</label>
-                                                    <input type="text" id="view-length"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Rộng (cm)</label>
-                                                    <input type="text" id="view-width"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ Dày (cm)</label>
-                                                    <input type="text" id="view-thickness"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                                <div class="form-group" style="margin-bottom: 0;">
-                                                    <label class="form-label"
-                                                        style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng Lượng (g)</label>
-                                                    <input type="text" id="view-weight"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;"
-                                                        readonly>
-                                                </div>
-                                            </div>
+                                
+                                <!-- Body: 3 Columns -->
+                                <div style="display: flex; flex-direction: row; flex: 1; overflow-y: auto; padding: 24px; gap: 24px;">
+                                    
+                                    <!-- Column 1: Image -->
+                                    <div style="width: 250px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                                        <label style="font-size: 13px; margin-bottom: 16px; display: block; color: #475569; font-weight: 600;">Hình Ảnh Biến Thể</label>
+                                        <div style="width: 100%; height: 280px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 12px; background-color: #f8fafc; position: relative;">
+                                            <img id="view-variantImage" src="" alt="Hình ảnh biến thể" style="max-width: 100%; max-height: 100%; border-radius: 8px; display: none; object-fit: contain;">
+                                            <span id="view-variantImagePlaceholder" style="color: #94a3b8; font-size: 13px;">Không có ảnh</span>
                                         </div>
-                                        <div
-                                            style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
-                                            <button type="button" id="btnToggleBarcode" onclick="toggleBarcode()"
-                                                style="padding: 8px 16px; border: 1px solid #cbd5e1; background: #1e3a8a; color: #ffffff; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center;">
-                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor"
-                                                    stroke-width="2" fill="none" stroke-linecap="round"
-                                                    stroke-linejoin="round" style="margin-right: 6px;">
-                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                                    <rect x="7" y="7" width="3" height="3"></rect>
-                                                    <rect x="14" y="7" width="3" height="3"></rect>
-                                                    <rect x="7" y="14" width="3" height="3"></rect>
-                                                    <rect x="14" y="14" width="3" height="3"></rect>
-                                                </svg> Hiển thị Barcode
-                                            </button>
+                                    </div>
+                                    
+                                    <!-- Column 2: Form Fields -->
+                                    <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-content: flex-start;">
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Sản Phẩm</label>
+                                            <input type="text" id="view-productCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
                                         </div>
-                                    </div> <!-- end left padding div -->
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Mã Biến Thể</label>
+                                            <input type="text" id="view-variantCode" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
+                                            <input type="text" id="view-style" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Màu sắc</label>
+                                            <input type="text" id="view-color" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kích cỡ</label>
+                                            <input type="text" id="view-size" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá Nhập (đ)</label>
+                                            <input type="text" id="view-importPrice" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Giá bán (đ)</label>
+                                            <input type="text" id="view-price" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Số Lượng</label>
+                                            <input type="text" id="view-stock" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Dài (cm)</label>
+                                            <input type="text" id="view-length" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Chiều Rộng (cm)</label>
+                                            <input type="text" id="view-width" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Độ Dày (cm)</label>
+                                            <input type="text" id="view-thickness" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 0;">
+                                            <label class="form-label" style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Trọng Lượng (g)</label>
+                                            <input type="text" id="view-weight" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #64748b; font-size: 13px;" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Column 3: Barcode -->
+                                    <div id="view-barcodePane" style="width: 250px; flex-shrink: 0; border-radius: 12px; border: 1px solid #e2e8f0; padding: 16px; display: flex; flex-direction: column; align-items: center; background-color: #f8fafc;">
+                                        <h4 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 700; color: #1e293b; text-align: center;">Mã Barcode</h4>
+                                        <div id="barcodeContainer" style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                            <img id="barcodeRenderArea" style="max-width: 100%;">
+                                            <div id="barcodeTextInfo" style="margin-top: 12px; font-size: 12px; color: #475569; text-align: center; font-weight: 500; line-height: 1.6;"></div>
+                                        </div>
+                                        <button type="button" onclick="downloadBarcodeImage()" style="margin-top: 16px; width: 100%; padding: 10px; background-color: #3b82f6; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: background 0.2s;">
+                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="7 10 12 15 17 10"></polyline>
+                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                            </svg> Lưu ảnh
+                                        </button>
+                                    </div>
+                                    
                                 </div> <!-- end flex row -->
                             </div> <!-- end modal content -->
                         </div> <!-- end modal -->
 
                         <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
                         <script>
-                            function toggleBarcode() {
-                                var pane = document.getElementById('view-barcodePane');
-                                var btn = document.getElementById('btnToggleBarcode');
 
-                                var isShown = pane.style.opacity === '1';
-
-                                if (!isShown) {
-                                    pane.style.transform = 'translateX(calc(100% + 16px))';
-                                    pane.style.opacity = '1';
-                                    pane.style.pointerEvents = 'auto';
-                                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Ẩn Barcode';
-
-                                    var variantCode = document.getElementById('view-variantCode').value;
-                                    var productCode = document.getElementById('view-productCode').value;
-                                    var color = document.getElementById('view-color').value;
-                                    var size = document.getElementById('view-size').value;
-
-                                    // Only generate once per variantCode
-                                    if (document.getElementById('barcodeRenderArea').getAttribute('data-current-code') !== variantCode) {
-                                        JsBarcode("#barcodeRenderArea", variantCode, {
-                                            format: "CODE128",
-                                            width: 2,
-                                            height: 80,
-                                            displayValue: false,
-                                            background: "transparent",
-                                            lineColor: "#0f172a",
-                                            margin: 0
-                                        });
-                                        document.getElementById('barcodeRenderArea').setAttribute('data-current-code', variantCode);
-
-                                        document.getElementById('barcodeTextInfo').innerHTML =
-                                            '<strong style="font-size: 15px; color: #1e293b;">' + variantCode + '</strong><br>' +
-                                            '<span style="color: #64748b;">Mã SP:</span> ' + productCode + '<br>' +
-                                            '<span style="color: #64748b;">Màu:</span> ' + color + ' &nbsp;|&nbsp; <span style="color: #64748b;">Size:</span> ' + size;
-                                    }
-                                } else {
-                                    pane.style.transform = 'translateX(0)';
-                                    pane.style.opacity = '0';
-                                    pane.style.pointerEvents = 'none';
-                                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg> Hiển thị Barcode';
-                                }
-                            }
                             function toggleVariantStatus(checkbox) {
                                 var tr = checkbox.closest('tr');
                                 var statusBadge = tr.querySelector('.badge-status');
@@ -1543,12 +1439,29 @@
                                 var modal = document.getElementById('viewVariantModal');
                                 modal.style.display = 'flex';
 
-                                // Reset barcode pane
-                                var pane = document.getElementById('view-barcodePane');
-                                pane.style.transform = 'translateX(0)';
-                                pane.style.opacity = '0';
-                                pane.style.pointerEvents = 'none';
-                                document.getElementById('btnToggleBarcode').innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg> Hiển thị Barcode';
+                                // Generate barcode immediately
+                                var variantCode = btn.getAttribute('data-variantcode') || '';
+                                var productCode = btn.getAttribute('data-productcode') || '';
+                                var color = btn.getAttribute('data-color') || '';
+                                var size = btn.getAttribute('data-size') || '';
+
+                                if (document.getElementById('barcodeRenderArea').getAttribute('data-current-code') !== variantCode) {
+                                    JsBarcode("#barcodeRenderArea", variantCode, {
+                                        format: "CODE128",
+                                        width: 2,
+                                        height: 80,
+                                        displayValue: false,
+                                        background: "transparent",
+                                        lineColor: "#0f172a",
+                                        margin: 0
+                                    });
+                                    document.getElementById('barcodeRenderArea').setAttribute('data-current-code', variantCode);
+
+                                    document.getElementById('barcodeTextInfo').innerHTML =
+                                        '<strong style="font-size: 15px; color: #1e293b;">' + variantCode + '</strong><br>' +
+                                        '<span style="color: #64748b;">Mã SP:</span> ' + productCode + '<br>' +
+                                        '<span style="color: #64748b;">Màu:</span> ' + color + ' &nbsp;|&nbsp; <span style="color: #64748b;">Size:</span> ' + size;
+                                }
                             }
 
                             function closeViewVariantModal() {
