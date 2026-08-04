@@ -10,8 +10,8 @@
                         <head>
                             <meta charset="UTF-8">
                             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>In hoá đơn - <%= request.getAttribute("invoice") !=null ? "#HD-" + ((Invoice)
-                                    request.getAttribute("invoice")).getId() : "" %>
+                            <title>In hoá đơn - <%= request.getAttribute("invoice") !=null ? "#" + ((Invoice)
+                                    request.getAttribute("invoice")).getCode() : "" %>
                             </title>
                             <link rel="preconnect" href="https://fonts.googleapis.com">
                             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +30,7 @@
                                 List<InvoiceDetail> detailList = (List<InvoiceDetail>) request.getAttribute("detailList");
 
                                 // Lấy danh sách map hiển thị nhãn trạng thái dựa trên loại hoá đơn
-                                Map<Integer, String> statusLabels = (inv != null && inv.getOrderType() != null && inv.getOrderType() == 2) ? 
+                                Map<Integer, String> statusLabels = (inv != null && inv.getOrderType() != null && inv.getOrderType() != 0) ? 
                                     (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline") : 
                                     (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
 
@@ -77,7 +77,7 @@
                                                             </svg>
                                                             Quay lại
                                                         </a>
-                                                        <span class="print-title">Xem trước bản in — #HD-<%= inv.getId()
+                                                        <span class="print-title">Xem trước bản in — #<%= inv.getCode()
                                                                 %></span>
                                                         <%-- Nút gọi lệnh window.print() của trình duyệt để hiển thị hộp
                                                             thoại in máy in --%>
@@ -114,7 +114,7 @@
                                                                 </div>
                                                                 <div class="doc-title-block">
                                                                     <div class="doc-title">HÓA ĐƠN</div>
-                                                                    <div class="doc-id">#HD-<%= inv.getId() %>
+                                                                    <div class="doc-id">#<%= inv.getCode() %>
                                                                     </div>
                                                                     <div class="doc-date">Ngày: <%= orderDate %>
                                                                     </div>
@@ -122,7 +122,7 @@
                                                                         <%= badgeLabel %>
                                                                     </span>
                                                                     <div style="margin-top: 10px;">
-                                                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=HD-<%= inv.getId() %>" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px;">
+                                                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=<%= inv.getCode() %>" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px;">
                                                                     </div>
                                                                 </div>
                                                             </div>

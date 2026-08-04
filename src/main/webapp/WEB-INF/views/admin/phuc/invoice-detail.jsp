@@ -133,7 +133,7 @@
                                 <div>
                                     <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:2px;letter-spacing:.05em;">MÃ HOÁ ĐƠN</div>
                                     <div class="invoice-id" style="display: flex; align-items: center; gap: 8px;">
-                                        HD<%= inv.getId() %>
+                                        <%= inv.getCode() %>
                                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (orderType != null && orderType == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
                                             <%= (orderType != null && orderType == 0) ? "Tại quầy" : "Online" %>
                                         </span>
@@ -458,7 +458,7 @@
 <%-- KHU VỰC MODAL MÃ QR --%>
 <div class="modal-overlay" id="qrModal">
     <div class="modal-box" style="text-align: center;">
-        <h3>Mã QR Hoá đơn #<%= inv.getId() %></h3>
+        <h3>Mã QR Hoá đơn #<%= inv.getCode() %></h3>
         <p style="margin-bottom: 16px; font-size: 13px; color: #6b7280;">Quét mã này để xem hoá đơn dạng in</p>
         <div id="detail-qrcode" style="display: flex; justify-content: center; padding: 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 auto 20px; width: max-content;"></div>
         <div class="modal-actions" style="justify-content: center;">

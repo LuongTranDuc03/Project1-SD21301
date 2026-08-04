@@ -324,8 +324,7 @@
                                     style="color:#64748b; font-size:13px; text-align:center;">
                                 <%= pageNo * size + (stt++) %>
                             </td>
-                            <td><span class="product-id-text">HD<%=
-                            inv.getId() %></span></td>
+                            <td><span class="product-id-text"><%= inv.getCode() %></span></td>
                             <% String fakeStaffCode = "NV00" + ((inv.getId() % 3) + 1); %>
                             <td><span
                                     style="color:#6b7280;"><%= fakeStaffCode %></span>

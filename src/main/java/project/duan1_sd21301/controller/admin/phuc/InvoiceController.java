@@ -205,7 +205,7 @@ public class InvoiceController extends HttpServlet {
         request.setAttribute("historyList", historyList);
         request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
         request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
-        request.setAttribute("pageTitle", "Chi tiết hóa đơn #HD-" + id);
+        request.setAttribute("pageTitle", "Chi tiết hóa đơn #" + invoice.getCode());
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-detail.jsp")
                 .forward(request, response);
@@ -437,7 +437,7 @@ public class InvoiceController extends HttpServlet {
                 c0.setCellValue(stt++);
                 c0.setCellStyle(centerStyle);
                 Cell c1 = row.createCell(1);
-                c1.setCellValue("HD" + inv.getId());
+                c1.setCellValue(inv.getCode());
                 c1.setCellStyle(centerStyle);
                 Cell c2 = row.createCell(2);
                 c2.setCellValue(inv.getCustomerName() != null ? inv.getCustomerName() : "");
