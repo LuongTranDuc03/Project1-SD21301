@@ -118,10 +118,10 @@ public class CustomerController extends HttpServlet {
 
             if (search != null && !search.trim().isEmpty()) {
                 String kw = search.toLowerCase().trim();
-                matches = c.getCode().toLowerCase().contains(kw)
-                        || c.getFullName().toLowerCase().contains(kw)
-                        || c.getPhoneNumber().contains(kw)
-                        || c.getEmail().toLowerCase().contains(kw);
+                matches = (c.getCode() != null && c.getCode().toLowerCase().contains(kw))
+                        || (c.getFullName() != null && c.getFullName().toLowerCase().contains(kw))
+                        || (c.getPhoneNumber() != null && c.getPhoneNumber().contains(kw))
+                        || (c.getEmail() != null && c.getEmail().toLowerCase().contains(kw));
             }
 
             if (matches && filterGender != null && !filterGender.trim().isEmpty()

@@ -62,13 +62,9 @@ public class AuthFilter implements Filter {
             else if (path.contains("/admin/settings") || path.contains("/admin/accounts")) {
                 isBlocked = true;
             }
-            // Block coupons
+            // Block coupons - nhân viên không có quyền xem module phiếu giảm giá
             else if (path.contains("/admin/coupons")) {
-                // If they want to block all coupons module or just create/edit:
-                // Plan says block /admin/coupons
-                if (!path.endsWith("/admin/coupons/list") && !path.equals(request.getContextPath() + "/admin/coupons")) {
-                    isBlocked = true;
-                }
+                isBlocked = true;
             }
             // Block customer edits
             else if (path.contains("/admin/customers/edit") || path.contains("/admin/customers/delete")) {

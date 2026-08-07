@@ -235,13 +235,9 @@ public class EmployeeController extends HttpServlet {
 
         // 6. Ngày sinh (Tối thiểu 18 tuổi)
         if (emp.getBirthday() != null) {
-            java.util.Calendar today = java.util.Calendar.getInstance();
-            java.util.Calendar dob = java.util.Calendar.getInstance();
-            dob.setTime(emp.getBirthday());
-            int age = today.get(java.util.Calendar.YEAR) - dob.get(java.util.Calendar.YEAR);
-            if (today.get(java.util.Calendar.DAY_OF_YEAR) < dob.get(java.util.Calendar.DAY_OF_YEAR)) {
-                age--;
-            }
+            java.time.LocalDate dob = emp.getBirthday().toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+            long age = dob.until(java.time.LocalDate.now(), java.time.temporal.ChronoUnit.YEARS);
             if (age < 18) {
                 errors.add("Nhân viên phải từ 18 tuổi trở lên!");
             }

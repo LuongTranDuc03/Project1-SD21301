@@ -229,8 +229,33 @@ public class PosCheckoutService {
             }
             }
 
-            // 7. Insert Invoice Details and update stock (only if NOT draft)
-            if (!isDraft) {
+            // 7. Delete old invoice details (if draft) then re-insert + update stock
+            if (isDraft) {
+                // Get old details to restore stock first
+                String oldDetailsSql = "SELECT id_chi_tiet_san_pham, so_luong FROM chi_tiet_hoa_don WHERE id_hoa_don = ?";
+                try (PreparedStatement ps = conn.prepareStatement(oldDetailsSql)) {
+                    ps.setInt(1, invoiceId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        String restoreStockSql = "UPDATE chi_tiet_san_pham SET so_luong = so_luong + ? WHERE id = ?";
+                        try (PreparedStatement psRestore = conn.prepareStatement(restoreStockSql)) {
+                            while (rs.next()) {
+                                psRestore.setInt(1, rs.getInt("so_luong"));
+                                psRestore.setInt(2, rs.getInt("id_chi_tiet_san_pham"));
+                                psRestore.addBatch();
+                            }
+                            psRestore.executeBatch();
+                        }
+                    }
+                }
+                // Delete old details
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM chi_tiet_hoa_don WHERE id_hoa_don = ?")) {
+                    ps.setInt(1, invoiceId);
+                    ps.executeUpdate();
+                }
+            }
+
+            // Always insert new invoice details and deduct stock
+            {
                 String detailSql = "INSERT INTO chi_tiet_hoa_don (chi_tiet_hoa_don_code, id_hoa_don, id_chi_tiet_san_pham, don_gia, so_luong, thanh_tien, ten_sp_tai_thoi_diem, mo_ta_variant) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 String stockSql = "UPDATE chi_tiet_san_pham SET so_luong = so_luong - ? WHERE id = ?";
                 
@@ -291,7 +316,8 @@ public class PosCheckoutService {
             }
 
             conn.commit();
-            return invoiceCode;
+            // Trả về dạng "invoiceId|invoiceCode" để controller có thể truyền cả hai giá trị
+            return invoiceId + "|" + invoiceCode;
         } catch (Exception e) {
             e.printStackTrace();
             if (conn != null) {

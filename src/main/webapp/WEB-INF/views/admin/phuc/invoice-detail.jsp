@@ -80,10 +80,7 @@
                 <span class="active-crumb">Chi tiết hoá đơn</span>
             </div>
             <div class="navbar-right">
-                <button class="notif-btn">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                    <span class="notif-badge"></span>
-                </button>
+                <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
@@ -92,6 +89,27 @@
         </header>
 
         <div class="content-wrapper">
+<%
+    String invMsgParam = request.getParameter("msg");
+    String invErrParam = request.getParameter("err");
+    int invNewStatus = -1;
+    try { invNewStatus = Integer.parseInt(request.getParameter("newStatus") != null ? request.getParameter("newStatus") : "-1"); } catch(Exception ignored) {}
+%>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    <% if ("completed".equals(invMsgParam)) { %>
+    if (window.showToast) window.showToast('Đơn hàng đã hoàn thành thành công!', 'success');
+    <% } else if ("cancelled".equals(invMsgParam) && inv.getOrderStatus() == 5) { %>
+    if (window.showToast) window.showToast('Hoàn tiền thành công! Đơn hàng đã được xử lý.', 'success');
+    <% } else if ("cancelled".equals(invMsgParam)) { %>
+    if (window.showToast) window.showToast('Đơn hàng đã bị huỷ.', 'warning');
+    <% } else if ("updated".equals(invMsgParam)) { %>
+    if (window.showToast) window.showToast('Cập nhật trạng thái đơn hàng thành công!', 'success');
+    <% } else if ("cannot_revert".equals(invErrParam)) { %>
+    if (window.showToast) window.showToast('Không thể thay đổi: Trạng thái đơn hàng không hợp lệ!', 'error');
+    <% } %>
+});
+</script>
                         <%-- KHU VỰC TOPBAR: Chứa nút quay lại và các thao tác (In, Cập nhật, Huỷ) --%>
                         <div class="detail-topbar">
                 <a href="${pageContext.request.contextPath}/admin/invoices" class="back-link">
@@ -467,7 +485,7 @@
     </div>
 </div>
 
-<% if ("updated".equals(msgParam) || "cancelled".equals(msgParam)) { %>
+<% if ("updated".equals(msgParam) || "cancelled".equals(msgParam) || "completed".equals(msgParam)) { %>
 <style>
     @keyframes slideDownToast {
         from { top: -50px; opacity: 0; }
@@ -478,7 +496,15 @@
     <svg viewBox="0 0 24 24" width="24" height="24" stroke="#10B981" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     <div>
         <div style="font-weight:700;font-size:13px;color:#111827;">Thành công!</div>
-        <div style="font-size:12px;color:#6b7280;"><%= "cancelled".equals(msgParam) ? "Đã huỷ đơn thành công." : "Cập nhật trạng thái thành công." %></div>
+        <div style="font-size:12px;color:#6b7280;">
+            <% if ("cancelled".equals(msgParam)) { %>
+                <%= inv.getOrderStatus() == 5 ? "Hoàn tiền thành công. Đơn hàng đã được xử lý." : "Đã huỷ đơn thành công." %>
+            <% } else if ("completed".equals(msgParam)) { %>
+                Đơn hàng đã hoàn thành thành công.
+            <% } else { %>
+                Cập nhật trạng thái thành công.
+            <% } %>
+        </div>
     </div>
     <button onclick="document.getElementById('toastSuccess').style.display='none'" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>
 </div>
@@ -536,4 +562,3 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>
-

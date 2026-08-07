@@ -563,9 +563,9 @@ public class InvoiceRepository {
             } catch (NumberFormatException ignored) {
             }
             if (maHoaDon != null) {
-                sql.append("AND (hd.id = ? OR LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
+                sql.append("AND (hd.id = ? OR LOWER(hd.hoa_don_code) LIKE ? OR LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
             } else {
-                sql.append("AND (LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
+                sql.append("AND (LOWER(hd.hoa_don_code) LIKE ? OR LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
             }
         }
 
@@ -591,7 +591,9 @@ public class InvoiceRepository {
                     ps.setInt(index++, maHoaDon);
                     ps.setString(index++, kw);
                     ps.setString(index++, kw);
+                    ps.setString(index++, kw);
                 } else {
+                    ps.setString(index++, kw);
                     ps.setString(index++, kw);
                     ps.setString(index++, kw);
                 }
@@ -649,9 +651,9 @@ public class InvoiceRepository {
             } catch (NumberFormatException ignored) {
             }
             if (maHoaDon != null) {
-                sql.append("AND (hd.id = ? OR LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
+                sql.append("AND (hd.id = ? OR LOWER(hd.hoa_don_code) LIKE ? OR LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
             } else {
-                sql.append("AND (LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
+                sql.append("AND (LOWER(hd.hoa_don_code) LIKE ? OR LOWER(hd.ten_khach_nhan) LIKE ? OR hd.sdt_khach_nhan LIKE ?) ");
             }
         }
 
@@ -675,7 +677,9 @@ public class InvoiceRepository {
                     ps.setInt(index++, maHoaDon);
                     ps.setString(index++, kw);
                     ps.setString(index++, kw);
+                    ps.setString(index++, kw);
                 } else {
+                    ps.setString(index++, kw);
                     ps.setString(index++, kw);
                     ps.setString(index++, kw);
                 }

@@ -60,10 +60,7 @@
                 <span class="active-crumb">Quản lý phiếu giảm giá</span>
             </div>
             <div class="navbar-right">
-                <button class="notif-btn" aria-label="Thông báo">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                    <span class="notif-badge"></span>
-                </button>
+                <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
@@ -79,15 +76,24 @@
                 </div>
             </div>
 
-                        <% if ("created".equals(msg) || "updated".equals(msg)) { %>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    if (window.showToast) {
-                        window.showToast('<%= "created".equals(msg) ? "Thêm phiếu giảm giá thành công." : "Cập nhật trạng thái phiếu giảm giá thành công." %>', 'success');
-                    }
-                });
-            </script>
-            <% } %>
+<%
+    String errParam  = request.getParameter("err");
+    String msgParam  = msg; // msg đã được lấy từ request.getParameter("msg") ở trên
+%>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        <% if ("created".equals(msgParam)) { %>
+        if (window.showToast) window.showToast('Thêm phiếu giảm giá thành công!', 'success');
+        <% } else if ("updated".equals(msgParam)) { %>
+        if (window.showToast) window.showToast('Cập nhật phiếu giảm giá thành công!', 'success');
+        <% } else if ("expired".equals(errParam)) { %>
+        if (window.showToast) window.showToast('Không thể kích hoạt: Phiếu giảm giá đã hết hạn sử dụng!', 'error');
+        <% } else if ("not_started".equals(errParam)) { %>
+        if (window.showToast) window.showToast('Không thể kích hoạt: Phiếu giảm giá chưa đến thời gian diễn ra!', 'warning');
+        <% } %>
+    });
+</script>
+
 
             <!-- KHU VỰC TÌM KIẾM VÀ BỘ LỌC: Lọc theo mã, loại, trạng thái và ngày -->
             <div class="custom-card">
@@ -320,9 +326,10 @@
                                 int tt = c.getStatus() != null ? c.getStatus() : 0;
                                 String ttCls, ttLbl;
                                 switch (tt) {
-                                    case 1:  ttCls = "active";     ttLbl = "Đang kích hoạt";   break;
-                                    case 2:  ttCls = "inactive";   ttLbl = "Hết hạn";          break;
-                                    default: ttCls = "inactive";   ttLbl = "Chưa kích hoạt";   break;
+                                    case 1:  ttCls = "active";       ttLbl = "Đang kích hoạt";   break;
+                                    case 2:  ttCls = "inactive";     ttLbl = "Hết hạn";          break;
+                                    case 3:  ttCls = "sap-dien-ra";  ttLbl = "Sắp diễn ra";     break;
+                                    default: ttCls = "inactive";     ttLbl = "Chưa kích hoạt";   break;
                                 }
 
                                 boolean isOn = (tt == 1);

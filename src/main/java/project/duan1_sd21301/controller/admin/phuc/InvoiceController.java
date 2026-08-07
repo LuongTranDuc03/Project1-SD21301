@@ -36,7 +36,7 @@ import java.util.Map;
 })
 public class InvoiceController extends HttpServlet {
 
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 5;
 
     private static final Map<Integer, String> ORDER_STATUS_LABELS_ONLINE;
     private static final Map<Integer, String> ORDER_STATUS_LABELS_POS;
@@ -268,7 +268,19 @@ public class InvoiceController extends HttpServlet {
 
         int oldStatus = invoice.getOrderStatus();
 
-        if (oldStatus == 3 && newStatus < 3) {
+        // Chặn revert trạng thái không hợp lệ:
+        // - Đơn Hoàn thành (3) không được chuyển về trạng thái < 3 (trừ Đã huỷ 4 và Đã hoàn tiền 5)
+        // - Đơn Đã huỷ (4) không được chuyển ngược về trạng thái đang xử lý (0,1,2)
+        // - Đơn Đã hoàn tiền (5) không được chuyển ngược về đang xử lý
+        boolean cannotChange = false;
+        if (oldStatus == 3 && newStatus != 4 && newStatus != 5 && newStatus != 3) {
+            cannotChange = true; // Hoàn thành chỉ được huỷ hoặc hoàn tiền
+        } else if (oldStatus == 4 && (newStatus == 0 || newStatus == 1 || newStatus == 2)) {
+            cannotChange = true; // Đã huỷ không thể về xử lý
+        } else if (oldStatus == 5 && (newStatus == 0 || newStatus == 1 || newStatus == 2)) {
+            cannotChange = true; // Đã hoàn tiền không thể về xử lý
+        }
+        if (cannotChange) {
             response.sendRedirect(request.getContextPath() + "/admin/invoices/detail?id=" + id + "&error=cannot_revert");
             return;
         }
@@ -297,7 +309,15 @@ public class InvoiceController extends HttpServlet {
 
         invoiceRepo.updateStatusAndSaveHistory(invoice, detailList, history, updateStock, increaseStock);
 
-        String msg = (newStatus == 3 || newStatus == 4) ? "cancelled" : "updated";
+        // Xác định message phản hồi phù hợp với trạng thái mới
+        String msg;
+        if (newStatus == 4 || newStatus == 5) {
+            msg = "cancelled";
+        } else if (newStatus == 3) {
+            msg = "completed";
+        } else {
+            msg = "updated";
+        }
         response.sendRedirect(request.getContextPath()
                 + "/admin/invoices/detail?id=" + id + "&msg=" + msg);
     }

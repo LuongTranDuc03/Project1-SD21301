@@ -10,7 +10,7 @@ public class DatabaseConnection {
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDatabase;encrypt=true;trustServerCertificate=true;loginTimeout=5;";
     private static final String USER = "sa";
-    private static final String PASS = "1234@";//1234@
+    private static final String PASS = "1234@";// 1234@
 
     static {
         try {

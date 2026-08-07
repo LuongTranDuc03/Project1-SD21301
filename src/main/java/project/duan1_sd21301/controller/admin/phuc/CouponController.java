@@ -27,7 +27,7 @@ import java.util.Map;
 })
 public class CouponController extends HttpServlet {
 
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 5;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private static final DateTimeFormatter DATE_ONLY_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -40,6 +40,7 @@ public class CouponController extends HttpServlet {
         DISCOUNT_TYPE_LABELS.put(1, "Giảm tiền");
 
         STATUS_LABELS = new LinkedHashMap<>();
+        STATUS_LABELS.put(3, "Sắp diễn ra");
         STATUS_LABELS.put(0, "Chưa kích hoạt");
         STATUS_LABELS.put(1, "Đang kích hoạt");
         STATUS_LABELS.put(2, "Hết hạn");
@@ -118,6 +119,11 @@ public class CouponController extends HttpServlet {
                 if (c.getStatus() == 1 || c.getStatus() == 0) {
                     c.setStatus(2);
                     repo.update(c);
+                }
+            } else if (c.getStartDate() != null && c.getStartDate().isAfter(now)) {
+                // Phiếu chưa đến ngày bắt đầu → hiển thị "Sắp diễn ra" (chỉ UI, không ghi DB)
+                if (c.getStatus() != 2) {
+                    c.setStatus(3);
                 }
             }
         }
@@ -282,10 +288,18 @@ public class CouponController extends HttpServlet {
         //
         if (id >= 0 && st != null) {
             Coupon c = repo.findById(id);
-            if (c != null && c.getEndDate() != null && c.getEndDate().isBefore(LocalDateTime.now()) && st == 1) {
-                // Prevent activating an expired coupon
-                response.sendRedirect(redirectUrl + (redirectUrl.contains("?") ? "&" : "?") + "err=expired");
-                return;
+            if (c != null && st == 1) {
+                LocalDateTime now = LocalDateTime.now();
+                // Chặn kích hoạt phiếu đã hết hạn
+                if (c.getEndDate() != null && c.getEndDate().isBefore(now)) {
+                    response.sendRedirect(redirectUrl + (redirectUrl.contains("?") ? "&" : "?") + "err=expired");
+                    return;
+                }
+                // Chặn kích hoạt phiếu chưa đến thời gian diễn ra
+                if (c.getStartDate() != null && c.getStartDate().isAfter(now)) {
+                    response.sendRedirect(redirectUrl + (redirectUrl.contains("?") ? "&" : "?") + "err=not_started");
+                    return;
+                }
             }
             repo.toggleStatus(id, st);
             redirectUrl += (redirectUrl.contains("?") ? "&" : "?") + "msg=updated";
@@ -385,15 +399,6 @@ public class CouponController extends HttpServlet {
         }
     }
 
-    private LocalDate parseDate(String val) {
-        if (val == null || val.trim().isEmpty())
-            return null;
-        try {
-            return LocalDate.parse(val.trim(), DATE_ONLY_FMT);
-        } catch (DateTimeParseException e) {
-            return null;
-        }
-    }
 
     private LocalDateTime parseDateTime(String val) {
         if (val == null || val.trim().isEmpty())

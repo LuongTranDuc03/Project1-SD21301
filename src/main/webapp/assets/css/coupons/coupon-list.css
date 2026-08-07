@@ -563,3 +563,9 @@
     background-color: #fef2f2;
     color: #991b1b;
 }
+
+.badge-status.sap-dien-ra {
+    background-color: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}

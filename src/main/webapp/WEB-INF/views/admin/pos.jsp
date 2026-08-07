@@ -35,10 +35,7 @@
                 <span>FamiCoats</span> / <span class="active-crumb">Bán hàng tại quầy</span>
             </div>
             <div class="navbar-right">
-                <button class="notif-btn">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <span class="notif-badge"></span>
-                </button>
+                <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
@@ -268,18 +265,6 @@
                             </div>
                         </div>
                         
-                        <div class="summary-row" id="customerPayRow">
-                            <span class="summary-label">Khách thanh toán <i class="fa-solid fa-money-bill-wave"></i></span>
-                            <div class="customer-pay-input">
-                                <input type="text" class="form-control text-right" id="customerPayInput" value="0" oninput="handleCurrencyInput(this)">
-                                <span>đ</span>
-                            </div>
-                        </div>
-                        
-                        <div class="summary-row" id="summaryChangeRow">
-                            <span class="summary-label" id="summaryChangeLabel">Tiền thiếu</span>
-                            <span class="summary-value" id="summaryChange">0 đ</span>
-                        </div>
                     </div>
                     
                     <button class="btn-confirm-order" onclick="confirmOrder()">XÁC NHẬN ĐẶT HÀNG</button>
@@ -995,6 +980,7 @@
                 let total = item.price * item.quantity;
                 sumTotal += total;
                 let formattedPrice = item.price.toLocaleString('vi-VN') + ' đ';
+                const safeCode = item.code.replace(/'/g, "\\'");
                 
                 html += 
                     '<div class="pos-cart-item">' +
@@ -1008,11 +994,11 @@
                         '<div class="pos-cart-item-right">' +
                             '<div class="pos-cart-item-price">' + (item.price * item.quantity).toLocaleString('vi-VN') + ' đ</div>' +
                             '<div class="pos-qty-control">' +
-                                '<button class="btn-qty" onclick="updateItemQty(\'' + item.code + '\', -1)">-</button>' +
-                                '<input type="number" class="input-qty" value="' + item.quantity + '" min="1" max="' + item.stock + '" onchange="setItemQty(\'' + item.code + '\', this.value)">' +
-                                '<button class="btn-qty" onclick="updateItemQty(\'' + item.code + '\', 1)">+</button>' +
+                                '<button class="btn-qty" onclick="updateItemQty(\'' + safeCode + '\', -1)">-</button>' +
+                                '<input type="number" class="input-qty" value="' + item.quantity + '" min="1" max="' + item.stock + '" onchange="setItemQty(\'' + safeCode + '\', this.value)">' +
+                                '<button class="btn-qty" onclick="updateItemQty(\'' + safeCode + '\', 1)">+</button>' +
                             '</div>' +
-                            '<button class="btn-remove-item" onclick="removeItem(\'' + item.code + '\')">' +
+                            '<button class="btn-remove-item" onclick="removeItem(\'' + safeCode + '\')">' +
                                 '<i class="fa-solid fa-trash"></i>' +
                             '</button>' +
                         '</div>' +
@@ -1036,23 +1022,29 @@
         const isDelivery = toggle.checked;
         document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
         
+        const shippingInput = document.getElementById('shippingFeeInput');
+        
         if (isDelivery) {
             document.getElementById('btnChooseAddress').style.display = 'inline-block';
             document.getElementById('deliveryHintText').style.display = 'none';
             document.getElementById('deliveryForm').style.display = 'flex';
             // Cho phép nhập phí vận chuyển
-            shippingInput.removeAttribute('readonly');
-            shippingInput.style.backgroundColor = '';
-            shippingInput.style.color = '';
+            if (shippingInput) {
+                shippingInput.removeAttribute('readonly');
+                shippingInput.style.backgroundColor = '';
+                shippingInput.style.color = '';
+            }
         } else {
             document.getElementById('btnChooseAddress').style.display = 'none';
             document.getElementById('deliveryHintText').style.display = 'block';
             document.getElementById('deliveryForm').style.display = 'none';
             // Khóa phí vận chuyển khi tại quầy
-            shippingInput.value = '';
-            shippingInput.setAttribute('readonly', true);
-            shippingInput.style.backgroundColor = '#f3f4f6';
-            shippingInput.style.color = '#94a3b8';
+            if (shippingInput) {
+                shippingInput.value = '';
+                shippingInput.setAttribute('readonly', true);
+                shippingInput.style.backgroundColor = '#f3f4f6';
+                shippingInput.style.color = '#94a3b8';
+            }
         }
     }
     
@@ -1274,15 +1266,6 @@
     }
     
     // --- Checkout State Management ---
-    function handleCurrencyInput(input) {
-        let val = input.value.replace(/\D/g, '');
-        if (val) {
-            input.value = parseInt(val, 10).toLocaleString('vi-VN');
-        } else {
-            input.value = '';
-        }
-        updateCheckoutState();
-    }
     
     function updateTotals() {
         const orderIndex = orders.findIndex(o => o.id === currentOrderId);
@@ -1453,32 +1436,6 @@
         if (finalTotal < 0) finalTotal = 0;
         
         document.getElementById('summaryTotalPayment').textContent = finalTotal.toLocaleString('vi-VN') + ' đ';
-        
-        let customerPay = parseFloat((order.customerPay || '0').toString().replace(/\D/g, '')) || 0;
-        let change = customerPay - finalTotal;
-        const changeLabel = document.getElementById('summaryChangeLabel');
-        const changeValue = document.getElementById('summaryChange');
-        
-        const customerPayRow = document.getElementById('customerPayRow');
-        const summaryChangeRow = document.getElementById('summaryChangeRow');
-        
-        if (order.paymentMethod === 'TRANSFER') {
-            customerPayRow.style.display = 'none';
-            summaryChangeRow.style.display = 'none';
-        } else {
-            customerPayRow.style.display = 'flex';
-            summaryChangeRow.style.display = 'flex';
-            
-            if (change >= 0) {
-                changeLabel.textContent = "Tiền thừa";
-                changeValue.textContent = change.toLocaleString('vi-VN') + ' đ';
-                changeValue.className = "summary-value text-success";
-            } else {
-                changeLabel.textContent = "Tiền thiếu";
-                changeValue.textContent = Math.abs(change).toLocaleString('vi-VN') + ' đ';
-                changeValue.className = "summary-value text-danger";
-            }
-        }
     }
 
     function updateCheckoutState() {
@@ -1515,7 +1472,6 @@
         }
         
         order.shippingFee = document.getElementById('shippingFeeInput').value;
-        order.customerPay = document.getElementById('customerPayInput').value;
         order.discountCode = document.getElementById('discountCodeInput').value;
         const noteEl = document.getElementById('orderNoteInput');
         order.note = noteEl ? noteEl.value : '';
@@ -1533,13 +1489,11 @@
             document.getElementById('customerPhoneInput').value = '';
             document.getElementById('customerAddressInput').value = '';
             document.getElementById('shippingFeeInput').value = '';
-            document.getElementById('customerPayInput').value = '';
             document.getElementById('discountCodeInput').value = '';
             const noteElReset = document.getElementById('orderNoteInput');
             if (noteElReset) noteElReset.value = '';
             document.getElementById('summaryTotalItems').textContent = '0 đ';
             document.getElementById('summaryTotalPayment').textContent = '0 đ';
-            document.getElementById('summaryChange').textContent = '0 đ';
             return;
         }
         const order = orders[orderIndex];
@@ -1725,7 +1679,6 @@
         }
         
         document.getElementById('shippingFeeInput').value = order.shippingFee || '';
-        document.getElementById('customerPayInput').value = order.customerPay || '';
         document.getElementById('discountCodeInput').value = order.discountCode || '';
         const noteElSet = document.getElementById('orderNoteInput');
         if (noteElSet) noteElSet.value = order.note || '';
@@ -1950,6 +1903,7 @@
     // --- QR and Success Modals ---
     function setPaymentMethod(method) {
         const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+
         if (orderIndex === -1) return;
         const order = orders[orderIndex];
         order.paymentMethod = method;
@@ -2014,7 +1968,7 @@
         checkoutAjax(order, finalTotal);
     }
     
-    function openSuccessInvoiceModal(order, finalTotal, invoiceCode) {
+    function openSuccessInvoiceModal(order, finalTotal, invoiceCode, invoiceId) {
         document.getElementById('invoiceSuccessCode').textContent = invoiceCode || '---';
         document.getElementById('invoiceCustomerName').textContent = order.customerName || 'Khách lẻ';
         document.getElementById('invoiceBuyerPhone').textContent = order.customerPhone || '---';
@@ -2081,77 +2035,76 @@
             });
         }
         
+        const printBtn = document.getElementById('btnInvoicePrint');
+        if (printBtn) {
+            printBtn.onclick = function() {
+                window.open('${pageContext.request.contextPath}/admin/invoices/print?id=' + invoiceId, '_blank');
+            };
+        }
+        
         document.getElementById('invoiceModal').classList.add('active');
     }
     
     function confirmOrder() {
-        const orderIndex = orders.findIndex(o => o.id === currentOrderId);
-        if (orderIndex === -1) return;
-        const order = orders[orderIndex];
-        
-        if (!order.items || order.items.length === 0) {
-            alert("Vui lòng thêm sản phẩm vào hóa đơn trước khi xác nhận!");
-            return;
-        }
-        
-        if (!order.customerName || order.customerName.trim() === '') {
-            order.customerName = 'Khách lẻ';
-        }
-        
-        const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
-        const bError = document.getElementById('buyerPhoneError');
-        if (!order.customerPhone || order.customerPhone.trim() === '') {
-            bError.textContent = "Vui lòng nhập số điện thoại khách hàng!";
-            bError.style.display = 'block';
-            document.getElementById('buyerPhoneInput').focus();
-            return;
-        }
-        
-        if (!phoneRegex.test(order.customerPhone.trim())) {
-            bError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
-            bError.style.display = 'block';
-            document.getElementById('buyerPhoneInput').focus();
-            return;
-        }
-        
-        if (order.isDelivery) {
-            const dError = document.getElementById('deliveryPhoneError');
-            if (!order.deliveryPhone || order.deliveryPhone.trim() === '') {
-                dError.textContent = "Vui lòng nhập số điện thoại người nhận!";
-                dError.style.display = 'block';
-                document.getElementById('customerPhoneInput').focus();
-                return;
-            }
-            if (!phoneRegex.test(order.deliveryPhone.trim())) {
-                dError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
-                dError.style.display = 'block';
-                document.getElementById('customerPhoneInput').focus();
-                return;
-            }
-            if (!order.deliveryAddress || order.deliveryAddress.trim() === '') {
-                alert("Vui lòng nhập địa chỉ cụ thể người nhận!");
-                return;
-            }
-        }
-        
-        if (order.paymentMethod === 'TRANSFER') {
-            openQrModal(order);
-        } else {
-            // Thanh toán tiền mặt
-            let sumTotal = 0;
-            order.items.forEach(item => { sumTotal += (item.price * item.quantity); });
-            let discount = parseFloat((order.discountValue || '0').toString().replace(/\D/g, '')) || 0;
-            let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/\D/g, '')) || 0) : 0;
-            let finalTotal = sumTotal + shippingFee - discount;
-            if (finalTotal < 0) finalTotal = 0;
+        try {
+            const orderIndex = orders.findIndex(o => o.id === currentOrderId);
+            if (orderIndex === -1) return;
+            const order = orders[orderIndex];
             
-            let customerPay = parseFloat((order.customerPay || '0').toString().replace(/\D/g, '')) || 0;
-            if (customerPay < finalTotal) {
-                alert("Khách thanh toán chưa đủ số tiền!");
+            if (!order.items || order.items.length === 0) {
+                alert("Vui lòng thêm sản phẩm vào hóa đơn trước khi xác nhận!");
                 return;
             }
             
-            checkoutAjax(order, finalTotal);
+            if (!order.customerName || order.customerName.trim() === '') {
+                order.customerName = 'Khách lẻ';
+            }
+            
+            const khName = order.customerName.trim().toLowerCase();
+            const isKhachLe = (khName === 'khách lẻ' || khName === 'khach le' || khName === '');
+            const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
+            
+            // Sync phone from input if visible (registered customer)
+            const buyerPhoneInput = document.getElementById('buyerPhoneInput');
+            const buyerPhoneGroup = document.getElementById('buyerPhoneGroup');
+            if (buyerPhoneGroup && buyerPhoneGroup.style.display !== 'none' && buyerPhoneInput) {
+                order.customerPhone = buyerPhoneInput.value.trim();
+            }
+            
+            const bError = document.getElementById('buyerPhoneError');
+            if (bError) bError.style.display = 'none';
+            order.customerPhone = order.customerPhone || '';
+            
+            if (order.isDelivery) {
+                const dError = document.getElementById('deliveryPhoneError');
+                if (!order.deliveryPhone || order.deliveryPhone.trim() === '') {
+                    dError.textContent = "Vui lòng nhập số điện thoại người nhận!";
+                    dError.style.display = 'block';
+                    alert("Vui lòng nhập số điện thoại người nhận!");
+                    document.getElementById('customerPhoneInput').focus();
+                    return;
+                }
+                if (!phoneRegex.test(order.deliveryPhone.trim())) {
+                    dError.textContent = "Số điện thoại không hợp lệ (VD: 0912345678)!";
+                    dError.style.display = 'block';
+                    alert("Số điện thoại người nhận không hợp lệ (VD: 0912345678)!");
+                    document.getElementById('customerPhoneInput').focus();
+                    return;
+                }
+                if (!order.deliveryAddress || order.deliveryAddress.trim() === '') {
+                    alert("Vui lòng nhập địa chỉ cụ thể người nhận!");
+                    return;
+                }
+            }
+            
+            if (order.paymentMethod === 'TRANSFER') {
+                openQrModal(order);
+            } else {
+                // Thanh toán tiền mặt → mở popup xác nhận
+                openCashPaymentModal(order);
+            }
+        } catch (error) {
+            alert("Lỗi khi xác nhận đơn: " + error.message + "\nStack: " + error.stack);
         }
     }
     let isCheckingOut = false;
@@ -2169,7 +2122,7 @@
         .then(data => {
             isCheckingOut = false;
             if (data.success) {
-                openSuccessInvoiceModal(order, finalTotal, data.invoiceCode);
+                openSuccessInvoiceModal(order, finalTotal, data.invoiceCode, data.invoiceId);
                 // Clear order after success
                 orders.splice(orders.findIndex(o => o.id === order.id), 1);
                 if (orders.length === 0) createOrder();
@@ -2197,6 +2150,131 @@
         window.location.reload();
     }
 
+    // ===========================
+    // CASH PAYMENT MODAL
+    // ===========================
+    function formatCurrency(n) { return Math.round(n).toLocaleString('vi-VN') + ' đ'; }
+    let _cashOrder = null;
+    let _cashFinalTotal = 0;
+
+    function openCashPaymentModal(order) {
+        _cashOrder = order;
+
+        // Tính toán
+        let sumTotal = 0;
+        let totalQty = 0;
+        order.items.forEach(item => {
+            sumTotal += (item.price * item.quantity);
+            totalQty += item.quantity;
+        });
+        let discount = parseFloat((order.discountValue || '0').toString().replace(/[^\d.]/g, '')) || 0;
+        let shippingFee = order.isDelivery ? (parseFloat((order.shippingFee || '0').toString().replace(/[^\d.]/g, '')) || 0) : 0;
+        let finalTotal = sumTotal + shippingFee - discount;
+        if (finalTotal < 0) finalTotal = 0;
+        _cashFinalTotal = finalTotal;
+
+        // Điền thông tin
+        document.getElementById('cash-customer-name').textContent = order.customerName || 'Khách lẻ';
+        document.getElementById('cash-item-count').textContent = totalQty + ' sản phẩm (' + order.items.length + ' loại)';
+        document.getElementById('cash-subtotal').textContent = formatCurrency(sumTotal);
+        document.getElementById('cash-discount').textContent = '- ' + formatCurrency(discount);
+        document.getElementById('cash-discount-row').style.display = discount > 0 ? 'flex' : 'none';
+        document.getElementById('cash-shipping').textContent = formatCurrency(shippingFee);
+        document.getElementById('cash-shipping-row').style.display = shippingFee > 0 ? 'flex' : 'none';
+        document.getElementById('cash-total').textContent = formatCurrency(finalTotal);
+
+        // Đặt giá trị mặc định cho ô nhập: lấy giá trị customerPay hiện tại hoặc để trống
+        let currentPay = parseFloat((order.customerPay || '0').toString().replace(/[^\d.]/g, '')) || 0;
+        const payInput = document.getElementById('cash-pay-input');
+        payInput.value = currentPay > 0 ? currentPay.toString() : '';
+
+
+        updateCashChange();
+
+        document.getElementById('cashPaymentModal').classList.add('active');
+        setTimeout(() => payInput.focus(), 100);
+    }
+
+    function generateQuickAmounts(total) {
+        const amounts = [];
+        const roundings = [1000, 5000, 10000, 50000, 100000, 200000, 500000];
+        const seen = new Set();
+        for (const r of roundings) {
+            const rounded = Math.ceil(total / r) * r;
+            if (!seen.has(rounded) && rounded >= total) {
+                seen.add(rounded);
+                amounts.push(rounded);
+                if (amounts.length >= 5) break;
+            }
+        }
+        return amounts;
+    }
+
+    function closeCashPaymentModal() {
+        document.getElementById('cashPaymentModal').classList.remove('active');
+        _cashOrder = null;
+        _cashFinalTotal = 0;
+    }
+
+    function updateCashChange() {
+        const raw = document.getElementById('cash-pay-input').value.replace(/[^\d]/g, '');
+        const paid = parseFloat(raw) || 0;
+        const change = paid - _cashFinalTotal;
+        const changeBox = document.getElementById('cash-change-box');
+        const changeLabel = document.getElementById('cash-change-label');
+        const changeAmount = document.getElementById('cash-change-amount');
+        const confirmBtn = document.getElementById('cash-confirm-btn');
+
+        // Định dạng lại input (nếu muốn nó format có dấu chấm)
+        if (raw) {
+            document.getElementById('cash-pay-input').value = parseInt(raw, 10).toLocaleString('vi-VN');
+        } else {
+            document.getElementById('cash-pay-input').value = '';
+        }
+
+        if (paid < _cashFinalTotal) {
+            changeBox.style.background = '#fef2f2';
+            changeBox.style.borderColor = '#fecaca';
+            changeLabel.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i>Tiền thiếu';
+            changeLabel.style.color = '#b91c1c';
+            changeAmount.textContent = formatCurrency(Math.abs(change));
+            changeAmount.style.color = '#dc2626';
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.5';
+        } else {
+            changeBox.style.background = '#f0fdf4';
+            changeBox.style.borderColor = '#bbf7d0';
+            changeLabel.innerHTML = '<i class="fa-solid fa-arrow-left-long" style="margin-right:6px;"></i>Tiền thừa';
+            changeLabel.style.color = '#15803d';
+            changeAmount.textContent = formatCurrency(change);
+            changeAmount.style.color = '#16a34a';
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+        }
+    }
+
+    function confirmCashPayment() {
+        if (!_cashOrder) return;
+        const raw = document.getElementById('cash-pay-input').value.replace(/[^\d]/g, '');
+        const paid = parseFloat(raw) || 0;
+        
+        if (paid < _cashFinalTotal) {
+            if (typeof window.showToast === 'function') {
+                window.showToast('Khách trả chưa đủ số tiền!', 'error');
+            } else {
+                alert('Khách trả chưa đủ số tiền!');
+            }
+            return;
+        }
+        
+        // Lưu lại customerPay vào order
+        _cashOrder.customerPay = paid.toString();
+        const orderToSubmit = _cashOrder;
+        const totalToSubmit = _cashFinalTotal;
+        closeCashPaymentModal();
+        checkoutAjax(orderToSubmit, totalToSubmit);
+    }
+
     // Initialize
     window.addEventListener('DOMContentLoaded', initPOS);
     
@@ -2213,6 +2291,91 @@
         </div>
         <p style="font-weight: bold; font-size: 20px; color: #b91c1c; margin-bottom: 20px;" id="qrAmountDisplay">0 đ</p>
         <button class="btn-outline-primary" style="width: 100%; background: #22c55e; color: white; border-color: #22c55e; padding: 10px; border-radius: 8px; font-weight: bold;" onclick="demoSuccessfulTransfer()">Demo chuyển khoản thành công</button>
+    </div>
+</div>
+
+<!-- Cash Payment Modal -->
+<div class="pos-modal-overlay" id="cashPaymentModal" style="z-index: 1100;">
+    <div class="pos-modal" style="width: 520px; padding: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 22px 28px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-money-bill-wave" style="color: #4ade80; font-size: 18px;"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0; color:#fff; font-size: 16px; font-weight: 700;">Thanh toán tiền mặt</h3>
+                    <p style="margin:0; color: rgba(255,255,255,0.6); font-size: 12px;">Kiểm tra thông tin và nhập số tiền khách trả</p>
+                </div>
+            </div>
+            <button onclick="closeCashPaymentModal()" style="background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 8px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 24px 28px; background: #fff;">
+            <!-- Summary rows -->
+            <div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
+                    <span style="color: #64748b; font-size: 13px;">Khách hàng</span>
+                    <span id="cash-customer-name" style="font-weight: 600; font-size: 13px; color: #1e293b;">Khách lẻe</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
+                    <span style="color: #64748b; font-size: 13px;">Số sản phẩm</span>
+                    <span id="cash-item-count" style="font-weight: 600; font-size: 13px; color: #1e293b;">0 sản phẩm</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
+                    <span style="color: #64748b; font-size: 13px;">Tạm tính</span>
+                    <span id="cash-subtotal" style="font-weight: 600; font-size: 13px; color: #1e293b;">0 đ</span>
+                </div>
+                <div id="cash-discount-row" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
+                    <span style="color: #64748b; font-size: 13px;">Giảm giá</span>
+                    <span id="cash-discount" style="font-weight: 600; font-size: 13px; color: #ef4444;">- 0 đ</span>
+                </div>
+                <div id="cash-shipping-row" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #e2e8f0;">
+                    <span style="color: #64748b; font-size: 13px;">Phí vận chuyển</span>
+                    <span id="cash-shipping" style="font-weight: 600; font-size: 13px; color: #1e293b;">0 đ</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0 0 0; margin-top: 4px;">
+                    <span style="color: #1e293b; font-size: 15px; font-weight: 700;">Tổng thanh toán</span>
+                    <span id="cash-total" style="font-size: 20px; font-weight: 800; color: #e11d48;">0 đ</span>
+                </div>
+            </div>
+
+            <!-- Customer pays input -->
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 8px;">
+                    <i class="fa-solid fa-hand-holding-dollar" style="color: #16a34a; margin-right: 6px;"></i>
+                    Khách trả
+                </label>
+                <div style="position: relative;">
+                    <input type="text" id="cash-pay-input"
+                        style="width: 100%; box-sizing: border-box; padding: 12px 50px 12px 16px; font-size: 20px; font-weight: 700; color: #1e293b; border: 2px solid #3b82f6; border-radius: 10px; outline: none; text-align: right; transition: border-color 0.2s;"
+                        placeholder="0"
+                        oninput="updateCashChange()"
+                        onfocus="this.style.borderColor='#2563eb'"
+                        onblur="this.style.borderColor='#3b82f6'"
+                    />
+                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 14px; font-weight: 600; pointer-events: none;">đ</span>
+                </div>
+
+            </div>
+
+            <!-- Change display -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;" id="cash-change-box">
+                <span id="cash-change-label" style="font-size: 14px; font-weight: 600; color: #15803d;">
+                    <i class="fa-solid fa-arrow-left-long" style="margin-right: 6px;"></i>Tiền thừa
+                </span>
+                <span id="cash-change-amount" style="font-size: 18px; font-weight: 800; color: #16a34a;">0 đ</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 16px 28px 24px; background: #fff; display: flex; gap: 12px; border-top: 1px solid #f1f5f9;">
+            <button onclick="closeCashPaymentModal()" style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; color: #64748b; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">Hủy</button>
+            <button id="cash-confirm-btn" onclick="confirmCashPayment()" style="flex: 2; padding: 12px; border: none; border-radius: 10px; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                <i class="fa-solid fa-check-circle"></i> Xác nhận thanh toán
+            </button>
+        </div>
     </div>
 </div>
 
@@ -2270,7 +2433,12 @@
             <strong style="font-size: 20px; color: #b91c1c;" id="invoiceTotalAmount">0 đ</strong>
         </div>
         
-        <button class="btn-outline-primary" style="width: 100%; margin-top: 25px; background: #3b82f6; color: white; border-color: #3b82f6; padding: 10px; border-radius: 8px; font-weight: bold;" onclick="closeInvoiceModal()">Đóng</button>
+        <div style="margin-top: 25px; display: flex; gap: 10px;">
+            <button class="btn-outline-primary" style="flex: 1; background: #fff; color: #3b82f6; border: 1px solid #3b82f6; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;" onclick="closeInvoiceModal()">Đóng</button>
+            <button id="btnInvoicePrint" class="btn-outline-primary" style="flex: 1; background: #3b82f6; color: white; border: 1px solid #3b82f6; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+                <i class="fa-solid fa-print"></i> In hoá đơn
+            </button>
+        </div>
     </div>
 </div>
 

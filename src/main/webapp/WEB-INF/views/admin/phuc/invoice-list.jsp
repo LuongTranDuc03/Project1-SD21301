@@ -79,16 +79,7 @@
                 <span class="active-crumb">Quản lý hoá đơn</span>
             </div>
             <div class="navbar-right">
-                <button class="notif-btn" aria-label="Thông báo">
-                    <svg viewBox="0 0 24 24" width="20" height="20"
-                         stroke="currentColor" stroke-width="2" fill="none"
-                         stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                                d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    <span class="notif-badge"></span>
-                </button>
+                <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
                 <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
                 <div class="profile-pill">
                     <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
