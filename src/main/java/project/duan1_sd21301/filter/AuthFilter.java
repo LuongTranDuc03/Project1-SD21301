@@ -51,19 +51,28 @@ public class AuthFilter implements Filter {
             if (path.contains("/admin/dashboard") || path.contains("/admin/employees")) {
                 isBlocked = true;
             }
+            String action = request.getParameter("action");
+            
             // Block product and variant modifications
-            else if (path.contains("/admin/products/create") || path.contains("/admin/products/edit") || path.contains("/admin/products/delete") || path.contains("/admin/products/toggle") || path.contains("/admin/products/status")) {
-                isBlocked = true;
+            if (path.contains("/admin/products")) {
+                if (path.contains("/create") || path.contains("/edit") || path.contains("/delete") || path.contains("/toggle") || path.contains("/status") ||
+                    (action != null && (action.equals("add") || action.equals("edit") || action.equals("toggleStatus") || action.equals("updateVariant") || action.equals("deleteVariant") || action.equals("addVariant") || action.equals("deleteProduct")))) {
+                    isBlocked = true;
+                }
             }
-            else if (path.contains("/admin/variants/create") || path.contains("/admin/variants/edit") || path.contains("/admin/variants/delete") || path.contains("/admin/variants/toggle") || path.contains("/admin/variants/status")) {
-                isBlocked = true;
+            else if (path.contains("/admin/variants")) {
+                if (path.contains("/create") || path.contains("/edit") || path.contains("/delete") || path.contains("/toggle") || path.contains("/status")) {
+                    isBlocked = true;
+                } else if (action != null && (action.equals("add") || action.equals("edit") || action.equals("toggleStatus"))) {
+                    isBlocked = true;
+                }
             }
             // Block settings/account management
             else if (path.contains("/admin/settings") || path.contains("/admin/accounts")) {
                 isBlocked = true;
             }
-            // Block coupons - nhân viên không có quyền xem module phiếu giảm giá
-            else if (path.contains("/admin/coupons")) {
+            // Block coupons modifying routes cho nhân viên
+            else if (path.contains("/admin/coupons/add") || path.contains("/admin/coupons/save") || path.contains("/admin/coupons/toggle-status") || path.contains("/admin/coupons/delete")) {
                 isBlocked = true;
             }
             // Block customer edits

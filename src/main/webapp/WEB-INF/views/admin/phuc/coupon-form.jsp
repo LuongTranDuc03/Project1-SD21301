@@ -376,6 +376,26 @@
         }, 4000);
     }
 </script>
+<%
+    project.duan1_sd21301.model.huy.Employee user = (project.duan1_sd21301.model.huy.Employee) session.getAttribute("loggedInUser");
+    boolean isManager = (user != null && user.getRoleId() == 1);
+%>
+<% if (!isManager) { %>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.setAttribute('disabled', 'disabled');
+        input.style.backgroundColor = '#f1f5f9';
+        input.style.cursor = 'not-allowed';
+    });
+    const btnSubmit = document.getElementById('btnSubmit');
+    if (btnSubmit) {
+        btnSubmit.style.display = 'none';
+    }
+});
+</script>
+<% } %>
 </body>
 </html>
 

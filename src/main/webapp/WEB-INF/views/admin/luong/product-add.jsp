@@ -713,7 +713,6 @@
 
                         </div>
                     </div>
-                    </div>
                     
                     <!-- Form Actions -->
                     <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 40px;">
@@ -744,24 +743,24 @@
             var name = nameElem ? nameElem.value : "";
             
             if (!code || code.trim() === "") {
-                alert("Vui lòng nhập Mã sản phẩm.");
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng nhập Mã sản phẩm.", 'error'); else alert("Vui lòng nhập Mã sản phẩm.");
                 return false;
             }
             if (!name || name.trim() === "") {
-                alert("Vui lòng nhập Tên sản phẩm.");
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng nhập Tên sản phẩm.", 'error'); else alert("Vui lòng nhập Tên sản phẩm.");
                 return false;
             }
             if (selectedColors.length === 0) {
-                alert("Vui lòng chọn ít nhất một màu sắc!");
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng chọn ít nhất một màu sắc!", 'error'); else alert("Vui lòng chọn ít nhất một màu sắc!");
                 return false;
             }
             if (selectedSizes.length === 0) {
-                alert("Vui lòng chọn ít nhất một kích cỡ!");
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng chọn ít nhất một kích cỡ!", 'error'); else alert("Vui lòng chọn ít nhất một kích cỡ!");
                 return false;
             }
             var generatedKeys = Object.keys(generatedVariants);
             if (generatedKeys.length === 0) {
-                alert("Vui lòng bấm 'Tạo biến thể tự động' sau khi chọn màu sắc và kích cỡ để tạo danh sách biến thể!");
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng bấm 'Tạo biến thể tự động' sau khi chọn màu sắc và kích cỡ để tạo danh sách biến thể!", 'error'); else alert("Vui lòng bấm 'Tạo biến thể tự động' sau khi chọn màu sắc và kích cỡ để tạo danh sách biến thể!");
                 return false;
             }
 
@@ -784,11 +783,16 @@
                         errorMsg = "Số lượng của biến thể (Màu: " + color + ", Kích cỡ: " + v.size + ") không hợp lệ!";
                         break;
                     }
+                    if (st <= 0 && v.status === 'Còn hàng') {
+                        hasVariantError = true;
+                        errorMsg = "Biến thể (Màu: " + color + ", Kích cỡ: " + v.size + ") đã hết hàng nhưng đang để trạng thái 'Còn hàng'!";
+                        break;
+                    }
                 }
                 if (hasVariantError) break;
             }
             if (hasVariantError) {
-                alert(errorMsg);
+                if (typeof window.showToast === 'function') window.showToast(errorMsg, 'error'); else alert(errorMsg);
                 return false;
             }
 
@@ -908,7 +912,7 @@
                 let colorCircleHtml = '';
                 if (containerId === 'color-tags-container') {
                     const hex = getClientColorHex(val);
-                    colorCircleHtml = `<span style="width: 10px; height: 10px; border-radius: 50%; background-color: \${hex}; border: 1px solid #cbd5e1; display: inline-block;"></span>`;
+                    colorCircleHtml = '<span style="width: 10px; height: 10px; border-radius: 50%; background-color: ' + hex + '; border: 1px solid #cbd5e1; display: inline-block;"></span>';
                 } else {
                     colorCircleHtml = `<span style="width: 6px; height: 6px; border-radius: 50%; background-color: #475569; display: inline-block;"></span>`;
                 }
@@ -1126,9 +1130,15 @@
                 
                 const box = document.createElement('div');
                 box.style = 'width: 120px; text-align: center;';
+                let previewHtml = '';
+                if (imgSrc) {
+                    previewHtml = '<img id="sub-preview-' + idx + '" src="' + imgSrc + '" style="width: 100%; height: 100%; object-fit: cover;">';
+                } else {
+                    previewHtml = '<span style="font-size: 12px; color: #64748b;">' + color + '</span>';
+                }
                 box.innerHTML = `
                     <div style="width: 120px; height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; position: relative;" onclick="document.getElementById('img-input-\${idx}').click()">
-                        \${imgSrc ? `<img id="sub-preview-\${idx}" src="\${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;">` : `<span style="font-size: 12px; color: #64748b;">\${color}</span>`}
+                        ` + previewHtml + `
                     </div>
                     <div style="margin-top: 6px; font-size: 13px; font-weight: 600; color: #334155;">\${color}</div>
                 `;
@@ -1217,6 +1227,22 @@
             let num = parseInt(rawValue, 10);
             input.value = num.toLocaleString('en-US');
             updateVariantData(color, size, field, num);
+
+            // Tự động điền giá bán = giá nhập * 1.5 nếu giá bán đang trống hoặc = 0
+            if (field === 'importPrice') {
+                const tr = input.closest('tr');
+                if (tr) {
+                    const priceInput = tr.querySelector('input[name="variantPrice"]');
+                    if (priceInput) {
+                        let currentPrice = parseInt(priceInput.value.replace(/[^0-9]/g, '') || '0', 10);
+                        if (currentPrice === 0) {
+                            let autoPrice = Math.round(num * 1.5);
+                            priceInput.value = autoPrice.toLocaleString('en-US');
+                            updateVariantData(color, size, 'price', autoPrice);
+                        }
+                    }
+                }
+            }
         };
 
         window.updateVariantData = function(color, size, field, value) {

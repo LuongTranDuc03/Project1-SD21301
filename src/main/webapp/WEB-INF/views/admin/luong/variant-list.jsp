@@ -750,9 +750,7 @@
                                                                                                                                 points="21 15 16 10 5 21">
                                                                                                                             </polyline>
                                                                                                                         </svg>
-                                                                                                                    </div>
-                                                                                                                    <% }
-                                                                                                                        %>
+                                                                                                                    </div> <% } %>
                                                                                                         </td>
                                                                                                         <td
                                                                                                             style="text-align: center;">
@@ -816,9 +814,7 @@
                                                                                                         </td>
                                                                                                         <td
                                                                                                             style="text-align: center;">
-                                                                                                            <% if
-                                                                                                                (isManager)
-                                                                                                                { %>
+                                                                                                            <%-- IF MANAGER REMOVED --%>
                                                                                                                 <div
                                                                                                                     style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: nowrap;">
                                                                                                                     <a href="javascript:void(0)"
@@ -904,8 +900,7 @@
                                                                                                                                                         </circle>
                                                                                                                                                     </svg>
                                                                                                                     </a>
-                                                                                                                    <a href="javascript:void(0)"
-                                                                                                                        onclick="openEditVariantModal(this)"
+                                                                                                                    <% if (isManager) { %> <a href="javascript:void(0)" onclick="openEditVariantModal(this)"
                                                                                                                         class="action-icon-btn edit-btn"
                                                                                                                         title="Chỉnh sửa"
                                                                                                                         data-variantid="<%= v.getId() %>"
@@ -996,8 +991,8 @@
                                                                                                                         <span
                                                                                                                             class="slider"></span>
                                                                                                                     </label>
+                                                                                                                    <% } %>
                                                                                                                 </div>
-                                                                                                                <% } %>
                                                                                                         </td>
                                                                                 </tr>
                                                                                 <% } } else { %>
@@ -1807,3 +1802,5 @@
                     </script>
 
                     </html>
+
+
