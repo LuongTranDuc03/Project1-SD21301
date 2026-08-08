@@ -337,20 +337,7 @@
             <div class="chart-header">
                 <div class="chart-title-left">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    Doanh thu (<%= request.getAttribute("currentMonthYear") %>)
-                    <% Boolean isCustomFilter = (Boolean) request.getAttribute("isCustomFilter"); if (isCustomFilter == null || !isCustomFilter) { %>
-                    <select disabled><option>Theo tháng</option></select>
-                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display:inline;" id="chartForm">
-                        <select name="chartMonth" onchange="document.getElementById('chartForm').submit()">
-                            <% 
-                               Integer selectedMonth = (Integer) request.getAttribute("selectedMonth");
-                               for (int m = 1; m <= 12; m++) { 
-                            %>
-                            <option value="<%= m %>" <%= selectedMonth != null && selectedMonth == m ? "selected" : "" %>>Tháng <%= m %>/2026</option>
-                            <% } %>
-                        </select>
-                    </form>
-                    <% } %>
+                    Doanh thu
                 </div>
                 <button class="btn-compare">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
@@ -523,14 +510,14 @@
                             const idx = Math.round(value);
                             return (idx >= 0 && idx < tickLabels.length) ? tickLabels[idx] : '';
                         },
-                        font: { size: 10 },
-                        color: '#999'
+                        font: { size: 11, weight: 'bold' },
+                        color: '#555'
                     },
                     grid: { color: '#f5f5f5' }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 10 }, color: '#999' }
+                    ticks: { font: { size: 11, weight: 'bold' }, color: '#555' }
                 }
             }
         }
