@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class DashboardRepository {
 
-    public Map<String, Object> getStatsForPeriod(String type) {
+    public Map<String, Object> getStatsForPeriod(String type, String refDateStr) {
         Map<String, Object> result = new HashMap<>();
         result.put("revenue", 0.0);
         result.put("totalOrders", 0L);
@@ -21,19 +21,25 @@ public class DashboardRepository {
         result.put("countCancelled", 0L);
         result.put("countProcessing", 0L);
 
+        boolean hasRefDate = refDateStr != null && !refDateStr.trim().isEmpty();
+        String refDateSql = hasRefDate ? "?" : "GETDATE()";
+
         String condition = "";
         switch (type) {
             case "today":
-                condition = "CAST(ngay_dat_hang AS DATE) = CAST(GETDATE() AS DATE)";
+                condition = "CAST(ngay_dat_hang AS DATE) = CAST(" + refDateSql + " AS DATE)";
                 break;
             case "week":
-                condition = "DATEPART(isoww, ngay_dat_hang) = DATEPART(isoww, GETDATE()) AND YEAR(ngay_dat_hang) = YEAR(GETDATE())";
+                condition = "DATEPART(isoww, ngay_dat_hang) = DATEPART(isoww, " + refDateSql + ") AND YEAR(ngay_dat_hang) = YEAR(" + refDateSql + ")";
                 break;
             case "month":
-                condition = "MONTH(ngay_dat_hang) = MONTH(GETDATE()) AND YEAR(ngay_dat_hang) = YEAR(GETDATE())";
+                condition = "MONTH(ngay_dat_hang) = MONTH(" + refDateSql + ") AND YEAR(ngay_dat_hang) = YEAR(" + refDateSql + ")";
                 break;
             case "year":
-                condition = "YEAR(ngay_dat_hang) = YEAR(GETDATE())";
+                condition = "YEAR(ngay_dat_hang) = YEAR(" + refDateSql + ")";
+                break;
+            case "custom":
+                condition = "1=1";
                 break;
             default:
                 condition = "1=1";
@@ -49,20 +55,33 @@ public class DashboardRepository {
                 "FROM hoa_don WHERE " + condition;
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                result.put("revenue", rs.getDouble("revenue"));
-                result.put("totalOrders", (long) rs.getInt("totalOrders"));
-                // tong_so_luong maybe int
-                long productsSold = 0;
-                if (rs.getObject("productsSold") != null) {
-                    productsSold = rs.getLong("productsSold");
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            if (hasRefDate) {
+                java.sql.Date sqlDate = java.sql.Date.valueOf(refDateStr);
+                int paramIndex = 1;
+                if (type.equals("today") || type.equals("year")) {
+                    ps.setDate(paramIndex++, sqlDate);
+                } else if (type.equals("week") || type.equals("month")) {
+                    ps.setDate(paramIndex++, sqlDate);
+                    ps.setDate(paramIndex++, sqlDate);
                 }
-                result.put("productsSold", productsSold);
-                result.put("countCompleted", (long) rs.getInt("countCompleted"));
-                result.put("countCancelled", (long) rs.getInt("countCancelled"));
-                result.put("countProcessing", (long) rs.getInt("countProcessing"));
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    result.put("revenue", rs.getDouble("revenue"));
+                    result.put("totalOrders", (long) rs.getInt("totalOrders"));
+                    // tong_so_luong maybe int
+                    long productsSold = 0;
+                    if (rs.getObject("productsSold") != null) {
+                        productsSold = rs.getLong("productsSold");
+                    }
+                    result.put("productsSold", productsSold);
+                    result.put("countCompleted", (long) rs.getInt("countCompleted"));
+                    result.put("countCancelled", (long) rs.getInt("countCancelled"));
+                    result.put("countProcessing", (long) rs.getInt("countProcessing"));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,10 +116,10 @@ public class DashboardRepository {
             
             int paramIndex = 1;
             if (fromDate != null && !fromDate.trim().isEmpty()) {
-                ps.setString(paramIndex++, fromDate);
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(fromDate));
             }
             if (toDate != null && !toDate.trim().isEmpty()) {
-                ps.setString(paramIndex++, toDate);
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(toDate));
             }
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -143,10 +162,10 @@ public class DashboardRepository {
              
             int paramIndex = 1;
             if (fromDate != null && !fromDate.trim().isEmpty()) {
-                ps.setString(paramIndex++, fromDate);
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(fromDate));
             }
             if (toDate != null && !toDate.trim().isEmpty()) {
-                ps.setString(paramIndex++, toDate);
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(toDate));
             }
             
             try (ResultSet rs = ps.executeQuery()) {
@@ -184,6 +203,93 @@ public class DashboardRepository {
             e.printStackTrace();
         }
         return map;
+    }
+
+    public Map<String, Double> getCustomChartData(String fromDate, String toDate) {
+        Map<String, Double> map = new HashMap<>();
+        String sql = "SELECT CAST(ngay_dat_hang AS DATE) AS day, SUM(tong_thanh_toan) AS revenue " +
+                "FROM hoa_don " +
+                "WHERE (trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1)) ";
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql += "AND CAST(ngay_dat_hang AS DATE) >= ? ";
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql += "AND CAST(ngay_dat_hang AS DATE) <= ? ";
+        }
+        sql += "GROUP BY CAST(ngay_dat_hang AS DATE) ORDER BY day ASC";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(fromDate));
+            }
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(toDate));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    map.put(rs.getString("day"), rs.getDouble("revenue"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public Map<String, Object> getStatsForCustomPeriod(String fromDate, String toDate) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("revenue", 0.0);
+        result.put("totalOrders", 0L);
+        result.put("productsSold", 0L);
+        result.put("countCompleted", 0L);
+        result.put("countCancelled", 0L);
+        result.put("countProcessing", 0L);
+
+        String sql = "SELECT " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1) THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
+                "COUNT(*) AS totalOrders, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END) AS countCompleted, " +
+                "SUM(CASE WHEN trang_thai_don_hang IN (4, 5) THEN 1 ELSE 0 END) AS countCancelled, " +
+                "SUM(CASE WHEN trang_thai_don_hang IN (0, 1) THEN 1 ELSE 0 END) AS countProcessing " +
+                "FROM hoa_don WHERE 1=1 ";
+
+        if (fromDate != null && !fromDate.trim().isEmpty()) {
+            sql += "AND CAST(ngay_dat_hang AS DATE) >= ? ";
+        }
+        if (toDate != null && !toDate.trim().isEmpty()) {
+            sql += "AND CAST(ngay_dat_hang AS DATE) <= ? ";
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (fromDate != null && !fromDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(fromDate));
+            }
+            if (toDate != null && !toDate.trim().isEmpty()) {
+                ps.setDate(paramIndex++, java.sql.Date.valueOf(toDate));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    result.put("revenue", rs.getDouble("revenue"));
+                    result.put("totalOrders", (long) rs.getInt("totalOrders"));
+                    long productsSold = 0;
+                    if (rs.getObject("productsSold") != null) {
+                        productsSold = rs.getLong("productsSold");
+                    }
+                    result.put("productsSold", productsSold);
+                    result.put("countCompleted", (long) rs.getInt("countCompleted"));
+                    result.put("countCancelled", (long) rs.getInt("countCancelled"));
+                    result.put("countProcessing", (long) rs.getInt("countProcessing"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public List<Map<String, Object>> getMonthlyRevenue(int year) {

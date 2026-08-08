@@ -20,54 +20,103 @@ public class DashboardController extends HttpServlet {
 
     private DashboardRepository repo = new DashboardRepository();
 
+    private boolean isDefaultPeriod(String fromDate, String toDate) {
+        if (fromDate == null || fromDate.trim().isEmpty() || toDate == null || toDate.trim().isEmpty()) return false;
+        try {
+            LocalDate from = LocalDate.parse(fromDate);
+            LocalDate to = LocalDate.parse(toDate);
+            LocalDate now = LocalDate.now();
+            
+            if (from.equals(now) && to.equals(now)) return true;
+            
+            LocalDate startOfWeek = now.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            LocalDate endOfWeek = now.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
+            if (from.equals(startOfWeek) && (to.equals(endOfWeek) || to.equals(now))) return true;
+            
+            LocalDate startOfMonth = now.withDayOfMonth(1);
+            LocalDate endOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+            if (from.equals(startOfMonth) && (to.equals(endOfMonth) || to.equals(now))) return true;
+            
+            LocalDate startOfYear = now.withDayOfYear(1);
+            LocalDate endOfYear = now.withDayOfYear(now.lengthOfYear());
+            if (from.equals(startOfYear) && (to.equals(endOfYear) || to.equals(now))) return true;
+        } catch (Exception e) {}
+        return false;
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1. Lấy dữ liệu 4 khung thời gian
+        String fromDate = request.getParameter("fromDate");
+        String toDate = request.getParameter("toDate");
+
+        boolean isCustomFilter = (fromDate != null && !fromDate.trim().isEmpty()) || (toDate != null && !toDate.trim().isEmpty());
+        boolean isCustomKPI = isCustomFilter && !isDefaultPeriod(fromDate, toDate);
+
+        // 1. Lấy dữ liệu 4 khung thời gian hoặc dữ liệu tùy chỉnh
         Map<String, Map<String, Object>> timeframes = new HashMap<>();
-        timeframes.put("today", repo.getStatsForPeriod("today"));
-        timeframes.put("week", repo.getStatsForPeriod("week"));
-        timeframes.put("month", repo.getStatsForPeriod("month"));
-        timeframes.put("year", repo.getStatsForPeriod("year"));
+        String refDate = null;
+        if (isCustomKPI) {
+            refDate = (toDate != null && !toDate.trim().isEmpty()) ? toDate : fromDate;
+            timeframes.put("today", repo.getStatsForCustomPeriod(fromDate, toDate));
+            request.setAttribute("kpi1Title", "Theo bộ lọc");
+        } else {
+            timeframes.put("today", repo.getStatsForPeriod("today", null));
+            request.setAttribute("kpi1Title", "Hôm nay");
+        }
+        timeframes.put("week", repo.getStatsForPeriod("week", refDate));
+        timeframes.put("month", repo.getStatsForPeriod("month", refDate));
+        timeframes.put("year", repo.getStatsForPeriod("year", refDate));
+
         request.setAttribute("timeframes", timeframes);
+        request.setAttribute("isCustomFilter", isCustomFilter);
 
         // 2. Lấy dữ liệu biểu đồ
-        LocalDate now = LocalDate.now();
-        int year = now.getYear();
-        
-        String monthParam = request.getParameter("chartMonth");
-        int month = now.getMonthValue();
-        if (monthParam != null && !monthParam.trim().isEmpty()) {
-            try {
-                month = Integer.parseInt(monthParam);
-            } catch (Exception e) {}
-        }
-        
-        Map<Integer, Double> dailyData = repo.getMonthlyChartData(year, month);
-        
-        int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
-        List<Integer> labels = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
         List<Double> dataVals = new ArrayList<>();
         double totalMonthlyRevenue = 0.0;
-        
-        for (int i = 1; i <= daysInMonth; i++) {
-            labels.add(i);
-            double rev = dailyData.getOrDefault(i, 0.0);
-            dataVals.add(rev);
-            totalMonthlyRevenue += rev;
+
+        if (fromDate != null && !fromDate.trim().isEmpty() || toDate != null && !toDate.trim().isEmpty()) {
+            Map<String, Double> customData = repo.getCustomChartData(fromDate, toDate);
+            // sort keys
+            List<String> sortedDates = new ArrayList<>(customData.keySet());
+            sortedDates.sort(String::compareTo);
+            for (String dateStr : sortedDates) {
+                labels.add("'" + dateStr + "'");
+                double rev = customData.get(dateStr);
+                dataVals.add(rev);
+                totalMonthlyRevenue += rev;
+            }
+            request.setAttribute("currentMonthYear", "Theo bộ lọc");
+            request.setAttribute("selectedMonth", 0);
+        } else {
+            LocalDate now = LocalDate.now();
+            int year = now.getYear();
+            String monthParam = request.getParameter("chartMonth");
+            int month = now.getMonthValue();
+            if (monthParam != null && !monthParam.trim().isEmpty()) {
+                try {
+                    month = Integer.parseInt(monthParam);
+                } catch (Exception e) {}
+            }
+            Map<Integer, Double> dailyData = repo.getMonthlyChartData(year, month);
+            int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
+            for (int i = 1; i <= daysInMonth; i++) {
+                labels.add(String.valueOf(i));
+                double rev = dailyData.getOrDefault(i, 0.0);
+                dataVals.add(rev);
+                totalMonthlyRevenue += rev;
+            }
+            request.setAttribute("currentMonthYear", "Tháng " + month + "/" + year);
+            request.setAttribute("selectedMonth", month);
         }
         
         request.setAttribute("chartLabels", labels.toString()); // format like [1, 2, 3...]
         request.setAttribute("chartData", dataVals.toString());
         request.setAttribute("totalMonthlyRevenue", totalMonthlyRevenue);
-        request.setAttribute("currentMonthYear", "Tháng " + month + "/" + year);
-        request.setAttribute("selectedMonth", month);
 
         // 3. Lấy Top sản phẩm và khách hàng
-        String fromDate = request.getParameter("fromDate");
-        String toDate = request.getParameter("toDate");
-        
         request.setAttribute("topProducts", repo.getTopProducts(5, fromDate, toDate));
         request.setAttribute("topCustomers", repo.getTopCustomers(5, fromDate, toDate));
         

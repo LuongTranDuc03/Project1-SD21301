@@ -246,7 +246,13 @@
     java.util.function.Function<String, String> renderCard = (key) -> {
         Map<String, Object> data = timeframes.get(key);
         if (data == null) data = new java.util.HashMap<>();
-        String title = key.equals("today") ? "Hôm nay" : key.equals("week") ? "Tuần này" : key.equals("month") ? "Tháng này" : "Năm nay";
+        String title = "";
+        if (key.equals("today")) {
+            title = (String) request.getAttribute("kpi1Title");
+            if (title == null) title = "Hôm nay";
+        } else {
+            title = key.equals("week") ? "Tuần này" : key.equals("month") ? "Tháng này" : "Năm nay";
+        }
         double rev = (Double) data.getOrDefault("revenue", 0.0);
         long orders = (Long) data.getOrDefault("totalOrders", 0L);
         long sold = (Long) data.getOrDefault("productsSold", 0L);
@@ -287,13 +293,43 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                 Thống kê
             </div>
+            
+            <!-- Global Date Filter Row -->
+            <div class="chart-filter-row" style="background: #fff; border-radius: 12px; padding: 16px 20px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 20px; margin-top: 0; border-top: 1px solid #e2e8f0;">
+                <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin: 0;">
+                    <div class="date-picker-group">
+                        <div>
+                            <div style="font-size:12px; color:#777; margin-bottom:4px;">Từ ngày</div>
+                            <input type="date" name="fromDate" class="date-input" value="<%= request.getAttribute("fromDate") %>">
+                        </div>
+                        <div style="color:#aaa; margin-top:16px;">→</div>
+                        <div>
+                            <div style="font-size:12px; color:#777; margin-bottom:4px;">Đến ngày</div>
+                            <input type="date" name="toDate" class="date-input" value="<%= request.getAttribute("toDate") %>">
+                        </div>
+                    </div>
+            
+                    <div class="filter-btns">
+                        <button type="submit" class="btn-loc">
+                            <svg style="vertical-align: middle; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            Lọc dữ liệu
+                        </button>
+                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn-reset" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; color: #64748b; font-size: 13px; height: 32px; box-sizing: border-box;">
+                            <svg style="vertical-align: middle; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            Đặt lại
+                        </a>
+                    </div>
+                </form>
+            </div>
 
         <!-- 4 KPI Cards -->
         <div class="kpi-grid">
-            <%= renderCard.apply("today") %>
-            <%= renderCard.apply("week") %>
-            <%= renderCard.apply("month") %>
-            <%= renderCard.apply("year") %>
+            <% 
+               out.print(renderCard.apply("today"));
+               out.print(renderCard.apply("week"));
+               out.print(renderCard.apply("month"));
+               out.print(renderCard.apply("year"));
+            %>
         </div>
 
         <!-- Chart Section -->
@@ -301,7 +337,8 @@
             <div class="chart-header">
                 <div class="chart-title-left">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                    Doanh thu
+                    Doanh thu (<%= request.getAttribute("currentMonthYear") %>)
+                    <% Boolean isCustomFilter = (Boolean) request.getAttribute("isCustomFilter"); if (isCustomFilter == null || !isCustomFilter) { %>
                     <select disabled><option>Theo tháng</option></select>
                     <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display:inline;" id="chartForm">
                         <select name="chartMonth" onchange="document.getElementById('chartForm').submit()">
@@ -312,9 +349,8 @@
                             <option value="<%= m %>" <%= selectedMonth != null && selectedMonth == m ? "selected" : "" %>>Tháng <%= m %>/2026</option>
                             <% } %>
                         </select>
-                        <input type="hidden" name="fromDate" value="<%= request.getAttribute("fromDate") %>">
-                        <input type="hidden" name="toDate" value="<%= request.getAttribute("toDate") %>">
                     </form>
+                    <% } %>
                 </div>
                 <button class="btn-compare">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
@@ -330,33 +366,7 @@
             </div>
         </div>
 
-        <div class="chart-filter-row" style="background: #fff; border-radius: 12px; padding: 16px 20px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 20px; border-top: none; margin-top: 0;">
-            <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin: 0;">
-                <input type="hidden" name="chartMonth" value="<%= request.getAttribute("selectedMonth") %>">
-                <div class="date-picker-group">
-                    <div>
-                        <div style="font-size:12px; color:#777; margin-bottom:4px;">Từ ngày</div>
-                        <input type="date" name="fromDate" class="date-input" value="<%= request.getAttribute("fromDate") %>">
-                    </div>
-                    <div style="color:#aaa; margin-top:16px;">→</div>
-                    <div>
-                        <div style="font-size:12px; color:#777; margin-bottom:4px;">Đến ngày</div>
-                        <input type="date" name="toDate" class="date-input" value="<%= request.getAttribute("toDate") %>">
-                    </div>
-                </div>
-        
-                <div class="filter-btns">
-                    <button type="submit" class="btn-loc">
-                        <svg style="vertical-align: middle; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                        Lọc dữ liệu
-                    </button>
-                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn-reset" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid #e2e8f0; border-radius: 4px; color: #64748b; font-size: 13px; height: 32px; box-sizing: border-box;">
-                        <svg style="vertical-align: middle; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                        Đặt lại
-                    </a>
-                </div>
-            </form>
-        </div>
+
 
         <!-- Tables Section -->
         <div class="tables-grid">
@@ -443,59 +453,84 @@
 </div>
 
 <script>
-    // Line Chart
+    // Bar Chart with evenly spaced Y-axis
     const ctx = document.getElementById('revenueChart').getContext('2d');
-    
+
     const labels = <%= request.getAttribute("chartLabels") %>;
     const dataVals = <%= request.getAttribute("chartData") %>;
-    
+
+    // Tick values and their display labels
+    const tickValues = [0, 500000, 1000000, 3000000, 5000000, 7000000, 10000000];
+    const tickLabels = ['0', '500K', '1M', '3M', '5M', '7M', '10M'];
+
+    // Map real VND value → linear position 0-6 (each tick = 1 unit, evenly spaced)
+    function mapToScale(val) {
+        if (val <= 0) return 0;
+        for (let i = 1; i < tickValues.length; i++) {
+            if (val <= tickValues[i]) {
+                return (i - 1) + (val - tickValues[i - 1]) / (tickValues[i] - tickValues[i - 1]);
+            }
+        }
+        return tickValues.length - 1;
+    }
+
+    // Reverse: linear position 0-6 → VND value (for tooltip)
+    function mapFromScale(pos) {
+        const i = Math.floor(pos);
+        if (i >= tickValues.length - 1) return tickValues[tickValues.length - 1];
+        const frac = pos - i;
+        return tickValues[i] + frac * (tickValues[i + 1] - tickValues[i]);
+    }
+
+    const mappedData = dataVals.map(mapToScale);
+
     new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Doanh thu',
-                data: dataVals,
+                data: mappedData,
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
                 borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true,
-                pointRadius: 0,
-                pointHoverRadius: 4
+                borderWidth: 1,
+                borderRadius: 4,
+                barPercentage: 0.6
             }]
         },
         options: {
             responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                            // Show original VND value in tooltip
+                            const orig = dataVals[context.dataIndex];
+                            return orig.toLocaleString('vi-VN') + ' đ';
                         }
                     }
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: true,
+                    min: 0,
+                    max: tickValues.length - 1,
                     ticks: {
+                        stepSize: 1,
                         callback: function(value) {
-                            if (value >= 1000000) return (value / 1000000) + 'M';
-                            return value;
+                            const idx = Math.round(value);
+                            return (idx >= 0 && idx < tickLabels.length) ? tickLabels[idx] : '';
                         },
-                        font: { size: 10, color: '#999' }
+                        font: { size: 10 },
+                        color: '#999'
                     },
                     grid: { color: '#f5f5f5' }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 10, color: '#999' } }
+                    ticks: { font: { size: 10 }, color: '#999' }
                 }
             }
         }
