@@ -36,7 +36,7 @@ import java.util.Map;
 })
 public class InvoiceController extends HttpServlet {
 
-    private static final int PAGE_SIZE = 5;
+    private static final int PAGE_SIZE = 10;
 
     private static final Map<Integer, String> ORDER_STATUS_LABELS_ONLINE;
     private static final Map<Integer, String> ORDER_STATUS_LABELS_POS;
