@@ -305,9 +305,21 @@
                                                                                                 <a href="${pageContext.request.contextPath}/admin/employees?action=edit&id=<%= emp.getId() %>" class="action-icon-btn edit-btn" title="Chỉnh sửa">
                                                                                                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                                                                                 </a>
-                                                                                                <label class="switch" title="Chuyển trạng thái" style="margin-left: 4px;">
-                                                                                                    <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> onclick="event.preventDefault(); toggleEmployeeStatus('<%= emp.getId() %>', this, '<%= emp.getRoleName() != null ? emp.getRoleName() : "" %>')">
-                                                                                                    <span class="slider"></span>
+                                                                                                <%
+                                                                                                    boolean canChangeStatus = true;
+                                                                                                    if (loggedInUser != null) {
+                                                                                                        if (emp.getId() == loggedInUser.getId()) {
+                                                                                                            canChangeStatus = false;
+                                                                                                        } else if ("Quản lý".equalsIgnoreCase(currentUserRole) && emp.getRole() != null && "Quản lý".equalsIgnoreCase(emp.getRole().getRoleName())) {
+                                                                                                            canChangeStatus = false;
+                                                                                                        }
+                                                                                                    }
+                                                                                                %>
+                                                                                                <label class="switch" title="<%= canChangeStatus ? "Chuyển trạng thái" : "Không có quyền thay đổi trạng thái" %>" style="margin-left: 4px; <%= !canChangeStatus ? "cursor: not-allowed; opacity: 0.7;" : "" %>">
+                                                                                                    <input type="checkbox" <%=emp.getStatus()==1 ? "checked" : ""%> 
+                                                                                                    <%= !canChangeStatus ? "disabled" : "" %>
+                                                                                                    onclick="<%= canChangeStatus ? "toggleEmployeeStatus('" + emp.getId() + "', this)" : "" %>">
+                                                                                                    <span class="slider" style="<%= !canChangeStatus ? "cursor: not-allowed;" : "" %>"></span>
                                                                                                 </label>
                                                                                             </div>
                                                                                         </td>
@@ -355,38 +367,13 @@
                                             });
                                         }
 
-                                        const CURRENT_USER_ID = '<%= loggedInUser != null ? loggedInUser.getId() : 0 %>';
-                                        const CURRENT_USER_ROLE = '<%= currentUserRole %>';
+                                        function toggleEmployeeStatus(empId, checkboxEl) {
+                                            const intendedState = checkboxEl.checked;
+                                            // Block visual change immediately
+                                            checkboxEl.checked = !intendedState;
 
-                                        function toggleEmployeeStatus(empId, checkboxEl, empRole) {
-                                            const isChecked = checkboxEl.checked; // Trạng thái HIỆN TẠI do preventDefault đã chặn thay đổi
-                                            const willBeChecked = !isChecked; // Trạng thái mong muốn
-                                            const targetStatusText = willBeChecked ? 'hoạt động' : 'khóa';
-
-                                            // Kiểm tra: không thể tự thay đổi trạng thái của chính mình
-                                            if (String(empId) === String(CURRENT_USER_ID)) {
-                                                Swal.fire({
-                                                    icon: 'warning',
-                                                    title: 'Không được phép',
-                                                    text: 'Bạn không thể thay đổi trạng thái của chính mình!',
-                                                    confirmButtonText: 'Đóng'
-                                                });
-                                                return;
-                                            }
-
-                                            // Kiểm tra: Quản lý không thể toggle quản lý khác
-                                            const isCurrentUserManager = (CURRENT_USER_ROLE === 'Quản lý' || CURRENT_USER_ROLE === 'Admin');
-                                            const isTargetManager = (empRole === 'Quản lý' || empRole === 'Admin' || empRole === '');
-                                            if (isCurrentUserManager && isTargetManager) {
-                                                Swal.fire({
-                                                    icon: 'warning',
-                                                    title: 'Không được phép',
-                                                    text: 'Quản lý không thể thay đổi trạng thái của quản lý khác!',
-                                                    confirmButtonText: 'Đóng'
-                                                });
-                                                return;
-                                            }
-
+                                            const targetStatusText = intendedState ? 'hoạt động' : 'khóa';
+                                            
                                             Swal.fire({
                                                 title: 'Xác nhận',
                                                 text: 'Bạn có muốn thay đổi trạng thái của nhân viên thành ' + targetStatusText + ' hay không?',
@@ -398,8 +385,12 @@
                                                 cancelButtonText: 'Hủy'
                                             }).then((result) => {
                                                 if (result.isConfirmed) {
-                                                    checkboxEl.checked = willBeChecked; // Cập nhật UI trước khi load
-                                                    window.location.href = '${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=' + empId;
+                                                    checkboxEl.checked = intendedState; // Cập nhật lại UI sau khi đồng ý để kích hoạt animation
+                                                    
+                                                    // Đợi animation (0.2s) rồi mới reload trang
+                                                    setTimeout(() => {
+                                                        window.location.href = '${pageContext.request.contextPath}/admin/employees?action=toggleStatus&id=' + empId;
+                                                    }, 250);
                                                 }
                                             });
                                         }

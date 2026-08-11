@@ -408,10 +408,17 @@
         
         <div class="pos-modal-body">
             <div class="pos-filters">
-                <div class="pos-filter-group search-group">
-                    <label class="pos-filter-label">Tìm kiếm</label>
-                    <input type="text" id="variantSearch" class="pos-filter-input" placeholder="Tìm mã, tên, màu, kích cỡ..." oninput="filterVariants()">
-                </div>
+                <div class="pos-filter-group search-group" style="flex: 2;">
+                      <label class="pos-filter-label">Tìm kiếm</label>
+                      <div class="pos-filter-input" style="display: flex; padding: 0; overflow: hidden; align-items: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
+                          <select id="searchCodeType" onchange="filterVariants()" style="border: none; border-radius: 0; border-right: 1px solid #e2e8f0; height: 100%; min-width: auto; padding: 8px 12px; background-color: #f8fafc; color: #64748b; font-weight: 500; outline: none; cursor: pointer;">
+                              <option value="ALL">Tất cả</option>
+                              <option value="SP">Mã SP</option>
+                              <option value="BT">Mã BT</option>
+                          </select>
+                          <input type="text" id="variantSearch" placeholder="Tìm mã, tên, màu, kích cỡ..." oninput="filterVariants()" style="border: none; outline: none; padding: 8px 12px; flex: 1; width: 100%; background: transparent; font-family: inherit; font-size: 13px;">
+                      </div>
+                  </div>
                 
                 <div class="pos-filter-group">
                     <label class="pos-filter-label">Màu sắc</label>
@@ -801,6 +808,7 @@
     
     function resetFilters() {
         document.getElementById('variantSearch').value = '';
+        if(document.getElementById('searchCodeType')) document.getElementById('searchCodeType').value = 'ALL';
         document.getElementById('colorFilter').value = '';
         document.getElementById('sizeFilter').value = '';
         document.getElementById('categoryFilter').value = '';
@@ -809,6 +817,7 @@
     
     function filterVariants() {
         const searchText = document.getElementById('variantSearch').value.trim().toLowerCase();
+        const searchType = document.getElementById('searchCodeType') ? document.getElementById('searchCodeType').value : 'ALL';
         const colorVal = document.getElementById('colorFilter').value.trim().toLowerCase();
         const sizeVal = document.getElementById('sizeFilter').value.trim().toLowerCase();
         const categoryVal = document.getElementById('categoryFilter').value.trim().toLowerCase();
@@ -818,13 +827,24 @@
         
         rows.forEach(row => {
             const code = (row.getAttribute('data-code') || '').trim().toLowerCase();
+            const productCode = (row.getAttribute('data-productcode') || '').trim().toLowerCase();
             const name = (row.getAttribute('data-name') || '').trim().toLowerCase();
             const color = (row.getAttribute('data-color') || '').trim().toLowerCase();
             const size = (row.getAttribute('data-size') || '').trim().toLowerCase();
             const category = (row.getAttribute('data-category') || '').trim().toLowerCase();
             
-            // Search text matches any of these fields
-            const matchSearch = !searchText || code.includes(searchText) || name.includes(searchText) || color.includes(searchText) || size.includes(searchText);
+            let matchSearch = false;
+            if (!searchText) {
+                matchSearch = true;
+            } else {
+                if (searchType === 'SP') {
+                    matchSearch = productCode.includes(searchText);
+                } else if (searchType === 'BT') {
+                    matchSearch = code.includes(searchText);
+                } else {
+                    matchSearch = code.includes(searchText) || productCode.includes(searchText) || name.includes(searchText) || color.includes(searchText) || size.includes(searchText);
+                }
+            }
             const matchColor = !colorVal || color === colorVal;
             const matchSize = !sizeVal || size === sizeVal;
             const matchCategory = !categoryVal || category === categoryVal;
@@ -937,7 +957,7 @@
 
                 // Toast thông báo khi quét mã thành công
                 if (fromScanner) {
-                    showPosToast('✅ Đã thêm: ' + name + ' (' + color + ' - ' + size + ')', 'success');
+                    showPosToast('Đã thêm: ' + name + ' (' + color + ' - ' + size + ')', 'success');
                 }
             } else {
                 alert("Lỗi: " + (data.message || 'Không thể thêm sản phẩm'));
@@ -2645,17 +2665,19 @@
     #posToastContainer {
         position: fixed;
         top: 20px;
-        right: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 99999;
         display: flex;
         flex-direction: column;
         gap: 10px;
         pointer-events: none;
+        align-items: center;
     }
     .pos-toast {
         background: #fff;
         border-radius: 10px;
-        padding: 14px 18px;
+        padding: 14px 20px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         font-family: 'Inter', sans-serif;
         font-size: 14px;
@@ -2673,12 +2695,12 @@
     .pos-toast.error { border-left-color: #ef4444; }
     .pos-toast.warning { border-left-color: #f59e0b; }
     @keyframes posToastSlideIn {
-        from { transform: translateX(120%); opacity: 0; }
-        to   { transform: translateX(0);   opacity: 1; }
+        from { transform: translateY(-20px); opacity: 0; }
+        to   { transform: translateY(0);   opacity: 1; }
     }
     @keyframes posToastFadeOut {
-        from { transform: translateX(0);   opacity: 1; }
-        to   { transform: translateX(120%); opacity: 0; }
+        from { transform: translateY(0);   opacity: 1; }
+        to   { transform: translateY(-20px); opacity: 0; }
     }
 </style>
 <div id="posToastContainer"></div>
@@ -2687,8 +2709,7 @@
         const container = document.getElementById('posToastContainer');
         const toast = document.createElement('div');
         toast.className = 'pos-toast' + (type !== 'success' ? ' ' + type : '');
-        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
-        toast.innerHTML = '<span style="font-size:18px;">' + icon + '</span><span>' + message + '</span>';
+        toast.innerHTML = '<span>' + message + '</span>';
         container.appendChild(toast);
         setTimeout(() => {
             toast.style.animation = 'posToastFadeOut 0.3s ease forwards';

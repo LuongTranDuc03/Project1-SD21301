@@ -590,7 +590,7 @@
                                                                         <label class="switch" title="<%= (c.getStatus() != null && c.getStatus() == 1) ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
                                                                             <input type="checkbox"
                                                                                 <%= (c.getStatus() != null && c.getStatus() == 1) ? "checked" : "" %>
-                                                                                onclick="event.preventDefault(); toggleCustomerStatus('<%= c.getId() %>', this)">
+                                                                                onclick="toggleCustomerStatus('<%= c.getId() %>', this)">
                                                                             <span class="slider"></span>
                                                                         </label>
                                                                     </div>
@@ -643,9 +643,11 @@
 
                             // Hàm gửi request thay đổi trạng thái hoạt động của khách hàng
                             function toggleCustomerStatus(customerId, checkboxEl) {
-                                const isChecked = checkboxEl.checked;
-                                const willBeChecked = !isChecked; // Trạng thái mong muốn do preventDefault đã chặn
-                                const targetStatusText = willBeChecked ? 'hoạt động' : 'khóa';
+                                const intendedState = checkboxEl.checked;
+                                // Block visual change immediately
+                                checkboxEl.checked = !intendedState;
+
+                                const targetStatusText = intendedState ? 'hoạt động' : 'khóa';
                                 
                                 Swal.fire({
                                     title: 'Xác nhận',
@@ -658,25 +660,29 @@
                                     cancelButtonText: 'Hủy'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
-                                        checkboxEl.checked = willBeChecked;
-                                        const form = document.createElement('form');
-                                        form.method = 'POST';
-                                        form.action = '<%= contextPath %>/admin/customers';
+                                        checkboxEl.checked = intendedState; // Cập nhật lại UI sau khi đồng ý để kích hoạt animation
                                         
-                                        const actionInput = document.createElement('input');
-                                        actionInput.type = 'hidden';
-                                        actionInput.name = 'action';
-                                        actionInput.value = 'toggle-status';
-                                        form.appendChild(actionInput);
-                                        
-                                        const idInput = document.createElement('input');
-                                        idInput.type = 'hidden';
-                                        idInput.name = 'id';
-                                        idInput.value = customerId;
-                                        form.appendChild(idInput);
-                                        
-                                        document.body.appendChild(form);
-                                        form.submit();
+                                        // Đợi animation (0.2s) rồi mới submit form
+                                        setTimeout(() => {
+                                            const form = document.createElement('form');
+                                            form.method = 'POST';
+                                            form.action = '<%= contextPath %>/admin/customers';
+                                            
+                                            const actionInput = document.createElement('input');
+                                            actionInput.type = 'hidden';
+                                            actionInput.name = 'action';
+                                            actionInput.value = 'toggle-status';
+                                            form.appendChild(actionInput);
+                                            
+                                            const idInput = document.createElement('input');
+                                            idInput.type = 'hidden';
+                                            idInput.name = 'id';
+                                            idInput.value = customerId;
+                                            form.appendChild(idInput);
+                                            
+                                            document.body.appendChild(form);
+                                            form.submit();
+                                        }, 250);
                                     }
                                 });
                             }
