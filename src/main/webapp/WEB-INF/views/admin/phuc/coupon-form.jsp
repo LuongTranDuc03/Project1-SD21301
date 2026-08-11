@@ -349,31 +349,11 @@
 
     // Hiển thị thông báo lỗi bằng toast
     function showErrorToast(msg) {
-        var oldToast = document.getElementById('toastError');
-        if (oldToast) oldToast.remove();
-        var toast = document.createElement('div');
-        toast.id = 'toastError';
-        toast.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #fecaca;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;';
-        toast.innerHTML = '<div style="width:24px;height:24px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" width="14" height="14" stroke="#ef4444" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>' +
-                          '<span style="font-size:14px;font-weight:500;color:#1f2937;">' + msg + '</span>' +
-                          '<button onclick="this.parentElement.remove()" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>';
-        
-        // Ensure animation keyframes are injected
-        if (!document.getElementById('toastStyles')) {
-            var style = document.createElement('style');
-            style.id = 'toastStyles';
-            style.innerHTML = '@keyframes slideDownToast { from { top: -50px; opacity: 0; } to { top: 24px; opacity: 1; } }';
-            document.head.appendChild(style);
+        if (typeof showToast === 'function') {
+            showToast(msg, 'error');
+        } else {
+            alert(msg);
         }
-        
-        document.body.appendChild(toast);
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.style.transition = 'opacity .4s';
-                toast.style.opacity = '0';
-                setTimeout(function() { if(toast.parentElement) toast.remove(); }, 450);
-            }
-        }, 4000);
     }
 </script>
 <%
@@ -396,6 +376,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 <% } %>
+<jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 </body>
 </html>
 

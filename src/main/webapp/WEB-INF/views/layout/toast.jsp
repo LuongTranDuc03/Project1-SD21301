@@ -35,35 +35,46 @@
         padding: 14px 18px;
         border-radius: 12px;
         background: #ffffff;
-        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
-        border-left: 4px solid #10b981;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        border: 1px solid #dbeafe;
         font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: #0f172a;
         opacity: 0;
         transform: translateY(-16px);
         transition: opacity .3s ease, transform .3s ease;
         pointer-events: auto;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .toast .toast-icon {
-        flex-shrink: 0;
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
+    
+    .toast.success { border-color: #d1fae5; }
+    .toast.error { border-color: #fee2e2; }
+    .toast.info { border-color: #dbeafe; }
+    
+    .toast-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .toast-title {
+        font-weight: 700;
+        font-size: 13px;
+        color: #111827;
+    }
+    .toast-text {
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.4;
+    }
+    .toast-close {
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: #9ca3af;
+        margin-left: 8px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffffff;
     }
-    .toast .toast-text { flex: 1; line-height: 1.4; }
-    .toast.success { border-left-color: #10b981; }
-    .toast.success .toast-icon { background: #10b981; }
-    .toast.error { border-left-color: #ef4444; }
-    .toast.error .toast-icon { background: #ef4444; }
-    .toast.info { border-left-color: #3b82f6; }
-    .toast.info .toast-icon { background: #3b82f6; }
 </style>
 
 <div id="toast-container" class="toast-container"></div>
@@ -71,9 +82,15 @@
 <script>
     (function () {
         var ICONS = {
-            success: '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
-            error: '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
-            info: '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>'
+            success: '<svg viewBox="0 0 24 24" width="24" height="24" stroke="#10B981" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+            error: '<svg viewBox="0 0 24 24" width="24" height="24" stroke="#EF4444" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+            info: '<svg viewBox="0 0 24 24" width="24" height="24" stroke="#3B82F6" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'
+        };
+
+        var TITLES = {
+            success: 'Thành công!',
+            error: 'Lỗi!',
+            info: 'Thông báo'
         };
 
         window.showToast = function (message, type, duration) {
@@ -87,16 +104,24 @@
             var toast = document.createElement('div');
             toast.className = 'toast ' + type;
 
-            var icon = document.createElement('span');
-            icon.className = 'toast-icon';
-            icon.innerHTML = ICONS[type] || ICONS.success;
+            var iconHtml = ICONS[type] || ICONS.success;
+            var titleText = TITLES[type] || TITLES.success;
 
-            var text = document.createElement('span');
-            text.className = 'toast-text';
-            text.textContent = message;
+            toast.innerHTML = 
+                iconHtml +
+                '<div class="toast-content">' +
+                    '<div class="toast-title">' + titleText + '</div>' +
+                    '<div class="toast-text">' + message + '</div>' +
+                '</div>' +
+                '<button class="toast-close">✕</button>';
 
-            toast.appendChild(icon);
-            toast.appendChild(text);
+            toast.querySelector('.toast-close').addEventListener('click', function() {
+                toast.classList.remove('show');
+                setTimeout(function () {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            });
+
             container.appendChild(toast);
 
             // Kích hoạt hiệu ứng trượt xuống + hiện dần

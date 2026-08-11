@@ -483,29 +483,21 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 </div>
 
-<% if ("updated".equals(msgParam) || "cancelled".equals(msgParam) || "completed".equals(msgParam)) { %>
-<style>
-    @keyframes slideDownToast {
-        from { top: -50px; opacity: 0; }
-        to { top: 24px; opacity: 1; }
+<% if ("updated".equals(msgParam) || "cancelled".equals(msgParam) || "completed".equals(msgParam)) { 
+    String toastMsg = "Cập nhật trạng thái thành công.";
+    if ("cancelled".equals(msgParam)) {
+        toastMsg = inv.getOrderStatus() == 5 ? "Hoàn tiền thành công. Đơn hàng đã được xử lý." : "Đã huỷ đơn thành công.";
+    } else if ("completed".equals(msgParam)) {
+        toastMsg = "Đơn hàng đã hoàn thành thành công.";
     }
-</style>
-<div id="toastSuccess" style="position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #d1fae5;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;animation: slideDownToast 0.4s ease-out forwards;">
-    <svg viewBox="0 0 24 24" width="24" height="24" stroke="#10B981" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-    <div>
-        <div style="font-weight:700;font-size:13px;color:#111827;">Thành công!</div>
-        <div style="font-size:12px;color:#6b7280;">
-            <% if ("cancelled".equals(msgParam)) { %>
-                <%= inv.getOrderStatus() == 5 ? "Hoàn tiền thành công. Đơn hàng đã được xử lý." : "Đã huỷ đơn thành công." %>
-            <% } else if ("completed".equals(msgParam)) { %>
-                Đơn hàng đã hoàn thành thành công.
-            <% } else { %>
-                Cập nhật trạng thái thành công.
-            <% } %>
-        </div>
-    </div>
-    <button onclick="document.getElementById('toastSuccess').style.display='none'" style="border:none;background:none;cursor:pointer;color:#9ca3af;margin-left:8px;">✕</button>
-</div>
+%>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof showToast === 'function') {
+            showToast('<%= toastMsg %>', 'success');
+        }
+    });
+</script>
 <% } %>
 
 <%-- KHU VỰC JAVASCRIPT: Xử lý các tương tác trên giao diện người dùng --%>
@@ -534,11 +526,7 @@ document.addEventListener("DOMContentLoaded", function() {
         o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('show'); });
     });
 
-    // Logic 5: Tự động ẩn thông báo thành công (toast message) sau 4 giây để không vướng màn hình
-    (function() {
-        var toast = document.getElementById('toastSuccess');
-        if (toast) setTimeout(function() { toast.style.display = 'none'; }, 4000);
-    })();
+    // Logic 5 removed as we use the global toast component
     // Logic 6: Mở modal mã QR và tự động tạo mã nếu chưa có
     var isQrGenerated = false;
     function openQrModal() {
@@ -558,5 +546,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 </body>
 </html>

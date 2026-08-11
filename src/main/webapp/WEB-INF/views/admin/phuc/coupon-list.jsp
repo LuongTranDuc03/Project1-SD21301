@@ -392,7 +392,7 @@
                 </div>
 
             <!-- KHU VỰC PHÂN TRANG: Chuyển trang và hiển thị tổng số kết quả -->
-            <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid #e2e8f0; margin-top: 10px;">
+            <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; margin-top: 10px;">
                 <div id="paginationInfo" style="color: #64748b; font-size: 13px;">
                     Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
                     trong tổng <strong><%= String.format("%,d", total) %></strong> phiếu

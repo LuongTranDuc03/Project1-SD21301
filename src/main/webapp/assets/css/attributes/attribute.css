@@ -87,9 +87,7 @@
     background-color: #f8fafc;
 }
 
-.attribute-table tbody tr:last-child td {
-    border-bottom: none;
-}
+
 
 .code-text {
     background-color: #f1f5f9;
@@ -136,11 +134,13 @@
 .btn-edit {
     background-color: transparent;
     color: #64748b;
+    border: 1px solid #cbd5e1;
 }
 
 .btn-edit:hover {
     background-color: #f1f5f9;
     color: #1e293b;
+    border-color: #94a3b8;
 }
 
 .btn-toggle {
@@ -236,6 +236,7 @@ input:checked + .slider:before {
     position: relative;
     z-index: 100000;
     pointer-events: auto;
+    overflow: hidden;
 }
 
 .modal-overlay.active .modal-content {
@@ -327,7 +328,8 @@ input:checked + .slider:before {
     box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
 }
 
-.form-control:read-only {
+input.form-control[readonly],
+textarea.form-control[readonly] {
     background-color: #f1f5f9;
     color: #64748b;
     cursor: not-allowed;
@@ -340,6 +342,7 @@ select.form-control {
     background-position: right 12px center;
     background-size: 16px;
     padding-right: 36px;
+    cursor: pointer;
 }
 
 .btn-primary {

@@ -32,6 +32,47 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
+    <style>
+        /* Pagination Styling */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 20px 0;
+            margin-top: 10px;
+        }
+        .page-btn {
+            min-width: 32px;
+            height: 32px;
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .page-btn:hover:not(:disabled) {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            border-color: #94a3b8;
+        }
+        .page-btn.active {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            border-color: #1e3a8a;
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
 <body>
@@ -116,7 +157,7 @@
                                     %>
                                     <tr>
                                         <td style="text-align: center; color: #64748b;"><%= stt++ %></td>
-                                        <td><span class="code-text"><%= code %></span></td>
+                                        <td><span style="font-weight: 600; color: #475569;"><%= code %></span></td>
                                         <td><span class="name-text"><%= name %></span></td>
                                         <td style="color: #64748b;"><%= date %></td>
                                         <td style="text-align: center;">
@@ -134,7 +175,7 @@
                                                     <input type="hidden" name="type" value="<%= currentType %>">
                                                     <input type="hidden" name="id" value="<%= attr.getId() %>">
                                                     <label class="switch" title="Đổi trạng thái" style="margin: 0;">
-                                                      <input type="checkbox" <%= isActive ? "checked" : "" %> onchange="if(confirm('Bạn có chắc chắn muốn thay đổi trạng thái không?')) { this.form.submit(); } else { this.checked = !this.checked; }">
+                                                      <input type="checkbox" <%= isActive ? "checked" : "" %> onclick="event.preventDefault(); confirmStatusChange(this)">
                                                       <span class="slider"></span>
                                                     </label>
                                                 </form>
@@ -158,20 +199,32 @@
                             Integer totalPages = (Integer) request.getAttribute("totalPages");
                             if (totalPages != null && totalPages > 1) {
                         %>
-                        <div class="pagination-container" style="padding: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
-                            <ul class="pagination">
-                                <li class="page-item <%= (currentPage == 0) ? "disabled" : "" %>">
-                                    <a class="page-link" href="?type=<%= currentType %>&page=<%= (currentPage > 0) ? currentPage - 1 : 0 %>">&laquo;</a>
-                                </li>
-                                <% for (int i = 0; i < totalPages; i++) { %>
-                                <li class="page-item <%= (currentPage == i) ? "active" : "" %>">
-                                    <a class="page-link" href="?type=<%= currentType %>&page=<%= i %>"><%= i + 1 %></a>
-                                </li>
+                        <div class="pagination-wrapper" style="display: flex; justify-content: flex-end; align-items: center; padding: 15px 20px; margin-top: 10px;">
+                            <div class="pagination-container" style="display: flex; gap: 8px; padding: 0; margin: 0;">
+                                <% if (currentPage > 0) { %>
+                                <a class="page-btn" href="?type=<%= currentType %>&page=<%= currentPage - 1 %>">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </a>
+                                <% } else { %>
+                                <button class="page-btn" disabled>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
                                 <% } %>
-                                <li class="page-item <%= (currentPage == totalPages - 1) ? "disabled" : "" %>">
-                                    <a class="page-link" href="?type=<%= currentType %>&page=<%= (currentPage < totalPages - 1) ? currentPage + 1 : totalPages - 1 %>">&raquo;</a>
-                                </li>
-                            </ul>
+                                
+                                <% for (int i = 0; i < totalPages; i++) { %>
+                                <a class="page-btn <%= (currentPage == i) ? "active" : "" %>" href="?type=<%= currentType %>&page=<%= i %>" style="text-decoration: none;"><%= i + 1 %></a>
+                                <% } %>
+                                
+                                <% if (currentPage < totalPages - 1) { %>
+                                <a class="page-btn" href="?type=<%= currentType %>&page=<%= currentPage + 1 %>">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </a>
+                                <% } else { %>
+                                <button class="page-btn" disabled>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                                <% } %>
+                            </div>
                         </div>
                         <% } %>
                     </div>
@@ -218,6 +271,23 @@
                     <button type="submit" class="btn-primary">Lưu thay đổi</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal Xác Nhận Đổi Trạng Thái -->
+    <div class="modal-overlay" id="confirmStatusModal">
+        <div class="modal-content" style="max-width: 400px; padding: 0;">
+            <div style="padding: 32px 24px 24px 24px; text-align: center;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #fef3c7; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <svg viewBox="0 0 24 24" width="28" height="28" stroke="#d97706" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 700; color: #0f172a;">Xác nhận thay đổi</h3>
+                <p style="color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;">Bạn có chắc chắn muốn thay đổi trạng thái hoạt động của thuộc tính này không?</p>
+            </div>
+            <div style="display: flex; gap: 12px; padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 12px 12px; justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeConfirmModal()">Hủy bỏ</button>
+                <button type="button" class="btn-primary" id="btnConfirmStatus" style="background-color: #f43f5e; border-color: #f43f5e;">Đồng ý</button>
+            </div>
         </div>
     </div>
 
@@ -275,7 +345,35 @@
             if (event.target === modal) {
                 closeModal();
             }
+            if (event.target === document.getElementById('confirmStatusModal')) {
+                closeConfirmModal();
+            }
         }
+
+        let pendingStatusForm = null;
+        let pendingStatusCheckbox = null;
+
+        function confirmStatusChange(checkbox) {
+            pendingStatusForm = checkbox.form;
+            pendingStatusCheckbox = checkbox;
+            document.getElementById('confirmStatusModal').classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            pendingStatusForm = null;
+            pendingStatusCheckbox = null;
+            document.getElementById('confirmStatusModal').classList.remove('active');
+        }
+
+        document.getElementById('btnConfirmStatus').addEventListener('click', function() {
+            if (pendingStatusForm) {
+                // Tùy chọn: Chuyển đổi trạng thái visual ngay lập tức khi bấm Đồng ý để mượt hơn
+                if (pendingStatusCheckbox) {
+                    pendingStatusCheckbox.checked = !pendingStatusCheckbox.checked;
+                }
+                pendingStatusForm.submit();
+            }
+        });
     </script>
     <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
 </body>

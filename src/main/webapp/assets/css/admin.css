@@ -68,8 +68,6 @@
 
 /* Đảm bảo các khung card chứa form chọn địa chỉ (Khách hàng, Nhân viên, POS) không bị overflow: hidden ép lật danh sách lên trên */
 .form-card,
-.custom-card,
-.card-body-content,
 .form-card-body {
     overflow: visible !important;
 }
