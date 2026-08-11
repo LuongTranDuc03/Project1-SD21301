@@ -8,6 +8,7 @@
 
 @import url('coupons/coupon.css');
 @import url('customers/customer.css');
+@import url('attributes/attribute.css');
 
 /* Common Pagination Styles */
 .pagination-container {
