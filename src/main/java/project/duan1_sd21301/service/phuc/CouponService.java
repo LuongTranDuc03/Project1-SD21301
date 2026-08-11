@@ -24,6 +24,10 @@ public class CouponService {
         couponRepository.toggleStatus(id, newStatus);
     }
 
+    public String generateNextCode() {
+        return couponRepository.generateNextCode();
+    }
+
     public void updateExpiredCoupons() {
         couponRepository.updateExpiredCoupons();
     }

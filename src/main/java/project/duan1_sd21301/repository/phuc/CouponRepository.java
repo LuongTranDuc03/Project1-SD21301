@@ -19,6 +19,28 @@ public class CouponRepository {
         }
     }
 
+    public String generateNextCode() {
+        String sql = "SELECT TOP 1 phieu_giam_gia_code FROM phieu_giam_gia ORDER BY id DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String lastCode = rs.getString(1);
+                if (lastCode != null && lastCode.startsWith("PGG")) {
+                    try {
+                        int num = Integer.parseInt(lastCode.substring(3));
+                        return "PGG" + String.format("%03d", num + 1);
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "PGG001";
+    }
+
     public Coupon save(Coupon coupon) {
         if (coupon.getCode() == null || coupon.getCode().trim().isEmpty()) {
             coupon.setCode("PGG" + System.currentTimeMillis() % 100000);

@@ -97,7 +97,7 @@
                         <div class="cf-grid" style="gap: 20px 24px; align-items: start;">
                             <div class="cf-group">
                                 <label class="cf-label" for="code">Mã phiếu giảm giá <span class="req">*</span></label>
-                                <input type="text" id="code" name="code" class="cf-input" value="<%= code %>" maxlength="50" required>
+                                <input type="text" id="code" name="code" class="cf-input" value="<%= code %>" maxlength="50" required readonly style="background-color: #f1f5f9; color: #64748b; font-weight: 600; cursor: not-allowed;">
                             </div>
                             <div class="cf-group">
                                 <label class="cf-label" for="name">Tên chương trình <span class="req">*</span></label>
@@ -217,12 +217,12 @@
         if (dVal) dVal.dispatchEvent(new Event('input'));
     }
 
-    // Tự động in hoa và loại bỏ ký tự đặc biệt cho mã giảm giá
-    document.getElementById('code').addEventListener('input', function() {
-        var pos = this.selectionStart;
-        this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        this.setSelectionRange(pos, pos);
-    });
+    // Tự động in hoa và loại bỏ ký tự đặc biệt cho mã giảm giá (Đã vô hiệu hóa vì mã tự sinh)
+    // document.getElementById('code').addEventListener('input', function() {
+    //     var pos = this.selectionStart;
+    //     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    //     this.setSelectionRange(pos, pos);
+    // });
 
     // Xử lý validate trước khi submit form (kiểm tra ngày, bỏ dấu chấm, logic dữ liệu)
     document.getElementById('couponForm').addEventListener('submit', function(e) {
