@@ -311,6 +311,7 @@
 
                                     async function geoFetch(path) {
                                         const urls = [
+                                            window.CONTEXT_PATH + path,
                                             'https://provinces.open-api.vn/api' + path,
                                             'https://provinces.open-api.vn/api/v1' + path
                                         ];
@@ -457,6 +458,7 @@
                                         for (var i = 0; i < provSel.options.length; i++) {
                                             if (geoMatch(pName, provSel.options[i].text)) {
                                                 provSel.selectedIndex = i;
+                                                provSel.setAttribute('data-sync', Date.now());
                                                 selectedPCode = provSel.options[i].value;
                                                 break;
                                             }
@@ -490,6 +492,7 @@
 
                                         if (matchedDIndex > 0) {
                                             distSel.selectedIndex = matchedDIndex;
+                                            distSel.setAttribute('data-sync', Date.now());
                                             wName = parts.length >= 3 ? parts[parts.length - 3] : '';
                                             streetParts = parts.slice(0, parts.length - 3);
                                         } else {
@@ -497,6 +500,7 @@
                                                 for (var j = 0; j < distSel.options.length; j++) {
                                                     if (geoMatch(parts[idx], distSel.options[j].text)) {
                                                         distSel.selectedIndex = j;
+                                                        distSel.setAttribute('data-sync', Date.now());
                                                         selectedDCode = distSel.options[j].value;
                                                         wName = idx > 0 ? parts[idx - 1] : '';
                                                         streetParts = parts.slice(0, idx - 1);
@@ -529,6 +533,7 @@
                                                 for (var k = 0; k < wardSel.options.length; k++) {
                                                     if (geoMatch(wName, wardSel.options[k].text)) {
                                                         wardSel.selectedIndex = k;
+                                                        wardSel.setAttribute('data-sync', Date.now());
                                                         break;
                                                     }
                                                 }

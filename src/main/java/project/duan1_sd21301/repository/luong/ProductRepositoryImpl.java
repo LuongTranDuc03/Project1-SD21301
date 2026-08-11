@@ -224,7 +224,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 else
                     ps.setNull(4, Types.INTEGER);
                 ps.setString(5, product.getDescription());
-                ps.setNull(6, Types.NVARCHAR); // doi_tuong
+                ps.setNull(6, Types.NVARCHAR); // doituong
                 if (originId > 0)
                     ps.setInt(7, originId);
                 else

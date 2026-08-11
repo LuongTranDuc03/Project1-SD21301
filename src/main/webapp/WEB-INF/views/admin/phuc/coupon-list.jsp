@@ -368,7 +368,7 @@
                                     <input type="hidden" name="status" value="<%= isOn ? 0 : 1 %>">
                                     <label class="toggle-switch" title="<%= isOn ? "Tắt" : "Bật" %> phiếu">
                                         <input type="checkbox" <%= isOn ? "checked" : "" %>
-                                               onchange="toggleCouponStatus('<%= c.getId() %>', <%= isExpired %>, this)">
+                                               onclick="event.preventDefault(); toggleCouponStatus('<%= c.getId() %>', <%= isExpired %>, this)">
                                         <span class="toggle-slider"></span>
                                     </label>
                                 </form>
@@ -503,14 +503,14 @@
 
     function toggleCouponStatus(couponId, isExpired, checkboxEl) {
         const isChecked = checkboxEl.checked;
+        const willBeChecked = !isChecked; // Mong muốn thay đổi do đã bị preventDefault chặn
 
-        if (isExpired && isChecked) {
+        if (isExpired && willBeChecked) {
             showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!');
-            checkboxEl.checked = false;
             return;
         }
 
-        const targetStatusText = isChecked ? 'hoạt động' : 'vô hiệu hóa';
+        const targetStatusText = willBeChecked ? 'hoạt động' : 'vô hiệu hóa';
 
         Swal.fire({
             title: 'Xác nhận',
@@ -523,9 +523,11 @@
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('toggleForm-' + couponId).submit();
-            } else {
-                checkboxEl.checked = !isChecked; // Rollback
+                checkboxEl.checked = willBeChecked;
+                // Đợi animation chạy xong (0.2s) rồi mới submit form
+                setTimeout(() => {
+                    document.getElementById('toggleForm-' + couponId).submit();
+                }, 250);
             }
         });
     }

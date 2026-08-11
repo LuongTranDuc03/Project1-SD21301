@@ -584,6 +584,42 @@
         return { province: '', district: '', ward: '', street: detailStr.trim() };
     }
 
+    function removeVietnameseTones(str) {
+        if (!str) return '';
+        str = str.normalize("NFC");
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+        str = str.replace(/đ/g, "d");
+        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+        str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+        str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+        str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+        str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+        str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+        str = str.replace(/Đ/g, "D");
+        return str;
+    }
+
+    function cleanGeoSlug(str) {
+        if (!str) return '';
+        let s = removeVietnameseTones(str).toLowerCase();
+        s = s.replace(/^(tinh|thanh pho|tp|quan|huyen|thi xa|thi tran|phuong|xa)\s+/g, '');
+        s = s.replace(/[^a-z0-9\s]/g, ' ');
+        return s.replace(/\s+/g, ' ').trim();
+    }
+
+    function geoMatch(target, candidate) {
+        if (!target || !candidate) return false;
+        let t = cleanGeoSlug(target);
+        let c = cleanGeoSlug(candidate);
+        if (!t || !c) return false;
+        return t === c || t.includes(c) || c.includes(t);
+    }
+
 
     // ================================================================
     // Hai cache riêng biệt:
@@ -767,18 +803,19 @@
             // Chỉ điền số nhà nếu streetInput chưa có giá trị
             if (!streetInput.value) streetInput.value = parsed.street;
 
-            const pMatch = provinces.find(p =>
-                p.name.toLowerCase() === parsed.province.toLowerCase());
+            const pMatch = provinces.find(p => geoMatch(parsed.province, p.name));
             if (pMatch) {
                 provinceSel.value = pMatch.code;
+                provinceSel.setAttribute('data-sync', Date.now());
                 fillDistricts(pMatch.code);
 
                 const dMatch = allDistricts.filter(
                     d => String(d.province_code) === String(pMatch.code)
-                ).find(d => d.name.toLowerCase() === parsed.district.toLowerCase());
+                ).find(d => geoMatch(parsed.district, d.name));
 
                 if (dMatch) {
                     districtSel.value = dMatch.code;
+                    districtSel.setAttribute('data-sync', Date.now());
                     const wards = await getWards(dMatch.code);
                     if (wards.length) {
                         wardSel.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
@@ -788,10 +825,10 @@
                             o.textContent = w.name;
                             wardSel.appendChild(o);
                         });
-                        const wMatch = wards.find(w =>
-                            w.name.toLowerCase() === parsed.ward.toLowerCase());
+                        const wMatch = wards.find(w => geoMatch(parsed.ward, w.name));
                         if (wMatch) {
                             wardSel.value = wMatch.code;
+                            wardSel.setAttribute('data-sync', Date.now());
                             wardSel.disabled = false;
                         } else {
                             wardSel.disabled = false;

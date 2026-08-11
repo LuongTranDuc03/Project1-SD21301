@@ -38,22 +38,15 @@ public class InvoiceController extends HttpServlet {
 
     private static final int PAGE_SIZE = 10;
 
-    private static final Map<Integer, String> ORDER_STATUS_LABELS_ONLINE;
-    private static final Map<Integer, String> ORDER_STATUS_LABELS_POS;
+    private static final Map<Integer, String> ORDER_STATUS_LABELS;
     static {
-        ORDER_STATUS_LABELS_ONLINE = new LinkedHashMap<>();
-        ORDER_STATUS_LABELS_ONLINE.put(1, "Đã xác nhận");
-        ORDER_STATUS_LABELS_ONLINE.put(2, "Đang giao");
-        ORDER_STATUS_LABELS_ONLINE.put(3, "Hoàn thành");
-        ORDER_STATUS_LABELS_ONLINE.put(4, "Đã huỷ");
-        ORDER_STATUS_LABELS_ONLINE.put(5, "Đã hoàn tiền");
-
-        ORDER_STATUS_LABELS_POS = new LinkedHashMap<>();
-        ORDER_STATUS_LABELS_POS.put(0, "Chờ thanh toán");
-        ORDER_STATUS_LABELS_POS.put(1, "Chờ giao hàng");
-        ORDER_STATUS_LABELS_POS.put(3, "Hoàn thành");
-        ORDER_STATUS_LABELS_POS.put(4, "Đã huỷ");
-        ORDER_STATUS_LABELS_POS.put(5, "Đã hoàn tiền");
+        ORDER_STATUS_LABELS = new LinkedHashMap<>();
+        ORDER_STATUS_LABELS.put(0, "Chờ thanh toán");
+        ORDER_STATUS_LABELS.put(1, "Chờ giao hàng");
+        ORDER_STATUS_LABELS.put(2, "Đang giao");
+        ORDER_STATUS_LABELS.put(3, "Hoàn thành");
+        ORDER_STATUS_LABELS.put(4, "Đã huỷ");
+        ORDER_STATUS_LABELS.put(5, "Đã hoàn tiền");
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -162,8 +155,7 @@ public class InvoiceController extends HttpServlet {
         List<project.duan1_sd21301.model.phuc.PaymentMethod> paymentMethods = invoiceRepo.findAllPaymentMethods();
 
         request.setAttribute("invoices", invoices);
-        request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
-        request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
+        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
         request.setAttribute("total", total);
         request.setAttribute("page", page);
         request.setAttribute("size", PAGE_SIZE);
@@ -203,8 +195,7 @@ public class InvoiceController extends HttpServlet {
         request.setAttribute("invoice", invoice);
         request.setAttribute("detailList", detailList);
         request.setAttribute("historyList", historyList);
-        request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
-        request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
+        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
         request.setAttribute("pageTitle", "Chi tiết hóa đơn #" + invoice.getCode());
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-detail.jsp")
@@ -231,8 +222,7 @@ public class InvoiceController extends HttpServlet {
 
         request.setAttribute("invoice", invoice);
         request.setAttribute("detailList", detailList);
-        request.setAttribute("orderStatusLabelsOnline", ORDER_STATUS_LABELS_ONLINE);
-        request.setAttribute("orderStatusLabelsPos", ORDER_STATUS_LABELS_POS);
+        request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-print.jsp")
                 .forward(request, response);
@@ -496,10 +486,7 @@ public class InvoiceController extends HttpServlet {
                 c8.setCellStyle(centerStyle);
 
                 Cell c9 = row.createCell(9);
-                Map<Integer, String> labels = (inv.getOrderType() != null && inv.getOrderType() == 0)
-                        ? ORDER_STATUS_LABELS_POS
-                        : ORDER_STATUS_LABELS_ONLINE;
-                c9.setCellValue(labels.getOrDefault(inv.getOrderStatus(), "?"));
+                c9.setCellValue(ORDER_STATUS_LABELS.getOrDefault(inv.getOrderStatus(), "?"));
                 c9.setCellStyle(centerStyle);
             }
 

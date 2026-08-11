@@ -625,10 +625,10 @@
                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                     </a>
                                     <!-- Toggle status -->
-                                    <label class="switch" title="<%= prod.getStock() <= 0 ? "Sản phẩm có số lượng bằng 0, không thể chuyển trạng thái" : "Chuyển trạng thái" %>" style="margin-left: 4px; <%= prod.getStock() <= 0 ? "opacity: 0.5; cursor: not-allowed;" : "" %>">
-                                        <input type="checkbox" <%= !"OUT_OF_STOCK".equals(prod.getEffectiveStatus()) ? "checked" : "" %>
+                                    <label class="switch" title="<%= prod.getStock() <= 0 ? "Sản phẩm có số lượng bằng 0, không thể chuyển trạng thái" : "Chuyển trạng thái" %>" style="margin-left: 4px; <%= prod.getStock() <= 0 ? "cursor: not-allowed;" : "" %>">
+                                        <input type="checkbox" <%= ("AVAILABLE".equals(prod.getEffectiveStatus()) && prod.getStock() > 0) ? "checked" : "" %>
                                                <%= prod.getStock() <= 0 ? "disabled" : "" %>
-                                               onchange="toggleProductStatus('<%= prod.getCode() %>', this)">
+                                               onclick="toggleProductStatus('<%= prod.getCode() %>', this)">
                                         <span class="slider" style="<%= prod.getStock() <= 0 ? "cursor: not-allowed;" : "" %>"></span>
                                     </label>
                                     <% } %>
@@ -682,8 +682,12 @@
             return;
         }
 
-        const isChecked = checkboxEl.checked;
-        const targetStatusText = isChecked ? 'còn hàng' : 'hết hàng';
+        const intendedState = checkboxEl.checked;
+        
+        // Block animation immediately
+        checkboxEl.checked = !intendedState;
+
+        const targetStatusText = intendedState ? 'còn hàng' : 'hết hàng';
         
         Swal.fire({
             title: 'Xác nhận',
@@ -696,14 +700,15 @@
             cancelButtonText: 'Hủy'
         }).then((result) => {
             if (!result.isConfirmed) {
-                checkboxEl.checked = !isChecked; // Rollback toggle state
                 return;
             }
+            // Trigger animation after confirmation
+            checkboxEl.checked = intendedState;
 
             const badge = row ? row.querySelector('.badge-status') : null;
 
-            // Store old state for rollback
-            const oldChecked = !checkboxEl.checked;
+            // Store old state for rollback in case of error
+            const oldChecked = !intendedState;
             let oldStatus = 'AVAILABLE';
             let oldBadgeText = 'Còn hàng';
             let oldBadgeClass = 'available';
@@ -716,20 +721,22 @@
                 }
             }
 
-            // Optimistically update the UI immediately
-            const optStatus = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
-            const optText = isChecked ? 'Còn hàng' : 'Hết hàng';
-            const optClass = isChecked ? 'available' : 'out_of_stock';
+            // Đợi animation của toggle (0.2s) chạy xong rồi mới update DOM khác (tránh giật lag)
+            setTimeout(() => {
+                const optStatus = intendedState ? 'AVAILABLE' : 'OUT_OF_STOCK';
+                const optText = intendedState ? 'Còn hàng' : 'Hết hàng';
+                const optClass = intendedState ? 'available' : 'out_of_stock';
+    
+                if (row) {
+                    row.dataset.status = optStatus;
+                }
+                if (badge) {
+                    badge.className = 'badge-status ' + optClass;
+                    badge.textContent = optText;
+                }
 
-            if (row) {
-                row.dataset.status = optStatus;
-            }
-            if (badge) {
-                badge.className = 'badge-status ' + optClass;
-                badge.textContent = optText;
-            }
-
-            applyFilters();
+                applyFilters();
+            }, 250);
 
             const formData = new URLSearchParams();
             formData.append('code', productId);
@@ -750,42 +757,49 @@
                     if (data.success) {
                         // Confirmed by server. Update row state if server status is different
                         let finalStatus = (data.newStatus == 1 || data.newStatus === '1' || data.newStatus === 'AVAILABLE') ? 'AVAILABLE' : 'OUT_OF_STOCK';
-                        if (row) {
-                            row.dataset.status = finalStatus;
-                        }
-                        if (badge) {
-                            badge.className = 'badge-status';
-                            if (finalStatus === 'AVAILABLE') {
-                                badge.classList.add('available');
-                                badge.textContent = 'Còn hàng';
-                            } else {
-                                badge.classList.add('out_of_stock');
-                                badge.textContent = 'Hết hàng';
+                        
+                        setTimeout(() => {
+                            if (row) {
+                                row.dataset.status = finalStatus;
                             }
-                        }
-                        applyFilters();
+                            if (badge) {
+                                badge.className = 'badge-status';
+                                if (finalStatus === 'AVAILABLE') {
+                                    badge.classList.add('available');
+                                    badge.textContent = 'Còn hàng';
+                                } else {
+                                    badge.classList.add('out_of_stock');
+                                    badge.textContent = 'Hết hàng';
+                                }
+                            }
+                            applyFilters();
+                        }, 250);
                         if (window.showToast) window.showToast('Cập nhật trạng thái sản phẩm thành công!', 'success');
                     } else {
                         // Rollback on failure
-                        checkboxEl.checked = oldChecked;
+                        setTimeout(() => {
+                            checkboxEl.checked = !willBeChecked;
+                            if (row) row.dataset.status = oldStatus;
+                            if (badge) {
+                                badge.className = 'badge-status ' + oldBadgeClass;
+                                badge.textContent = oldBadgeText;
+                            }
+                            applyFilters();
+                        }, 250);
+                        if (window.showToast) window.showToast(data.message || 'Cập nhật trạng thái thất bại!', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error toggling status:', err);
+                    setTimeout(() => {
+                        checkboxEl.checked = !willBeChecked;
                         if (row) row.dataset.status = oldStatus;
                         if (badge) {
                             badge.className = 'badge-status ' + oldBadgeClass;
                             badge.textContent = oldBadgeText;
                         }
                         applyFilters();
-                        if (window.showToast) window.showToast(data.message || 'Cập nhật trạng thái thất bại!', 'error');
-                    }
-                })
-                .catch(err => {
-                    console.error('Error toggling status:', err);
-                    checkboxEl.checked = oldChecked;
-                    if (row) row.dataset.status = oldStatus;
-                    if (badge) {
-                        badge.className = 'badge-status ' + oldBadgeClass;
-                        badge.textContent = oldBadgeText;
-                    }
-                    applyFilters();
+                    }, 250);
                     if (window.showToast) window.showToast('Lỗi kết nối khi cập nhật trạng thái!', 'error');
                 });
         });

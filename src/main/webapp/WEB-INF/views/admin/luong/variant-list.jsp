@@ -977,19 +977,21 @@
                                                                                                                                                     </path>
                                                                                                                                                 </svg>
                                                                                                                     </a>
+                                                                                                                    <!-- Toggle status -->
                                                                                                                     <label
                                                                                                                         class="switch"
-                                                                                                                        title="Chuyển đổi trạng thái"
-                                                                                                                        style="margin: 0;">
+                                                                                                                        title="<%= v.getStock() <= 0 ? "Biến thể có số lượng bằng 0, không thể chuyển trạng thái" : "Chuyển đổi trạng thái" %>"
+                                                                                                                        style="margin: 0; <%= v.getStock() <= 0 ? "cursor: not-allowed;" : "" %>">
                                                                                                                         <input
                                                                                                                             type="checkbox"
-                                                                                                                            onchange="toggleVariantStatus(this)"
-                                                                                                                            <%=statusClass.equals("available")
+                                                                                                                            onclick="toggleVariantStatus(this)"
+                                                                                                                            <%=(statusClass.equals("available") && v.getStock() > 0)
                                                                                                                             ? "checked"
                                                                                                                             : ""
-                                                                                                                            %>>
+                                                                                                                            %>
+                                                                                                                            <%= v.getStock() <= 0 ? "disabled" : "" %>>
                                                                                                                         <span
-                                                                                                                            class="slider"></span>
+                                                                                                                            class="slider" style="<%= v.getStock() <= 0 ? "cursor: not-allowed;" : "" %>"></span>
                                                                                                                     </label>
                                                                                                                     <% } %>
                                                                                                                 </div>
@@ -1265,16 +1267,32 @@
                             function toggleVariantStatus(checkbox) {
                                 var tr = checkbox.closest('tr');
                                 var statusBadge = tr.querySelector('.badge-status');
+                                var stock = parseInt(tr.getAttribute('data-stock') || '0');
 
-                                var isChecked = checkbox.checked;
-                                var newStatusLabel = isChecked ? 'Còn hàng' : 'Hết hàng';
-                                var newStatusData = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
-                                var newBadgeClass = isChecked ? 'available' : 'out_of_stock';
+                                if (stock <= 0) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: 'Biến thể có số lượng bằng 0 (hết hàng), không thể thay đổi trạng thái!',
+                                        confirmButtonText: 'Đóng'
+                                    });
+                                    checkbox.checked = false;
+                                    return;
+                                }
 
-                                var oldChecked = !isChecked;
-                                var oldStatusLabel = isChecked ? 'Hết hàng' : 'Còn hàng';
-                                var oldStatusData = isChecked ? 'OUT_OF_STOCK' : 'AVAILABLE';
-                                var oldBadgeClass = isChecked ? 'out_of_stock' : 'available';
+                                var intendedState = checkbox.checked;
+                                
+                                // Block animation immediately
+                                checkbox.checked = !intendedState;
+
+                                var newStatusLabel = intendedState ? 'Còn hàng' : 'Hết hàng';
+                                var newStatusData = intendedState ? 'AVAILABLE' : 'OUT_OF_STOCK';
+                                var newBadgeClass = intendedState ? 'available' : 'out_of_stock';
+
+                                var oldChecked = !intendedState;
+                                var oldStatusLabel = !intendedState ? 'Còn hàng' : 'Hết hàng';
+                                var oldStatusData = !intendedState ? 'AVAILABLE' : 'OUT_OF_STOCK';
+                                var oldBadgeClass = !intendedState ? 'available' : 'out_of_stock';
 
                                 Swal.fire({
                                     title: 'Xác nhận',
@@ -1287,13 +1305,17 @@
                                     cancelButtonText: 'Hủy'
                                 }).then((result) => {
                                     if (!result.isConfirmed) {
-                                        checkbox.checked = oldChecked; // Rollback
                                         return;
                                     }
+                                    
+                                    // Trigger animation after confirmation
+                                    checkbox.checked = intendedState;
 
-                                    statusBadge.className = 'badge-status ' + newBadgeClass;
-                                    statusBadge.textContent = newStatusLabel;
-                                    tr.dataset.status = newStatusData;
+                                    setTimeout(() => {
+                                        statusBadge.className = 'badge-status ' + newBadgeClass;
+                                        statusBadge.textContent = newStatusLabel;
+                                        tr.dataset.status = newStatusData;
+                                    }, 250);
 
                                     var variantId = tr.dataset.variantid || '';
                                     var productCode = tr.dataset.productcode || '';
@@ -1308,14 +1330,18 @@
                                             if (xhr.status === 200) {
                                                 if (window.showToast) window.showToast('Cập nhật trạng thái biến thể thành công!', 'success');
                                             } else {
-                                                checkbox.checked = oldChecked;
-                                                statusBadge.className = 'badge-status ' + oldBadgeClass;
-                                                statusBadge.textContent = oldStatusLabel;
-                                                tr.dataset.status = oldStatusData;
+                                                setTimeout(() => {
+                                                    checkbox.checked = oldChecked;
+                                                    statusBadge.className = 'badge-status ' + oldBadgeClass;
+                                                    statusBadge.textContent = oldStatusLabel;
+                                                    tr.dataset.status = oldStatusData;
+                                                }, 250);
                                                 if (window.showToast) window.showToast('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
                                             }
                                             if (typeof applyFilters === 'function') {
-                                                applyFilters();
+                                                setTimeout(() => {
+                                                    applyFilters();
+                                                }, 250);
                                             }
                                         }
                                     };

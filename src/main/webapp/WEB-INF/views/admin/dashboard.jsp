@@ -488,7 +488,8 @@
                 borderColor: '#3b82f6',
                 borderWidth: 1,
                 borderRadius: 4,
-                barPercentage: 0.6
+                barPercentage: 0.5,
+                categoryPercentage: 0.6
             }]
         },
         options: {

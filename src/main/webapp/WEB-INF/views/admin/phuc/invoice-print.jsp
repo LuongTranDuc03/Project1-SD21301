@@ -29,10 +29,7 @@
                                 Invoice inv = (Invoice) request.getAttribute("invoice");
                                 List<InvoiceDetail> detailList = (List<InvoiceDetail>) request.getAttribute("detailList");
 
-                                // Lấy danh sách map hiển thị nhãn trạng thái dựa trên loại hoá đơn
-                                Map<Integer, String> statusLabels = (inv != null && inv.getOrderType() != null && inv.getOrderType() != 0) ? 
-                                    (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline") : 
-                                    (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
+                                Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
 
                                 // Format ngày tháng theo định dạng dd/MM/yyyy
                                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
