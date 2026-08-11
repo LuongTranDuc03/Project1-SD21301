@@ -148,7 +148,9 @@ public class CouponController extends HttpServlet {
 
     private void handleAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("coupon", new Coupon());
+        Coupon c = new Coupon();
+        c.setCode(repo.generateNextCode());
+        request.setAttribute("coupon", c);
         request.setAttribute("isEdit", false);
         request.setAttribute("discountTypeLabels", DISCOUNT_TYPE_LABELS);
         request.setAttribute("pageTitle", "Thêm phiếu giảm giá");

@@ -13,6 +13,12 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        body { overflow-x: hidden; }
+        .app-container, .main-content, .content-wrapper {
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
         .page-bg { background-color: #f1f5f9; min-height: 100vh; padding: 20px; }
         .page-title {
             display: flex;
@@ -27,7 +33,7 @@
         /* 4 KPI Cards */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
             margin-bottom: 20px;
         }
@@ -172,7 +178,7 @@
         /* Tables Section */
         .tables-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
         }
         .data-card {
