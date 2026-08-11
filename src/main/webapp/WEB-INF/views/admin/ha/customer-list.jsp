@@ -590,7 +590,7 @@
                                                                         <label class="switch" title="<%= (c.getStatus() != null && c.getStatus() == 1) ? "Khóa tài khoản" : "Kích hoạt tài khoản" %>" onclick="event.stopPropagation();" style="margin-left: 4px;">
                                                                             <input type="checkbox"
                                                                                 <%= (c.getStatus() != null && c.getStatus() == 1) ? "checked" : "" %>
-                                                                                onchange="toggleCustomerStatus('<%= c.getId() %>', this)">
+                                                                                onclick="event.preventDefault(); toggleCustomerStatus('<%= c.getId() %>', this)">
                                                                             <span class="slider"></span>
                                                                         </label>
                                                                     </div>
@@ -644,7 +644,8 @@
                             // Hàm gửi request thay đổi trạng thái hoạt động của khách hàng
                             function toggleCustomerStatus(customerId, checkboxEl) {
                                 const isChecked = checkboxEl.checked;
-                                const targetStatusText = isChecked ? 'hoạt động' : 'khóa';
+                                const willBeChecked = isChecked;
+                                const targetStatusText = willBeChecked ? 'hoạt động' : 'khóa';
                                 
                                 Swal.fire({
                                     title: 'Xác nhận',
@@ -657,6 +658,7 @@
                                     cancelButtonText: 'Hủy'
                                 }).then((result) => {
                                     if (result.isConfirmed) {
+                                        checkboxEl.checked = willBeChecked;
                                         const form = document.createElement('form');
                                         form.method = 'POST';
                                         form.action = '<%= contextPath %>/admin/customers';
@@ -675,8 +677,6 @@
                                         
                                         document.body.appendChild(form);
                                         form.submit();
-                                    } else {
-                                        checkboxEl.checked = !isChecked; // Rollback
                                     }
                                 });
                             }

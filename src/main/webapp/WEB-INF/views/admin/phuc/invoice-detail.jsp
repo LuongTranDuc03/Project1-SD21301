@@ -31,8 +31,7 @@
     List<InvoiceHistory> historyList = (List<InvoiceHistory>) request.getAttribute("historyList");
     
     // Lấy danh sách map hiển thị nhãn trạng thái
-    Map<Integer, String> statusLabelsOnline = (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline");
-    Map<Integer, String> statusLabelsPos = (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
+    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
     
     // Khởi tạo các đối tượng format ngày tháng
     DateTimeFormatter dtf     = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -55,7 +54,6 @@
         return "cho-xu-ly";
     };
     String badgeClass = bClassFn.apply(orderStatus, orderType);
-    Map<Integer, String> statusLabels = orderType != null && orderType == 0 ? statusLabelsPos : statusLabelsOnline;
     String badgeLabel = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
 
     // Chuẩn bị các chuỗi thông tin khách hàng, fallback (mặc định) sang chuỗi rỗng hoặc "—" nếu null
@@ -98,7 +96,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     <% if ("completed".equals(invMsgParam)) { %>
-    if (window.showToast) window.showToast('Đơn hàng đã hoàn thành thành công!', 'success');
+    if (window.showToast) window.showToast('Đơn hàng đã hoàn thành công!', 'success');
     <% } else if ("cancelled".equals(invMsgParam) && inv.getOrderStatus() == 5) { %>
     if (window.showToast) window.showToast('Hoàn tiền thành công! Đơn hàng đã được xử lý.', 'success');
     <% } else if ("cancelled".equals(invMsgParam)) { %>
@@ -153,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <div class="invoice-id" style="display: flex; align-items: center; gap: 8px;">
                                         <%= inv.getCode() %>
                                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (orderType != null && orderType == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
-                                            <%= (orderType != null && orderType == 0) ? "Tại quầy" : "Online" %>
+                                            <% String lbl = statusLabels.getOrDefault(orderStatus, "?"); %> <%= lbl %>
                                         </span>
                                     </div>
                                     <div class="invoice-date">Ngày đặt: <%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—" %></div>

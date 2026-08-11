@@ -151,7 +151,7 @@ public class PosCheckoutService {
                         "trang_thai_don_hang = ?, trang_thai_thanh_toan = 1, da_thanh_toan = ?, " +
                         "ten_khach_nhan = ?, sdt_khach_nhan = ?, dia_chi_khach_nhan = ?, ghi_chu = ?, " +
                         "tong_so_luong = ?, tam_tinh = ?, tien_giam_hoa_don = ?, tong_thanh_toan = ?, phi_van_chuyen = ?, " +
-                        "ngay_xac_nhan = GETDATE(), ngay_hoan_thanh = ? WHERE id = ?";
+                        "ngay_xac_nhan = GETDATE(), ngay_hoan_thanh = ?, loai_hoa_don = ? WHERE id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(updateInvoiceSql)) {
                     if (customerId != null) ps.setInt(1, customerId); else ps.setNull(1, Types.INTEGER);
                     ps.setInt(2, loggedInUser.getId());
@@ -174,7 +174,8 @@ public class PosCheckoutService {
                     } else {
                         ps.setNull(16, Types.TIMESTAMP);
                     }
-                    ps.setInt(17, invoiceId);
+                    ps.setInt(17, orderDTO.isDelivery() ? 1 : 0);
+                    ps.setInt(18, invoiceId);
                     ps.executeUpdate();
                 }
                 
@@ -194,7 +195,7 @@ public class PosCheckoutService {
                         "ten_khach_nhan, sdt_khach_nhan, dia_chi_khach_nhan, ghi_chu, " +
                         "tong_so_luong, tam_tinh, tien_giam_hoa_don, tong_thanh_toan, phi_van_chuyen, " +
                         "ngay_dat_hang, ngay_xac_nhan, ngay_hoan_thanh) " +
-                        "VALUES (?, ?, ?, ?, ?, 0, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?)";
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?)";
                     
             try (PreparedStatement ps = conn.prepareStatement(insertInvoiceSqlFixed, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, invoiceCode);
@@ -202,22 +203,23 @@ public class PosCheckoutService {
                 ps.setInt(3, loggedInUser.getId());
                 ps.setInt(4, paymentMethodId);
                 if (couponId != null) ps.setInt(5, couponId); else ps.setNull(5, Types.INTEGER);
-                ps.setInt(6, orderStatus);
-                ps.setDouble(7, customerPay);
-                ps.setString(8, orderDTO.isDelivery() ? orderDTO.getRecipientName() : orderDTO.getCustomerName());
-                ps.setString(9, orderDTO.isDelivery() ? orderDTO.getDeliveryPhone() : orderDTO.getCustomerPhone());
-                ps.setString(10, orderDTO.isDelivery() ? addressFull : null);
-                ps.setString(11, orderDTO.getNote());
-                ps.setInt(12, totalQuantity);
-                ps.setDouble(13, sumTotal);
-                ps.setDouble(14, discountAmt);
-                ps.setDouble(15, finalTotal);
-                ps.setDouble(16, shippingFee);
+                ps.setInt(6, orderDTO.isDelivery() ? 1 : 0);
+                ps.setInt(7, orderStatus);
+                ps.setDouble(8, customerPay);
+                ps.setString(9, orderDTO.isDelivery() ? orderDTO.getRecipientName() : orderDTO.getCustomerName());
+                ps.setString(10, orderDTO.isDelivery() ? orderDTO.getDeliveryPhone() : orderDTO.getCustomerPhone());
+                ps.setString(11, orderDTO.isDelivery() ? addressFull : null);
+                ps.setString(12, orderDTO.getNote());
+                ps.setInt(13, totalQuantity);
+                ps.setDouble(14, sumTotal);
+                ps.setDouble(15, discountAmt);
+                ps.setDouble(16, finalTotal);
+                ps.setDouble(17, shippingFee);
                 
                 if (!orderDTO.isDelivery()) {
-                    ps.setTimestamp(17, new Timestamp(System.currentTimeMillis()));
+                    ps.setTimestamp(18, new Timestamp(System.currentTimeMillis()));
                 } else {
-                    ps.setNull(17, Types.TIMESTAMP);
+                    ps.setNull(18, Types.TIMESTAMP);
                 }
                 
                 ps.executeUpdate();

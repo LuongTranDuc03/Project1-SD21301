@@ -98,9 +98,11 @@
                           <li class="<%= uri.endsWith("/admin/dashboard") ? "active" : "" %>">
                               <a href="<%= contextPath %>/admin/dashboard">Thống kê doanh thu</a>
                           </li>
+                          <%--
                           <li class="<%= uri.endsWith("/admin/inventory-dashboard") ? "active" : "" %>">
                               <a href="<%= contextPath %>/admin/inventory-dashboard">Thống kê tồn kho</a>
                           </li>
+                          --%>
                       </ul>
                   </li>
                   <% } %>

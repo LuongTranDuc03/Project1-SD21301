@@ -376,7 +376,7 @@ CREATE TABLE hoa_don (
     id_dia_chi                INT                REFERENCES dia_chi(id),
     id_phuong_thuc_thanh_toan INT                REFERENCES phuong_thuc_thanh_toan(id),
     id_ma_giam_gia            INT                REFERENCES phieu_giam_gia(id),
-    loai_hoa_don              INT                NOT NULL DEFAULT 1,   -- 0: Tại quầy | 1: Online
+    loai_hoa_don              INT                NOT NULL DEFAULT 1,   -- 0: Tại quầy | 1: Giao hàng
     ngay_dat_hang             DATETIME           NOT NULL DEFAULT GETDATE(),
     ngay_xac_nhan             DATETIME,
     ngay_giao_du_kien         DATETIME,

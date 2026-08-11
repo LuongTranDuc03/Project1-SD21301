@@ -983,7 +983,7 @@
                                                                                                                         style="margin: 0;">
                                                                                                                         <input
                                                                                                                             type="checkbox"
-                                                                                                                            onchange="toggleVariantStatus(this)"
+                                                                                                                            onclick="event.preventDefault(); toggleVariantStatus(this)"
                                                                                                                             <%=statusClass.equals("available")
                                                                                                                             ? "checked"
                                                                                                                             : ""
@@ -1267,14 +1267,15 @@
                                 var statusBadge = tr.querySelector('.badge-status');
 
                                 var isChecked = checkbox.checked;
-                                var newStatusLabel = isChecked ? 'Còn hàng' : 'Hết hàng';
-                                var newStatusData = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
-                                var newBadgeClass = isChecked ? 'available' : 'out_of_stock';
+                                var willBeChecked = !isChecked; // Trạng thái mong muốn do preventDefault đã chặn
+                                var newStatusLabel = willBeChecked ? 'Còn hàng' : 'Hết hàng';
+                                var newStatusData = willBeChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
+                                var newBadgeClass = willBeChecked ? 'available' : 'out_of_stock';
 
-                                var oldChecked = !isChecked;
-                                var oldStatusLabel = isChecked ? 'Hết hàng' : 'Còn hàng';
-                                var oldStatusData = isChecked ? 'OUT_OF_STOCK' : 'AVAILABLE';
-                                var oldBadgeClass = isChecked ? 'out_of_stock' : 'available';
+                                var oldChecked = isChecked;
+                                var oldStatusLabel = isChecked ? 'Còn hàng' : 'Hết hàng';
+                                var oldStatusData = isChecked ? 'AVAILABLE' : 'OUT_OF_STOCK';
+                                var oldBadgeClass = isChecked ? 'available' : 'out_of_stock';
 
                                 Swal.fire({
                                     title: 'Xác nhận',
@@ -1287,13 +1288,16 @@
                                     cancelButtonText: 'Hủy'
                                 }).then((result) => {
                                     if (!result.isConfirmed) {
-                                        checkbox.checked = oldChecked; // Rollback
                                         return;
                                     }
+                                    
+                                    checkbox.checked = willBeChecked;
 
-                                    statusBadge.className = 'badge-status ' + newBadgeClass;
-                                    statusBadge.textContent = newStatusLabel;
-                                    tr.dataset.status = newStatusData;
+                                    setTimeout(() => {
+                                        statusBadge.className = 'badge-status ' + newBadgeClass;
+                                        statusBadge.textContent = newStatusLabel;
+                                        tr.dataset.status = newStatusData;
+                                    }, 250);
 
                                     var variantId = tr.dataset.variantid || '';
                                     var productCode = tr.dataset.productcode || '';
@@ -1308,14 +1312,18 @@
                                             if (xhr.status === 200) {
                                                 if (window.showToast) window.showToast('Cập nhật trạng thái biến thể thành công!', 'success');
                                             } else {
-                                                checkbox.checked = oldChecked;
-                                                statusBadge.className = 'badge-status ' + oldBadgeClass;
-                                                statusBadge.textContent = oldStatusLabel;
-                                                tr.dataset.status = oldStatusData;
+                                                setTimeout(() => {
+                                                    checkbox.checked = oldChecked;
+                                                    statusBadge.className = 'badge-status ' + oldBadgeClass;
+                                                    statusBadge.textContent = oldStatusLabel;
+                                                    tr.dataset.status = oldStatusData;
+                                                }, 250);
                                                 if (window.showToast) window.showToast('Có lỗi xảy ra khi cập nhật trạng thái!', 'error');
                                             }
                                             if (typeof applyFilters === 'function') {
-                                                applyFilters();
+                                                setTimeout(() => {
+                                                    applyFilters();
+                                                }, 250);
                                             }
                                         }
                                     };

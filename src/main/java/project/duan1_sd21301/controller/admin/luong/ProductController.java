@@ -137,6 +137,29 @@ public class ProductController extends HttpServlet {
                             || (p.getStatus() != null && p.getStatus() == 0)) ? 1 : 0;
                     p.setStatus(newStatus);
                     boolean ok = productService.updateProduct(p);
+
+                    // Đồng bộ trạng thái biến thể theo sản phẩm
+                    if (ok && p.getId() > 0) {
+                        List<ProductDetail> details = productService.getDetailsByProductId(p.getId());
+                        if (details != null) {
+                            for (ProductDetail d : details) {
+                                if (newStatus == 0) {
+                                    // SP tắt -> Tắt tất cả biến thể
+                                    if (d.getStatus() != null && d.getStatus() == 1) {
+                                        d.setStatus(0);
+                                        productService.updateProductDetail(d);
+                                    }
+                                } else if (newStatus == 1) {
+                                    // SP bật -> Bật các biến thể còn hàng
+                                    if ((d.getStatus() == null || d.getStatus() == 0) && d.getStock() > 0) {
+                                        d.setStatus(1);
+                                        productService.updateProductDetail(d);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     response.setContentType("application/json");
                     response.setCharacterEncoding("UTF-8");
                     response.getWriter().write("{\"success\":" + ok + ", \"newStatus\":\"" + newStatus + "\"}");

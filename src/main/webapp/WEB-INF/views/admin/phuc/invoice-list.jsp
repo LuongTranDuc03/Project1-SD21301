@@ -37,9 +37,7 @@
     int totalPages = request.getAttribute("totalPages") != null ? (int) request.getAttribute("totalPages") : 1;
     Integer currentStatus = (Integer) request.getAttribute("currentOrderStatus");
     Integer currentOrderType = (Integer) request.getAttribute("currentOrderType");
-    Map<Integer, String> statusLabelsOnline = (Map<Integer, String>) request.getAttribute("orderStatusLabelsOnline");
-    Map<Integer, String> statusLabelsPos = (Map<Integer, String>) request.getAttribute("orderStatusLabelsPos");
-    Map<Integer, String> statusLabels = currentOrderType != null && currentOrderType == 0 ? statusLabelsPos : statusLabelsOnline;
+    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
 
     String keyword = (String) request.getAttribute("keyword");
     String fromDate = (String) request.getAttribute("fromDate");
@@ -167,7 +165,7 @@
                             <select id="orderTypeFilter" name="orderType" class="filter-control" onchange="document.getElementById('searchForm').submit()">
                                 <option value="">-- Tất cả --</option>
                                 <option value="0" <%= currentOrderType != null && currentOrderType == 0 ? "selected" : "" %>>Tại quầy</option>
-                                <option value="1" <%= currentOrderType != null && currentOrderType == 1 ? "selected" : "" %>>Online</option>
+                                <option value="1" <%= currentOrderType != null && currentOrderType == 1 ? "selected" : "" %>>Giao hàng</option>
                             </select>
                         </div>
                         
@@ -293,7 +291,7 @@
                                 int s = inv.getOrderStatus();
                                 Integer type = inv.getOrderType();
                                 String bCls = badgeClass.apply(s, type);
-                                String bLbl = (type != null && type == 0 ? statusLabelsPos : statusLabelsOnline).getOrDefault(s, "?");
+                                String bLbl = statusLabels.getOrDefault(s, "?");
                                 String total2 = inv.getTotalAmount() != null ?
                                         String.format("%,.0fđ",
                                                 inv.getTotalAmount()).replace(",", ".")
@@ -333,7 +331,7 @@
                             </td>
                             <td>
                                 <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (type != null && type == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
-                                    <%= (type != null && type == 0) ? "Tại quầy" : "Online" %>
+                                    <%= (type != null && type == 0) ? "Tại quầy" : "Giao hàng" %>
                                 </span>
                             </td>
                             <td

@@ -855,7 +855,7 @@
         }
     }
     
-    async function addVariantToOrder(variantCode) {
+    async function addVariantToOrder(variantCode, fromScanner = false) {
         if (!currentOrderId) {
             alert("Vui lòng tạo đơn hàng trước!");
             return;
@@ -934,6 +934,11 @@
                 renderCurrentOrderItems();
                 updateAvailableStockDisplay();
                 closeVariantModal();
+
+                // Toast thông báo khi quét mã thành công
+                if (fromScanner) {
+                    showPosToast('✅ Đã thêm: ' + name + ' (' + color + ' - ' + size + ')', 'success');
+                }
             } else {
                 alert("Lỗi: " + (data.message || 'Không thể thêm sản phẩm'));
             }
@@ -1724,7 +1729,6 @@
         const maxDiscount = parseFloat(option.getAttribute('data-max'));
         
         if (sumTotal < minOrder) {
-            alert('Đơn hàng chưa đạt giá trị tối thiểu ' + minOrder.toLocaleString('vi-VN') + ' đ để áp dụng mã này!');
             select.value = '';
             order.discountCode = '';
             order.discountValue = '0';
@@ -2585,10 +2589,10 @@
             rememberLastUsedCamera: false
         };
 
-        const onScanSuccess = (decodedText) => {
+        const onScanSuccess = async (decodedText) => {
             stopCameraScan();
             // Tận dụng hàm addVariantToOrder đã có sẵn trong pos.jsp
-            addVariantToOrder(decodedText);
+            await addVariantToOrder(decodedText, true);
         };
 
         html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {})
@@ -2634,6 +2638,62 @@
                 try { instance.clear(); } catch(e) {}
             });
         }
+    }
+</script>
+
+<style>
+    #posToastContainer {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+    .pos-toast {
+        background: #fff;
+        border-radius: 10px;
+        padding: 14px 18px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 280px;
+        max-width: 380px;
+        border-left: 4px solid #10b981;
+        animation: posToastSlideIn 0.3s ease forwards;
+        pointer-events: auto;
+    }
+    .pos-toast.error { border-left-color: #ef4444; }
+    .pos-toast.warning { border-left-color: #f59e0b; }
+    @keyframes posToastSlideIn {
+        from { transform: translateX(120%); opacity: 0; }
+        to   { transform: translateX(0);   opacity: 1; }
+    }
+    @keyframes posToastFadeOut {
+        from { transform: translateX(0);   opacity: 1; }
+        to   { transform: translateX(120%); opacity: 0; }
+    }
+</style>
+<div id="posToastContainer"></div>
+<script>
+    function showPosToast(message, type = 'success') {
+        const container = document.getElementById('posToastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'pos-toast' + (type !== 'success' ? ' ' + type : '');
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+        toast.innerHTML = '<span style="font-size:18px;">' + icon + '</span><span>' + message + '</span>';
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'posToastFadeOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 </script>
 
