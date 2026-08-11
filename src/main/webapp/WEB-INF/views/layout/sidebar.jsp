@@ -12,16 +12,16 @@
     String contextPath = request.getContextPath();
 %>
 <style>
-    .has-submenu .submenu {
+    .has-submenu > .submenu {
         display: none;
         list-style: none;
         padding-left: 40px;
         margin: 4px 0 0 0;
     }
-    .has-submenu.submenu-open .submenu {
+    .has-submenu.submenu-open > .submenu {
         display: block;
     }
-    .has-submenu.submenu-open .chevron-icon {
+    .has-submenu.submenu-open > a > .chevron-icon {
         transform: rotate(180deg);
     }
     .submenu li {
@@ -123,8 +123,8 @@
                     </a>
                 </li>
                 <!-- Quản lý sản phẩm (Dropdown) -->
-                <li id="product-submenu" class="has-submenu <%= uri.contains("/admin/products") || uri.contains("/admin/variants") ? "submenu-open" : "" %>">
-                    <a href="javascript:void(0)" class="submenu-toggle" onclick="toggleProductSubmenu(this)">
+                <li id="product-submenu" class="has-submenu <%= uri.contains("/admin/products") || uri.contains("/admin/variants") || uri.contains("/admin/attributes") ? "submenu-open" : "" %>">
+                    <a href="javascript:void(0)" class="submenu-toggle" onclick="toggleProductSubmenu(this, event)">
                         <span class="menu-icon">
                             <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                         </span>
@@ -138,8 +138,12 @@
                         <li class="<%= uri.endsWith("/admin/variants") ? "active" : "" %>">
                             <a href="<%= contextPath %>/admin/variants">Danh sách biến thể</a>
                         </li>
+                        <li class="<%= uri.endsWith("/admin/attributes") ? "active" : "" %>">
+                            <a href="<%= contextPath %>/admin/attributes">Danh sách thuộc tính</a>
+                        </li>
                     </ul>
                 </li>
+
                 <!-- Quản lý phiếu giảm giá -->
                 <li class="<%= uri.endsWith("/admin/coupons") ? "active" : "" %>">
                     <a href="<%= contextPath %>/admin/coupons">
@@ -249,11 +253,35 @@
             }
         }
         
-        window.toggleProductSubmenu = function(el) {
+        window.toggleProductSubmenu = function(el, e) {
             const li = el.parentElement;
+            // Prevent event from bubbling up if it's a nested toggle
+            if (li.id !== 'product-submenu' && e) {
+                e.stopPropagation();
+            }
             const isNowOpen = li.classList.toggle('submenu-open');
             localStorage.setItem("product-submenu-open", isNowOpen);
         };
+
+        // Quản lý trạng thái mở/đóng của submenu Quản lý thuộc tính
+        const attributeSubmenu = document.getElementById("attribute-submenu");
+        if (attributeSubmenu) {
+            const savedState = localStorage.getItem("attribute-submenu-open");
+            if (savedState === "true") {
+                attributeSubmenu.classList.add("submenu-open");
+            } else if (savedState === "false") {
+                attributeSubmenu.classList.remove("submenu-open");
+            }
+        }
+
+        window.toggleAttributeSubmenu = function(el, e) {
+            // Prevent triggering the parent product-submenu toggle
+            if (e) e.stopPropagation(); 
+            const li = el.parentElement;
+            const isNowOpen = li.classList.toggle('submenu-open');
+            localStorage.setItem("attribute-submenu-open", isNowOpen);
+        };
+
         
         // Quản lý trạng thái mở/đóng của submenu Thống kê
         const statsSubmenu = document.getElementById("stats-submenu");
