@@ -644,7 +644,7 @@
                             // Hàm gửi request thay đổi trạng thái hoạt động của khách hàng
                             function toggleCustomerStatus(customerId, checkboxEl) {
                                 const isChecked = checkboxEl.checked;
-                                const willBeChecked = isChecked;
+                                const willBeChecked = !isChecked; // Trạng thái mong muốn do preventDefault đã chặn
                                 const targetStatusText = willBeChecked ? 'hoạt động' : 'khóa';
                                 
                                 Swal.fire({
