@@ -406,16 +406,16 @@
                                                                     <div class="filter-grid-single-line"
                                                                         style="display: flex; flex-wrap: nowrap; align-items: flex-end; gap: 16px; width: 100%; overflow-x: auto; padding: 4px 0;">
                                                                         <!-- Tìm kiếm -->
-                                                                        <div class="filter-field"
-                                                                            style="flex: 2; min-width: 180px;">
-                                                                            <label for="searchInput"
-                                                                                style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Tìm
-                                                                                kiếm</label>
-                                                                            <input type="text" id="searchInput"
-                                                                                class="filter-control"
-                                                                                placeholder="Tìm mã SP, mã biến thể, màu sắc..."
-                                                                                oninput="applyFilters()"
-                                                                                style="height: 38px; box-sizing: border-box;">
+                                                                        <div class="filter-field" style="flex: 2; min-width: 180px;">
+                                                                            <label for="searchInput" style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Tìm kiếm</label>
+                                                                            <div style="display: flex; padding: 0; overflow: hidden; align-items: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; height: 38px;">
+                                                                                <select id="searchCodeType" onchange="applyFilters()" style="border: none; border-radius: 0; border-right: 1px solid #e2e8f0; height: 100%; min-width: auto; padding: 8px 12px; background-color: #f8fafc; color: #64748b; font-weight: 500; outline: none; cursor: pointer;">
+                                                                                    <option value="ALL">Tất cả</option>
+                                                                                    <option value="SP">Sản phẩm</option>
+                                                                                    <option value="BT">Biến thể</option>
+                                                                                </select>
+                                                                                <input type="text" id="searchInput" class="filter-control" placeholder="Tìm mã SP, mã biến thể, màu sắc..." oninput="applyFilters()" style="border: none; outline: none; padding: 8px 12px; flex: 1; width: 100%; height: 100%; background: transparent; font-family: inherit; font-size: 13px; margin: 0;">
+                                                                            </div>
                                                                         </div>
                                                                         <!-- Kích cỡ -->
                                                                         <div class="filter-field"
@@ -1595,6 +1595,7 @@
                             function applyFilters(page = 1) {
                                 currentPage = page;
                                 const keyword = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+                                const searchType = document.getElementById('searchCodeType') ? document.getElementById('searchCodeType').value : 'ALL';
                                 const sizeFilter = document.getElementById('sizeFilter').value;
                                 const statusFilter = document.getElementById('statusFilter').value;
                                 const minPriceVal = parseFloat(minPriceInput.value);
@@ -1607,10 +1608,19 @@
                                     const rowProductCode = (row.dataset.productcode || '').toLowerCase();
                                     const rowVariantCode = (row.dataset.code || '').toLowerCase();
                                     const rowColor = (row.dataset.color || '').toLowerCase();
-                                    const matchSearch = !keyword ||
-                                        rowProductCode.includes(keyword) ||
-                                        rowVariantCode.includes(keyword) ||
-                                        rowColor.includes(keyword);
+                                    
+                                    let matchSearch = false;
+                                    if (!keyword) {
+                                        matchSearch = true;
+                                    } else {
+                                        if (searchType === 'SP') {
+                                            matchSearch = rowProductCode.includes(keyword);
+                                        } else if (searchType === 'BT') {
+                                            matchSearch = rowVariantCode.includes(keyword);
+                                        } else {
+                                            matchSearch = rowProductCode.includes(keyword) || rowVariantCode.includes(keyword) || rowColor.includes(keyword);
+                                        }
+                                    }
 
                                     const matchSize = !sizeFilter || row.dataset.size === sizeFilter;
 

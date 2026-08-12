@@ -418,8 +418,8 @@
                       <div class="pos-filter-input" style="display: flex; padding: 0; overflow: hidden; align-items: center; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff;">
                           <select id="searchCodeType" onchange="filterVariants()" style="border: none; border-radius: 0; border-right: 1px solid #e2e8f0; height: 100%; min-width: auto; padding: 8px 12px; background-color: #f8fafc; color: #64748b; font-weight: 500; outline: none; cursor: pointer;">
                               <option value="ALL">Tất cả</option>
-                              <option value="SP">Mã SP</option>
-                              <option value="BT">Mã BT</option>
+                              <option value="SP">Sản phẩm</option>
+                              <option value="BT">Biến thể</option>
                           </select>
                           <input type="text" id="variantSearch" placeholder="Tìm mã, tên, màu, kích cỡ..." oninput="filterVariants()" style="border: none; outline: none; padding: 8px 12px; flex: 1; width: 100%; background: transparent; font-family: inherit; font-size: 13px;">
                       </div>
