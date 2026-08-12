@@ -823,7 +823,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         String sqlIns = "INSERT INTO xuat_xu (xuat_xu_code, ten_xuat_xu, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "XX" + System.currentTimeMillis() % 100000);
+            ps.setString(1, new project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl().generateNextCode("origin"));
             ps.setString(2, name.trim());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -848,7 +848,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         String sqlIns = "INSERT INTO danh_muc (danh_muc_code, ten_danh_muc, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "DM" + System.currentTimeMillis() % 100000);
+            ps.setString(1, new project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl().generateNextCode("category"));
             ps.setString(2, name.trim());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -872,7 +872,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         String sqlIns = "INSERT INTO thuong_hieu (thuong_hieu_code, ten_thuong_hieu, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "TH" + System.currentTimeMillis() % 100000);
+            ps.setString(1, new project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl().generateNextCode("brand"));
             ps.setString(2, name.trim());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -896,7 +896,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         String sqlIns = "INSERT INTO kich_thuoc (kich_thuoc_code, ten_kich_thuoc, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "KT" + System.currentTimeMillis() % 100000);
+            ps.setString(1, new project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl().generateNextCode("size"));
             ps.setString(2, name.trim());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -920,7 +920,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         String sqlIns = "INSERT INTO mau_sac (mau_sac_code, ten_mau, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "MS" + System.currentTimeMillis() % 100000);
+            ps.setString(1, new project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl().generateNextCode("color"));
             ps.setString(2, name.trim());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -944,7 +944,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
         String sqlIns = "INSERT INTO kieu_dang (kieu_dang_code, ten_kieu_dang, trang_thai) VALUES (?, ?, 1)";
         try (PreparedStatement ps = conn.prepareStatement(sqlIns, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, "KD" + System.currentTimeMillis() % 100000);
+            ps.setString(1, new project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl().generateNextCode("style"));
             ps.setString(2, name.trim());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
