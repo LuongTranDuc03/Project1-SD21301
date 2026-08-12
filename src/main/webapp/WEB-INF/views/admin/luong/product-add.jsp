@@ -736,6 +736,14 @@
         let colorImages = {};
         let isFormDirty = false;
 
+        let stylesArray = [
+            <% java.util.List<String> jspStyles = (java.util.List<String>) request.getAttribute("styles");
+               if (jspStyles != null) { 
+                   for (int i=0; i<jspStyles.size(); i++) { %>
+                "<%= jspStyles.get(i).replace("\"", "\\\"").replace("'", "\\'") %>"<%= i < jspStyles.size() - 1 ? "," : "" %>
+            <% } } %>
+        ];
+
         function validateForm() {
             var codeElem = document.getElementById("code");
             var code = codeElem ? codeElem.value : "";
@@ -1016,6 +1024,14 @@
                             </td>
                         `;
                     }
+                    let styleSelectHtml = `<select name="variantStyle" class="form-input style-input-\${cIdx}" style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff;" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">`;
+                    styleSelectHtml += `<option value="">-- Chọn kiểu dáng --</option>`;
+                    stylesArray.forEach(style => {
+                        let selected = (v.style === style) ? 'selected' : '';
+                        styleSelectHtml += `<option value="\${style}" \${selected}>\${style}</option>`;
+                    });
+                    styleSelectHtml += `</select>`;
+
                     tbodyHtml += `
                             <td style="width: 10%;">
                                 <input type="hidden" name="variantId" value="\${v.id || 0}">
@@ -1025,7 +1041,7 @@
                                 <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || ''}" data-color="\${color}">
                             </td>
                             <td style="width: 13%;">
-                                <input type="text" name="variantStyle" class="form-input style-input-\${cIdx}" placeholder="Ví dụ: Slim-fit" value="\${v.style || ''}" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">
+                                \${styleSelectHtml}
                             </td>
                             <td style="width: 22%;">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">

@@ -1082,8 +1082,16 @@
                                                 <div class="form-group" style="margin-bottom: 0;">
                                                     <label class="form-label"
                                                         style="font-size: 13px; margin-bottom: 6px; display: block; color: #475569; font-weight: 600;">Kiểu Dáng</label>
-                                                    <input type="text" id="edit-style" name="style"
-                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                                                    <select id="edit-style" name="style"
+                                                        style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background-color: #fff;">
+                                                        <option value="">-- Chọn kiểu dáng --</option>
+                                                        <% java.util.List<String> variantStyles = (java.util.List<String>) request.getAttribute("styles");
+                                                           if (variantStyles != null) {
+                                                               for (String s : variantStyles) { %>
+                                                                    <option value="<%= s %>"><%= s %></option>
+                                                        <%      }
+                                                           } %>
+                                                    </select>
                                                 </div>
                                                 <div class="form-group" style="margin-bottom: 0;">
                                                     <label class="form-label"

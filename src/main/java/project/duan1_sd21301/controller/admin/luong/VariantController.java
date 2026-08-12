@@ -84,6 +84,7 @@ public class VariantController extends HttpServlet {
 
         request.setAttribute("variants", allVariants);
         request.setAttribute("filterProductCode", filterProductCode);
+        request.setAttribute("styles", productService.getAllStyles());
         request.getRequestDispatcher("/WEB-INF/views/admin/luong/variant-list.jsp").forward(request, response);
     }
 
