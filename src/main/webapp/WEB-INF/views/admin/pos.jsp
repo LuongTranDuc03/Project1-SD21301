@@ -825,7 +825,7 @@
     }
     
     let currentVariantPage = 1;
-    const variantItemsPerPage = 10;
+    const variantItemsPerPage = 8;
     
     function changeVariantPage(direction) {
         currentVariantPage += direction;

@@ -41,9 +41,8 @@ public class InvoiceController extends HttpServlet {
     private static final Map<Integer, String> ORDER_STATUS_LABELS;
     static {
         ORDER_STATUS_LABELS = new LinkedHashMap<>();
-        ORDER_STATUS_LABELS.put(0, "Chờ thanh toán");
-        ORDER_STATUS_LABELS.put(1, "Chờ giao hàng");
-        ORDER_STATUS_LABELS.put(2, "Đang giao");
+        ORDER_STATUS_LABELS.put(1, "Chờ xác nhận");
+        ORDER_STATUS_LABELS.put(2, "Chờ giao hàng");
         ORDER_STATUS_LABELS.put(3, "Hoàn thành");
         ORDER_STATUS_LABELS.put(4, "Đã huỷ");
         ORDER_STATUS_LABELS.put(5, "Đã hoàn tiền");
@@ -258,20 +257,18 @@ public class InvoiceController extends HttpServlet {
 
         int oldStatus = invoice.getOrderStatus();
 
-        // Chặn revert trạng thái không hợp lệ:
-        // - Đơn Hoàn thành (3) không được chuyển về trạng thái < 3 (trừ Đã huỷ 4 và Đã hoàn tiền 5)
-        // - Đơn Đã huỷ (4) không được chuyển ngược về trạng thái đang xử lý (0,1,2)
-        // - Đơn Đã hoàn tiền (5) không được chuyển ngược về đang xử lý
-        boolean cannotChange = false;
-        if (oldStatus == 3 && newStatus != 4 && newStatus != 5 && newStatus != 3) {
-            cannotChange = true; // Hoàn thành chỉ được huỷ hoặc hoàn tiền
-        } else if (oldStatus == 4 && (newStatus == 0 || newStatus == 1 || newStatus == 2)) {
-            cannotChange = true; // Đã huỷ không thể về xử lý
-        } else if (oldStatus == 5 && (newStatus == 0 || newStatus == 1 || newStatus == 2)) {
-            cannotChange = true; // Đã hoàn tiền không thể về xử lý
+        // Chặn đổi trạng thái không hợp lệ theo luồng mới:
+        boolean canChange = false;
+        if (oldStatus == 2 && (newStatus == 3 || newStatus == 4)) {
+            canChange = true; // Chờ giao hàng -> Hoàn thành / Hủy
+        } else if (oldStatus == 3 && newStatus == 4) {
+            canChange = true; // Hoàn thành -> Hủy
+        } else if (oldStatus == 4 && newStatus == 5) {
+            canChange = true; // Hủy -> Hoàn tiền
         }
-        if (cannotChange) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices/detail?id=" + id + "&error=cannot_revert");
+        
+        if (!canChange) {
+            response.sendRedirect(request.getContextPath() + "/admin/invoices/detail?id=" + id + "&error=invalid_status_transition");
             return;
         }
 

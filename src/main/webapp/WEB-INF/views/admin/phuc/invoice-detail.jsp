@@ -124,20 +124,22 @@ document.addEventListener("DOMContentLoaded", function() {
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         In hoá đơn
                     </a>
-                    <%-- Chỉ hiện Cập nhật/Huỷ khi đơn chưa Hoàn thành/Huỷ/Hoàn trả (Mở cho cả đơn Hoàn thành == 3) --%>
-                    <% if (orderStatus < 3) { %>
-                    <button class="btn-action" style="background:#3b82f6;color:white;border:none;" onclick="openModal('update')">Cập nhật trạng thái</button>
+                    <% if (orderStatus == 2) { %>
+                    <form id="completeForm" method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status" style="display:inline;">
+                        <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
+                        <input type="hidden" name="newStatus" value="3">
+                        <button type="button" class="btn-action" style="background:#10b981;color:white;border:none;" onclick="openConfirmModal('Bạn có chắc chắn muốn xác nhận Hoàn thành đơn hàng này không?', 'completeForm')">Hoàn thành đơn</button>
+                    </form>
                     <% } %>
-                    <% if (orderStatus <= 3 && isManager) { %>
-                    <button class="btn-action btn-huy" onclick="openModal('cancel')">Huỷ đơn</button>
+                    <% if ((orderStatus == 2 || orderStatus == 3) && isManager) { %>
+                    <button class="btn-action btn-huy" onclick="openModal('cancelModal')">Huỷ đơn</button>
                     <% } %>
                     <% if (orderStatus == 4 && isManager) { %>
-                    <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refund')">Hoàn tiền</button>
+                    <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refundModal')">Hoàn tiền</button>
                     <% } %>
                 </div>
             </div>
 
-            <% String msgParam = request.getParameter("msg"); %>
 
                         <div class="detail-layout">
 
@@ -375,62 +377,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>            </div>        </div>    </main>
 </div>
 
-<%-- KHU VỰC MODAL CẬP NHẬT TRẠNG THÁI --%>
-<div class="modal-overlay" id="confirmModal">
-    <div class="modal-box">
-        <h3>Cập nhật trạng thái</h3>
-        <p>Chọn trạng thái mới cho đơn hàng này:</p>
-        <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
-            <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
-            <div class="modal-field">
-                <label>Trạng thái mới</label>
-                <select name="newStatus" id="newStatusSelect" onchange="updateSelectColor(this)">
-                    <% for(Map.Entry<Integer, String> entry : statusLabels.entrySet()) {
-                        if (entry.getKey() < 4) {
-                    %>
-                    <option value="<%= entry.getKey() %>" <%= orderStatus == entry.getKey() ? "selected" : "" %>><%= entry.getValue() %></option>
-                    <% } } %>
-                </select>
-                <script>
-                    function updateSelectColor(selectObj) {
-                        const colors = {
-                            "0": "#f59e0b",
-                            "1": "#3b82f6",
-                            "2": "#06b6d4",
-                            "3": "#10b981"
-                        };
-                        const bgs = {
-                            "0": "#fef3c7",
-                            "1": "#dbeafe",
-                            "2": "#cffafe",
-                            "3": "#d1fae5"
-                        };
-                        const val = selectObj.value;
-                        if(colors[val]) {
-                            selectObj.style.color = colors[val];
-                            selectObj.style.backgroundColor = bgs[val];
-                            selectObj.style.fontWeight = "600";
-                        }
-                    }
-                    // Trigger on load
-                    document.addEventListener("DOMContentLoaded", function() {
-                        var sel = document.getElementById("newStatusSelect");
-                        if(sel) updateSelectColor(sel);
-                    });
-                </script>
-            </div>
-            <div class="modal-field">
-                <label>Ghi chú (tuỳ chọn)</label>
-                <textarea name="note" rows="3" placeholder="Ghi chú kèm theo..."></textarea>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel-m" onclick="closeModal('confirmModal')">Huỷ</button>
-                <button type="submit" class="btn-ok blue">Cập nhật</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <%-- KHU VỰC MODAL HUỶ ĐƠN HÀNG --%>
 <div class="modal-overlay" id="cancelModal">
     <div class="modal-box">
@@ -471,6 +417,34 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 </div>
 
+<%-- KHU VỰC MODAL XÁC NHẬN CHUNG --%>
+<div class="modal-overlay" id="genericConfirmModal">
+    <div class="modal-box" style="text-align: center; max-width: 400px; padding: 24px; border-radius: 8px;">
+        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #fdba74; display: flex; align-items: center; justify-content: center;">
+                <span style="color: #f97316; font-size: 36px; font-weight: 500;">!</span>
+            </div>
+        </div>
+        <h3 style="font-size: 24px; font-weight: 600; color: #374151; margin-bottom: 12px; border-bottom: none; padding-bottom: 0;">Xác nhận</h3>
+        <p id="genericConfirmMessage" style="color: #6b7280; font-size: 15px; margin-bottom: 24px;">Bạn có muốn thay đổi trạng thái của hoá đơn này hay không?</p>
+        
+        <div style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" class="btn-ok blue" id="genericConfirmBtn" style="padding: 8px 24px; border-radius: 4px; font-weight: 500;">Đồng ý</button>
+            <button type="button" class="btn-cancel-m" onclick="closeModal('genericConfirmModal')" style="padding: 8px 24px; background: #9ca3af; color: white; border: none; border-radius: 4px; font-weight: 500;">Hủy</button>
+        </div>
+    </div>
+</div>
+<script>
+function openConfirmModal(message, formId) {
+    document.getElementById('genericConfirmMessage').innerText = message;
+    var confirmBtn = document.getElementById('genericConfirmBtn');
+    confirmBtn.onclick = function() {
+        document.getElementById(formId).submit();
+    };
+    openModal('genericConfirmModal');
+}
+</script>
+
 <%-- KHU VỰC MODAL MÃ QR --%>
 <div class="modal-overlay" id="qrModal">
     <div class="modal-box" style="text-align: center;">
@@ -483,22 +457,6 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 </div>
 
-<% if ("updated".equals(msgParam) || "cancelled".equals(msgParam) || "completed".equals(msgParam)) { 
-    String toastMsg = "Cập nhật trạng thái thành công.";
-    if ("cancelled".equals(msgParam)) {
-        toastMsg = inv.getOrderStatus() == 5 ? "Hoàn tiền thành công. Đơn hàng đã được xử lý." : "Đã huỷ đơn thành công.";
-    } else if ("completed".equals(msgParam)) {
-        toastMsg = "Đơn hàng đã hoàn thành thành công.";
-    }
-%>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof showToast === 'function') {
-            showToast('<%= toastMsg %>', 'success');
-        }
-    });
-</script>
-<% } %>
 
 <%-- KHU VỰC JAVASCRIPT: Xử lý các tương tác trên giao diện người dùng --%>
 <script>
@@ -510,10 +468,11 @@ document.addEventListener("DOMContentLoaded", function() {
         if (el) el.textContent = days[d.getDay()] + ', ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
     })();
 
-    // Logic 2: Hàm mở modal theo loại (update = cập nhật trạng thái, cancel = huỷ đơn)
-    function openModal(type) {
-        let modalId = type === 'cancel' ? 'cancelModal' : (type === 'refund' ? 'refundModal' : 'confirmModal');
-        document.getElementById(modalId).classList.add('show');
+    // Logic 2: Hàm mở modal bằng ID
+    function openModal(modalId) {
+        var el = document.getElementById(modalId);
+        if (el) el.classList.add('show');
+        else console.error("Modal not found: " + modalId);
     }
 
     // Logic 3: Hàm đóng modal khi bấm nút Huỷ/Quay lại

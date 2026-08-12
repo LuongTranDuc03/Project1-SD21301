@@ -21,9 +21,24 @@ import java.util.List;
 
 public class InvoiceRepository {
 
+    public String generateNextCode() {
+        String sql = "SELECT MAX(id) FROM hoa_don";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int maxId = rs.getInt(1);
+                return String.format("HD%04d", maxId + 1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "HD0001";
+    }
+
     public Invoice save(Invoice invoice) {
         if (invoice.getCode() == null || invoice.getCode().trim().isEmpty()) {
-            invoice.setCode("HD" + System.currentTimeMillis() % 100000);
+            invoice.setCode(generateNextCode());
         }
         String sql = "INSERT INTO hoa_don (hoa_don_code, id_khach_hang, id_nhan_vien, id_ma_giam_gia, " +
                 "id_phuong_thuc_thanh_toan, id_dia_chi, ten_khach_nhan, sdt_khach_nhan, tam_tinh, " +
@@ -527,7 +542,7 @@ public class InvoiceRepository {
                 "pm.id AS pm_id, pm.phuong_thuc_thanh_toan_code AS pm_code, pm.ten_phuong_thuc AS pm_name " +
                 "FROM hoa_don hd " +
                 "LEFT JOIN phuong_thuc_thanh_toan pm ON hd.id_phuong_thuc_thanh_toan = pm.id " +
-                "WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 0) ");
+                "WHERE 1=1 AND hd.trang_thai_don_hang != 1 ");
 
         if (orderType != null)
             sql.append("AND hd.loai_hoa_don = ? ");
@@ -615,7 +630,7 @@ public class InvoiceRepository {
 
     public long countAll(Integer orderType, Integer orderStatus, String keyword, String fromDateStr, String toDateStr,
             Integer paymentMethodId) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 AND NOT (hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 0) ");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM hoa_don hd WHERE 1=1 AND hd.trang_thai_don_hang != 1 ");
 
         if (orderType != null)
             sql.append("AND hd.loai_hoa_don = ? ");

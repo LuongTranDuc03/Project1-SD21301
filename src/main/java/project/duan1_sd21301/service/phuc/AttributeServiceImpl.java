@@ -4,6 +4,7 @@ import project.duan1_sd21301.dto.phuc.AttributeDTO;
 import project.duan1_sd21301.repository.phuc.AttributeRepository;
 import project.duan1_sd21301.repository.phuc.AttributeRepositoryImpl;
 
+import java.text.Normalizer;
 import java.util.List;
 
 public class AttributeServiceImpl implements AttributeService {
@@ -32,6 +33,21 @@ public class AttributeServiceImpl implements AttributeService {
 
     @Override
     public boolean save(String type, AttributeDTO dto) {
+        if (dto.getName() != null) {
+            String newName = Normalizer.normalize(dto.getName().trim().replaceAll("\\s+", " "), Normalizer.Form.NFC);
+            List<AttributeDTO> allAttr = attributeRepository.findAll(type);
+            for (AttributeDTO existing : allAttr) {
+                if (existing.getName() != null) {
+                    String existingName = Normalizer.normalize(existing.getName().trim().replaceAll("\\s+", " "), Normalizer.Form.NFC);
+                    if (existingName.equalsIgnoreCase(newName)) {
+                        if (dto.getId() <= 0 || existing.getId() != dto.getId()) {
+                            throw new RuntimeException("Tên thuộc tính đã tồn tại!");
+                        }
+                    }
+                }
+            }
+        }
+
         if (dto.getCode() == null || dto.getCode().trim().isEmpty()) {
             dto.setCode(generateNextCode(type));
         }

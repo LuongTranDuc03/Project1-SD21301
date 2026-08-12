@@ -122,7 +122,7 @@ public class PosCheckoutService {
             String paymentMethodName = paymentMethod.equals("TRANSFER") ? "Chuyển khoản" : "Tiền mặt";
 
             // 6. Determine Order Status
-            int orderStatus = orderDTO.isDelivery() ? 1 : 3; // 1: Đã xác nhận (Giao hàng), 3: Hoàn thành (Tại quầy)
+            int orderStatus = orderDTO.isDelivery() ? 2 : 3; // 2: Chờ giao hàng, 3: Hoàn thành (Tại quầy)
             
             double shippingFee = 0;
             try { shippingFee = Double.parseDouble(orderDTO.getShippingFee()); } catch(Exception ignored) {}

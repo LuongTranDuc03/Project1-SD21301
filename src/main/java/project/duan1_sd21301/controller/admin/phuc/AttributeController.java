@@ -119,13 +119,19 @@ public class AttributeController extends HttpServlet {
             dto.setStatus(1);
         }
 
-        boolean success = attributeService.save(type, dto);
+        boolean success = false;
+        String errorMessage = null;
+        try {
+            success = attributeService.save(type, dto);
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+        }
 
         if (success) {
             request.getSession().setAttribute("message", "Lưu thuộc tính thành công!");
             request.getSession().setAttribute("messageType", "success");
         } else {
-            request.getSession().setAttribute("message", "Lưu thuộc tính thất bại!");
+            request.getSession().setAttribute("message", errorMessage != null ? errorMessage : "Lưu thuộc tính thất bại!");
             request.getSession().setAttribute("messageType", "error");
         }
 

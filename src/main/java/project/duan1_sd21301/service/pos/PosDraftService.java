@@ -27,7 +27,7 @@ public class PosDraftService {
         Map<String, Object> result = new HashMap<>();
         String sql = "INSERT INTO hoa_don (hoa_don_code, id_nhan_vien, loai_hoa_don, trang_thai_don_hang, trang_thai_thanh_toan, "
                 +
-                "ten_khach_nhan, tam_tinh, tong_thanh_toan, tong_so_luong, ngay_dat_hang) VALUES (?, ?, 0, 0, 0, N'Khách lẻ', 0, 0, 0, GETDATE())";
+                "ten_khach_nhan, tam_tinh, tong_thanh_toan, tong_so_luong, ngay_dat_hang) VALUES (?, ?, 0, 1, 0, N'Khách lẻ', 0, 0, 0, GETDATE())";
         try (Connection conn = DatabaseConnection.getConnection()) {
             String code = generateInvoiceCode(conn);
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
