@@ -411,11 +411,18 @@
                                                                             <label for="searchInput"
                                                                                 style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; display: block;">Tìm
                                                                                 kiếm</label>
-                                                                            <input type="text" id="searchInput"
-                                                                                class="filter-control"
-                                                                                placeholder="Tìm mã SP, mã biến thể, màu sắc..."
-                                                                                oninput="applyFilters()"
-                                                                                style="height: 38px; box-sizing: border-box;">
+                                                                            <div style="display: flex; height: 38px;">
+                                                                                <select id="searchType" class="filter-control" style="width: auto; border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; padding-right: 24px; background-color: #f8fafc;" onchange="applyFilters()">
+                                                                                    <option value="all">Tất cả</option>
+                                                                                    <option value="productCode">Mã SP</option>
+                                                                                    <option value="variantCode">Mã BT</option>
+                                                                                </select>
+                                                                                <input type="text" id="searchInput"
+                                                                                    class="filter-control"
+                                                                                    placeholder="Tìm mã SP, mã biến thể, màu sắc..."
+                                                                                    oninput="applyFilters()"
+                                                                                    style="border-top-left-radius: 0; border-bottom-left-radius: 0; flex: 1; box-sizing: border-box;">
+                                                                            </div>
                                                                         </div>
                                                                         <!-- Kích cỡ -->
                                                                         <div class="filter-field"
@@ -1595,6 +1602,7 @@
                             function applyFilters(page = 1) {
                                 currentPage = page;
                                 const keyword = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+                                const searchType = document.getElementById('searchType').value;
                                 const sizeFilter = document.getElementById('sizeFilter').value;
                                 const statusFilter = document.getElementById('statusFilter').value;
                                 const minPriceVal = parseFloat(minPriceInput.value);
@@ -1607,10 +1615,17 @@
                                     const rowProductCode = (row.dataset.productcode || '').toLowerCase();
                                     const rowVariantCode = (row.dataset.code || '').toLowerCase();
                                     const rowColor = (row.dataset.color || '').toLowerCase();
-                                    const matchSearch = !keyword ||
-                                        rowProductCode.includes(keyword) ||
-                                        rowVariantCode.includes(keyword) ||
-                                        rowColor.includes(keyword);
+                                    
+                                    let matchSearch = true;
+                                    if (keyword) {
+                                        if (searchType === 'productCode') {
+                                            matchSearch = rowProductCode.includes(keyword);
+                                        } else if (searchType === 'variantCode') {
+                                            matchSearch = rowVariantCode.includes(keyword);
+                                        } else {
+                                            matchSearch = rowProductCode.includes(keyword) || rowVariantCode.includes(keyword) || rowColor.includes(keyword);
+                                        }
+                                    }
 
                                     const matchSize = !sizeFilter || row.dataset.size === sizeFilter;
 
@@ -1727,6 +1742,7 @@
 
                             function resetFilters() {
                                 document.getElementById('searchInput').value = '';
+                                document.getElementById('searchType').value = 'all';
                                 document.getElementById('sizeFilter').value = '';
                                 document.getElementById('statusFilter').value = '';
 
