@@ -101,24 +101,24 @@ GO
 -- 7. THƯƠNG HIỆU — [5] trang_thai đổi thành INT
 INSERT INTO thuong_hieu (thuong_hieu_code, ten_thuong_hieu, trang_thai)
 VALUES
-('BR001', N'FamiCoats',      1),
-('BR002', N'Zara',           1),
-('BR003', N'Levi''s',        1),
-('BR004', N'Uniqlo',         1),
-('BR005', N'The North Face', 1);
+('TH001', N'FamiCoats',      1),
+('TH002', N'Zara',           1),
+('TH003', N'Levi''s',        1),
+('TH004', N'Uniqlo',         1),
+('TH005', N'The North Face', 1);
 GO
 
 -- 8. DANH MỤC — [5] trang_thai đổi thành INT
 INSERT INTO danh_muc (danh_muc_code, ten_danh_muc, trang_thai)
 VALUES
-('CAT001', N'Áo khoác da',  1),
-('CAT002', N'Áo bomber',    1),
-('CAT003', N'Áo denim',     1),
-('CAT004', N'Áo phao',      1),
-('CAT005', N'Áo khoác len', 1),
-('CAT006', N'Áo khoác gió', 1),
-('CAT007', N'Trench coat',  1),
-('CAT008', N'Áo hoodie',    1);
+('DM001', N'Áo khoác da',  1),
+('DM002', N'Áo bomber',    1),
+('DM003', N'Áo denim',     1),
+('DM004', N'Áo phao',      1),
+('DM005', N'Áo khoác len', 1),
+('DM006', N'Áo khoác gió', 1),
+('DM007', N'Trench coat',  1),
+('DM008', N'Áo hoodie',    1);
 GO
 
 -- 9. CHẤT LIỆU — [5] trang_thai đổi thành INT

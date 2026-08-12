@@ -736,6 +736,14 @@
         let colorImages = {};
         let isFormDirty = false;
 
+        let stylesArray = [
+            <% java.util.List<String> jspStyles = (java.util.List<String>) request.getAttribute("styles");
+               if (jspStyles != null) { 
+                   for (int i=0; i<jspStyles.size(); i++) { %>
+                "<%= jspStyles.get(i).replace("\"", "\\\"").replace("'", "\\'") %>"<%= i < jspStyles.size() - 1 ? "," : "" %>
+            <% } } %>
+        ];
+
         function validateForm() {
             var codeElem = document.getElementById("code");
             var code = codeElem ? codeElem.value : "";
@@ -949,7 +957,63 @@
 
         window.generateVariants = function() {
             if (selectedColors.length === 0 || selectedSizes.length === 0) {
-                alert("Vui lòng nhập ít nhất 1 Màu sắc và 1 Kích cỡ để tạo biến thể.");
+                const toast = document.createElement('div');
+                toast.style.position = 'fixed';
+                toast.style.top = '-100px';
+                toast.style.left = '50%';
+                toast.style.transform = 'translateX(-50%)';
+                toast.style.backgroundColor = '#ffffff';
+                toast.style.padding = '12px 16px';
+                toast.style.borderRadius = '8px';
+                toast.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                toast.style.zIndex = '10000';
+                toast.style.transition = 'top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.style.gap = '12px';
+                toast.style.width = 'max-content';
+                toast.style.border = '1px solid #f3f4f6';
+                
+                toast.innerHTML = `
+                    <div style="flex-shrink: 0; width: 28px; height: 28px; color: #ef4444;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 700; color: #111827; font-size: 15px; margin-bottom: 2px;">Thất bại!</span>
+                        <span style="color: #6b7280; font-size: 14px;">Không thành công, bởi vì chưa chọn thuộc tính màu sắc và kích cỡ.</span>
+                    </div>
+                    <button class="close-toast-btn" style="flex-shrink: 0; margin-left: 16px; background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                let hideTimeout;
+                const hideToast = () => {
+                    toast.style.top = '-100px';
+                    setTimeout(() => toast.remove(), 500);
+                };
+                
+                toast.querySelector('.close-toast-btn').addEventListener('click', () => {
+                    clearTimeout(hideTimeout);
+                    hideToast();
+                });
+                
+                // Animation drop down
+                requestAnimationFrame(() => {
+                    setTimeout(() => { toast.style.top = '30px'; }, 10);
+                });
+                
+                // Auto hide and remove
+                hideTimeout = setTimeout(() => {
+                    hideToast();
+                }, 4000);
+                
                 return;
             }
             
@@ -1016,6 +1080,14 @@
                             </td>
                         `;
                     }
+                    let styleSelectHtml = `<select name="variantStyle" class="form-input style-input-\${cIdx}" style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff;" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">`;
+                    styleSelectHtml += `<option value="">-- Chọn kiểu dáng --</option>`;
+                    stylesArray.forEach(style => {
+                        let selected = (v.style === style) ? 'selected' : '';
+                        styleSelectHtml += `<option value="\${style}" \${selected}>\${style}</option>`;
+                    });
+                    styleSelectHtml += `</select>`;
+
                     tbodyHtml += `
                             <td style="width: 10%;">
                                 <input type="hidden" name="variantId" value="\${v.id || 0}">
@@ -1025,7 +1097,7 @@
                                 <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || ''}" data-color="\${color}">
                             </td>
                             <td style="width: 13%;">
-                                <input type="text" name="variantStyle" class="form-input style-input-\${cIdx}" placeholder="Ví dụ: Slim-fit" value="\${v.style || ''}" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">
+                                \${styleSelectHtml}
                             </td>
                             <td style="width: 22%;">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
