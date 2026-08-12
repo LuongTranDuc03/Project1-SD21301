@@ -398,6 +398,11 @@
 
 <!-- Variant Modal -->
 <div class="pos-modal-overlay" id="variantModalOverlay">
+    <style>
+        #variantModalOverlay .pos-modal-body {
+            overflow-y: hidden !important;
+        }
+    </style>
     <div class="pos-modal">
         <div class="pos-modal-header">
             <h3>Chọn biến thể để thêm vào đơn <span id="totalVariantsCount" style="font-size: 14px; font-weight: normal; color: #64748b; margin-left: 8px;"></span></h3>
@@ -492,7 +497,7 @@
                 <button class="btn-reset-filters" onclick="resetFilters()">Đặt lại</button>
             </div>
             
-            <div class="pos-table-wrapper">
+            <div class="pos-table-wrapper" style="height: 760px; overflow: hidden;">
                 <table class="pos-table">
                     <thead>
                         <tr>
@@ -568,8 +573,8 @@
             </div>
         </div>
         
-        <div class="pos-modal-footer">
-            <button class="btn-close-bottom" onclick="closeVariantModal()">Đóng</button>
+        <div class="pos-modal-footer" style="display: flex; align-items: center; justify-content: flex-end; padding: 15px 20px;">
+            <div id="pageNumbers" style="display: flex; gap: 5px; align-items: center;"></div>
         </div>
     </div>
 </div>
@@ -791,6 +796,10 @@
             return;
         }
         updateAvailableStockDisplay();
+        
+        // Khởi tạo phân trang và lọc ngay khi mở modal
+        filterVariants();
+        
         document.getElementById('variantModalOverlay').classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
     }
@@ -815,7 +824,25 @@
         filterVariants();
     }
     
-    function filterVariants() {
+    let currentVariantPage = 1;
+    const variantItemsPerPage = 10;
+    
+    function changeVariantPage(direction) {
+        currentVariantPage += direction;
+        if (currentVariantPage < 1) currentVariantPage = 1;
+        filterVariants(true);
+    }
+    
+    function goToVariantPage(page) {
+        currentVariantPage = page;
+        filterVariants(true);
+    }
+
+    function filterVariants(keepPage = false) {
+        if (keepPage !== true) {
+            currentVariantPage = 1;
+        }
+
         const searchText = document.getElementById('variantSearch').value.trim().toLowerCase();
         const searchType = document.getElementById('searchCodeType') ? document.getElementById('searchCodeType').value : 'ALL';
         const colorVal = document.getElementById('colorFilter').value.trim().toLowerCase();
@@ -823,7 +850,7 @@
         const categoryVal = document.getElementById('categoryFilter').value.trim().toLowerCase();
         
         const rows = document.querySelectorAll('.variant-row');
-        let visibleCount = 0;
+        let matchingRows = [];
         
         rows.forEach(row => {
             const code = (row.getAttribute('data-code') || '').trim().toLowerCase();
@@ -850,20 +877,95 @@
             const matchCategory = !categoryVal || category === categoryVal;
             
             if (matchSearch && matchColor && matchSize && matchCategory) {
+                matchingRows.push(row);
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        const totalItems = matchingRows.length;
+        let totalPages = Math.ceil(totalItems / variantItemsPerPage);
+        if (totalPages === 0) totalPages = 1;
+        
+        if (currentVariantPage > totalPages) {
+            currentVariantPage = totalPages;
+        }
+        
+        const startIndex = (currentVariantPage - 1) * variantItemsPerPage;
+        const endIndex = startIndex + variantItemsPerPage;
+        
+        matchingRows.forEach((row, index) => {
+            if (index >= startIndex && index < endIndex) {
                 row.style.display = '';
-                visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
         
         const countElem = document.getElementById('totalVariantsCount');
-        if (countElem) countElem.textContent = visibleCount;
+        if (countElem) countElem.textContent = totalItems;
         
-        // Basic pagination info update (mocked since it's just client-side filtering without actual pages right now)
+        // Update pagination UI
         const pagInfo = document.getElementById('paginationInfo');
         if (pagInfo) {
-            pagInfo.innerHTML = `Trang 1 / 1 - <span id="totalVariantsCount">${visibleCount}</span> biến thể`;
+            let startItem = totalItems === 0 ? 0 : startIndex + 1;
+            let endItem = Math.min(endIndex, totalItems);
+            pagInfo.innerHTML = `Hiển thị <strong>${startItem}- ${endItem}</strong> trong tổng <strong>${totalItems}</strong> sản phẩm`;
+        }
+        
+        const pageNumbers = document.getElementById('pageNumbers');
+        if (pageNumbers) {
+            pageNumbers.innerHTML = '';
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.style = 'display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; cursor: pointer; color: #64748b;';
+            prevBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg>';
+            prevBtn.disabled = currentVariantPage === 1;
+            if (prevBtn.disabled) {
+                prevBtn.style.opacity = '0.5';
+                prevBtn.style.cursor = 'not-allowed';
+            }
+            prevBtn.onclick = () => changeVariantPage(-1);
+            pageNumbers.appendChild(prevBtn);
+
+            let maxPagesToShow = 5;
+            let startPage = Math.max(1, currentVariantPage - Math.floor(maxPagesToShow / 2));
+            let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+            if (endPage - startPage + 1 < maxPagesToShow) {
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                let btn = document.createElement('button');
+                btn.className = i === currentVariantPage ? 'page-btn active' : 'page-btn';
+                btn.style = 'display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;';
+                if (i === currentVariantPage) {
+                    btn.style.backgroundColor = '#1e3a8a';
+                    btn.style.color = '#fff';
+                    btn.style.borderColor = '#1e3a8a';
+                } else {
+                    btn.style.backgroundColor = '#fff';
+                    btn.style.color = '#1e293b';
+                }
+                btn.textContent = i;
+                btn.onclick = () => goToVariantPage(i);
+                pageNumbers.appendChild(btn);
+            }
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.style = 'display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; cursor: pointer; color: #64748b;';
+            nextBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+            nextBtn.disabled = currentVariantPage === totalPages;
+            if (nextBtn.disabled) {
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
+            }
+            nextBtn.onclick = () => changeVariantPage(1);
+            pageNumbers.appendChild(nextBtn);
         }
     }
     
