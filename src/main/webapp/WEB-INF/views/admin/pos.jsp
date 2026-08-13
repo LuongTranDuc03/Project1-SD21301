@@ -100,7 +100,7 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px; padding-top: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; padding-top: 10px;">
                         <!-- Cột trái: Thông tin khách hàng (người mua) -->
                         <div class="customer-info-basic" style="display: flex; flex-direction: column; gap: 12px;">
                             <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Người mua hàng</h4>
@@ -121,7 +121,7 @@
                         </div>
                         
                         <!-- Cột phải: Địa chỉ giao hàng -->
-                        <div class="customer-address-form" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="customer-address-form" style="display: none !important; flex-direction: column; gap: 12px;">
                             <h4 style="margin: 0 0 5px 0; font-size: 14px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Thông tin nhận hàng</h4>
                             
                             <div id="deliveryForm" style="display: none; flex-direction: column; gap: 12px;">
@@ -187,13 +187,13 @@
                 <div class="pos-card-box">
                     <div class="pos-card-header">
                         <h3>Thông tin thanh toán</h3>
-                        <div class="toggle-delivery">
-                            <span id="deliveryLabel">Tại quầy</span>
-                            <label class="switch">
-                                <input type="checkbox" id="deliveryToggle" onchange="toggleDelivery(); updateCheckoutState()">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
+<%--                        <div class="toggle-delivery">--%>
+<%--                            <span id="deliveryLabel">Tại quầy</span>--%>
+<%--                            <label class="switch">--%>
+<%--                                <input type="checkbox" id="deliveryToggle" onchange="toggleDelivery(); updateCheckoutState()">--%>
+<%--                                <span class="slider round"></span>--%>
+<%--                            </label>--%>
+<%--                        </div>--%>
                     </div>
                     
                     <div class="coupon-section" style="padding-bottom: 0;">
@@ -239,13 +239,13 @@
                             <span class="summary-value" id="summaryTotalItems">0 đ</span>
                         </div>
                         
-                        <div class="summary-row" id="shippingRow">
-                            <span class="summary-label">Phí vận chuyển</span>
-                            <div class="shipping-fee-input">
-                                <input type="text" class="form-control text-right" id="shippingFeeInput" value="" placeholder="0" style="width: 80px;" oninput="updateCheckoutState()">
-                                <span>đ</span>
-                            </div>
-                        </div>
+<%--                        <div class="summary-row" id="shippingRow">--%>
+<%--                            <span class="summary-label">Phí vận chuyển</span>--%>
+<%--                            <div class="shipping-fee-input">--%>
+<%--                                <input type="text" class="form-control text-right" id="shippingFeeInput" value="" placeholder="0" style="width: 80px;" oninput="updateCheckoutState()">--%>
+<%--                                <span>đ</span>--%>
+<%--                            </div>--%>
+<%--                        </div>--%>
                         
                         <div class="summary-row">
                             <span class="summary-label">Giảm giá</span>
@@ -294,7 +294,6 @@
                             <th>Mã KH</th>
                             <th>Tên khách hàng</th>
                             <th>Số điện thoại</th>
-                            <th>Địa chỉ mặc định</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
@@ -302,7 +301,6 @@
                         <tr class="customer-row">
                             <td></td>
                             <td style="font-weight: 600;">Khách lẻ</td>
-                            <td></td>
                             <td></td>
                             <td><button class="btn-add-variant" onclick="selectCustomer('Khách lẻ', '', this)">Chọn</button></td>
                         </tr>
@@ -326,7 +324,6 @@
                             <td><%= c.getCode() %></td>
                             <td style="font-weight: 600;"><%= c.getFullName() %></td>
                             <td><%= phone %></td>
-                            <td><%= addrStr %></td>
                             <td><button class="btn-add-variant" onclick="selectCustomer('<%= c.getFullName() %>', '<%= phone %>', this)">Chọn</button></td>
                         </tr>
                         <% 
@@ -1150,122 +1147,122 @@
         saveOrdersToStorage();
     }
     
-    function toggleDelivery() {
-        const toggle = document.getElementById('deliveryToggle');
-        const isDelivery = toggle.checked;
-        document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
-        
-        const shippingInput = document.getElementById('shippingFeeInput');
-        
-        if (isDelivery) {
-            document.getElementById('btnChooseAddress').style.display = 'inline-block';
-            document.getElementById('deliveryHintText').style.display = 'none';
-            document.getElementById('deliveryForm').style.display = 'flex';
-            // Cho phép nhập phí vận chuyển
-            if (shippingInput) {
-                shippingInput.removeAttribute('readonly');
-                shippingInput.style.backgroundColor = '';
-                shippingInput.style.color = '';
-            }
-        } else {
-            document.getElementById('btnChooseAddress').style.display = 'none';
-            document.getElementById('deliveryHintText').style.display = 'block';
-            document.getElementById('deliveryForm').style.display = 'none';
-            // Khóa phí vận chuyển khi tại quầy
-            if (shippingInput) {
-                shippingInput.value = '';
-                shippingInput.setAttribute('readonly', true);
-                shippingInput.style.backgroundColor = '#f3f4f6';
-                shippingInput.style.color = '#94a3b8';
-            }
-        }
-    }
+    // function toggleDelivery() {
+    //     const toggle = document.getElementById('deliveryToggle');
+    //     const isDelivery = toggle.checked;
+    //     document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+    //
+    //     const shippingInput = document.getElementById('shippingFeeInput');
+    //
+    //     if (isDelivery) {
+    //         document.getElementById('btnChooseAddress').style.display = 'inline-block';
+    //         document.getElementById('deliveryHintText').style.display = 'none';
+    //         document.getElementById('deliveryForm').style.display = 'flex';
+    //         // Cho phép nhập phí vận chuyển
+    //         if (shippingInput) {
+    //             shippingInput.removeAttribute('readonly');
+    //             shippingInput.style.backgroundColor = '';
+    //             shippingInput.style.color = '';
+    //         }
+    //     } else {
+    //         document.getElementById('btnChooseAddress').style.display = 'none';
+    //         document.getElementById('deliveryHintText').style.display = 'block';
+    //         document.getElementById('deliveryForm').style.display = 'none';
+    //         // Khóa phí vận chuyển khi tại quầy
+    //         if (shippingInput) {
+    //             shippingInput.value = '';
+    //             shippingInput.setAttribute('readonly', true);
+    //             shippingInput.style.backgroundColor = '#f3f4f6';
+    //             shippingInput.style.color = '#94a3b8';
+    //         }
+    //     }
+    // }
     
     // --- Address & API Logic ---
-    function fetchProvinces() {
-        fetch('https://provinces.open-api.vn/api/p/')
-            .then(res => res.json())
-            .then(data => {
-                const select = document.getElementById('provinceSelect');
-                if(!select) return;
-                select.innerHTML = '<option value="">Chọn Tỉnh/Thành phố...</option>';
-                data.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.code;
-                    opt.text = p.name;
-                    select.appendChild(opt);
-                });
-            })
-            .catch(err => console.error("Error fetching provinces:", err));
-    }
-    
-    function fetchDistricts(provinceCode) {
-        const select = document.getElementById('districtSelect');
-        const wardSelect = document.getElementById('wardSelect');
-        if (!select || !wardSelect) return;
-
-        select.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
-        wardSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
-        
-        if (!provinceCode) {
-            select.disabled = true;
-            wardSelect.disabled = true;
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
-            return;
-        }
-        
-        select.disabled = false;
-        wardSelect.disabled = true;
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-        wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        
-        fetch(`https://provinces.open-api.vn/api/p/\${provinceCode}?depth=2`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.districts) {
-                    data.districts.forEach(d => {
-                        const opt = document.createElement('option');
-                        opt.value = d.code;
-                        opt.text = d.name;
-                        select.appendChild(opt);
-                    });
-                }
-                select.dispatchEvent(new Event('change', { bubbles: true }));
-            })
-            .catch(err => console.error("Error fetching districts:", err));
-    }
-    
-    function fetchWards(districtCode) {
-        const select = document.getElementById('wardSelect');
-        if (!select) return;
-
-        select.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
-        
-        if (!districtCode) {
-            select.disabled = true;
-            select.dispatchEvent(new Event('change', { bubbles: true }));
-            return;
-        }
-        
-        select.disabled = false;
-        select.dispatchEvent(new Event('change', { bubbles: true }));
-        
-        fetch(`https://provinces.open-api.vn/api/d/\${districtCode}?depth=2`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.wards) {
-                    data.wards.forEach(w => {
-                        const opt = document.createElement('option');
-                        opt.value = w.code;
-                        opt.text = w.name;
-                        select.appendChild(opt);
-                    });
-                }
-                select.dispatchEvent(new Event('change', { bubbles: true }));
-            })
-            .catch(err => console.error("Error fetching wards:", err));
-    }
+    // function fetchProvinces() {
+    //     fetch('https://provinces.open-api.vn/api/p/')
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             const select = document.getElementById('provinceSelect');
+    //             if(!select) return;
+    //             select.innerHTML = '<option value="">Chọn Tỉnh/Thành phố...</option>';
+    //             data.forEach(p => {
+    //                 const opt = document.createElement('option');
+    //                 opt.value = p.code;
+    //                 opt.text = p.name;
+    //                 select.appendChild(opt);
+    //             });
+    //         })
+    //         .catch(err => console.error("Error fetching provinces:", err));
+    // }
+    //
+    // function fetchDistricts(provinceCode) {
+    //     const select = document.getElementById('districtSelect');
+    //     const wardSelect = document.getElementById('wardSelect');
+    //     if (!select || !wardSelect) return;
+    //
+    //     select.innerHTML = '<option value="">Chọn Quận/Huyện...</option>';
+    //     wardSelect.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+    //
+    //     if (!provinceCode) {
+    //         select.disabled = true;
+    //         wardSelect.disabled = true;
+    //         select.dispatchEvent(new Event('change', { bubbles: true }));
+    //         wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    //         return;
+    //     }
+    //
+    //     select.disabled = false;
+    //     wardSelect.disabled = true;
+    //     select.dispatchEvent(new Event('change', { bubbles: true }));
+    //     wardSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    //
+    //     fetch(`https://provinces.open-api.vn/api/p/\${provinceCode}?depth=2`)
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             if (data && data.districts) {
+    //                 data.districts.forEach(d => {
+    //                     const opt = document.createElement('option');
+    //                     opt.value = d.code;
+    //                     opt.text = d.name;
+    //                     select.appendChild(opt);
+    //                 });
+    //             }
+    //             select.dispatchEvent(new Event('change', { bubbles: true }));
+    //         })
+    //         .catch(err => console.error("Error fetching districts:", err));
+    // }
+    //
+    // function fetchWards(districtCode) {
+    //     const select = document.getElementById('wardSelect');
+    //     if (!select) return;
+    //
+    //     select.innerHTML = '<option value="">Chọn Xã/Phường...</option>';
+    //
+    //     if (!districtCode) {
+    //         select.disabled = true;
+    //         select.dispatchEvent(new Event('change', { bubbles: true }));
+    //         return;
+    //     }
+    //
+    //     select.disabled = false;
+    //     select.dispatchEvent(new Event('change', { bubbles: true }));
+    //
+    //     fetch(`https://provinces.open-api.vn/api/d/\${districtCode}?depth=2`)
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             if (data && data.wards) {
+    //                 data.wards.forEach(w => {
+    //                     const opt = document.createElement('option');
+    //                     opt.value = w.code;
+    //                     opt.text = w.name;
+    //                     select.appendChild(opt);
+    //                 });
+    //             }
+    //             select.dispatchEvent(new Event('change', { bubbles: true }));
+    //         })
+    //         .catch(err => console.error("Error fetching wards:", err));
+    // }
     
     // --- Customer Modal Logic ---
     function openCustomerModal() {
@@ -1576,7 +1573,8 @@
         if (orderIndex === -1) return;
         const order = orders[orderIndex];
         
-        order.isDelivery = document.getElementById('deliveryToggle').checked;
+        const toggleEl = document.getElementById('deliveryToggle');
+        order.isDelivery = toggleEl ? toggleEl.checked : false;
         const nameInput = document.getElementById('customerNameInput');
         if (nameInput) order.customerName = nameInput.value;
         const buyerPhone = document.getElementById('buyerPhoneInput');
@@ -1621,7 +1619,8 @@
             document.getElementById('recipientNameInput').value = '';
             document.getElementById('customerPhoneInput').value = '';
             document.getElementById('customerAddressInput').value = '';
-            document.getElementById('shippingFeeInput').value = '';
+            const shippingEl = document.getElementById('shippingFeeInput');
+            if (shippingEl) shippingEl.value = '';
             document.getElementById('discountCodeInput').value = '';
             const noteElReset = document.getElementById('orderNoteInput');
             if (noteElReset) noteElReset.value = '';
@@ -1701,33 +1700,46 @@
         }
         
         const toggle = document.getElementById('deliveryToggle');
-        toggle.checked = !!order.isDelivery;
+        if (toggle) {
+            toggle.checked = !!order.isDelivery;
+        }
         
         const isFixed = order.customerName && order.customerName !== 'Khách lẻ';
         
-        const isDelivery = toggle.checked;
-        document.getElementById('deliveryLabel').textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+        const isDelivery = toggle ? toggle.checked : false;
+        const deliveryLabel = document.getElementById('deliveryLabel');
+        if (deliveryLabel) {
+            deliveryLabel.textContent = isDelivery ? "Giao hàng" : "Tại quầy";
+        }
 
         const shippingInput = document.getElementById('shippingFeeInput');
-        if (isDelivery) {
-            document.getElementById('btnChooseAddress').style.display = 'inline-block';
-            document.getElementById('deliveryHintText').style.display = 'none';
-            document.getElementById('deliveryForm').style.display = 'flex';
-            shippingInput.removeAttribute('readonly');
-            shippingInput.style.backgroundColor = '';
-            shippingInput.style.color = '';
-        } else {
-            document.getElementById('btnChooseAddress').style.display = 'none';
-            document.getElementById('deliveryHintText').style.display = 'block';
-            document.getElementById('deliveryForm').style.display = 'none';
-            shippingInput.setAttribute('readonly', true);
-            shippingInput.style.backgroundColor = '#f3f4f6';
-            shippingInput.style.color = '#94a3b8';
-            if (!isDelivery) shippingInput.value = '';
+        if (shippingInput) {
+            if (isDelivery) {
+                document.getElementById('btnChooseAddress').style.display = 'inline-block';
+                const hint = document.getElementById('deliveryHintText');
+                if (hint) hint.style.display = 'none';
+                const form = document.getElementById('deliveryForm');
+                if (form) form.style.display = 'flex';
+                shippingInput.removeAttribute('readonly');
+                shippingInput.style.backgroundColor = '';
+                shippingInput.style.color = '';
+            } else {
+                document.getElementById('btnChooseAddress').style.display = 'none';
+                const hint = document.getElementById('deliveryHintText');
+                if (hint) hint.style.display = 'block';
+                const form = document.getElementById('deliveryForm');
+                if (form) form.style.display = 'none';
+                shippingInput.setAttribute('readonly', true);
+                shippingInput.style.backgroundColor = '#f3f4f6';
+                shippingInput.style.color = '#94a3b8';
+                if (!isDelivery) shippingInput.value = '';
+            }
         }
         
-        document.getElementById('customerPhoneInput').value = order.deliveryPhone || '';
-        document.getElementById('customerAddressInput').value = order.deliveryAddress || '';
+        const custPhone = document.getElementById('customerPhoneInput');
+        if (custPhone) custPhone.value = order.deliveryPhone || '';
+        const custAddress = document.getElementById('customerAddressInput');
+        if (custAddress) custAddress.value = order.deliveryAddress || '';
         
         // Handle fixed fields for DB customers
         const pInput = document.getElementById('customerPhoneInput');
@@ -1811,8 +1823,11 @@
             }
         }
         
-        document.getElementById('shippingFeeInput').value = order.shippingFee || '';
-        document.getElementById('discountCodeInput').value = order.discountCode || '';
+        const shippingFeeEl = document.getElementById('shippingFeeInput');
+        if (shippingFeeEl) shippingFeeEl.value = order.shippingFee || '';
+        
+        const discountCodeEl = document.getElementById('discountCodeInput');
+        if (discountCodeEl) discountCodeEl.value = order.discountCode || '';
         const noteElSet = document.getElementById('orderNoteInput');
         if (noteElSet) noteElSet.value = order.note || '';
 

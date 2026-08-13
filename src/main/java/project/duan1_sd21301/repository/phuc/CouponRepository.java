@@ -10,10 +10,12 @@ import java.util.List;
 public class CouponRepository {
 
     public void updateExpiredCoupons() {
-        String sql = "UPDATE phieu_giam_gia SET trang_thai = 2 WHERE trang_thai != 2 AND ngay_ket_thuc < CAST(GETDATE() AS DATE)";
+        String sql1 = "UPDATE phieu_giam_gia SET trang_thai = 2 WHERE trang_thai != 2 AND ngay_ket_thuc < GETDATE()";
+        String sql2 = "UPDATE phieu_giam_gia SET trang_thai = 1 WHERE trang_thai = 3 AND ngay_bat_dau <= GETDATE() AND ngay_ket_thuc >= GETDATE()";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.executeUpdate();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql1);
+            stmt.executeUpdate(sql2);
         } catch (SQLException e) {
             e.printStackTrace();
         }

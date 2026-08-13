@@ -32,7 +32,7 @@
     String maxDiscountAmount      = (coupon != null && coupon.getMaxDiscountAmount()     != null) ? String.valueOf(coupon.getMaxDiscountAmount().intValue())     : "";
     String quantity        = (coupon != null && coupon.getQuantity()        != null) ? String.valueOf(coupon.getQuantity())        : "";
     String usedQuantity       = (coupon != null && coupon.getUsedQuantity()       != null) ? String.valueOf(coupon.getUsedQuantity())       : "0";
-    String usagePerCustomer   = (coupon != null && coupon.getUsagePerCustomer()   != null) ? String.valueOf(coupon.getUsagePerCustomer())   : "1";
+    String usagePerCustomer   = (coupon != null && coupon.getUsagePerCustomer()   != null) ? String.valueOf(coupon.getUsagePerCustomer())   : "10";
     String startDate     = (coupon != null && coupon.getStartDate()     != null) ? coupon.getStartDate().format(isoFmt)     : "";
     String endDate    = (coupon != null && coupon.getEndDate()    != null) ? coupon.getEndDate().format(isoFmt)    : "";
     String description           = (coupon != null && coupon.getDescription()           != null) ? coupon.getDescription()           : "";

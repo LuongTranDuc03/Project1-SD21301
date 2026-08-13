@@ -1362,6 +1362,29 @@
                                 });
                             }
 
+                            function previewEditVariantImage(event) {
+                                var input = event.target;
+                                var preview = document.getElementById('edit-variantImagePreview');
+                                var placeholder = document.getElementById('edit-variantImagePlaceholder');
+                                var fileNameSpan = document.getElementById('edit-variantImageFileName');
+                                
+                                if (input.files && input.files[0]) {
+                                    var reader = new FileReader();
+                                    reader.onload = function(e) {
+                                        preview.src = e.target.result;
+                                        preview.style.display = 'block';
+                                        placeholder.style.display = 'none';
+                                    };
+                                    reader.readAsDataURL(input.files[0]);
+                                    fileNameSpan.textContent = input.files[0].name;
+                                } else {
+                                    preview.src = '';
+                                    preview.style.display = 'none';
+                                    placeholder.style.display = 'block';
+                                    fileNameSpan.textContent = 'Không có tệp nào được chọn';
+                                }
+                            }
+
                             function openEditVariantModal(btn) {
                                 document.getElementById('edit-variantId').value = btn.getAttribute('data-variantid') || '';
                                 document.getElementById('edit-productCode').value = btn.getAttribute('data-productcode') || '';
