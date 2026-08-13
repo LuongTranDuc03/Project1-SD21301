@@ -446,7 +446,7 @@ public class PosDraftService {
                      "FROM hoa_don hd " +
                      "LEFT JOIN khach_hang kh ON hd.id_khach_hang = kh.id " +
                      "LEFT JOIN phieu_giam_gia pg ON hd.id_ma_giam_gia = pg.id " +
-                     "WHERE hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 0 AND hd.id_nhan_vien = ?";
+                     "WHERE hd.loai_hoa_don = 0 AND hd.trang_thai_don_hang = 1 AND hd.id_nhan_vien = ?";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, employeeId);
@@ -528,7 +528,7 @@ public class PosDraftService {
     }
 
     public void cleanupOldDrafts() {
-        String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_don_hang = 0 AND DATEDIFF(hour, ngay_dat_hang, GETDATE()) >= 24";
+        String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_don_hang = 1 AND DATEDIFF(hour, ngay_dat_hang, GETDATE()) >= 24";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(findSql);
                 ResultSet rs = ps.executeQuery()) {

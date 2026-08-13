@@ -209,6 +209,18 @@ public class CouponController extends HttpServlet {
         String description = trim(request.getParameter("description"));
         Integer status = parseIntParam(request.getParameter("status"));
 
+        int computedStatus = status != null ? status : 0;
+        LocalDateTime now = LocalDateTime.now();
+        if (startDate != null && endDate != null) {
+            if (now.isBefore(startDate)) {
+                computedStatus = 3; // Sắp diễn ra
+            } else if (now.isAfter(endDate)) {
+                computedStatus = 2; // Hết hạn
+            } else {
+                computedStatus = 1; // Đang kích hoạt
+            }
+        }
+
         if (code == null || code.isEmpty() || name == null
                 || discountType == null || discountValue == null || quantity == null) {
             response.sendRedirect(request.getContextPath()
@@ -245,8 +257,7 @@ public class CouponController extends HttpServlet {
             c.setStartDate(startDate);
             c.setEndDate(endDate);
             c.setDescription(description);
-            if (status != null)
-                c.setStatus(status);
+            c.setStatus(computedStatus);
 
             repo.update(c);
             response.sendRedirect(request.getContextPath() + "/admin/coupons?msg=updated");
@@ -265,7 +276,7 @@ public class CouponController extends HttpServlet {
                     .startDate(startDate)
                     .endDate(endDate)
                     .description(description)
-                    .status(0)
+                    .status(computedStatus)
                     .createdAt(LocalDateTime.now())
                     .build();
 

@@ -648,11 +648,17 @@
                 renderCurrentOrderItems();
                 renderCheckoutState();
             } else {
-                await createOrder();
+                currentOrderId = null;
+                renderTabs();
+                renderCurrentOrderItems();
+                renderCheckoutState();
             }
         } catch (e) {
             console.error("Error loading drafts", e);
-            await createOrder();
+            currentOrderId = null;
+            renderTabs();
+            renderCurrentOrderItems();
+            renderCheckoutState();
         }
         countTotalVariants();
         fetchProvinces();
