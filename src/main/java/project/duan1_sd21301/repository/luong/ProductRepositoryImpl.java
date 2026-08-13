@@ -609,7 +609,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllCategories() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_danh_muc FROM danh_muc WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_danh_muc FROM danh_muc WHERE trang_thai = 1 ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -626,7 +626,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllBrands() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_thuong_hieu FROM thuong_hieu WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_thuong_hieu FROM thuong_hieu WHERE trang_thai = 1 ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -643,7 +643,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllColors() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_mau FROM mau_sac WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_mau FROM mau_sac WHERE trang_thai = 1 ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -660,7 +660,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllSizes() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_kich_thuoc FROM kich_thuoc WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_kich_thuoc FROM kich_thuoc WHERE trang_thai = 1 ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -677,7 +677,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllStyles() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_kieu_dang FROM kieu_dang WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_kieu_dang FROM kieu_dang WHERE trang_thai = 1 ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -694,7 +694,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<String> findAllOrigins() {
         List<String> list = new ArrayList<>();
-        String sql = "SELECT ten_xuat_xu FROM xuat_xu WHERE trang_thai = 1 ORDER BY id ASC";
+        String sql = "SELECT ten_xuat_xu FROM xuat_xu WHERE trang_thai = 1 ORDER BY id DESC";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {

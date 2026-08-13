@@ -57,6 +57,7 @@
             align-items: center;
             justify-content: flex-start;
             gap: 8px;
+            border-radius: 12px 12px 0 0;
         }
         .form-card-title svg {
             color: #ffffff !important;
