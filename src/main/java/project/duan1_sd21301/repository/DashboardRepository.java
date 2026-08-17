@@ -58,12 +58,12 @@ public class DashboardRepository {
         }
 
         String sql = "SELECT " +
-                "SUM(CASE WHEN trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1) THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
                 "COUNT(*) AS totalOrders, " +
-                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
-                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END) AS countCompleted, " +
-                "SUM(CASE WHEN trang_thai_don_hang IN (4, 5) THEN 1 ELSE 0 END) AS countCancelled, " +
-                "SUM(CASE WHEN trang_thai_don_hang IN (0, 1) THEN 1 ELSE 0 END) AS countProcessing " +
+                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN 1 ELSE 0 END) AS countCompleted, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END) AS countCancelled, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 1 THEN 1 ELSE 0 END) AS countProcessing " +
                 "FROM hoa_don WHERE " + condition;
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -119,7 +119,7 @@ public class DashboardRepository {
                 "JOIN chi_tiet_san_pham pd ON ct.id_chi_tiet_san_pham = pd.id " +
                 "JOIN san_pham p ON pd.id_san_pham = p.id " +
                 "JOIN hoa_don hd ON ct.id_hoa_don = hd.id " +
-                "WHERE hd.trang_thai_don_hang = 3 ";
+                "WHERE hd.trang_thai_don_hang = 2 ";
         
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql += "AND CAST(hd.ngay_dat_hang AS DATE) >= ? ";
@@ -174,7 +174,7 @@ public class DashboardRepository {
                 "SUM(hd.tong_thanh_toan) AS spent " +
                 "FROM hoa_don hd " +
                 "JOIN khach_hang kh ON hd.id_khach_hang = kh.id " +
-                "WHERE (hd.trang_thai_don_hang = 3 OR (hd.trang_thai_don_hang = 4 AND hd.trang_thai_thanh_toan = 1)) ";
+                "WHERE (hd.trang_thai_don_hang = 2) ";
                 
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql += "AND CAST(hd.ngay_dat_hang AS DATE) >= ? ";
@@ -224,7 +224,7 @@ public class DashboardRepository {
         Map<Integer, Double> map = new HashMap<>();
         String sql = "SELECT DAY(ngay_dat_hang) AS day, SUM(tong_thanh_toan) AS revenue " +
                 "FROM hoa_don " +
-                "WHERE YEAR(ngay_dat_hang) = ? AND MONTH(ngay_dat_hang) = ? AND (trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1)) " +
+                "WHERE YEAR(ngay_dat_hang) = ? AND MONTH(ngay_dat_hang) = ? AND (trang_thai_don_hang = 2) " +
                 "GROUP BY DAY(ngay_dat_hang) " +
                 "ORDER BY day ASC";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -253,7 +253,7 @@ public class DashboardRepository {
         Map<String, Double> map = new HashMap<>();
         String sql = "SELECT CAST(ngay_dat_hang AS DATE) AS day, SUM(tong_thanh_toan) AS revenue " +
                 "FROM hoa_don " +
-                "WHERE (trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1)) ";
+                "WHERE (trang_thai_don_hang = 2) ";
         if (fromDate != null && !fromDate.trim().isEmpty()) {
             sql += "AND CAST(ngay_dat_hang AS DATE) >= ? ";
         }
@@ -300,12 +300,12 @@ public class DashboardRepository {
         result.put("countProcessing", 0L);
 
         String sql = "SELECT " +
-                "SUM(CASE WHEN trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1) THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_thanh_toan ELSE 0 END) AS revenue, " +
                 "COUNT(*) AS totalOrders, " +
-                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
-                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END) AS countCompleted, " +
-                "SUM(CASE WHEN trang_thai_don_hang IN (4, 5) THEN 1 ELSE 0 END) AS countCancelled, " +
-                "SUM(CASE WHEN trang_thai_don_hang IN (0, 1) THEN 1 ELSE 0 END) AS countProcessing " +
+                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN tong_so_luong ELSE 0 END) AS productsSold, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 2 THEN 1 ELSE 0 END) AS countCompleted, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 3 THEN 1 ELSE 0 END) AS countCancelled, " +
+                "SUM(CASE WHEN trang_thai_don_hang = 1 THEN 1 ELSE 0 END) AS countProcessing " +
                 "FROM hoa_don WHERE 1=1 ";
 
         if (fromDate != null && !fromDate.trim().isEmpty()) {
@@ -350,7 +350,7 @@ public class DashboardRepository {
                 "SUM(tong_thanh_toan) AS revenue " +
                 "FROM hoa_don " +
                 "WHERE YEAR(ngay_dat_hang) = ? " +
-                "AND (trang_thai_don_hang = 3 OR (trang_thai_don_hang = 4 AND trang_thai_thanh_toan = 1)) " +
+                "AND (trang_thai_don_hang = 2) " +
                 "GROUP BY MONTH(ngay_dat_hang) " +
                 "ORDER BY month";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -397,14 +397,14 @@ public class DashboardRepository {
             "           FROM chi_tiet_hoa_don cthd " +
             "           JOIN hoa_don hd ON cthd.id_hoa_don = hd.id " +
             "           WHERE cthd.id_chi_tiet_san_pham = pd.id " +
-            "             AND hd.trang_thai_don_hang = 3 " +
+            "             AND hd.trang_thai_don_hang = 2 " +
             "       ) AS totalSold, " +
             "       ( " +
             "           SELECT ISNULL(SUM(cthd.so_luong), 0) " +
             "           FROM chi_tiet_hoa_don cthd " +
             "           JOIN hoa_don hd ON cthd.id_hoa_don = hd.id " +
             "           WHERE cthd.id_chi_tiet_san_pham = pd.id " +
-            "             AND hd.trang_thai_don_hang = 3 "
+            "             AND hd.trang_thai_don_hang = 2 "
         );
         
         if (month != null && month > 0) {
@@ -423,7 +423,7 @@ public class DashboardRepository {
         );
         
         if (month != null && month > 0) {
-            sql.append(" AND EXISTS (SELECT 1 FROM chi_tiet_hoa_don cthd2 JOIN hoa_don hd2 ON cthd2.id_hoa_don = hd2.id WHERE cthd2.id_chi_tiet_san_pham = pd.id AND hd2.trang_thai_don_hang = 3 AND MONTH(hd2.ngay_dat_hang) = ? AND YEAR(hd2.ngay_dat_hang) = YEAR(GETDATE())) ");
+            sql.append(" AND EXISTS (SELECT 1 FROM chi_tiet_hoa_don cthd2 JOIN hoa_don hd2 ON cthd2.id_hoa_don = hd2.id WHERE cthd2.id_chi_tiet_san_pham = pd.id AND hd2.trang_thai_don_hang = 2 AND MONTH(hd2.ngay_dat_hang) = ? AND YEAR(hd2.ngay_dat_hang) = YEAR(GETDATE())) ");
         }
         
         if (brandId != null && brandId > 0) {
@@ -519,7 +519,7 @@ public class DashboardRepository {
         );
         
         if (month != null && month > 0) {
-            sql.append(" AND EXISTS (SELECT 1 FROM chi_tiet_hoa_don cthd2 JOIN hoa_don hd2 ON cthd2.id_hoa_don = hd2.id WHERE cthd2.id_chi_tiet_san_pham = pd.id AND hd2.trang_thai_don_hang = 3 AND MONTH(hd2.ngay_dat_hang) = ? AND YEAR(hd2.ngay_dat_hang) = YEAR(GETDATE())) ");
+            sql.append(" AND EXISTS (SELECT 1 FROM chi_tiet_hoa_don cthd2 JOIN hoa_don hd2 ON cthd2.id_hoa_don = hd2.id WHERE cthd2.id_chi_tiet_san_pham = pd.id AND hd2.trang_thai_don_hang = 2 AND MONTH(hd2.ngay_dat_hang) = ? AND YEAR(hd2.ngay_dat_hang) = YEAR(GETDATE())) ");
         }
         
         if (brandId != null && brandId > 0) {
@@ -614,9 +614,9 @@ public class DashboardRepository {
                 if (rs.next()) result.put("totalStock", rs.getInt(1));
             }
             // 3. Sold in month
-            String soldSql = "SELECT ISNULL(SUM(cthd.so_luong), 0) FROM chi_tiet_hoa_don cthd JOIN hoa_don hd ON cthd.id_hoa_don = hd.id WHERE hd.trang_thai_don_hang = 3 AND MONTH(hd.ngay_dat_hang) = ? AND YEAR(hd.ngay_dat_hang) = YEAR(GETDATE())";
+            String soldSql = "SELECT ISNULL(SUM(cthd.so_luong), 0) FROM chi_tiet_hoa_don cthd JOIN hoa_don hd ON cthd.id_hoa_don = hd.id WHERE hd.trang_thai_don_hang = 2 AND MONTH(hd.ngay_dat_hang) = ? AND YEAR(hd.ngay_dat_hang) = YEAR(GETDATE())";
             if (month == null || month <= 0) {
-                soldSql = "SELECT ISNULL(SUM(cthd.so_luong), 0) FROM chi_tiet_hoa_don cthd JOIN hoa_don hd ON cthd.id_hoa_don = hd.id WHERE hd.trang_thai_don_hang = 3 AND MONTH(hd.ngay_dat_hang) = MONTH(GETDATE()) AND YEAR(hd.ngay_dat_hang) = YEAR(GETDATE())";
+                soldSql = "SELECT ISNULL(SUM(cthd.so_luong), 0) FROM chi_tiet_hoa_don cthd JOIN hoa_don hd ON cthd.id_hoa_don = hd.id WHERE hd.trang_thai_don_hang = 2 AND MONTH(hd.ngay_dat_hang) = MONTH(GETDATE()) AND YEAR(hd.ngay_dat_hang) = YEAR(GETDATE())";
             }
             try (PreparedStatement ps = conn.prepareStatement(soldSql)) {
                 if (month != null && month > 0) {

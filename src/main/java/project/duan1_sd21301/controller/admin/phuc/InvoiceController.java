@@ -52,8 +52,9 @@ public class InvoiceController extends HttpServlet {
     static {
         ORDER_STATUS_LABELS = new LinkedHashMap<>();
 
-        ORDER_STATUS_LABELS.put(3, "Đã thanh toán"); // Thanh toán thành công tại quầy
-        ORDER_STATUS_LABELS.put(4, "Đã huỷ"); // Đơn bị huỷ
+        ORDER_STATUS_LABELS.put(1, "Chờ xác nhận"); // Đơn hàng được khởi tạo
+        ORDER_STATUS_LABELS.put(2, "Đã thanh toán"); // Thanh toán thành công tại quầy
+        ORDER_STATUS_LABELS.put(3, "Đã huỷ"); // Đơn bị huỷ
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -223,6 +224,7 @@ public class InvoiceController extends HttpServlet {
         request.setAttribute("detailList", detailList);
         request.setAttribute("historyList", historyList);
         request.setAttribute("orderStatusLabels", ORDER_STATUS_LABELS);
+        request.setAttribute("historyStatusLabels", ORDER_STATUS_LABELS);
         request.setAttribute("pageTitle", "Chi tiết hóa đơn #" + invoice.getCode());
 
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/invoice-detail.jsp")
