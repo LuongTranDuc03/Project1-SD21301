@@ -282,8 +282,8 @@ public class CouponRepository {
         String sql = "SELECT * FROM phieu_giam_gia " +
                 "WHERE trang_thai = 1 " +
                 "AND (da_su_dung IS NULL OR so_luong IS NULL OR da_su_dung < so_luong) " +
-                "AND (ngay_bat_dau IS NULL OR ngay_bat_dau <= CAST(GETDATE() AS DATE)) " +
-                "AND (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= CAST(GETDATE() AS DATE)) " +
+                "AND (ngay_bat_dau IS NULL OR ngay_bat_dau <= GETDATE()) " +
+                "AND (ngay_ket_thuc IS NULL OR ngay_ket_thuc >= GETDATE()) " +
                 "ORDER BY ngay_ket_thuc ASC";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);

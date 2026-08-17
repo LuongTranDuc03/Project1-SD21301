@@ -667,7 +667,6 @@
             renderCheckoutState();
         }
         countTotalVariants();
-        fetchProvinces();
         updateAvailableStockDisplay();
 
         // Khởi tạo trạng thái phí vận chuyển: readonly mặc định (Tại quầy)
@@ -1008,6 +1007,11 @@
         const row = document.querySelector(`.variant-row[data-code="` + variantCode.replace(/"/g, '\\"') + `"]`);
         if (!row) {
             console.error("Row not found for variantCode: " + variantCode);
+            if (fromScanner) {
+                showPosToast("Mã QR: Sản phẩm không tìm thấy hoặc đã ngừng kinh doanh/hết hàng!", "error");
+            } else {
+                alert("Sản phẩm không tìm thấy hoặc đã ngừng kinh doanh/hết hàng!");
+            }
             return;
         }
         
@@ -1020,7 +1024,11 @@
         const image = row.getAttribute('data-image') || '';
         
         if (stock <= 0) {
-            alert("Sản phẩm này đã hết hàng (Tồn kho = 0)!");
+            if (fromScanner) {
+                showPosToast("Mã QR: Sản phẩm này đã hết hàng (Tồn kho = 0)!", "error");
+            } else {
+                alert("Sản phẩm này đã hết hàng (Tồn kho = 0)!");
+            }
             return;
         }
         
