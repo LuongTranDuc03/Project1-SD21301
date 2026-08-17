@@ -837,7 +837,7 @@
     }
     
     let currentVariantPage = 1;
-    const variantItemsPerPage = 8;
+    const variantItemsPerPage = 10;
     
     function changeVariantPage(direction) {
         currentVariantPage += direction;
@@ -850,11 +850,14 @@
         filterVariants(true);
     }
 
+    // Hàm xử lý chung cho cả Lọc (Filter) và Phân trang (Pagination) biến thể
     function filterVariants(keepPage = false) {
+        // 1. Reset trang về 1 nếu thay đổi bộ lọc (không phải hành động chuyển trang)
         if (keepPage !== true) {
             currentVariantPage = 1;
         }
 
+        // 2. Thu thập dữ liệu từ các ô tìm kiếm / bộ lọc
         const searchText = document.getElementById('variantSearch').value.trim().toLowerCase();
         const searchType = document.getElementById('searchCodeType') ? document.getElementById('searchCodeType').value : 'ALL';
         const colorVal = document.getElementById('colorFilter').value.trim().toLowerCase();
@@ -864,6 +867,8 @@
         const rows = document.querySelectorAll('.variant-row');
         let matchingRows = [];
         
+        // 3. Bước Lọc Dữ Liệu (Filter)
+        // Duyệt qua toàn bộ các dòng sản phẩm (đã được load ngầm sẵn bằng JSP từ trước)
         rows.forEach(row => {
             const code = (row.getAttribute('data-code') || '').trim().toLowerCase();
             const productCode = (row.getAttribute('data-productcode') || '').trim().toLowerCase();
@@ -888,29 +893,34 @@
             const matchSize = !sizeVal || size === sizeVal;
             const matchCategory = !categoryVal || category === categoryVal;
             
+            // Nếu dòng thỏa mãn TẤT CẢ các điều kiện lọc, đưa vào mảng matchingRows
             if (matchSearch && matchColor && matchSize && matchCategory) {
                 matchingRows.push(row);
             } else {
-                row.style.display = 'none';
+                row.style.display = 'none'; // Ẩn ngay lập tức các dòng không khớp bộ lọc
             }
         });
         
-        const totalItems = matchingRows.length;
-        let totalPages = Math.ceil(totalItems / variantItemsPerPage);
+        // 4. Bước Tính Toán Phân Trang (Pagination)
+        const totalItems = matchingRows.length; // Tổng số dòng thỏa mãn bộ lọc
+        let totalPages = Math.ceil(totalItems / variantItemsPerPage); // Tổng số trang
         if (totalPages === 0) totalPages = 1;
         
         if (currentVariantPage > totalPages) {
             currentVariantPage = totalPages;
         }
         
+        // Tính toán vị trí bắt đầu và kết thúc của danh sách cần hiển thị trên trang hiện tại
         const startIndex = (currentVariantPage - 1) * variantItemsPerPage;
         const endIndex = startIndex + variantItemsPerPage;
         
+        // 5. Bước Ẩn/Hiện dòng dữ liệu theo Trang
+        // Chỉ hiển thị (display = '') các dòng nằm trong khoảng [startIndex, endIndex)
         matchingRows.forEach((row, index) => {
             if (index >= startIndex && index < endIndex) {
-                row.style.display = '';
+                row.style.display = ''; // Dòng thuộc trang hiện tại -> Hiển thị
             } else {
-                row.style.display = 'none';
+                row.style.display = 'none'; // Dòng thuộc trang khác -> Ẩn
             }
         });
         

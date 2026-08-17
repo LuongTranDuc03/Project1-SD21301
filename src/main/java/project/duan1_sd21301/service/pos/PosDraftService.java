@@ -528,7 +528,7 @@ public class PosDraftService {
     }
 
     public void cleanupOldDrafts() {
-        String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_don_hang = 1 AND DATEDIFF(hour, ngay_dat_hang, GETDATE()) >= 24";
+        String findSql = "SELECT id FROM hoa_don WHERE loai_hoa_don = 0 AND trang_thai_don_hang = 1 AND CAST(ngay_dat_hang AS DATE) < CAST(GETDATE() AS DATE)";
         try (Connection conn = DatabaseConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(findSql);
                 ResultSet rs = ps.executeQuery()) {
