@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Lớp cài đặt (Implementation) cho việc tương tác cơ sở dữ liệu của Sản phẩm (Product).
+ * Bao gồm các truy vấn CRUD phức tạp cho Product và ProductDetail (Biến thể),
+ * xử lý giao dịch (Transaction) để đảm bảo toàn vẹn dữ liệu khi insert/update,
+ * và quản lý danh mục, thương hiệu, màu sắc, kích cỡ...
+ */
 public class ProductRepositoryImpl implements ProductRepository {
 
     private static final String BASE_SELECT_PRODUCT = "SELECT sp.*, dm.ten_danh_muc, th.ten_thuong_hieu, xx.ten_xuat_xu "
@@ -21,6 +27,10 @@ public class ProductRepositoryImpl implements ProductRepository {
             "LEFT JOIN thuong_hieu th ON sp.id_thuong_hieu = th.id " +
             "LEFT JOIN xuat_xu xx ON sp.id_xuat_xu = xx.id ";
 
+    /**
+     * Lấy toàn bộ danh sách Sản phẩm, bao gồm luôn cả danh sách Biến thể (ProductDetail)
+     * đi kèm với mỗi sản phẩm thông qua câu truy vấn JOIN.
+     */
     @Override
     public List<Product> findAll() {
         seedSampleProductsIfEmpty();
@@ -136,6 +146,11 @@ public class ProductRepositoryImpl implements ProductRepository {
         return null;
     }
 
+    /**
+     * Thêm mới một Sản phẩm cùng với danh sách các Biến thể của nó vào DB.
+     * Sử dụng Transaction (conn.setAutoCommit(false)) để đảm bảo nếu lỗi ở bất kỳ bước nào,
+     * dữ liệu sẽ được rollback lại toàn bộ, tránh tình trạng rác dữ liệu.
+     */
     @Override
     public boolean insert(Product product) {
         if (product.getCode() == null || product.getCode().trim().isEmpty()) {
@@ -197,6 +212,10 @@ public class ProductRepositoryImpl implements ProductRepository {
         return false;
     }
 
+    /**
+     * Cập nhật thông tin chung của Sản phẩm và đồng bộ hóa (thêm/sửa/xóa) danh sách Biến thể.
+     * Tương tự hàm insert, cũng sử dụng Transaction.
+     */
     @Override
     public boolean update(Product product) {
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -483,6 +502,11 @@ public class ProductRepositoryImpl implements ProductRepository {
         return false;
     }
 
+    /**
+     * Đồng bộ hóa danh sách biến thể trong lúc Cập nhật Sản phẩm.
+     * So sánh danh sách biến thể trên form gửi về (keptDetails) với dữ liệu trong DB.
+     * Nếu DB có mà form không có (tức là đã bị người dùng xóa trên giao diện) -> Thực hiện xóa mềm/cứng trong DB.
+     */
     private void syncDeletedDetails(Connection conn, int productId, List<ProductDetail> keptDetails) {
         try {
             Map<Integer, ProductDetail> dbVariantMap = new HashMap<>();
@@ -809,6 +833,11 @@ public class ProductRepositoryImpl implements ProductRepository {
         return d;
     }
 
+    /**
+     * Cặp hàm tiện ích: Tìm kiếm ID của một Thuộc tính (ví dụ Origin, Category, Brand...)
+     * dựa trên Tên. Nếu chưa tồn tại trong DB, hệ thống sẽ tự động INSERT mới thuộc tính đó 
+     * và trả về ID vừa sinh ra.
+     */
     private int findOrCreateOrigin(Connection conn, String name) throws SQLException {
         if (name == null || name.trim().isEmpty())
             return 0;

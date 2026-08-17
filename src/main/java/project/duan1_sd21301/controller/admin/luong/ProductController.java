@@ -15,6 +15,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Controller xử lý các nghiệp vụ liên quan đến Quản lý Sản phẩm (Products).
+ * Bao gồm: Hiển thị danh sách sản phẩm, hiển thị form thêm/sửa, 
+ * và xử lý các form submit để tạo mới, cập nhật sản phẩm.
+ * Lưu ý: Quản lý biến thể (Variants) được tách riêng ở VariantController.
+ */
 @WebServlet(name = "ProductController", value = "/admin/products")
 @jakarta.servlet.annotation.MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024
         * 10, maxRequestSize = 1024 * 1024 * 50)
@@ -22,6 +28,11 @@ public class ProductController extends HttpServlet {
 
     private final ProductService productService = new ProductServiceImpl();
 
+    /**
+     * Xử lý các yêu cầu HTTP GET.
+     * Dùng để điều hướng người dùng: Xem danh sách sản phẩm, 
+     * hoặc hiển thị Form tạo mới/Cập nhật sản phẩm.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -118,6 +129,11 @@ public class ProductController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-list.jsp").forward(request, response);
     }
 
+    /**
+     * Xử lý các yêu cầu HTTP POST khi người dùng submit Form.
+     * Thực hiện thêm mới hoặc cập nhật thông tin sản phẩm vào Cơ sở dữ liệu.
+     * Bao gồm logic validate dữ liệu đầu vào.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

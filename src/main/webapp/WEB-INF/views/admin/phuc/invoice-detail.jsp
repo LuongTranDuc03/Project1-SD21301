@@ -31,7 +31,10 @@
     List<InvoiceHistory> historyList = (List<InvoiceHistory>) request.getAttribute("historyList");
     
     // Lấy danh sách map hiển thị nhãn trạng thái
+    // Map trạng thái cho màn hình chính
     Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    // Map trạng thái đầy đủ cho Lịch sử
+    Map<Integer, String> historyStatusLabels = (Map<Integer, String>) request.getAttribute("historyStatusLabels");
     
     // Khởi tạo các đối tượng format ngày tháng
     DateTimeFormatter dtf     = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -141,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <div class="invoice-id" style="display: flex; align-items: center; gap: 8px;">
                                         <%= inv.getCode() %>
                                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (orderType != null && orderType == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
-                                            <% String lbl = (orderStatus == 1) ? "Chờ xác nhận" : statusLabels.getOrDefault(orderStatus, "?"); %> <%= lbl %>
+                                            <% String lbl = historyStatusLabels != null && historyStatusLabels.containsKey(orderStatus) ? historyStatusLabels.get(orderStatus) : "?"; %> <%= lbl %>
                                         </span>
                                     </div>
                                     <div class="invoice-date">Ngày đặt: <%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—" %></div>
@@ -262,21 +265,29 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <%
                                     if (historyList != null && !historyList.isEmpty()) {
                                         for (InvoiceHistory h : historyList) {
-                                            String newLabel = statusLabels != null && statusLabels.containsKey(h.getNewStatus()) ? statusLabels.get(h.getNewStatus()) : (h.getNewStatus() == 0 ? "Chờ xác nhận" : (h.getNewStatus() == -1 ? "Khởi tạo" : "?"));
-                                            String oldLabel = statusLabels != null && statusLabels.containsKey(h.getOldStatus()) ? statusLabels.get(h.getOldStatus()) : (h.getOldStatus() == 0 ? "Chờ xác nhận" : (h.getOldStatus() == -1 ? "Khởi tạo" : "?"));
+                                            String newLabel = historyStatusLabels != null && historyStatusLabels.containsKey(h.getNewStatus()) ? historyStatusLabels.get(h.getNewStatus()) : (h.getNewStatus() == -1 ? "Khởi tạo" : "?");
                                             String timeStr  = h.getUpdatedAt() != null ? h.getUpdatedAt().format(dtfFull) : "";
                                 %>
                                 <li class="tl-item">
                                     <div class="tl-dot"></div>
-                                    <div class="tl-title"><%= oldLabel %> → <%= newLabel %></div>
+                                    <div class="tl-title"><%= newLabel %></div>
                                     <div class="tl-time"><%= timeStr %></div>
                                     <% if (h.getNote() != null && !h.getNote().isEmpty()) { %>
                                     <div class="tl-note"><%= h.getNote() %></div>
                                     <% } %>
                                 </li>
-                                <% } } else { %>
-                                <li style="color:#9ca3af;font-size:13px;">Chưa có lịch sử thay đổi trạng thái.</li>
-                                <% } %>
+                                <% 
+                                        } 
+                                    } 
+                                %>
+                                
+                                <%-- Dòng gốc lúc nào cũng có: Chờ xác nhận khi tạo đơn --%>
+                                <li class="tl-item">
+                                    <div class="tl-dot"></div>
+                                    <div class="tl-title">Chờ xác nhận</div>
+                                    <div class="tl-time"><%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtfFull) : "" %></div>
+                                    <div class="tl-note">Đơn hàng được khởi tạo</div>
+                                </li>
                             </ul>
                         </div>
                     </div>

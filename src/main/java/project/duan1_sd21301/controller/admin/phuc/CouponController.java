@@ -17,6 +17,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller xử lý tất cả các nghiệp vụ liên quan đến Quản lý Khuyến mãi (Coupons/Vouchers).
+ * Hỗ trợ các chức năng: Xem danh sách, tìm kiếm, lọc theo trạng thái/loại giảm giá,
+ * tạo mới, cập nhật, thay đổi trạng thái (Bật/Tắt) và xuất dữ liệu ra file Excel.
+ * Đảm bảo các logic kiểm tra ngày bắt đầu/kết thúc hợp lệ.
+ */
 @WebServlet(name = "CouponController", urlPatterns = {
         "/admin/coupons",
         "/admin/coupons/add",
@@ -48,6 +54,14 @@ public class CouponController extends HttpServlet {
 
     private final CouponService repo = new CouponService();
 
+    /**
+     * Xử lý các yêu cầu HTTP GET.
+     * Chuyển hướng người dùng dựa theo tham số 'action':
+     * - list: Xem danh sách
+     * - add: Mở form thêm mới
+     * - edit: Mở form sửa
+     * - export: Xuất file Excel
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -63,6 +77,10 @@ public class CouponController extends HttpServlet {
         }
     }
 
+    /**
+     * Xử lý các yêu cầu HTTP POST khi submit Form.
+     * Các action chính: save (Lưu mới/Cập nhật), toggle (Bật/Tắt trạng thái hoạt động).
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -77,6 +95,11 @@ public class CouponController extends HttpServlet {
         }
     }
 
+    /**
+     * Lấy danh sách phiếu giảm giá.
+     * Hỗ trợ tìm kiếm theo Mã/Tên, lọc theo Trạng thái (Sắp diễn ra, Đang diễn ra, Đã kết thúc)
+     * và Loại giảm giá (Phần trăm hay Tiền mặt). Tích hợp phân trang chuẩn.
+     */
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = request.getParameter("q");
@@ -146,6 +169,9 @@ public class CouponController extends HttpServlet {
                 .forward(request, response);
     }
 
+    /**
+     * Hiển thị giao diện Form thêm mới phiếu giảm giá.
+     */
     private void handleAddForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Coupon c = new Coupon();
@@ -159,6 +185,10 @@ public class CouponController extends HttpServlet {
                 .forward(request, response);
     }
 
+    /**
+     * Hiển thị giao diện Form cập nhật phiếu giảm giá.
+     * Truy vấn thông tin giảm giá hiện tại theo ID và nạp vào các thẻ input của form.
+     */
     private void handleEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = parseIdParam(request);
@@ -182,6 +212,11 @@ public class CouponController extends HttpServlet {
                 .forward(request, response);
     }
 
+    /**
+     * Thực hiện thêm mới hoặc cập nhật phiếu giảm giá vào Cơ sở dữ liệu.
+     * Có tích hợp Validator để kiểm tra tính hợp lệ của dữ liệu đầu vào 
+     * (như ngày kết thúc phải sau ngày bắt đầu, mức giảm không vượt quá 100%...).
+     */
     private void handleSave(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String idParam = request.getParameter("id");
@@ -285,6 +320,10 @@ public class CouponController extends HttpServlet {
         }
     }
 
+    /**
+     * Bật/Tắt trạng thái hoạt động của một phiếu giảm giá.
+     * Chỉ áp dụng thay đổi trạng thái nếu phiếu đó chưa kết thúc.
+     */
     private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         int id = parseIdParam(request);
@@ -342,6 +381,10 @@ public class CouponController extends HttpServlet {
         }
     }
 
+    /**
+     * Xuất danh sách phiếu giảm giá hiện tại (có tính áp dụng các bộ lọc) ra file Excel (.xlsx).
+     * Định dạng các cột ngày tháng và tiền tệ chuẩn xác.
+     */
     private void handleExportExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String keyword = request.getParameter("q");
         if (keyword != null && keyword.trim().isEmpty())

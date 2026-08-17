@@ -5,6 +5,11 @@ import java.util.List;
 import project.duan1_sd21301.model.luong.Product;
 import project.duan1_sd21301.model.luong.ProductDetail;
 
+/**
+ * Tiện ích hỗ trợ kiểm tra tính hợp lệ (Validation) của dữ liệu Sản phẩm và Biến thể.
+ * Chứa các hàm chuẩn hóa chuỗi (tên thương hiệu, xuất xứ), xử lý bỏ dấu tiếng Việt,
+ * và kiểm tra độ dài/định dạng các trường bắt buộc trước khi lưu vào DB.
+ */
 public class ProductValidator {
 
     public static final List<String> VALID_BRANDS = java.util.Arrays.asList(
@@ -21,6 +26,10 @@ public class ProductValidator {
         return pattern.matcher(temp).replaceAll("").replace('đ', 'd').replace('Đ', 'd').toLowerCase();
     }
 
+    /**
+     * Thuật toán Levenshtein tính khoảng cách giữa hai chuỗi (số bước tối thiểu để biến chuỗi này thành chuỗi kia).
+     * Ứng dụng để tìm kiếm gần đúng tên sản phẩm, thương hiệu...
+     */
     public static int getLevenshteinDistance(String s1, String s2) {
         if (s1 == null || s2 == null)
             return Integer.MAX_VALUE;
@@ -49,6 +58,10 @@ public class ProductValidator {
         return costs[a2.length()];
     }
 
+    /**
+     * Chuẩn hóa tên thương hiệu. Nếu khớp với danh sách có sẵn (không phân biệt hoa thường),
+     * sẽ trả về tên chuẩn. Ngược lại trả về chuỗi gốc đã cắt khoảng trắng.
+     */
     public static String normalizeBrand(String brand) {
         if (brand == null || brand.trim().isEmpty())
             return "";
@@ -61,6 +74,9 @@ public class ProductValidator {
         return trimmed;
     }
 
+    /**
+     * Chuẩn hóa tên xuất xứ (ví dụ "viet nam", "vn" -> "Việt Nam").
+     */
     public static String normalizeOrigin(String origin) {
         if (origin == null || origin.trim().isEmpty())
             return "";
@@ -92,6 +108,12 @@ public class ProductValidator {
         return trimmed;
     }
 
+    /**
+     * Hàm quan trọng: Kiểm tra tính hợp lệ của toàn bộ dữ liệu Sản phẩm (Product) 
+     * và danh sách Biến thể (Variants) gửi lên từ form thêm/sửa sản phẩm đa biến thể.
+     * Kiểm tra từng trường: mã, tên, giá, số lượng, kích thước, ảnh...
+     * @return Danh sách các thông báo lỗi (nếu có). Danh sách rỗng nghĩa là hợp lệ.
+     */
     public static List<String> validateProduct(
             String code,
             String name,

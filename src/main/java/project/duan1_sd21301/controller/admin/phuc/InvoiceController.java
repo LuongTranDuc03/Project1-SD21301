@@ -27,6 +27,16 @@ import java.util.Map;
  * GET /admin/invoices/print → trang in hóa đơn (?id=...)
  * POST /admin/invoices/update-status → cập nhật trạng thái đơn hàng
  */
+/**
+ * Controller xử lý tất cả các nghiệp vụ liên quan đến Quản lý Hóa đơn
+ * (Invoices).
+ * Chức năng: Hiển thị danh sách hóa đơn (có phân trang, tìm kiếm, lọc theo
+ * khoảng thời gian,
+ * loại hóa đơn, trạng thái), xem chi tiết hóa đơn, in hóa đơn (in nhiệt),
+ * cập nhật trạng thái hóa đơn và xuất file Excel.
+ * 
+ * Hỗ trợ các request GET (xem dữ liệu) và POST (cập nhật trạng thái).
+ */
 @WebServlet(name = "InvoiceController", urlPatterns = {
         "/admin/invoices",
         "/admin/invoices/detail",
@@ -42,8 +52,8 @@ public class InvoiceController extends HttpServlet {
     static {
         ORDER_STATUS_LABELS = new LinkedHashMap<>();
 
-        ORDER_STATUS_LABELS.put(3, "Đã thanh toán");   // Thanh toán thành công tại quầy
-        ORDER_STATUS_LABELS.put(4, "Đã huỷ");          // Đơn bị huỷ
+        ORDER_STATUS_LABELS.put(3, "Đã thanh toán"); // Thanh toán thành công tại quầy
+        ORDER_STATUS_LABELS.put(4, "Đã huỷ"); // Đơn bị huỷ
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -51,6 +61,11 @@ public class InvoiceController extends HttpServlet {
     // =====================================================================
     // GET
     // =====================================================================
+    /**
+     * Xử lý các yêu cầu điều hướng (GET).
+     * Dựa vào tham số 'action' để gọi hàm hiển thị Danh sách, Chi tiết, In hoặc
+     * Xuất Excel.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -71,6 +86,10 @@ public class InvoiceController extends HttpServlet {
     // =====================================================================
     // POST
     // =====================================================================
+    /**
+     * Xử lý các tác vụ POST, chủ yếu dùng cho thao tác thay đổi dữ liệu (VD: Cập
+     * nhật trạng thái đơn).
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -90,6 +109,12 @@ public class InvoiceController extends HttpServlet {
     // =====================================================================
 
     /** Trang danh sách hóa đơn với phân trang, lọc và tìm kiếm */
+    /**
+     * Lấy và hiển thị danh sách hóa đơn lên giao diện.
+     * Hỗ trợ tìm kiếm theo Mã hóa đơn, Tên KH, SĐT.
+     * Hỗ trợ lọc theo Ngày bắt đầu, Ngày kết thúc, Loại đơn và Trạng thái.
+     * Cung cấp phân trang chuẩn.
+     */
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -171,6 +196,11 @@ public class InvoiceController extends HttpServlet {
     }
 
     /** Trang chi tiết một hóa đơn */
+    /**
+     * Xử lý hiển thị trang Chi tiết một Hóa đơn cụ thể.
+     * Trả về thông tin hóa đơn (Invoice) và danh sách sản phẩm trong đơn đó
+     * (InvoiceDetails).
+     */
     private void handleDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -200,6 +230,9 @@ public class InvoiceController extends HttpServlet {
     }
 
     /** Trang in hóa đơn */
+    /**
+     * Xử lý hiển thị màn hình In hóa đơn chuyên dụng (khổ K80, máy in nhiệt).
+     */
     private void handlePrint(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -226,6 +259,10 @@ public class InvoiceController extends HttpServlet {
     }
 
     /** Cập nhật trạng thái đơn hàng (POST) */
+    /**
+     * Xử lý thao tác Cập nhật Trạng thái của hóa đơn.
+     * Nếu thay đổi thành 'Đã hủy', có thể đi kèm logic hoàn lại số lượng tồn kho.
+     */
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
@@ -263,9 +300,10 @@ public class InvoiceController extends HttpServlet {
         if (oldStatus == 2 && newStatus == 3) {
             canChange = true; // Đã thanh toán -> Đã huỷ
         }
-        
+
         if (!canChange) {
-            response.sendRedirect(request.getContextPath() + "/admin/invoices/detail?id=" + id + "&error=invalid_status_transition");
+            response.sendRedirect(
+                    request.getContextPath() + "/admin/invoices/detail?id=" + id + "&error=invalid_status_transition");
             return;
         }
 
@@ -311,6 +349,10 @@ public class InvoiceController extends HttpServlet {
     // =====================================================================
 
     /** Xuất toàn bộ hóa đơn ra file Excel (.xlsx) theo filter hiện tại */
+    /**
+     * Chức năng Xuất dữ liệu danh sách hóa đơn ra file Excel (.xlsx).
+     * Sử dụng thư viện Apache POI để vẽ bảng và style file excel.
+     */
     private void handleExportExcel(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 

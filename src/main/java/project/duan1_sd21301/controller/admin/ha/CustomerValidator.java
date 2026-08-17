@@ -8,8 +8,28 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Tiện ích kiểm tra tính hợp lệ (Validation) của dữ liệu Khách hàng (Customer) và Địa chỉ.
+ * Đảm bảo các thông tin như Email, Số điện thoại phải đúng định dạng chuẩn
+ * và không bị trùng lặp với khách hàng đã có trong hệ thống.
+ */
 public class CustomerValidator {
 
+    /**
+     * Hàm kiểm tra toàn bộ thông tin của Khách hàng trước khi thêm mới hoặc cập nhật.
+     * 
+     * @param code Mã khách hàng (kiểm tra trùng lặp)
+     * @param fullName Họ tên (không được chứa số và ký tự đặc biệt)
+     * @param email Email (phải đúng định dạng và duy nhất)
+     * @param phone Số điện thoại (đúng định dạng số Việt Nam và duy nhất)
+     * @param birthday Ngày sinh (phải nhỏ hơn ngày hiện tại)
+     * @param gender Giới tính (Nam/Nữ)
+     * @param status Trạng thái (0 hoặc 1)
+     * @param addresses Danh sách địa chỉ giao hàng (nếu có)
+     * @param customers Danh sách toàn bộ khách hàng (để check trùng lặp)
+     * @param isEdit Đang trong chế độ chỉnh sửa (true) hay thêm mới (false)
+     * @return Danh sách lỗi (List<String>), nếu rỗng tức là hợp lệ
+     */
     public static List<String> validate(
             String code,
             String fullName,

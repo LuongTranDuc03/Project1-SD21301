@@ -12,8 +12,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Repository xử lý các truy vấn liên quan đến Thống kê và Báo cáo.
+ * Chứa các hàm tính toán doanh thu, đếm số lượng đơn hàng, 
+ * và xếp hạng sản phẩm/khách hàng dựa trên dữ liệu trong database.
+ */
 public class StatisticRepository {
 
+    /**
+     * Lấy các chỉ số tổng quan (KPIs) trong một khoảng thời gian nhất định.
+     * Bao gồm: Doanh thu, Tổng số đơn, Số đơn hoàn thành/hủy/xử lý, Tổng sản phẩm bán ra.
+     * 
+     * @param start Thời gian bắt đầu
+     * @param end   Thời gian kết thúc
+     * @return Map chứa các cặp key-value tương ứng với từng chỉ số thống kê
+     */
     public Map<String, Object> getOverviewStats(LocalDateTime start, LocalDateTime end) {
         Map<String, Object> stats = new HashMap<>();
         
@@ -24,6 +37,8 @@ public class StatisticRepository {
         Long countProcessing = 0L;
         Long productsSold = 0L;
 
+        // Query 1: Thống kê doanh thu và phân loại trạng thái đơn hàng
+        // Lưu ý: trang_thai_don_hang = 3 (Hoàn thành), 4 (Đã hủy), 0/1 (Đang xử lý)
         String sqlInvoice = "SELECT " +
                 "SUM(CASE WHEN trang_thai_don_hang = 3 THEN tong_thanh_toan ELSE 0 END), " +
                 "COUNT(*), " +
@@ -32,6 +47,7 @@ public class StatisticRepository {
                 "SUM(CASE WHEN trang_thai_don_hang IN (0,1) THEN 1 ELSE 0 END) " +
                 "FROM hoa_don WHERE ngay_dat_hang BETWEEN ? AND ?";
 
+        // Query 2: Tính tổng số lượng sản phẩm đã bán (chỉ tính đơn Hoàn thành = 3)
         String sqlProducts = "SELECT SUM(ct.so_luong) FROM chi_tiet_hoa_don ct JOIN hoa_don i ON ct.id_hoa_don = i.id " +
                 "WHERE i.trang_thai_don_hang = 3 AND i.ngay_dat_hang BETWEEN ? AND ?";
 
@@ -78,6 +94,14 @@ public class StatisticRepository {
         return stats;
     }
 
+    /**
+     * Truy vấn dữ liệu doanh thu nhóm theo từng ngày để vẽ biểu đồ doanh thu.
+     * Chỉ tính các đơn hàng đã Hoàn thành (trạng thái = 3).
+     * 
+     * @param start Thời gian bắt đầu
+     * @param end   Thời gian kết thúc
+     * @return Danh sách các mảng Object, mỗi mảng chứa [Ngày, Tổng doanh thu]
+     */
     public List<Object[]> getRevenueByDate(LocalDateTime start, LocalDateTime end) {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT CAST(ngay_dat_hang AS DATE) AS d, SUM(tong_thanh_toan) " +
@@ -104,6 +128,12 @@ public class StatisticRepository {
         return list;
     }
 
+    /**
+     * Lấy danh sách Top các sản phẩm bán chạy nhất dựa trên tổng số lượng đã bán.
+     * 
+     * @param limit Số lượng sản phẩm muốn lấy (ví dụ: Top 5, Top 10)
+     * @return Danh sách các mảng Object chứa [Tên sản phẩm, Số lượng đã bán, Tồn kho hiện tại]
+     */
     public List<Object[]> getTopSellingProducts(int limit) {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT TOP " + limit + " p.ten_san_pham, SUM(ct.so_luong) as total_sold, SUM(pd.so_luong) as ton_kho " +
@@ -128,6 +158,12 @@ public class StatisticRepository {
         return list;
     }
 
+    /**
+     * Lấy danh sách Top khách hàng mua sắm nhiều nhất dựa trên tổng tiền chi tiêu.
+     * 
+     * @param limit Số lượng khách hàng muốn lấy (ví dụ: Top 5)
+     * @return Danh sách các mảng Object chứa [Tên khách hàng, Số lượng đơn, Tổng chi tiêu]
+     */
     public List<Object[]> getTopCustomers(int limit) {
         List<Object[]> list = new ArrayList<>();
         String sql = "SELECT TOP " + limit + " hd.ten_khach_nhan, COUNT(hd.id) as so_don, SUM(hd.tong_thanh_toan) as chi_tieu " +

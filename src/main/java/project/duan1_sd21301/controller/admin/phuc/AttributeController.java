@@ -20,6 +20,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+/**
+ * Controller dùng chung để quản lý các Thuộc tính của Sản phẩm
+ * (Kích thước, Màu sắc, Thương hiệu, Danh mục, Kiểu dáng, Xuất xứ).
+ * Sử dụng tham số 'type' để phân biệt đang thao tác trên loại thuộc tính nào.
+ */
 @WebServlet(name = "AttributeController", urlPatterns = {
         "/admin/attributes",
         "/admin/attributes/save",
@@ -30,6 +35,9 @@ public class AttributeController extends HttpServlet {
 
     private AttributeService attributeService;
 
+    /**
+     * Khởi tạo các Repository riêng biệt cho từng loại Thuộc tính.
+     */
     @Override
     public void init() throws ServletException {
         attributeService = new AttributeServiceImpl();
@@ -59,6 +67,10 @@ public class AttributeController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách các giá trị của một loại Thuộc tính cụ thể (dựa vào 'type').
+     * Có hỗ trợ tìm kiếm (q), lọc theo trạng thái (status) và phân trang.
+     */
     private void showAttributeList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String type = request.getParameter("type");
         if (type == null || type.trim().isEmpty()) {
@@ -90,6 +102,10 @@ public class AttributeController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/phuc/attribute-list.jsp").forward(request, response);
     }
 
+    /**
+     * Thêm mới hoặc Cập nhật giá trị của một Thuộc tính.
+     * Kiểm tra tính hợp lệ của Tên (độ dài, không trùng lặp) thông qua AttributeValidator.
+     */
     private void saveAttribute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String type = request.getParameter("type");
         if (type == null || type.trim().isEmpty()) {
@@ -138,6 +154,9 @@ public class AttributeController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/attributes?type=" + type);
     }
 
+    /**
+     * Bật/Tắt trạng thái hoạt động (Active/Inactive) của một Thuộc tính.
+     */
     private void toggleStatus(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String type = request.getParameter("type");
         String idStr = request.getParameter("id");

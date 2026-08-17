@@ -22,6 +22,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Controller xử lý các nghiệp vụ liên quan đến Quản lý Khách hàng (Customers).
+ * Hỗ trợ các chức năng: Xem danh sách khách hàng, tìm kiếm, lọc theo hạng/giới tính,
+ * xem lịch sử giao dịch (đơn hàng), thêm mới, cập nhật thông tin khách hàng,
+ * và quản lý địa chỉ giao hàng của khách.
+ */
 @WebServlet(name = "CustomerController", value = "/admin/customers")
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2,
@@ -39,6 +45,13 @@ public class CustomerController extends HttpServlet {
         // Mock data setup removed - data is fetched directly from database via customerService
     }
 
+    /**
+     * Xử lý các yêu cầu HTTP GET.
+     * Chuyển hướng người dùng dựa theo pathInfo:
+     * - /list: Xem danh sách
+     * - /detail: Xem chi tiết (thông tin & lịch sử đơn hàng)
+     * - /create, /update: Hiển thị form Thêm/Sửa
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -180,6 +193,11 @@ public class CustomerController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/ha/customer-list.jsp").forward(request, response);
     }
 
+    /**
+     * Xử lý các yêu cầu HTTP POST khi submit Form.
+     * Xử lý thêm mới, cập nhật khách hàng hoặc thêm mới địa chỉ giao hàng.
+     * Áp dụng CustomerValidator để kiểm tra tính hợp lệ của dữ liệu đầu vào.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

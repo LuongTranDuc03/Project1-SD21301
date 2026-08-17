@@ -14,7 +14,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "VariantController", value = "/admin/variants")
+/**
+ * Controller xử lý các nghiệp vụ liên quan đến Biến thể Sản phẩm (Product Variants).
+ * Quản lý các thuộc tính chi tiết của một sản phẩm như màu sắc, kích thước, 
+ * số lượng tồn kho và giá bán. Cho phép tạo hàng loạt nhiều biến thể cùng lúc.
+ */
+@WebServlet(name = "VariantController", urlPatterns = { "/admin/variants" })
 @jakarta.servlet.annotation.MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2,
         maxFileSize = 1024 * 1024 * 10,
@@ -24,6 +29,11 @@ public class VariantController extends HttpServlet {
 
     private final ProductService productService = new ProductServiceImpl();
 
+    /**
+     * Xử lý các yêu cầu HTTP GET.
+     * Chuyển hướng người dùng đến giao diện danh sách biến thể của một sản phẩm,
+     * hoặc hiển thị form tạo mới/cập nhật biến thể.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -88,6 +98,12 @@ public class VariantController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/luong/variant-list.jsp").forward(request, response);
     }
 
+    /**
+     * Xử lý các yêu cầu HTTP POST khi người dùng submit Form.
+     * Hỗ trợ hai tác vụ chính:
+     * - Lưu nhiều biến thể cùng lúc (Generate Variants) vào database.
+     * - Lưu (thêm mới hoặc cập nhật) một biến thể đơn lẻ.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

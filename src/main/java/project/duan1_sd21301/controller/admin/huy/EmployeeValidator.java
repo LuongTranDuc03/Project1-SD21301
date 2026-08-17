@@ -9,6 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Tiện ích kiểm tra tính hợp lệ (Validation) của dữ liệu Nhân viên (Employee).
+ * Cung cấp hàm kiểm tra và trả về tập hợp các thông báo lỗi cho từng trường.
+ */
 public class EmployeeValidator {
 
     private static final String PHONE_REGEX = "^(03|05|07|08|09)\\d{8}$";
@@ -16,6 +20,14 @@ public class EmployeeValidator {
     private static final String CCCD_REGEX = "^\\d{12}$";
     private static final String NAME_REGEX = "^[\\p{L}\\s]{2,100}$";
 
+    /**
+     * Kiểm tra toàn bộ dữ liệu của một Nhân viên trước khi Thêm mới/Cập nhật.
+     * Kiểm tra định dạng Email, Số điện thoại (dựa theo Regex),
+     * và các trường bắt buộc như Tên, Ngày sinh.
+     * 
+     * @param emp Đối tượng Nhân viên cần kiểm tra
+     * @return Map chứa lỗi (Key: Tên trường, Value: Lời nhắn lỗi). Nếu rỗng -> Hợp lệ.
+     */
     public static Map<String, String> validate(Employee emp) {
         Map<String, String> errors = new HashMap<>();
 

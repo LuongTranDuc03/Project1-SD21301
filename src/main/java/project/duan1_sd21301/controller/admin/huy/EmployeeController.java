@@ -24,6 +24,14 @@ import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.Part;
 import java.io.File;
  
+/**
+ * Controller xử lý tất cả các nghiệp vụ liên quan đến Quản lý Nhân viên.
+ * Bao gồm: Liệt kê danh sách (phân trang, tìm kiếm, lọc theo vai trò/trạng thái),
+ * xem chi tiết, thêm mới, cập nhật, thay đổi trạng thái (hoạt động/ngừng hoạt động),
+ * gửi email thông báo và xử lý ảnh đại diện (avatar).
+ * 
+ * Hỗ trợ các request GET (điều hướng) và POST (thao tác dữ liệu).
+ */
 @WebServlet(name = "EmployeeController", urlPatterns = { "/admin/employees" })
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2,
@@ -36,6 +44,10 @@ public class EmployeeController extends HttpServlet {
     private final EmployeeRepository repository = new EmployeeRepositoryImpl();
     private final EmailService emailService = new EmailService();
 
+    /**
+     * Xử lý các yêu cầu điều hướng (GET) dựa trên tham số 'action' từ URL.
+     * Chuyển hướng tới các phương thức chi tiết tương ứng.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -75,6 +87,10 @@ public class EmployeeController extends HttpServlet {
         }
     }
 
+    /**
+     * Xử lý các thao tác nộp biểu mẫu (POST) dựa trên tham số 'action'.
+     * Chủ yếu dùng để Thêm mới, Cập nhật, Thay đổi trạng thái, Gửi email.
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -105,6 +121,11 @@ public class EmployeeController extends HttpServlet {
         }
     }
 
+    /**
+     * Hiển thị danh sách nhân viên.
+     * Hỗ trợ tìm kiếm theo từ khóa, lọc theo Trạng thái (status) và Vai trò (roleId).
+     * Áp dụng phân trang (page, size).
+     */
     private void listEmployees(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<Employee> employees = employeeService.getAllEmployees();
@@ -135,6 +156,9 @@ public class EmployeeController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-list.jsp").forward(request, response);
     }
 
+    /**
+     * Xem thông tin chi tiết của một nhân viên (Thông qua ID).
+     */
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
@@ -176,6 +200,10 @@ public class EmployeeController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/admin/huy/employee-form.jsp").forward(request, response);
     }
 
+    /**
+     * Hiển thị form Thêm mới hoặc Cập nhật thông tin nhân viên.
+     * Tự động lấy danh sách Role và thiết lập mã nhân viên mặc định (nếu là tạo mới).
+     */
     private void showForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
@@ -252,6 +280,10 @@ public class EmployeeController extends HttpServlet {
         return errors;
     }
 
+    /**
+     * Thực hiện thêm mới nhân viên vào database (khi submit form Create).
+     * Gửi email tự động thông báo tài khoản cho nhân viên sau khi thêm thành công.
+     */
     private void createEmployee(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Employee emp = buildEmployeeFromRequest(request, true);
@@ -290,6 +322,10 @@ public class EmployeeController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/employees");
     }
 
+    /**
+     * Thực hiện cập nhật thông tin nhân viên có sẵn (khi submit form Update).
+     * Đảm bảo không ghi đè mất mật khẩu hay avatar nếu không có thay đổi.
+     */
     private void updateEmployee(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Employee emp = buildEmployeeFromRequest(request, false);
@@ -346,6 +382,10 @@ public class EmployeeController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/employees");
     }
 
+    /**
+     * Chuyển đổi trạng thái hoạt động của nhân viên (Từ Đang hoạt động <-> Ngừng hoạt động).
+     * Ngăn chặn việc tài khoản đang đăng nhập tự khóa chính mình.
+     */
     private void toggleEmployeeStatus(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
@@ -416,6 +456,14 @@ public class EmployeeController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/employees");
     }
 
+    /**
+     * Hàm tiện ích thu thập dữ liệu từ request (form HTML) và đóng gói thành đối tượng Employee.
+     * Xử lý riêng logic lưu ảnh đại diện (avatar) qua Multipart Request.
+     * 
+     * @param req      Đối tượng HttpServletRequest chứa dữ liệu form
+     * @param isCreate Cờ đánh dấu là hành động Thêm mới (true) hay Cập nhật (false)
+     * @return Đối tượng Employee hoàn chỉnh sẵn sàng lưu DB
+     */
     private Employee buildEmployeeFromRequest(HttpServletRequest req, boolean isCreate) {
         Employee emp = new Employee();
         String idStr = req.getParameter("id");

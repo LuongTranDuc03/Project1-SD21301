@@ -10,8 +10,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Repository xử lý toàn bộ các truy vấn liên quan đến Dashboard (Bảng điều khiển).
+ * Chứa logic lấy thông tin thống kê doanh thu, đơn hàng, xếp hạng sản phẩm và tồn kho.
+ */
 public class DashboardRepository {
 
+    /**
+     * Lấy các chỉ số thống kê (Doanh thu, số đơn, số sản phẩm bán, trạng thái đơn) 
+     * theo khoảng thời gian chuẩn (hôm nay, tuần này, tháng này, năm nay).
+     * 
+     * @param type       Loại thời gian ("today", "week", "month", "year")
+     * @param refDateStr Ngày tham chiếu (thường là ngày hiện tại)
+     * @return Map chứa các chỉ số thống kê (revenue, totalOrders, countCompleted, v.v.)
+     */
     public Map<String, Object> getStatsForPeriod(String type, String refDateStr) {
         Map<String, Object> result = new HashMap<>();
         result.put("revenue", 0.0);
@@ -89,6 +101,14 @@ public class DashboardRepository {
         return result;
     }
 
+    /**
+     * Lấy danh sách Top sản phẩm bán chạy nhất trong một khoảng thời gian.
+     * 
+     * @param limit    Số lượng sản phẩm lấy ra (vd: Top 5)
+     * @param fromDate Ngày bắt đầu (tùy chọn)
+     * @param toDate   Ngày kết thúc (tùy chọn)
+     * @return Danh sách Map, mỗi Map chứa tên sản phẩm, số lượng bán, tồn kho
+     */
     public List<Map<String, Object>> getTopProducts(int limit, String fromDate, String toDate) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT TOP " + limit + " " +
@@ -137,6 +157,15 @@ public class DashboardRepository {
         return list;
     }
 
+    /**
+     * Lấy danh sách Top khách hàng tiềm năng dựa trên tổng chi tiêu.
+     * Chỉ tính những hóa đơn đã hoàn thành.
+     * 
+     * @param limit    Số lượng khách hàng lấy ra (vd: Top 5)
+     * @param fromDate Ngày bắt đầu (tùy chọn)
+     * @param toDate   Ngày kết thúc (tùy chọn)
+     * @return Danh sách khách hàng và mức chi tiêu
+     */
     public List<Map<String, Object>> getTopCustomers(int limit, String fromDate, String toDate) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT TOP " + limit + " " +
@@ -183,6 +212,14 @@ public class DashboardRepository {
         return list;
     }
 
+    /**
+     * Lấy dữ liệu vẽ biểu đồ Doanh thu theo từng ngày trong một tháng cụ thể.
+     * (Sử dụng cho bộ lọc thời gian: Tháng / Năm)
+     * 
+     * @param year  Năm cần lấy (vd: 2024)
+     * @param month Tháng cần lấy (vd: 8)
+     * @return Map với Key là Ngày, Value là Doanh thu trong ngày đó
+     */
     public Map<Integer, Double> getMonthlyChartData(int year, int month) {
         Map<Integer, Double> map = new HashMap<>();
         String sql = "SELECT DAY(ngay_dat_hang) AS day, SUM(tong_thanh_toan) AS revenue " +
@@ -205,6 +242,13 @@ public class DashboardRepository {
         return map;
     }
 
+    /**
+     * Lấy dữ liệu vẽ biểu đồ Doanh thu theo một khoảng thời gian Tùy chỉnh (Từ ngày - Đến ngày).
+     * 
+     * @param fromDate Ngày bắt đầu
+     * @param toDate   Ngày kết thúc
+     * @return Map với Key là Chuỗi ngày (yyyy-MM-dd), Value là Doanh thu
+     */
     public Map<String, Double> getCustomChartData(String fromDate, String toDate) {
         Map<String, Double> map = new HashMap<>();
         String sql = "SELECT CAST(ngay_dat_hang AS DATE) AS day, SUM(tong_thanh_toan) AS revenue " +
@@ -238,6 +282,14 @@ public class DashboardRepository {
         return map;
     }
 
+    /**
+     * Tính toán tổng quan KPIs (Giống hàm getStatsForPeriod) nhưng áp dụng 
+     * cho Bộ lọc Tùy chỉnh khoảng thời gian.
+     * 
+     * @param fromDate Ngày bắt đầu
+     * @param toDate   Ngày kết thúc
+     * @return Map chứa các chỉ số thống kê tổng quan
+     */
     public Map<String, Object> getStatsForCustomPeriod(String fromDate, String toDate) {
         Map<String, Object> result = new HashMap<>();
         result.put("revenue", 0.0);
@@ -318,10 +370,21 @@ public class DashboardRepository {
         return list;
     }
 
+    /**
+     * Lấy danh sách thống kê tồn kho của các biến thể sản phẩm (Variant).
+     * Bao gồm thông tin tồn kho, số lượng đã bán trong kỳ. Có hỗ trợ phân trang chuẩn OFFSET/FETCH.
+     * 
+     * @param page        Trang hiện tại
+     * @param pageSize    Số lượng bản ghi trên một trang
+     * @param month       Tháng muốn xem lượng bán (nếu có)
+     * @param brandId     ID thương hiệu (Lọc)
+     * @param status      Trạng thái tồn kho (0: hết, 1: còn hàng, 2: sắp hết)
+     * @param searchQuery Từ khóa tìm kiếm (tên, mã SP)
+     * @return Danh sách sản phẩm tồn kho
+     */
     public List<Map<String, Object>> getInventoryStats(int page, int pageSize, Integer month, Integer brandId, Integer status, String searchQuery) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT * FROM ( " +
             "   SELECT " +
             "       p.san_pham_code AS productCode, " +
             "       pd.chi_tiet_san_pham_code AS variantCode, " +
@@ -349,8 +412,7 @@ public class DashboardRepository {
         }
                      
         sql.append(
-            "       ) AS soldInPeriod, " +
-            "       ROW_NUMBER() OVER(ORDER BY p.id DESC, pd.id DESC) as RowNum " +
+            "       ) AS soldInPeriod " +
             "   FROM chi_tiet_san_pham pd " +
             "   JOIN san_pham p ON pd.id_san_pham = p.id " +
             "   LEFT JOIN kich_thuoc kt ON pd.id_kich_thuoc = kt.id " +
@@ -382,7 +444,7 @@ public class DashboardRepository {
             sql.append(" AND (p.ten_san_pham LIKE ? OR p.san_pham_code LIKE ? OR pd.chi_tiet_san_pham_code LIKE ? OR ms.ten_mau LIKE ? OR kt.ten_kich_thuoc LIKE ? OR kd.ten_kieu_dang LIKE ?) ");
         }
         
-        sql.append(" ) AS Result WHERE RowNum > ? AND RowNum <= ?");
+        sql.append(" ORDER BY p.id DESC, pd.id DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -406,7 +468,7 @@ public class DashboardRepository {
             }
             
             ps.setInt(paramIndex++, (page - 1) * pageSize);
-            ps.setInt(paramIndex++, page * pageSize);
+            ps.setInt(paramIndex++, pageSize);
             
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -527,6 +589,12 @@ public class DashboardRepository {
         return list;
     }
 
+    /**
+     * Lấy các chỉ số KPI trên màn hình Thống kê tồn kho (Tổng biến thể, Tổng tồn kho, Đã bán, Hết hàng...).
+     * 
+     * @param month Tháng muốn xem lượng bán
+     * @return Map chứa các chỉ số KPI
+     */
     public Map<String, Object> getInventoryKPIs(Integer month) {
         Map<String, Object> result = new HashMap<>();
         result.put("totalVariants", 0);
