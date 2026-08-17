@@ -791,11 +791,6 @@
                         errorMsg = "Số lượng của biến thể (Màu: " + color + ", Kích cỡ: " + v.size + ") không hợp lệ!";
                         break;
                     }
-                    if (st <= 0 && v.status === 'Còn hàng') {
-                        hasVariantError = true;
-                        errorMsg = "Biến thể (Màu: " + color + ", Kích cỡ: " + v.size + ") đã hết hàng nhưng đang để trạng thái 'Còn hàng'!";
-                        break;
-                    }
                 }
                 if (hasVariantError) break;
             }
@@ -1128,11 +1123,8 @@
                             <td style="width: 10%;">
                                 <input type="text" name="variantStock" class="form-input stock-input-\${cIdx}" value="\${(v.stock || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'stock')">
                             </td>
-                            <td style="width: 13%;">
-                                <select name="variantStatus" class="form-select status-input-\${cIdx}" style="padding: 6px; font-size: 12px;" onchange="updateVariantData('\${color}', '\${v.size}', 'status', this.value)">
-                                    <option value="Còn hàng" \${v.status === 'Còn hàng' || v.status === 'Hoạt động' ? 'selected' : ''}>Còn hàng</option>
-                                    <option value="Hết hàng" \${v.status === 'Hết hàng' || v.status === 'Ngừng hoạt động' ? 'selected' : ''}>Hết hàng</option>
-                                </select>
+                            <td style="display: none;">
+                                <input type="hidden" name="variantStatus" class="status-input-\${cIdx}" value="\${(parseInt(v.stock) <= 0) ? 'Hết hàng' : 'Còn hàng'}">
                             </td>
                             <td style="width: 5%; text-align: center;">
                                 <button type="button" onclick="removeVariantRow('\${color}', '\${v.size}')" style="background: #fee2e2; border: none; color: #ef4444; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
@@ -1165,7 +1157,7 @@
                                     <th>Giá nhập</th>
                                     <th>Giá bán</th>
                                     <th>Số lượng</th>
-                                    <th>Trạng thái</th>
+                                    <th style="display: none;">Trạng thái</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -1325,6 +1317,24 @@
                         if (parseFloat(value) < 0) value = 0;
                     }
                     variant[field] = value;
+                    // Tự động cập nhật trạng thái dựa theo số lượng
+                    if (field === 'stock') {
+                        variant.status = (parseInt(value) <= 0) ? 'Hết hàng' : 'Còn hàng';
+                        // Cập nhật hidden input status trên DOM
+                        const allRows = document.querySelectorAll(`input[name="variantSize"]`);
+                        allRows.forEach(sizeInput => {
+                            if (sizeInput.value === size) {
+                                const tr = sizeInput.closest('tr');
+                                if (tr) {
+                                    const colorInput = tr.querySelector('input[name="variantColor"]');
+                                    if (colorInput && colorInput.value === color) {
+                                        const statusInput = tr.querySelector('input[name="variantStatus"]');
+                                        if (statusInput) statusInput.value = variant.status;
+                                    }
+                                }
+                            }
+                        });
+                    }
                     isFormDirty = true;
                 }
             }

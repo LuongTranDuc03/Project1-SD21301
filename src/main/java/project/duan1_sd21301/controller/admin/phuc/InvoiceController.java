@@ -41,11 +41,9 @@ public class InvoiceController extends HttpServlet {
     private static final Map<Integer, String> ORDER_STATUS_LABELS;
     static {
         ORDER_STATUS_LABELS = new LinkedHashMap<>();
-        ORDER_STATUS_LABELS.put(1, "Chờ xác nhận");
-        ORDER_STATUS_LABELS.put(2, "Chờ giao hàng");
-        ORDER_STATUS_LABELS.put(3, "Hoàn thành");
-        ORDER_STATUS_LABELS.put(4, "Đã huỷ");
-        ORDER_STATUS_LABELS.put(5, "Đã hoàn tiền");
+
+        ORDER_STATUS_LABELS.put(3, "Đã thanh toán");   // Thanh toán thành công tại quầy
+        ORDER_STATUS_LABELS.put(4, "Đã huỷ");          // Đơn bị huỷ
     }
 
     private final InvoiceRepository invoiceRepo = new InvoiceRepository();
@@ -257,14 +255,13 @@ public class InvoiceController extends HttpServlet {
 
         int oldStatus = invoice.getOrderStatus();
 
-        // Chặn đổi trạng thái không hợp lệ theo luồng mới:
+        // Luồng bán tại quầy (không giao hàng):
+        // 1 (Chờ xác nhận) -> 2 (Đã thanh toán): Thanh toán thành công
+        // 1 (Chờ xác nhận) -> 3 (Đã huỷ): Huỷ đơn chờ
+        // Đơn đã thanh toán (2) không thể huỷ hoặc hoàn tiền
         boolean canChange = false;
-        if (oldStatus == 2 && (newStatus == 3 || newStatus == 4)) {
-            canChange = true; // Chờ giao hàng -> Hoàn thành / Hủy
-        } else if (oldStatus == 3 && newStatus == 4) {
-            canChange = true; // Hoàn thành -> Hủy
-        } else if (oldStatus == 4 && newStatus == 5) {
-            canChange = true; // Hủy -> Hoàn tiền
+        if (oldStatus == 2 && newStatus == 3) {
+            canChange = true; // Đã thanh toán -> Đã huỷ
         }
         
         if (!canChange) {
@@ -283,10 +280,10 @@ public class InvoiceController extends HttpServlet {
                 .build();
 
         // Xác định xử lý kho:
-        // Hủy đơn/Hoàn tiền (→ 4, 5): hoàn kho; khôi phục từ hủy/hoàn tiền (4, 5 →
-        // khác): trừ kho
-        boolean isNewCancelOrRefund = (newStatus == 4 || newStatus == 5);
-        boolean isOldCancelOrRefund = (oldStatus == 4 || oldStatus == 5);
+        // Huỷ đơn (→ 3): hoàn kho
+        // Thanh toán (1 → 2): không thay đổi kho (đã trừ khi thêm sản phẩm ở POS)
+        boolean isNewCancelOrRefund = (newStatus == 3);
+        boolean isOldCancelOrRefund = (oldStatus == 3);
 
         boolean updateStock = isNewCancelOrRefund != isOldCancelOrRefund;
         boolean increaseStock = isNewCancelOrRefund;
@@ -298,9 +295,9 @@ public class InvoiceController extends HttpServlet {
 
         // Xác định message phản hồi phù hợp với trạng thái mới
         String msg;
-        if (newStatus == 4 || newStatus == 5) {
+        if (newStatus == 3) {
             msg = "cancelled";
-        } else if (newStatus == 3) {
+        } else if (newStatus == 2) {
             msg = "completed";
         } else {
             msg = "updated";

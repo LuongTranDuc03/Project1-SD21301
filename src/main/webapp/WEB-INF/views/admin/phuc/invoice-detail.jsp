@@ -46,11 +46,9 @@
     // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
     java.util.function.BiFunction<Integer, Integer, String> bClassFn = (s, t) -> {
         if (s == null)  return "cho-xu-ly";
-        if (s == 5)     return "da-hoan-tien";
-        if (s == 4)     return "da-huy";
-        if (s == 3)     return "hoan-thanh";
-        if (s == 2)     return "da-xac-nhan";
-        if (s == 1)     return "da-xac-nhan";
+        if (s == 3)     return "da-huy";
+        if (s == 2)     return "hoan-thanh";
+        if (s == 1)     return "cho-xu-ly";
         return "cho-xu-ly";
     };
     String badgeClass = bClassFn.apply(orderStatus, orderType);
@@ -96,9 +94,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     <% if ("completed".equals(invMsgParam)) { %>
-    if (window.showToast) window.showToast('Đơn hàng đã hoàn thành công!', 'success');
-    <% } else if ("cancelled".equals(invMsgParam) && inv.getOrderStatus() == 5) { %>
-    if (window.showToast) window.showToast('Hoàn tiền thành công! Đơn hàng đã được xử lý.', 'success');
+    if (window.showToast) window.showToast('Đơn hàng đã thanh toán thành công!', 'success');
     <% } else if ("cancelled".equals(invMsgParam)) { %>
     if (window.showToast) window.showToast('Đơn hàng đã bị huỷ.', 'warning');
     <% } else if ("updated".equals(invMsgParam)) { %>
@@ -124,19 +120,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         In hoá đơn
                     </a>
-                    <% if (orderStatus == 2) { %>
-                    <form id="completeForm" method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status" style="display:inline;">
-                        <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
-                        <input type="hidden" name="newStatus" value="3">
-                        <button type="button" class="btn-action" style="background:#10b981;color:white;border:none;" onclick="openConfirmModal('Bạn có chắc chắn muốn xác nhận Hoàn thành đơn hàng này không?', 'completeForm')">Hoàn thành đơn</button>
-                    </form>
-                    <% } %>
-                    <% if ((orderStatus == 2 || orderStatus == 3) && isManager) { %>
+                    <%-- Hiển thị nút Huỷ đơn khi đơn ở trạng thái Đã thanh toán (2) --%>
+                    <% if (orderStatus == 2 && isManager) { %>
                     <button class="btn-action btn-huy" onclick="openModal('cancelModal')">Huỷ đơn</button>
                     <% } %>
-                    <% if (orderStatus == 4 && isManager) { %>
-                    <button class="btn-action" style="background:#8b5cf6;color:white;border:none;" onclick="openModal('refundModal')">Hoàn tiền</button>
-                    <% } %>
+                    <%-- Đơn đã thanh toán (2) và đã huỷ (3): không có nút hành động nào thêm --%>
                 </div>
             </div>
 
@@ -153,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <div class="invoice-id" style="display: flex; align-items: center; gap: 8px;">
                                         <%= inv.getCode() %>
                                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (orderType != null && orderType == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
-                                            <% String lbl = statusLabels.getOrDefault(orderStatus, "?"); %> <%= lbl %>
+                                            <% String lbl = (orderStatus == 1) ? "Chờ xác nhận" : statusLabels.getOrDefault(orderStatus, "?"); %> <%= lbl %>
                                         </span>
                                     </div>
                                     <div class="invoice-date">Ngày đặt: <%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—" %></div>
@@ -171,7 +159,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             <tr>
                                 <th>Sản phẩm</th>
                                 <th>Đơn giá</th>
-                                <th>Giảm</th>
                                 <th>SL</th>
                                 <th>Thành tiền</th>
                             </tr>
@@ -181,8 +168,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                 if (detailList != null && !detailList.isEmpty()) {
                                     for (InvoiceDetail detail : detailList) {
                                         String unitPrice    = detail.getUnitPrice()    != null ? String.format("%,.0fđ", detail.getUnitPrice()).replace(",", ".")    : "—";
-                                        String discountPrice= detail.getDiscountPrice()!= null && detail.getDiscountPrice() > 0
-                                                ? "-" + String.format("%,.0fđ", detail.getDiscountPrice()).replace(",", ".") : "—";
                                         String totalPrice   = detail.getTotalPrice()   != null ? String.format("%,.0fđ", detail.getTotalPrice()).replace(",", ".") : "—";
                                         String spName;
                                         if (detail.getProductDetail() != null) {
@@ -219,12 +204,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             <tr>
                                 <td style="font-weight:500;color:#111827;"><%= spName %></td>
                                 <td><%= unitPrice %></td>
-                                <td style="color:#22c55e;"><%= discountPrice %></td>
                                 <td><%= detail.getQuantity() %></td>
                                 <td style="font-weight:700;"><%= totalPrice %></td>
                             </tr>
                             <% } } else { %>
-                            <tr><td colspan="5" style="text-align:center;padding:30px;color:#9ca3af;">Chưa có sản phẩm.</td></tr>
+                            <tr><td colspan="4" style="text-align:center;padding:30px;color:#9ca3af;">Chưa có sản phẩm.</td></tr>
                             <% } %>
                             </tbody>
                         </table>
@@ -384,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <p>Thao tác này sẽ hoàn trả tồn kho và không thể hoàn tác.</p>
         <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
             <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
-            <input type="hidden" name="newStatus" value="4">
+            <input type="hidden" name="newStatus" value="3">
             <div class="modal-field">
                 <label>Lý do huỷ đơn *</label>
                 <textarea name="note" rows="3" placeholder="Nhập lý do huỷ..." required></textarea>
@@ -397,25 +381,6 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 </div>
 
-<%-- KHU VỰC MODAL HOÀN TIỀN --%>
-<div class="modal-overlay" id="refundModal">
-    <div class="modal-box">
-        <h3 style="color:#8b5cf6;">Xác nhận hoàn tiền</h3>
-        <p>Đơn hàng này đã bị huỷ. Bạn có chắc chắn muốn hoàn tiền cho khách hàng?</p>
-        <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
-            <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
-            <input type="hidden" name="newStatus" value="5">
-            <div class="modal-field">
-                <label>Lý do hoàn tiền *</label>
-                <textarea name="note" rows="3" placeholder="Nhập lý do hoàn tiền..." required></textarea>
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel-m" onclick="closeModal('refundModal')">Quay lại</button>
-                <button type="submit" class="btn-ok" style="background:#8b5cf6;color:white;border:none;">Hoàn tiền</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <%-- KHU VỰC MODAL XÁC NHẬN CHUNG --%>
 <div class="modal-overlay" id="genericConfirmModal">

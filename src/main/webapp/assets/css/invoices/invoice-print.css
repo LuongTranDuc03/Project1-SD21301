@@ -140,6 +140,12 @@
     background: #fefce8;
 }
 
+.doc-status.da-xac-nhan {
+    color: #1d4ed8;
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
 .doc-status.cho-xu-ly {
     color: #0c4a6e;
     border-color: #bae6fd;
@@ -147,9 +153,9 @@
 }
 
 .doc-status.da-huy {
-    color: #991b1b;
-    border-color: #fca5a5;
-    background: #fff1f2;
+    color: #fff;
+    border-color: #dc2626;
+    background: #dc2626;
 }
 
 /* Customer + Delivery row */

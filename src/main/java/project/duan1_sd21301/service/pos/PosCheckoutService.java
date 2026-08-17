@@ -70,7 +70,7 @@ public class PosCheckoutService {
                             
                             // Check usage limit per customer
                             if (customerId != null) {
-                                String countSql = "SELECT COUNT(*) FROM hoa_don WHERE id_khach_hang = ? AND id_ma_giam_gia = ? AND trang_thai_don_hang != 4"; // 4 = Cancelled
+                                String countSql = "SELECT COUNT(*) FROM hoa_don WHERE id_khach_hang = ? AND id_ma_giam_gia = ? AND trang_thai_don_hang != 3"; // 3 = Đã huỷ
                                 try (PreparedStatement psCount = conn.prepareStatement(countSql)) {
                                     psCount.setInt(1, customerId);
                                     psCount.setInt(2, couponId);
@@ -121,8 +121,8 @@ public class PosCheckoutService {
             int paymentMethodId = paymentMethod.equals("TRANSFER") ? 2 : 1; 
             String paymentMethodName = paymentMethod.equals("TRANSFER") ? "Chuyển khoản" : "Tiền mặt";
 
-            // 6. Determine Order Status
-            int orderStatus = orderDTO.isDelivery() ? 2 : 3; // 2: Chờ giao hàng, 3: Hoàn thành (Tại quầy)
+            // 6. Determine Order Status - Luồng bán tại quầy: 2 = Đã thanh toán
+            int orderStatus = 2; // Tất cả đơn POS đều là tại quầy = Đã thanh toán
             
             double shippingFee = 0;
             try { shippingFee = Double.parseDouble(orderDTO.getShippingFee()); } catch(Exception ignored) {}

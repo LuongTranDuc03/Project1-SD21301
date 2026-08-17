@@ -483,6 +483,11 @@ public class EmployeeController extends HttpServlet {
                 .orElse(new Role(roleId, "", 1)) : new Role(roleId, "", 1);
         emp.setRole(selectedRole);
 
+        Employee oldEmp = null;
+        if (!isCreate && idStr != null && !idStr.isEmpty()) {
+            oldEmp = employeeService.getEmployeeById(Integer.parseInt(idStr));
+        }
+
         String pwd = req.getParameter("password");
         if (isCreate) {
             if (pwd != null && !pwd.trim().isEmpty()) {
@@ -492,7 +497,6 @@ public class EmployeeController extends HttpServlet {
             }
         } else {
             if (pwd == null || pwd.trim().isEmpty()) {
-                Employee oldEmp = (idStr != null && !idStr.isEmpty()) ? employeeService.getEmployeeById(Integer.parseInt(idStr)) : null;
                 emp.setPassword(oldEmp != null ? oldEmp.getPassword() : "123456");
             } else {
                 emp.setPassword(pwd.trim());
@@ -529,6 +533,8 @@ public class EmployeeController extends HttpServlet {
                 String avatar = req.getParameter("avatar");
                 if (avatar != null && !avatar.trim().isEmpty()) {
                     emp.setAvatar(avatar);
+                } else if (!isCreate && oldEmp != null && oldEmp.getAvatar() != null && !oldEmp.getAvatar().trim().isEmpty()) {
+                    emp.setAvatar(oldEmp.getAvatar());
                 } else {
                     emp.setAvatar("https://ui-avatars.com/api/?name=" + emp.getFullName().replace(" ", "+") + "&background=random");
                 }

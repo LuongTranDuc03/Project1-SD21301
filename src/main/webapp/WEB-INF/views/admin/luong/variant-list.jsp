@@ -568,6 +568,15 @@
                                                                             </svg>
                                                                             <span>Xuất Excel</span>
                                                                         </a>
+                                                                        <button type="button" onclick="downloadSelectedBarcodes()"
+                                                                            style="background-color: #3b82f6; border: 1px solid #3b82f6; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; height: 38px; cursor: pointer;">
+                                                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                                                <polyline points="7 10 12 15 17 10"></polyline>
+                                                                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                                                                            </svg>
+                                                                            <span>Tải Barcode</span>
+                                                                        </button>
                                                             </div>
 
                                                             <!-- Bảng danh sách biến thể -->
@@ -581,9 +590,10 @@
                                                                         style="width: 100%; min-width: 900px;">
                                                                         <thead>
                                                                             <tr>
-                                                                                <th
-                                                                                    style="text-align: center; width: 50px;">
-                                                                                    STT</th>
+                                                                                <th style="text-align: center; width: 40px;">
+                                                                                    <input type="checkbox" id="selectAllVariants" onchange="toggleSelectAll(this)" style="width: 16px; height: 16px; cursor: pointer;" title="Chọn tất cả">
+                                                                                </th>
+                                                                                <th style="text-align: center; width: 50px;">STT</th>
                                                                                 <th style="text-align: center;">Mã Sản
                                                                                     Phẩm</th>
                                                                                 <th style="text-align: center;">Mã Biến
@@ -637,8 +647,10 @@
                                                                                                         ? "AVAILABLE"
                                                                                                         : "OUT_OF_STOCK"
                                                                                                         %>">
-                                                                                                        <td
-                                                                                                            style="text-align: center; font-weight: 500; color: #64748b;">
+                                                                                                        <td style="text-align: center; width: 40px;">
+                                                                                                            <input type="checkbox" class="variant-barcode-checkbox" data-code="<%= v.getCode() != null ? v.getCode() : "" %>" style="width: 15px; height: 15px; cursor: pointer;">
+                                                                                                        </td>
+                                                                                                        <td style="text-align: center; font-weight: 500; color: #64748b; width: 50px;">
                                                                                                             <%= stt++ %>
                                                                                                         </td>
                                                                                                         <td
@@ -1683,8 +1695,8 @@
                                 visible.forEach((row, idx) => {
                                     if (idx >= startIndex && idx < endIndex) {
                                         row.style.display = '';
-                                        // Update STT based on overall filtered index
-                                        const sttCell = row.querySelector('td:first-child');
+                                        // Update STT based on overall filtered index (td:nth-child(2) vì cột checkbox là td:first-child)
+                                        const sttCell = row.querySelector('td:nth-child(2)');
                                         if (sttCell) sttCell.textContent = idx + 1;
                                     } else {
                                         row.style.display = 'none';
@@ -1785,6 +1797,98 @@
                             document.addEventListener('DOMContentLoaded', () => {
                                 updateSlider(); // Initialize slider UI & apply initial filters
                             });
+
+                            // ===== CHECKBOX & BULK BARCODE DOWNLOAD =====
+                            function toggleSelectAll(masterCheckbox) {
+                                const checkboxes = document.querySelectorAll('.variant-barcode-checkbox');
+                                checkboxes.forEach(cb => {
+                                    // Chỉ chọn những hàng đang hiển thị
+                                    const row = cb.closest('tr');
+                                    if (row && row.style.display !== 'none') {
+                                        cb.checked = masterCheckbox.checked;
+                                    }
+                                });
+                            }
+
+                            async function downloadSelectedBarcodes() {
+                                const checked = Array.from(document.querySelectorAll('.variant-barcode-checkbox:checked'));
+                                if (checked.length === 0) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Chưa chọn biến thể',
+                                        text: 'Vui lòng chọn ít nhất một biến thể để tải barcode!',
+                                        confirmButtonText: 'Đóng',
+                                        confirmButtonColor: '#3B82F6'
+                                    });
+                                    return;
+                                }
+
+                                // Load html2canvas + JsBarcode nếu chưa có
+                                if (typeof JsBarcode === 'undefined' || typeof html2canvas === 'undefined') {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lỗi',
+                                        text: 'Thư viện barcode chưa sẵn sàng. Vui lòng thử lại.',
+                                        confirmButtonText: 'Đóng'
+                                    });
+                                    return;
+                                }
+
+                                // Tạo container ẩn để render barcode
+                                const hiddenDiv = document.createElement('div');
+                                hiddenDiv.style.cssText = 'position:fixed;top:-9999px;left:-9999px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:12px;';
+                                document.body.appendChild(hiddenDiv);
+
+                                let downloadCount = 0;
+                                for (const cb of checked) {
+                                    const code = cb.getAttribute('data-code');
+                                    if (!code) continue;
+
+                                    const container = document.createElement('div');
+                                    container.style.cssText = 'background:#fff;padding:16px;border-radius:8px;text-align:center;min-width:200px;';
+                                    
+                                    const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                                    svgEl.style.display = 'block';
+                                    container.appendChild(svgEl);
+
+                                    const infoDiv = document.createElement('div');
+                                    infoDiv.style.cssText = 'font-size:12px;font-weight:600;color:#1e293b;margin-top:8px;';
+                                    infoDiv.textContent = code;
+                                    container.appendChild(infoDiv);
+
+                                    hiddenDiv.appendChild(container);
+
+                                    try {
+                                        JsBarcode(svgEl, code, {
+                                            format: 'CODE128',
+                                            width: 2,
+                                            height: 70,
+                                            displayValue: false,
+                                            background: '#ffffff',
+                                            lineColor: '#0f172a',
+                                            margin: 0
+                                        });
+
+                                        const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff' });
+                                        const link = document.createElement('a');
+                                        link.download = 'barcode_' + code + '.png';
+                                        link.href = canvas.toDataURL('image/png');
+                                        link.click();
+                                        downloadCount++;
+
+                                        // Delay nhỏ để tránh block browser
+                                        await new Promise(r => setTimeout(r, 300));
+                                    } catch (e) {
+                                        console.error('Lỗi tạo barcode cho ' + code, e);
+                                    }
+                                }
+
+                                document.body.removeChild(hiddenDiv);
+
+                                if (downloadCount > 0) {
+                                    if (window.showToast) window.showToast('Đã tải ' + downloadCount + ' barcode thành công!', 'success');
+                                }
+                            }
                         </script>
 
 

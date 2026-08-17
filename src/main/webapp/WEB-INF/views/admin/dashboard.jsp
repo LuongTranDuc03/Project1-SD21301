@@ -264,7 +264,6 @@
         long sold = (Long) data.getOrDefault("productsSold", 0L);
         long c_comp = (Long) data.getOrDefault("countCompleted", 0L);
         long c_canc = (Long) data.getOrDefault("countCancelled", 0L);
-        long c_proc = (Long) data.getOrDefault("countProcessing", 0L);
         
         return "<div class='kpi-card'>" +
                "<div class='kpi-header'><span>" + title + "</span><button class='kpi-icon-btn'><svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'></rect><line x1='16' y1='2' x2='16' y2='6'></line><line x1='8' y1='2' x2='8' y2='6'></line><line x1='3' y1='10' x2='21' y2='10'></line></svg></button></div>" +
@@ -273,7 +272,6 @@
                "<div class='kpi-status-row'>" +
                "<div class='status-box success'>Hoàn thành <span class='val'>" + c_comp + "</span></div>" +
                "<div class='status-box danger'>Hủy <span class='val'>" + c_canc + "</span></div>" +
-               "<div class='status-box warning'>Xử lý <span class='val'>" + c_proc + "</span></div>" +
                "</div></div>";
     };
 %>

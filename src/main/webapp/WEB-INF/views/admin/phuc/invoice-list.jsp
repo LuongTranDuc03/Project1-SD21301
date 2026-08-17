@@ -58,10 +58,8 @@
 
     java.util.function.BiFunction<Integer, Integer, String> badgeClass = (s, type) -> {
         if (s == null) return "cho-xu-ly";
-        if (s == 5) return "da-hoan-tien";
-        if (s == 4) return "da-huy";
-        if (s == 3) return "hoan-thanh";
-        if (s == 2) return "da-xac-nhan";
+        if (s == 3) return "da-huy";
+        if (s == 2) return "hoan-thanh";
         if (s == 1) return "da-xac-nhan";
         return "cho-xu-ly";
     };

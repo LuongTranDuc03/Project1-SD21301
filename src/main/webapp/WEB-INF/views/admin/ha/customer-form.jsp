@@ -306,21 +306,18 @@
             </div>
 
             <!-- Form Layout Container - Đã thêm enctype="multipart/form-data" -->
+            <%-- Lỗi từ server sẽ được hiển thị bằng toast khi page tải xong --%>
             <%
                 List<String> errors = (List<String>) request.getAttribute("errors");
                 if (errors != null && !errors.isEmpty()) {
             %>
-            <div class="error-banner">
-                <div class="error-banner-title">
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:#dc2626;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <span>Vui lòng kiểm tra và sửa lại các trường lỗi dưới đây:</span>
-                </div>
-                <ul class="error-banner-list">
-                    <% for (String error : errors) { %>
-                    <li><%= error %></li>
+            <script>
+                var _serverErrors = [
+                    <% for (int _i = 0; _i < errors.size(); _i++) { %>
+                        "<%= errors.get(_i).replace("\"", "\\\"").replace("'", "\\'") %>"<%= _i < errors.size() - 1 ? "," : "" %>
                     <% } %>
-                </ul>
-            </div>
+                ];
+            </script>
             <% } %>
 
             <form action="<%= contextPath %>/admin/customers" method="post" id="customerForm" enctype="multipart/form-data" novalidate onsubmit="return syncAllAddressBeforeSubmit();">
@@ -1305,5 +1302,24 @@
 
 <%-- Toast thông báo dùng chung --%>
 <jsp:include page="/WEB-INF/views/layout/toast.jsp" />
+<script>
+    // Hiển thị lỗi server dưới dạng toast sau khi toast.jsp đã load
+    (function() {
+        if (typeof _serverErrors !== 'undefined' && _serverErrors.length > 0) {
+            var msg = _serverErrors.join('<br>');
+            if (typeof window.showToast === 'function') {
+                window.showToast(_serverErrors[0], 'error');
+                // Nếu có nhiều lỗi, hiện từng cái một với delay
+                for (var i = 1; i < _serverErrors.length; i++) {
+                    (function(err, delay) {
+                        setTimeout(function() {
+                            if (typeof window.showToast === 'function') window.showToast(err, 'error');
+                        }, delay);
+                    })(_serverErrors[i], i * 800);
+                }
+            }
+        }
+    })();
+</script>
 </body>
 </html>
