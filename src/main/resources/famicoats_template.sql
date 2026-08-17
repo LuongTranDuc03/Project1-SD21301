@@ -396,10 +396,8 @@ CREATE TABLE hoa_don (
     trang_thai_thanh_toan     INT                NOT NULL DEFAULT 0,   -- 0: Chưa TT | 1: Đã TT
     trang_thai_don_hang       INT                NOT NULL DEFAULT 1,
     -- 1: Chờ xác nhận (Đơn nháp tại POS)
-    -- 2: Chờ giao hàng
-    -- 3: Hoàn thành
-    -- 4: Đã huỷ
-    -- 5: Đã hoàn tiền
+    -- 2: Đã thanh toán (Tại quầy)
+    -- 3: Đã huỷ
     trang_thai                INT                NOT NULL DEFAULT 1,
     updated_at                DATETIME           NOT NULL DEFAULT GETDATE()   -- [6]
 );
