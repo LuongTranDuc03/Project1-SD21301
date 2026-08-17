@@ -295,8 +295,9 @@ public class CustomerController extends HttpServlet {
                 for (int i = 0; i < otherDetails.length; i++) {
                     String detail = otherDetails[i];
                     if (detail == null || detail.trim().isEmpty()) continue;
-                    String oCode = (otherCodes != null && otherCodes.length > i && otherCodes[i] != null && !otherCodes[i].trim().isEmpty())
-                            ? otherCodes[i].trim() : generateNextAddressCode(customers, addresses.size());
+                    String oCodeStr = (otherCodes != null && otherCodes.length > i && otherCodes[i] != null) ? otherCodes[i].trim() : "";
+                    String oCode = (!oCodeStr.isEmpty() && !oCodeStr.equalsIgnoreCase("null")) 
+                            ? oCodeStr : generateNextAddressCode(customers, addresses.size());
                     CustomerAddress otherAddr = CustomerAddress.builder()
                             .id(nextAddrId++)
                             .recipientName(safe(otherRecipients, i))

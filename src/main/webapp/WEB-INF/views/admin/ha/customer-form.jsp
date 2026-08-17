@@ -725,7 +725,7 @@
             hiddenInput.value = parts.join(', ');
 
             // Sync submit-province/district/ward hidden inputs trong cùng khối
-            const container = hiddenInput.closest('.form-card-body') || hiddenInput.closest('.address-card-row');
+            const container = hiddenInput.closest('.address-card-row') || hiddenInput.closest('.form-card-body');
             if (container) {
                 const hP = container.querySelector('.submit-province');
                 const hD = container.querySelector('.submit-district');
@@ -914,10 +914,11 @@
                     <input type="text" name="otherPhoneNumber" class="form-input" placeholder="Số điện thoại" value="${sdt}">
                 </div>
             </div>
+            <input type="hidden" name="otherAddressCode" value="">
             <input type="hidden" name="otherProvince" class="submit-province" value="">
             <input type="hidden" name="otherDistrict" class="submit-district" value="">
             <input type="hidden" name="otherWard" class="submit-ward" value="">
-            <input type="hidden" class="other-address-hidden" value="${detail}">
+            <input type="hidden" name="otherAddressHidden" class="other-address-hidden" value="${detail}">
             <div class="form-grid" style="margin-top: 16px;">
                 <div class="form-group">
                     <label class="form-label">Tỉnh / Thành phố</label>
@@ -1275,7 +1276,7 @@
     function _syncOneBlock(hidden, prov, dist, ward, street) {
         if (!hidden || !prov || !dist || !ward || !street) return;
 
-        const container = hidden.closest('.form-card-body') || hidden.closest('.address-card-row');
+        const container = hidden.closest('.address-card-row') || hidden.closest('.form-card-body');
         const hP = container ? container.querySelector('.submit-province') : null;
         const hD = container ? container.querySelector('.submit-district') : null;
         const hW = container ? container.querySelector('.submit-ward') : null;
