@@ -1,0 +1,486 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="project.duan1_sd21301.model.phuc.Invoice" %>
+<%@ page import="project.duan1_sd21301.model.phuc.InvoiceDetail" %>
+<%@ page import="project.duan1_sd21301.model.phuc.InvoiceHistory" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="project.duan1_sd21301.model.huy.Employee" %>
+<%
+    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+    boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
+%>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamiCoats Admin - Chi tiết hoá đơn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-detail.css">
+</head>
+<body>
+<%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu từ Controller truyền sang giao diện --%>
+<%
+    // Lấy thông tin hoá đơn, chi tiết hoá đơn và lịch sử trạng thái từ Request
+    Invoice inv = (Invoice) request.getAttribute("invoice");
+    List<InvoiceDetail>  detailList  = (List<InvoiceDetail>)  request.getAttribute("detailList");
+    List<InvoiceHistory> historyList = (List<InvoiceHistory>) request.getAttribute("historyList");
+    
+    // Lấy danh sách map hiển thị nhãn trạng thái
+    // Map trạng thái cho màn hình chính
+    Map<Integer, String> statusLabels = (Map<Integer, String>) request.getAttribute("orderStatusLabels");
+    // Map trạng thái đầy đủ cho Lịch sử
+    Map<Integer, String> historyStatusLabels = (Map<Integer, String>) request.getAttribute("historyStatusLabels");
+    
+    // Khởi tạo các đối tượng format ngày tháng
+    DateTimeFormatter dtf     = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    DateTimeFormatter dtfFull = DateTimeFormatter.ofPattern("dd/MM/yyyy - HH:mm");
+
+    // Nếu không tìm thấy hoá đơn, điều hướng về trang danh sách để tránh lỗi
+    if (inv == null) { response.sendRedirect(request.getContextPath() + "/admin/invoices"); return; }
+
+    int orderStatus = inv.getOrderStatus();
+    Integer orderType = inv.getOrderType();
+    
+    // Hàm lambda mapping trạng thái sang class CSS để đổi màu badge (nhãn)
+    java.util.function.BiFunction<Integer, Integer, String> bClassFn = (s, t) -> {
+        if (s == null)  return "cho-xu-ly";
+        if (s == 3)     return "da-huy";
+        if (s == 2)     return "hoan-thanh";
+        if (s == 1)     return "cho-xu-ly";
+        return "cho-xu-ly";
+    };
+    String badgeClass = bClassFn.apply(orderStatus, orderType);
+    String badgeLabel = statusLabels != null ? statusLabels.getOrDefault(orderStatus, "?") : "?";
+
+    // Chuẩn bị các chuỗi thông tin khách hàng, fallback (mặc định) sang chuỗi rỗng hoặc "—" nếu null
+    String customerName    = inv.getCustomerName()    != null ? inv.getCustomerName()    : "";
+    char   avatarChar      = customerName.trim().isEmpty() ? 'K' : customerName.trim().charAt(0); // Lấy chữ cái đầu làm avatar
+    String customerPhone   = inv.getCustomerPhone()   != null ? inv.getCustomerPhone()   : "—";
+    String customerEmail   = inv.getCustomerEmail()   != null ? inv.getCustomerEmail()   : "—";
+    String customerAddress = inv.getCustomerAddress() != null ? inv.getCustomerAddress() : "—";
+    String payMethod       = inv.getPaymentMethod()   != null ? inv.getPaymentMethod().getName() : "Chưa xác định";
+    boolean paid           = inv.getPaymentStatus() != null && inv.getPaymentStatus() == 1; // 1 = Đã thanh toán
+%>
+<div class="app-container">
+    <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
+
+    <main class="main-content">
+        <header class="navbar">
+            <div class="breadcrumb">
+                <span>FamiCoats</span>
+                <span style="margin:0 6px;color:#d1d5db">/</span>
+                <a href="${pageContext.request.contextPath}/admin/invoices" style="color:#6b7280;text-decoration:none;">Quản lý hoá đơn</a>
+                <span style="margin:0 6px;color:#d1d5db">/</span>
+                <span class="active-crumb">Chi tiết hoá đơn</span>
+            </div>
+            <div class="navbar-right">
+                <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
+                <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
+                <div class="profile-pill">
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+<%
+    String invMsgParam = request.getParameter("msg");
+    String invErrParam = request.getParameter("err");
+    int invNewStatus = -1;
+    try { invNewStatus = Integer.parseInt(request.getParameter("newStatus") != null ? request.getParameter("newStatus") : "-1"); } catch(Exception ignored) {}
+%>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    <% if ("completed".equals(invMsgParam)) { %>
+    if (window.showToast) window.showToast('Đơn hàng đã thanh toán thành công!', 'success');
+    <% } else if ("cancelled".equals(invMsgParam)) { %>
+    if (window.showToast) window.showToast('Đơn hàng đã bị huỷ.', 'warning');
+    <% } else if ("updated".equals(invMsgParam)) { %>
+    if (window.showToast) window.showToast('Cập nhật trạng thái đơn hàng thành công!', 'success');
+    <% } else if ("cannot_revert".equals(invErrParam)) { %>
+    if (window.showToast) window.showToast('Không thể thay đổi: Trạng thái đơn hàng không hợp lệ!', 'error');
+    <% } %>
+});
+</script>
+                        <%-- KHU VỰC TOPBAR: Chứa nút quay lại và các thao tác (In, Cập nhật, Huỷ) --%>
+                        <div class="detail-topbar">
+                <a href="${pageContext.request.contextPath}/admin/invoices" class="back-link">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Quay lại danh sách
+                </a>
+                <div class="topbar-actions">
+                    <button class="btn-action" style="background:#fff;color:#374151;border:1px solid #cbd5e1;" onclick="openQrModal()">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/><rect x="7" y="14" width="3" height="3"/><rect x="14" y="14" width="3" height="3"/></svg>
+                        Mã QR
+                    </button>
+                    <%-- Link mở trang in hoá đơn trên tab mới --%>
+                    <a href="${pageContext.request.contextPath}/admin/invoices/print?id=<%= inv.getId() %>" class="btn-print" target="_blank">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        In hoá đơn
+                    </a>
+                    <%-- Hiển thị nút Huỷ đơn khi đơn ở trạng thái Đã thanh toán (2) --%>
+                    <% if (orderStatus == 2 && isManager) { %>
+                    <button class="btn-action btn-huy" onclick="openModal('cancelModal')">Huỷ đơn</button>
+                    <% } %>
+                    <%-- Đơn đã thanh toán (2) và đã huỷ (3): không có nút hành động nào thêm --%>
+                </div>
+            </div>
+
+
+                        <div class="detail-layout">
+
+                                <div class="detail-main">
+
+                                        <div class="detail-card">
+                        <div class="invoice-heading">
+                            <div class="invoice-icon-row">
+                                <div>
+                                    <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:2px;letter-spacing:.05em;">MÃ HOÁ ĐƠN</div>
+                                    <div class="invoice-id" style="display: flex; align-items: center; gap: 8px;">
+                                        <%= inv.getCode() %>
+                                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; <%= (orderType != null && orderType == 0) ? "background: #fef3c7; color: #d97706;" : "background: #dbeafe; color: #2563eb;" %>">
+                                            <% String lbl = historyStatusLabels != null && historyStatusLabels.containsKey(orderStatus) ? historyStatusLabels.get(orderStatus) : "?"; %> <%= lbl %>
+                                        </span>
+                                    </div>
+                                    <div class="invoice-date">Ngày đặt: <%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtf) : "—" %></div>
+                                    <% if (inv.getConfirmDate() != null) { %>
+                                    <div class="invoice-date">Ngày xác nhận: <%= inv.getConfirmDate().format(dtf) %></div>
+                                    <% } %>
+                                </div>
+                                <span class="badge <%= badgeClass %>"><%= badgeLabel %></span>
+                            </div>
+                        </div>
+
+                                                <%-- KHU VỰC BẢNG SẢN PHẨM: Hiển thị chi tiết danh sách sản phẩm trong hoá đơn --%>
+                       <table class="prod-table">
+                            <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>SL</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <%
+                                if (detailList != null && !detailList.isEmpty()) {
+                                    for (InvoiceDetail detail : detailList) {
+                                        String unitPrice    = detail.getUnitPrice()    != null ? String.format("%,.0fđ", detail.getUnitPrice()).replace(",", ".")    : "—";
+                                        String totalPrice   = detail.getTotalPrice()   != null ? String.format("%,.0fđ", detail.getTotalPrice()).replace(",", ".") : "—";
+                                        String spName;
+                                        if (detail.getProductDetail() != null) {
+                                            String pName = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getName() : "Sản phẩm không xác định";
+                                            String pCode = detail.getProductDetail().getProduct() != null ? detail.getProductDetail().getProduct().getCode() : "?";
+                                            String vCode = detail.getProductDetail().getCode();
+                                            String size  = detail.getProductDetail().getSize() != null ? detail.getProductDetail().getSize() : "";
+                                            String color = detail.getProductDetail().getColor() != null ? detail.getProductDetail().getColor() : "";
+                                            
+                                            String imgUrl = (detail.getProductDetail() != null && detail.getProductDetail().getImages() != null && !detail.getProductDetail().getImages().isEmpty()) 
+                                                            ? detail.getProductDetail().getImages().get(0) : request.getContextPath() + "/assets/img/placeholder.png";
+                                            spName = "<div style='display:flex; align-items:center; gap:12px;'>" +
+                                                     "<img src='" + imgUrl + "' alt='sp' style='width:45px; height:45px; object-fit:cover; border-radius:4px; flex-shrink:0; border:1px solid #e5e7eb;'>" +
+                                                     "<div>" + pName + " (" + pCode + ")<br><span style='font-size:11px;color:#6b7280;'>Mã BT: " + vCode + " | " + size + " / " + color + "</span></div></div>";
+                                        } else {
+                                            spName = detail.getProductNameSnapshot() != null ? detail.getProductNameSnapshot() : "Sản phẩm không xác định";
+                                            String variants = "";
+                                            if (detail.getColorSnapshot() != null && !detail.getColorSnapshot().isEmpty()) {
+                                                variants += detail.getColorSnapshot() + " ";
+                                            }
+                                            if (detail.getSizeSnapshot() != null && !detail.getSizeSnapshot().isEmpty()) {
+                                                variants += "- " + detail.getSizeSnapshot() + " ";
+                                            }
+                                            if (detail.getStyleSnapshot() != null && !detail.getStyleSnapshot().isEmpty()) {
+                                                variants += "- " + detail.getStyleSnapshot();
+                                            }
+                                            if (!variants.isEmpty()) {
+                                                spName += "<br><span style='font-size:11px;color:#6b7280;'>" + variants + "</span>";
+                                            } else if (detail.getVariantDescriptionSnapshot() != null) {
+                                                spName += "<br><span style='font-size:11px;color:#6b7280;'>" + detail.getVariantDescriptionSnapshot() + "</span>";
+                                            }
+                                        }
+                            %>
+                            <tr>
+                                <td style="font-weight:500;color:#111827;"><%= spName %></td>
+                                <td><%= unitPrice %></td>
+                                <td><%= detail.getQuantity() %></td>
+                                <td style="font-weight:700;"><%= totalPrice %></td>
+                            </tr>
+                            <% } } else { %>
+                            <tr><td colspan="4" style="text-align:center;padding:30px;color:#9ca3af;">Chưa có sản phẩm.</td></tr>
+                            <% } %>
+                            </tbody>
+                        </table>
+
+                        <div style="border-top:1px solid #f3f4f6;margin-top:8px;">
+                            <div class="fin-row">
+                                <span class="fin-label">Tạm tính</span>
+                                <span class="fin-value"><%= inv.getSubtotal() != null ? String.format("%,.0fđ", inv.getSubtotal()).replace(",", ".") : "—" %></span>
+                            </div>
+                            <% 
+                                String discountDisplay = "0đ";
+                                String discountCodeName = (inv.getCoupon() != null) ? " (" + inv.getCoupon().getCode() + ")" : "";
+                                if (inv.getDiscountAmount() != null && inv.getDiscountAmount() > 0) {
+                                    discountDisplay = "-" + String.format("%,.0fđ", inv.getDiscountAmount()).replace(",", ".");
+                                }
+                            %>
+                            <div class="fin-row">
+                                <span class="fin-label">Giảm giá<%= discountCodeName %></span>
+                                <span class="fin-value" style="color:#22c55e;"><%= discountDisplay %></span>
+                            </div>
+                            
+                            <% 
+                                String shippingDisplay = "0đ";
+                                if (inv.getShippingFee() != null && inv.getShippingFee() > 0) {
+                                    shippingDisplay = "+" + String.format("%,.0fđ", inv.getShippingFee()).replace(",", ".");
+                                }
+                            %>
+                            <div class="fin-row">
+                                <span class="fin-label">Phí vận chuyển</span>
+                                <span class="fin-value" style="color:#ef4444;"><%= shippingDisplay %></span>
+                            </div>
+                            <hr class="fin-divider">
+                            <div class="fin-total">
+                                <span class="label">Tổng thanh toán</span>
+                                <span class="value"><%= inv.getTotalAmount() != null ? String.format("%,.0fđ", inv.getTotalAmount()).replace(",", ".") : "—" %></span>
+                            </div>
+                            <% if (inv.getPaidAmount() != null) { %>
+                            <div class="fin-row">
+                                <span class="fin-label">Đã thanh toán</span>
+                                <span class="fin-value" style="color:#3b82f6;"><%= String.format("%,.0fđ", inv.getPaidAmount()).replace(",", ".") %></span>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                                        <%-- KHU VỰC LỊCH SỬ XỬ LÝ: Hiển thị các bước đổi trạng thái đơn hàng dạng timeline --%>
+                                        <div class="detail-card">
+                        <div class="timeline-section">
+                            <h3>Lịch sử xử lý đơn hàng</h3>
+                            <ul class="tl-list">
+                                <%
+                                    if (historyList != null && !historyList.isEmpty()) {
+                                        for (InvoiceHistory h : historyList) {
+                                            String newLabel = historyStatusLabels != null && historyStatusLabels.containsKey(h.getNewStatus()) ? historyStatusLabels.get(h.getNewStatus()) : (h.getNewStatus() == -1 ? "Khởi tạo" : "?");
+                                            String timeStr  = h.getUpdatedAt() != null ? h.getUpdatedAt().format(dtfFull) : "";
+                                %>
+                                <li class="tl-item">
+                                    <div class="tl-dot"></div>
+                                    <div class="tl-title"><%= newLabel %></div>
+                                    <div class="tl-time"><%= timeStr %></div>
+                                    <% if (h.getNote() != null && !h.getNote().isEmpty()) { %>
+                                    <div class="tl-note"><%= h.getNote() %></div>
+                                    <% } %>
+                                </li>
+                                <% 
+                                        } 
+                                    } 
+                                %>
+                                
+                                <%-- Dòng gốc lúc nào cũng có: Chờ xác nhận khi tạo đơn --%>
+                                <li class="tl-item">
+                                    <div class="tl-dot"></div>
+                                    <div class="tl-title">Chờ xác nhận</div>
+                                    <div class="tl-time"><%= inv.getOrderDate() != null ? inv.getOrderDate().format(dtfFull) : "" %></div>
+                                    <div class="tl-note">Đơn hàng được khởi tạo</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                                <%-- KHU VỰC THÔNG TIN BÊN PHẢI (SIDEBAR): Thông tin khách hàng, Thanh toán, Ghi chú --%>
+                                <div class="detail-side">
+                                        <div class="side-card">
+                        <div class="side-card-title">Thông tin khách hàng</div>
+                        <div class="kh-avatar-row">
+                            <div class="kh-avatar"><%= avatarChar %></div>
+                            <div>
+                                <div class="kh-info-name"><%= customerName %></div>
+                                <div class="kh-info-role">Khách hàng</div>
+                            </div>
+                        </div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17z"/></svg>
+                            <span class="contact-value"><%= customerPhone %></span>
+                        </div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <span class="contact-value"><%= customerEmail %></span>
+                        </div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span class="contact-value" style="white-space: normal;"><%= customerAddress %></span>
+                        </div>
+                    </div>
+
+                    <div class="side-card">
+                        <div class="side-card-title">Thông tin giao hàng</div>
+                        <div class="kh-info-name" style="margin-bottom: 4px;font-weight: 600;font-size: 14px;color: #111827;">
+                            <%= (inv.getReceiverName() != null && !inv.getReceiverName().trim().isEmpty()) ? inv.getReceiverName() : customerName %>
+                        </div>
+                        <div class="kh-info-role" style="margin-bottom: 12px;">Người nhận</div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 17z"/></svg>
+                            <span class="contact-value"><%= (inv.getReceiverPhone() != null && !inv.getReceiverPhone().trim().isEmpty()) ? inv.getReceiverPhone() : customerPhone %></span>
+                        </div>
+                        <div class="contact-row">
+                            <svg class="contact-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span class="contact-value" style="white-space: normal;"><%= (inv.getReceiverAddress() != null && !inv.getReceiverAddress().trim().isEmpty()) ? inv.getReceiverAddress() : (customerAddress.equals("—") ? "Khách nhận tại quầy" : customerAddress) %></span>
+                        </div>
+                    </div>
+
+                                        <div class="side-card">
+                        <div class="side-card-title">Thanh toán</div>
+                        <div class="pay-method-row">
+                            <div class="pay-icon">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                            </div>
+                            <div>
+                                <div class="pay-method-name"><%= payMethod %></div>
+                                <div class="pay-method-sub">Phương thức thanh toán</div>
+                            </div>
+                        </div>
+                        <div class="pay-row">
+                            <span class="lbl">Trạng thái TT</span>
+                            <span class="val <%= paid ? "paid" : "unpaid" %>"><%= paid ? "Đã thanh toán" : "Chưa thanh toán" %></span>
+                        </div>
+                        <% if (paid) {
+                            java.time.LocalDateTime paymentTime = inv.getCompletionDate();
+                            if (paymentTime == null) paymentTime = inv.getConfirmDate();
+                            if (paymentTime == null) paymentTime = inv.getOrderDate();
+                            if (paymentTime != null) {
+                        %>
+                        <div class="pay-row" style="margin-top: 8px;">
+                            <span class="lbl" style="font-size: 12px; color: #6b7280;">TG thanh toán</span>
+                            <span class="val" style="font-size: 13px; color: #374151;"><%= paymentTime.format(dtfFull) %></span>
+                        </div>
+                        <% } } %>
+                        <div class="pay-row" style="border-top:1px solid #f3f4f6;padding-top:10px;margin-top:4px;">
+                            <span class="lbl" style="font-weight:700;color:#111827;">Tổng tiền</span>
+                            <span class="val total"><%= inv.getTotalAmount() != null ? String.format("%,.0fđ", inv.getTotalAmount()).replace(",", ".") : "—" %></span>
+                        </div>
+                    </div>
+
+                                        <div class="side-card">
+                        <div class="side-card-title">Ghi chú đơn hàng</div>
+                        <p class="note-text"><%= (inv.getNote() != null && !inv.getNote().isEmpty()) ? inv.getNote() : "Không có ghi chú." %></p>
+                    </div>
+                </div>            </div>        </div>    </main>
+</div>
+
+<%-- KHU VỰC MODAL HUỶ ĐƠN HÀNG --%>
+<div class="modal-overlay" id="cancelModal">
+    <div class="modal-box">
+        <h3 style="color:#ef4444;">⚠️ Xác nhận huỷ đơn hàng</h3>
+        <p>Thao tác này sẽ hoàn trả tồn kho và không thể hoàn tác.</p>
+        <form method="post" action="${pageContext.request.contextPath}/admin/invoices/update-status">
+            <input type="hidden" name="invoiceId" value="<%= inv.getId() %>">
+            <input type="hidden" name="newStatus" value="3">
+            <div class="modal-field">
+                <label>Lý do huỷ đơn *</label>
+                <textarea name="note" rows="3" placeholder="Nhập lý do huỷ..." required></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel-m" onclick="closeModal('cancelModal')">Quay lại</button>
+                <button type="submit" class="btn-ok red">Xác nhận huỷ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<%-- KHU VỰC MODAL XÁC NHẬN CHUNG --%>
+<div class="modal-overlay" id="genericConfirmModal">
+    <div class="modal-box" style="text-align: center; max-width: 400px; padding: 24px; border-radius: 8px;">
+        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #fdba74; display: flex; align-items: center; justify-content: center;">
+                <span style="color: #f97316; font-size: 36px; font-weight: 500;">!</span>
+            </div>
+        </div>
+        <h3 style="font-size: 24px; font-weight: 600; color: #374151; margin-bottom: 12px; border-bottom: none; padding-bottom: 0;">Xác nhận</h3>
+        <p id="genericConfirmMessage" style="color: #6b7280; font-size: 15px; margin-bottom: 24px;">Bạn có muốn thay đổi trạng thái của hoá đơn này hay không?</p>
+        
+        <div style="display: flex; justify-content: center; gap: 12px;">
+            <button type="button" class="btn-ok blue" id="genericConfirmBtn" style="padding: 8px 24px; border-radius: 4px; font-weight: 500;">Đồng ý</button>
+            <button type="button" class="btn-cancel-m" onclick="closeModal('genericConfirmModal')" style="padding: 8px 24px; background: #9ca3af; color: white; border: none; border-radius: 4px; font-weight: 500;">Hủy</button>
+        </div>
+    </div>
+</div>
+<script>
+function openConfirmModal(message, formId) {
+    document.getElementById('genericConfirmMessage').innerText = message;
+    var confirmBtn = document.getElementById('genericConfirmBtn');
+    confirmBtn.onclick = function() {
+        document.getElementById(formId).submit();
+    };
+    openModal('genericConfirmModal');
+}
+</script>
+
+<%-- KHU VỰC MODAL MÃ QR --%>
+<div class="modal-overlay" id="qrModal">
+    <div class="modal-box" style="text-align: center;">
+        <h3>Mã QR Hoá đơn #<%= inv.getCode() %></h3>
+        <p style="margin-bottom: 16px; font-size: 13px; color: #6b7280;">Quét mã này để xem hoá đơn dạng in</p>
+        <div id="detail-qrcode" style="display: flex; justify-content: center; padding: 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 auto 20px; width: max-content;"></div>
+        <div class="modal-actions" style="justify-content: center;">
+            <button type="button" class="btn-cancel-m" onclick="closeModal('qrModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+
+<%-- KHU VỰC JAVASCRIPT: Xử lý các tương tác trên giao diện người dùng --%>
+<script>
+    // Logic 1: Hiển thị ngày giờ hiện tại ở thanh navbar (góc trên bên phải)
+    (function() {
+        var d = new Date();
+        var days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+        var el = document.getElementById('currentDate');
+        if (el) el.textContent = days[d.getDay()] + ', ' + String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+    })();
+
+    // Logic 2: Hàm mở modal bằng ID
+    function openModal(modalId) {
+        var el = document.getElementById(modalId);
+        if (el) el.classList.add('show');
+        else console.error("Modal not found: " + modalId);
+    }
+
+    // Logic 3: Hàm đóng modal khi bấm nút Huỷ/Quay lại
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('show');
+    }
+
+    // Logic 4: Lắng nghe sự kiện click ra ngoài vùng form modal để tự động đóng modal
+    document.querySelectorAll('.modal-overlay').forEach(function(o) {
+        o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('show'); });
+    });
+
+    // Logic 5 removed as we use the global toast component
+    // Logic 6: Mở modal mã QR và tự động tạo mã nếu chưa có
+    var isQrGenerated = false;
+    function openQrModal() {
+        document.getElementById('qrModal').classList.add('show');
+        if (!isQrGenerated) {
+            var detailUrl = window.location.origin + '${pageContext.request.contextPath}/admin/invoices/print?id=<%= inv.getId() %>';
+            new QRCode(document.getElementById("detail-qrcode"), {
+                text: detailUrl,
+                width: 180,
+                height: 180,
+                colorDark : "#111827",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L
+            });
+            isQrGenerated = true;
+        }
+    }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<jsp:include page="/WEB-INF/views/layout/toast.jsp" />
+</body>
+</html>

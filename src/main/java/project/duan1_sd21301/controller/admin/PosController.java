@@ -7,14 +7,38 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import project.duan1_sd21301.service.luong.ProductService;
+import project.duan1_sd21301.service.luong.ProductServiceImpl;
+import project.duan1_sd21301.repository.phuc.InvoiceRepository;
+import project.duan1_sd21301.repository.ha.CustomerRepository;
+import project.duan1_sd21301.repository.ha.CustomerRepositoryImpl;
+import project.duan1_sd21301.repository.phuc.CouponRepository;
+
 @WebServlet(name = "PosController", value = "/admin/pos")
 public class PosController extends HttpServlet {
+
+    private final ProductService productService = new ProductServiceImpl();
+    private final InvoiceRepository invoiceRepository = new InvoiceRepository();
+    private final CustomerRepository customerRepository = new CustomerRepositoryImpl();
+    private final CouponRepository couponRepository = new CouponRepository();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setAttribute("pageTitle", "Bán hàng tại quầy");
-        request.getRequestDispatcher("/WEB-INF/views/admin/under-construction.jsp").forward(request, response);
+        
+        // Pass data for modal
+        request.setAttribute("products", productService.getAllProducts());
+        request.setAttribute("colors", productService.getAllColors());
+        request.setAttribute("sizes", productService.getAllSizes());
+        request.setAttribute("customers", customerRepository.findActive());
+        request.setAttribute("activeCoupons", couponRepository.findActive());
+        request.setAttribute("categories", productService.getAllCategories());
+        
+        long totalInvoices = invoiceRepository.countAll(null, null, null, null, null, null);
+        request.setAttribute("nextOrderIndex", totalInvoices + 1);
+        
+        request.getRequestDispatcher("/WEB-INF/views/admin/pos.jsp").forward(request, response);
     }
 }
 

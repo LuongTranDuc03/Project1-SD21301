@@ -1,0 +1,583 @@
+package project.duan1_sd21301.controller.admin.luong;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import project.duan1_sd21301.model.luong.Product;
+import project.duan1_sd21301.model.luong.ProductDetail;
+import project.duan1_sd21301.service.luong.ProductService;
+import project.duan1_sd21301.service.luong.ProductServiceImpl;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Controller xử lý các nghiệp vụ liên quan đến Quản lý Sản phẩm (Products).
+ * Bao gồm: Hiển thị danh sách sản phẩm, hiển thị form thêm/sửa, 
+ * và xử lý các form submit để tạo mới, cập nhật sản phẩm.
+ * Lưu ý: Quản lý biến thể (Variants) được tách riêng ở VariantController.
+ */
+@WebServlet(name = "ProductController", value = "/admin/products")
+@jakarta.servlet.annotation.MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024
+        * 10, maxRequestSize = 1024 * 1024 * 50)
+public class ProductController extends HttpServlet {
+
+    private final ProductService productService = new ProductServiceImpl();
+
+    /**
+     * Xử lý các yêu cầu HTTP GET.
+     * Dùng để điều hướng người dùng: Xem danh sách sản phẩm, 
+     * hoặc hiển thị Form tạo mới/Cập nhật sản phẩm.
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        List<Product> products = productService.getAllProducts();
+
+        String action = request.getParameter("action");
+        if ("exportExcel".equals(action)) {
+            response.setContentType("text/csv; charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=\"danh_sach_san_pham.csv\"");
+            try (java.io.PrintWriter writer = response.getWriter()) {
+                writer.write('\ufeff');
+                writer.println("STT,Mã sản phẩm,Tên sản phẩm,Danh mục,Thương hiệu,Khoảng giá,Tổng số lượng,Trạng thái");
+                int stt = 1;
+                for (Product prod : products) {
+                    String name = prod.getName() != null ? prod.getName().replace("\"", "\"\"") : "";
+                    String brand = prod.getBrand() != null ? prod.getBrand().replace("\"", "\"\"") : "N/A";
+                    String category = prod.getCategory() != null ? prod.getCategory().replace("\"", "\"\"") : "";
+                    String priceRange = prod.getPriceRangeFormatted().replace("\"", "\"\"");
+
+                    String statusLabel = "";
+                    if (prod.getStatus() != null && prod.getStatus() == 1)
+                        statusLabel = "Còn hàng";
+                    else if (prod.getStatus() != null && prod.getStatus() == 0)
+                        statusLabel = "Hết hàng";
+                    else
+                        statusLabel = prod.getStatus() != null ? String.valueOf(prod.getStatus()) : "";
+
+                    writer.printf("%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d,\"%s\"\n",
+                            stt++, prod.getCode(), name, category, brand, priceRange,
+                            prod.getStock(), statusLabel);
+                }
+            }
+            return;
+        }
+
+        if ("add".equals(action)) {
+            String nextCode = generateNextProductCode(products);
+            request.setAttribute("nextCode", nextCode);
+            request.setAttribute("pageTitle", "Thêm sản phẩm mới");
+            request.setAttribute("categories", productService.getAllCategories());
+            request.setAttribute("brands", productService.getAllBrands());
+            request.setAttribute("colors", productService.getAllColors());
+            request.setAttribute("sizes", productService.getAllSizes());
+            request.setAttribute("styles", productService.getAllStyles());
+            request.setAttribute("origins", productService.getAllOrigins());
+            request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
+            return;
+        } else if ("edit".equals(action)) {
+            String productCode = request.getParameter("code");
+            if (productCode != null) {
+                Product targetProduct = productService.getProductByCode(productCode);
+                if (targetProduct != null) {
+                    request.setAttribute("pageTitle", "Chỉnh sửa sản phẩm " + productCode);
+                    request.setAttribute("product", targetProduct);
+                    request.setAttribute("categories", productService.getAllCategories());
+                    request.setAttribute("brands", productService.getAllBrands());
+                    request.setAttribute("colors", productService.getAllColors());
+                    request.setAttribute("sizes", productService.getAllSizes());
+                    request.setAttribute("styles", productService.getAllStyles());
+                    request.setAttribute("origins", productService.getAllOrigins());
+                    request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request,
+                            response);
+                    return;
+                }
+            }
+        }
+
+        String productCode = request.getParameter("code");
+        if (productCode != null) {
+            Product targetProduct = productService.getProductByCode(productCode);
+            if (targetProduct != null) {
+                request.setAttribute("pageTitle", "Chi tiết sản phẩm " + productCode);
+                request.setAttribute("product", targetProduct);
+                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-detail.jsp").forward(request,
+                        response);
+                return;
+            }
+        }
+
+        jakarta.servlet.http.HttpSession session = request.getSession();
+        String toastMessage = (String) session.getAttribute("toastMessage");
+        if (toastMessage != null) {
+            request.setAttribute("toastMessage", toastMessage);
+            request.setAttribute("toastType", session.getAttribute("toastType"));
+            session.removeAttribute("toastMessage");
+            session.removeAttribute("toastType");
+        }
+
+        request.setAttribute("pageTitle", "Quản lý sản phẩm");
+        request.setAttribute("products", products);
+        request.setAttribute("categories", productService.getAllCategories());
+        request.setAttribute("brands", productService.getAllBrands());
+        request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-list.jsp").forward(request, response);
+    }
+
+    /**
+     * Xử lý các yêu cầu HTTP POST khi người dùng submit Form.
+     * Thực hiện thêm mới hoặc cập nhật thông tin sản phẩm vào Cơ sở dữ liệu.
+     * Bao gồm logic validate dữ liệu đầu vào.
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
+        String action = request.getParameter("action");
+        if ("toggleStatus".equals(action)) {
+            String productCode = request.getParameter("code");
+            if (productCode == null || productCode.trim().isEmpty()) {
+                productCode = request.getParameter("id");
+            }
+            if (productCode != null && !productCode.trim().isEmpty()) {
+                Product p = productService.getProductByCode(productCode.trim());
+                if (p != null) {
+                    String currentEff = p.getEffectiveStatus();
+                    Integer newStatus = ("Hết hàng".equalsIgnoreCase(currentEff) || "OUT_OF_STOCK".equalsIgnoreCase(currentEff)
+                            || (p.getStatus() != null && p.getStatus() == 0)) ? 1 : 0;
+                    p.setStatus(newStatus);
+                    boolean ok = productService.updateProduct(p);
+
+                    // Đồng bộ trạng thái biến thể theo sản phẩm
+                    if (ok && p.getId() > 0) {
+                        List<ProductDetail> details = productService.getDetailsByProductId(p.getId());
+                        if (details != null) {
+                            for (ProductDetail d : details) {
+                                if (newStatus == 0) {
+                                    // SP tắt -> Tắt tất cả biến thể
+                                    if (d.getStatus() != null && d.getStatus() == 1) {
+                                        d.setStatus(0);
+                                        productService.updateProductDetail(d);
+                                    }
+                                } else if (newStatus == 1) {
+                                    // SP bật -> Bật các biến thể còn hàng
+                                    if ((d.getStatus() == null || d.getStatus() == 0) && d.getStock() > 0) {
+                                        d.setStatus(1);
+                                        productService.updateProductDetail(d);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"success\":" + ok + ", \"newStatus\":\"" + newStatus + "\"}");
+                    return;
+                }
+            }
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"success\":false}");
+            return;
+        }
+
+        if ("updateVariant".equals(action)) {
+            String productCode = request.getParameter("productCode");
+            String variantIdStr = request.getParameter("variantId");
+            if (productCode != null && variantIdStr != null) {
+                try {
+                    int variantId = Integer.parseInt(variantIdStr);
+                    ProductDetail detail = productService.getDetailById(variantId);
+                    if (detail != null) {
+                        detail.setColor(request.getParameter("color"));
+                        detail.setSize(request.getParameter("size"));
+                        detail.setStyle(request.getParameter("style"));
+
+                        try {
+                            detail.setPrice(Double.parseDouble(request.getParameter("price")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setStock(Integer.parseInt(request.getParameter("stock")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setWeight(Double.parseDouble(request.getParameter("weight")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setLength(Double.parseDouble(request.getParameter("length")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setWidth(Double.parseDouble(request.getParameter("width")));
+                        } catch (Exception ignored) {
+                        }
+                        try {
+                            detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
+                        } catch (Exception ignored) {
+                        }
+                        String st = request.getParameter("status");
+                        if ("AVAILABLE".equals(st) || "Còn hàng".equals(st) || "1".equals(st) || "Hoạt động".equals(st)) {
+                            detail.setStatus(1);
+                        } else {
+                            detail.setStatus(0);
+                        }
+
+                        String imagesParam = request.getParameter("images");
+                        if (imagesParam != null) {
+                            if (imagesParam.trim().isEmpty()) {
+                                detail.setImages(new ArrayList<>());
+                            } else {
+                                detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
+                            }
+                        }
+                        productService.updateProductDetail(detail);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/products?action=edit&code=" + productCode);
+            return;
+        }
+
+        if ("deleteVariant".equals(action)) {
+            String productCode = request.getParameter("productCode");
+            String variantIdStr = request.getParameter("variantId");
+            if (productCode != null && variantIdStr != null) {
+                try {
+                    int variantId = Integer.parseInt(variantIdStr);
+                    productService.deleteProductDetail(variantId);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/products?action=edit&code=" + productCode);
+            return;
+        }
+
+        if ("addVariant".equals(action)) {
+            String productCode = request.getParameter("productCode");
+            if (productCode != null) {
+                Product targetProduct = productService.getProductByCode(productCode);
+                if (targetProduct != null) {
+                    String stParam = request.getParameter("status");
+                    Integer stat = ("AVAILABLE".equals(stParam) || "Còn hàng".equals(stParam) || "1".equals(stParam) || "Hoạt động".equals(stParam)) ? 1 : 0;
+                    ProductDetail detail = ProductDetail.builder()
+                            .product(targetProduct)
+                            .color(request.getParameter("color"))
+                            .size(request.getParameter("size"))
+                            .style(request.getParameter("style"))
+                            .status(stat)
+                            .build();
+
+                    try {
+                        detail.setPrice(Double.parseDouble(request.getParameter("price")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setStock(Integer.parseInt(request.getParameter("stock")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setWeight(Double.parseDouble(request.getParameter("weight")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setLength(Double.parseDouble(request.getParameter("length")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setWidth(Double.parseDouble(request.getParameter("width")));
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        detail.setThickness(Double.parseDouble(request.getParameter("thickness")));
+                    } catch (Exception ignored) {
+                    }
+
+                    try {
+                        jakarta.servlet.http.Part filePart = request.getPart("variantImage");
+                        if (filePart == null) {
+                            filePart = request.getPart("image");
+                        }
+                        if (filePart != null && filePart.getSize() > 0 && filePart.getSubmittedFileName() != null
+                                && !filePart.getSubmittedFileName().trim().isEmpty()) {
+                            try (java.io.InputStream is = filePart.getInputStream()) {
+                                String uploadedUrl = project.duan1_sd21301.util.CloudinaryUtil.uploadImage(is,
+                                        "product_variants");
+                                if (uploadedUrl != null && !uploadedUrl.trim().isEmpty()) {
+                                    detail.setImages(new ArrayList<>(Arrays.asList(uploadedUrl)));
+                                }
+                            }
+                        }
+                    } catch (Exception ignored) {
+                    }
+
+                    if (detail.getImages() == null || detail.getImages().isEmpty()) {
+                        String imagesParam = request.getParameter("images");
+                        if (imagesParam != null && !imagesParam.trim().isEmpty()) {
+                            detail.setImages(new ArrayList<>(Arrays.asList(imagesParam.split(","))));
+                        } else {
+                            detail.setImages(new ArrayList<>());
+                        }
+                    }
+
+                    productService.addProductDetail(detail);
+                }
+            }
+            request.getSession().setAttribute("toastMessage", "Thêm biến thể thành công!");
+            request.getSession().setAttribute("toastType", "success");
+            response.sendRedirect(request.getContextPath() + "/admin/products?action=edit&code=" + productCode);
+            return;
+        }
+
+        if ("deleteProduct".equals(action)) {
+            String idStr = request.getParameter("id");
+            if (idStr != null) {
+                try {
+                    int id = Integer.parseInt(idStr);
+                    productService.deleteProduct(id);
+                    request.getSession().setAttribute("toastMessage", "Xóa sản phẩm thành công!");
+                    request.getSession().setAttribute("toastType", "success");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/products");
+            return;
+        }
+
+        String code = request.getParameter("code");
+        boolean isEdit = "true".equals(request.getParameter("isEdit"));
+
+        if (code != null) {
+            code = code.trim();
+        }
+        String name = request.getParameter("name");
+        String category = request.getParameter("category");
+        String brand = request.getParameter("brand");
+        String origin = request.getParameter("origin");
+
+        String careInstructions = request.getParameter("careInstructions");
+        String description = request.getParameter("description");
+
+        String[] variantIds = request.getParameterValues("variantId");
+        String[] sizes = request.getParameterValues("variantSize");
+        String[] colors = request.getParameterValues("variantColor");
+        String[] styles = request.getParameterValues("variantStyle");
+        String[] importPrices = request.getParameterValues("variantImportPrice");
+        String[] prices = request.getParameterValues("variantPrice");
+        String[] stocks = request.getParameterValues("variantStock");
+        String[] weights = request.getParameterValues("variantWeight");
+        String[] lengths = request.getParameterValues("variantLength");
+        String[] widths = request.getParameterValues("variantWidth");
+        String[] thicknesses = request.getParameterValues("variantThickness");
+        String[] variantImages = request.getParameterValues("variantImage");
+
+        List<ProductDetail> details = new ArrayList<>();
+        double minPrice = Double.MAX_VALUE;
+
+        if (sizes != null) {
+            for (int i = 0; i < sizes.length; i++) {
+                int vId = 0;
+                try {
+                    if (variantIds != null && variantIds.length > i && variantIds[i] != null
+                            && !variantIds[i].trim().isEmpty())
+                        vId = Integer.parseInt(variantIds[i].trim());
+                } catch (Exception ignored) {
+                }
+                double ip = 0.0;
+                double p = 0.0;
+                int st = 0;
+                double w = 0.0;
+                double l = 0.0;
+                double wd = 0.0;
+                double th = 0.0;
+
+                try {
+                    if (importPrices != null && importPrices.length > i && importPrices[i] != null
+                            && !importPrices[i].trim().isEmpty())
+                        ip = Double.parseDouble(importPrices[i].replaceAll("[^0-9.]", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (prices != null && prices[i] != null && !prices[i].trim().isEmpty())
+                        p = Double.parseDouble(prices[i].replaceAll("[^0-9.]", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (stocks != null && stocks[i] != null && !stocks[i].trim().isEmpty())
+                        st = Integer.parseInt(stocks[i].replaceAll("[^0-9]", ""));
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (weights != null && weights[i] != null)
+                        w = Double.parseDouble(weights[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (lengths != null && lengths[i] != null)
+                        l = Double.parseDouble(lengths[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (widths != null && widths[i] != null)
+                        wd = Double.parseDouble(widths[i]);
+                } catch (Exception ignored) {
+                }
+                try {
+                    if (thicknesses != null && thicknesses[i] != null)
+                        th = Double.parseDouble(thicknesses[i]);
+                } catch (Exception ignored) {
+                }
+
+                if (p < minPrice)
+                    minPrice = p;
+
+                String imgStr = (variantImages != null && variantImages.length > i) ? variantImages[i]
+                        : "";
+                List<String> imgList = new ArrayList<>();
+                if (imgStr != null && !imgStr.trim().isEmpty() && !imgStr.trim().equals("anh-default.png")) {
+                    for (String s : imgStr.split(",")) {
+                        if (!s.trim().isEmpty() && !s.trim().equals("anh-default.png"))
+                            imgList.add(s.trim());
+                    }
+                }
+
+                String detailCode = null;
+                if (isEdit && vId > 0) {
+                    Product existingProduct = productService.getProductByCode(code);
+                    if (existingProduct != null && existingProduct.getDetails() != null) {
+                        for (ProductDetail d : existingProduct.getDetails()) {
+                            if (d.getId() == vId) {
+                                detailCode = d.getCode();
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                ProductDetail detail = ProductDetail.builder()
+                        .id(vId)
+                        .code(detailCode)
+                        .size(sizes[i])
+                        .color(colors[i])
+                        .style(styles[i])
+                        .importPrice(ip)
+                        .price(p)
+                        .stock(st)
+                        .weight(w)
+                        .length(l)
+                        .width(wd)
+                        .thickness(th)
+                        .status(st == 0 ? 0 : 1)
+                        .images(imgList)
+                        .build();
+                details.add(detail);
+            }
+        }
+
+        if (minPrice == Double.MAX_VALUE)
+            minPrice = 0.0;
+        Integer computedStatus = details.isEmpty() || details.stream().allMatch(d -> d.getStock() == 0) ? 0 : 1;
+
+        if (isEdit) {
+            Product existingProduct = productService.getProductByCode(code);
+            if (existingProduct != null) {
+                existingProduct.setName(name);
+                existingProduct.setCategory(category);
+                existingProduct.setBrand(brand);
+                existingProduct.setOrigin(origin);
+                existingProduct.setCareInstructions(careInstructions);
+                existingProduct.setDescription(description);
+                existingProduct.setPrice(minPrice);
+                existingProduct.setStatus(computedStatus);
+                existingProduct.setDetails(details);
+
+                productService.updateProduct(existingProduct);
+                request.getSession().setAttribute("toastMessage", "Cập nhật sản phẩm thành công!");
+                request.getSession().setAttribute("toastType", "success");
+            }
+        } else {
+            if (!isEdit && (code == null || code.trim().isEmpty())) {
+                code = generateNextProductCode(productService.getAllProducts());
+            }
+
+            // Check code duplicate in DB
+            if (code != null && productService.getProductByCode(code) != null) {
+                request.setAttribute("errorMessage", "Mã sản phẩm '" + code + "' đã tồn tại! Vui lòng chọn mã khác.");
+                Product temp = Product.builder()
+                        .code(code)
+                        .name(name)
+                        .category(category)
+                        .brand(brand)
+                        .origin(origin)
+                        .careInstructions(careInstructions)
+                        .description(description)
+                        .details(details)
+                        .build();
+                request.setAttribute("product", temp);
+                request.setAttribute("categories", productService.getAllCategories());
+                request.setAttribute("brands", productService.getAllBrands());
+                request.setAttribute("colors", productService.getAllColors());
+                request.setAttribute("sizes", productService.getAllSizes());
+                request.setAttribute("styles", productService.getAllStyles());
+                request.setAttribute("origins", productService.getAllOrigins());
+                request.setAttribute("isValidationAddError", "true");
+                request.setAttribute("pageTitle", "Thêm sản phẩm mới");
+                request.getRequestDispatcher("/WEB-INF/views/admin/luong/product-add.jsp").forward(request, response);
+                return;
+            }
+
+            Product newProduct = Product.builder()
+                    .code(code)
+                    .name(name)
+                    .category(category)
+                    .brand(brand)
+                    .origin(origin)
+                    .careInstructions(careInstructions)
+                    .description(description)
+                    .price(minPrice)
+                    .status(computedStatus)
+                    .details(details)
+                    .build();
+
+            boolean success = productService.addProduct(newProduct);
+            if (success) {
+                request.getSession().setAttribute("toastMessage", "Thêm sản phẩm thành công!");
+                request.getSession().setAttribute("toastType", "success");
+            } else {
+                request.getSession().setAttribute("toastMessage",
+                        "Thêm sản phẩm thất bại! Vui lòng kiểm tra lại kết nối CSDL hoặc dữ liệu.");
+                request.getSession().setAttribute("toastType", "error");
+            }
+        }
+
+        response.sendRedirect(request.getContextPath() + "/admin/products");
+    }
+
+    private String generateNextProductCode(List<Product> products) {
+        int max = 0;
+        if (products != null) {
+            for (Product p : products) {
+                String c = p.getCode();
+                if (c != null && c.startsWith("SP")) {
+                    try {
+                        int n = Integer.parseInt(c.substring(2));
+                        if (n > max) max = n;
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+        return String.format("SP%03d", max + 1);
+    }
+}

@@ -1,0 +1,171 @@
+package project.duan1_sd21301.controller.admin.ha;
+
+import project.duan1_sd21301.model.Address;
+import project.duan1_sd21301.model.ha.Customer;
+import project.duan1_sd21301.model.ha.CustomerAddress;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Tiện ích kiểm tra tính hợp lệ (Validation) của dữ liệu Khách hàng (Customer) và Địa chỉ.
+ * Đảm bảo các thông tin như Email, Số điện thoại phải đúng định dạng chuẩn
+ * và không bị trùng lặp với khách hàng đã có trong hệ thống.
+ */
+public class CustomerValidator {
+
+    /**
+     * Hàm kiểm tra toàn bộ thông tin của Khách hàng trước khi thêm mới hoặc cập nhật.
+     * 
+     * @param code Mã khách hàng (kiểm tra trùng lặp)
+     * @param fullName Họ tên (không được chứa số và ký tự đặc biệt)
+     * @param email Email (phải đúng định dạng và duy nhất)
+     * @param phone Số điện thoại (đúng định dạng số Việt Nam và duy nhất)
+     * @param birthday Ngày sinh (phải nhỏ hơn ngày hiện tại)
+     * @param gender Giới tính (Nam/Nữ)
+     * @param status Trạng thái (0 hoặc 1)
+     * @param addresses Danh sách địa chỉ giao hàng (nếu có)
+     * @param customers Danh sách toàn bộ khách hàng (để check trùng lặp)
+     * @param isEdit Đang trong chế độ chỉnh sửa (true) hay thêm mới (false)
+     * @return Danh sách lỗi (List<String>), nếu rỗng tức là hợp lệ
+     */
+    public static List<String> validate(
+            String code,
+            String fullName,
+            String email,
+            String phone,
+            Date birthday,
+            String gender,
+            Integer status,
+            List<CustomerAddress> addresses,
+            List<Customer> customers,
+            boolean isEdit
+    ) {
+        List<String> errors = new ArrayList<>();
+
+        // 1. Mã khách hàng
+        if (code == null || code.trim().isEmpty()) {
+            errors.add("Mã khách hàng không được để trống.");
+        } else if (customers != null) {
+            for (Customer c : customers) {
+                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
+                    if (c.getCode().equalsIgnoreCase(code.trim())) {
+                        errors.add("Mã khách hàng đã tồn tại.");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Họ tên khách hàng (Không số, không ký tự đặc biệt)
+        if (fullName == null || fullName.trim().isEmpty()) {
+            errors.add("Họ tên khách hàng không được để trống.");
+        } else if (fullName.trim().length() < 2 || fullName.trim().length() > 50) {
+            errors.add("Họ tên khách hàng phải từ 2 đến 50 ký tự.");
+        } else if (!fullName.trim().matches("^[\\p{L}\\s]+$")) {
+            errors.add("Họ tên khách hàng chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
+        }
+
+        // 3. Email
+        if (email == null || email.trim().isEmpty()) {
+            errors.add("Email không được để trống.");
+        } else if (!email.trim().matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            errors.add("Email không đúng định dạng chuẩn (Ví dụ: example@gmail.com).");
+        } else if (customers != null) {
+            for (Customer c : customers) {
+                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
+                    if (c.getEmail().equalsIgnoreCase(email.trim())) {
+                        errors.add("Email đã được sử dụng cho một khách hàng khác.");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 4. Số điện thoại chính
+        if (phone == null || phone.trim().isEmpty()) {
+            errors.add("Số điện thoại khách hàng không được để trống.");
+        } else if (!phone.matches("^0\\d{9}$")) {
+            errors.add("Số điện thoại khách hàng phải gồm đúng 10 số và bắt đầu bằng 0.");
+        } else if (customers != null) {
+            for (Customer c : customers) {
+                if (!isEdit || !c.getCode().equalsIgnoreCase(code)) {
+                    if (c.getPhoneNumber() != null && c.getPhoneNumber().equals(phone.trim())) {
+                        errors.add("Số điện thoại đã được sử dụng cho một khách hàng khác.");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 5. Ngày sinh (Phải từ 18 tuổi trở lên)
+        if (birthday == null) {
+            errors.add("Ngày sinh không được để trống.");
+        } else if (birthday.after(new Date())) {
+            errors.add("Ngày sinh không hợp lệ.");
+        } else {
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.add(java.util.Calendar.YEAR, -18);
+            Date eighteenYearsAgo = cal.getTime();
+            if (birthday.after(eighteenYearsAgo)) {
+                errors.add("Khách hàng phải từ 18 tuổi trở lên.");
+            }
+        }
+
+        // 6. Giới tính
+        if (gender == null || gender.trim().isEmpty()) {
+            errors.add("Vui lòng chọn giới tính.");
+        }
+
+        // 7. Trạng thái
+        if (status == null) {
+            errors.add("Vui lòng chọn trạng thái.");
+        }
+
+        // 8. Validate Địa chỉ (Mặc định & Địa chỉ phụ)
+        if (addresses == null || addresses.isEmpty()) {
+            errors.add("Vui lòng nhập thông tin địa chỉ mặc định.");
+        } else {
+            for (int i = 0; i < addresses.size(); i++) {
+                CustomerAddress ca = addresses.get(i);
+                String prefix = ca.isDefault() ? "Địa chỉ mặc định: " : ("Địa chỉ phụ " + i + ": ");
+
+                // Validate Tên người nhận
+                if (ca.getRecipientName() == null || ca.getRecipientName().trim().isEmpty()) {
+                    errors.add(prefix + "Tên người nhận không được để trống.");
+                } else if (!ca.getRecipientName().trim().matches("^[\\p{L}\\s]+$")) {
+                    errors.add(prefix + "Tên người nhận chỉ được chứa chữ cái và khoảng trắng, không được chứa số hoặc ký tự đặc biệt.");
+                }
+
+                // Validate SĐT người nhận
+                if (ca.getPhoneNumber() == null || ca.getPhoneNumber().trim().isEmpty()) {
+                    errors.add(prefix + "Số điện thoại người nhận không được để trống.");
+                } else if (!ca.getPhoneNumber().trim().matches("^0\\d{9}$")) {
+                    errors.add(prefix + "Số điện thoại người nhận phải gồm đúng 10 số và bắt đầu bằng 0.");
+                }
+
+                // Validate Địa chỉ chi tiết (Tỉnh, Huyện, Xã, Số nhà)
+                Address a = ca.getAddress();
+                if (a == null) {
+                    errors.add(prefix + "Vui lòng nhập đầy đủ Tỉnh/Thành, Quận/Huyện, Phường/Xã và số nhà.");
+                } else {
+                    if (a.getProvince() == null || a.getProvince().trim().isEmpty()) {
+                        errors.add(prefix + "Vui lòng chọn Tỉnh/Thành phố.");
+                    }
+                    if (a.getDistrict() == null || a.getDistrict().trim().isEmpty()) {
+                        errors.add(prefix + "Vui lòng chọn Quận/Huyện.");
+                    }
+                    if (a.getWard() == null || a.getWard().trim().isEmpty()) {
+                        errors.add(prefix + "Vui lòng chọn Phường/Xã.");
+                    }
+                    if (a.getDetailedAddress() == null || a.getDetailedAddress().trim().isEmpty()) {
+                        errors.add(prefix + "Số nhà, tên đường không được để trống.");
+                    }
+                }
+            }
+        }
+
+        return errors;
+    }
+}

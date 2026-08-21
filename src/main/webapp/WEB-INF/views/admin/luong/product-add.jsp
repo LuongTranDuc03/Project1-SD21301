@@ -1,0 +1,1762 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="project.duan1_sd21301.model.luong.Product" %>
+<%@ page import="project.duan1_sd21301.model.luong.ProductDetail" %>
+<%@ page import="java.util.List" %>
+<%
+    Product product = (Product) request.getAttribute("product");
+    boolean isEdit = (product != null && !"true".equals(request.getAttribute("isValidationAddError")));
+    String pageTitleStr = (String) request.getAttribute("pageTitle");
+    if (pageTitleStr == null) {
+        pageTitleStr = isEdit ? "Chỉnh sửa sản phẩm " + product.getCode() : "Thêm sản phẩm mới";
+    }
+
+    List<String> categories = (List<String>) request.getAttribute("categories");
+    List<String> brands = (List<String>) request.getAttribute("brands");
+    List<String> colors = (List<String>) request.getAttribute("colors");
+    List<String> sizes = (List<String>) request.getAttribute("sizes");
+    List<String> origins = (List<String>) request.getAttribute("origins");
+
+    if (categories == null) categories = java.util.Collections.emptyList();
+    if (brands == null) brands = java.util.Collections.emptyList();
+    if (colors == null) colors = java.util.Collections.emptyList();
+    if (sizes == null) sizes = java.util.Collections.emptyList();
+    if (origins == null) origins = java.util.Collections.emptyList();
+%>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitleStr %> - FamiCoats Admin</title>
+    <!-- Nhúng Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Nhúng CSS Custom -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: visible;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .form-card-title {
+            background-color: #12192D;
+            color: #ffffff;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 8px 8px 0 0;
+        }
+        .form-card-title svg {
+            color: #ffffff !important;
+        }
+        .form-card-body {
+            padding: 24px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px 24px;
+        }
+        @media (max-width: 992px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 576px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #1e293b;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+            background-color: #ffffff;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #0f172a;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.15);
+        }
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .variant-card {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+            animation: slideDown 0.25s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .variant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .variant-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-remove-variant {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        .btn-remove-variant:hover {
+            background-color: #fef2f2;
+        }
+        .variant-row {
+            display: grid;
+            gap: 12px 16px;
+            margin-bottom: 14px;
+        }
+        .variant-row-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .variant-row-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .variant-row-1 {
+            grid-template-columns: 1fr;
+        }
+        @media (max-width: 768px) {
+            .variant-row-3, .variant-row-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .variant-row-3, .variant-row-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+        .btn-add-variant {
+            background-color: #f1f5f9;
+            border: 1px dashed #94a3b8;
+            color: #475569;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .btn-add-variant:hover {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            border-color: #64748b;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+        .btn-submit {
+            background-color: #FB7185;
+            color: #ffffff;
+            border: 1px solid #FB7185;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-submit:hover {
+            background-color: #f43f5e;
+            border-color: #f43f5e;
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+        }
+        .btn-cancel {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .custom-select-trigger:hover {
+            border-color: #0f172a;
+        }
+        .custom-select-wrapper.open .custom-select-trigger,
+        .custom-select-wrapper:focus-within .custom-select-trigger {
+            border-color: #0f172a;
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.15);
+        }
+        .custom-select-wrapper.open svg {
+            transform: rotate(180deg);
+        }
+        .custom-select-option:hover {
+            background-color: #fff1f2;
+            color: #E11D48 !important;
+        }
+        
+        .basic-select-option:hover {
+            background-color: #0056b3;
+            color: white !important;
+        }
+
+        .btn-add-img:hover {
+            border-color: #FB7185 !important;
+            background-color: #fff1f2 !important;
+        }
+        .btn-add-img:hover svg {
+            stroke: #FB7185 !important;
+        }
+        .btn-add-img:hover span {
+            color: #FB7185 !important;
+        }
+
+        /* Back to list button styling */
+        .back-btn {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a;
+        }
+
+        /* Confirm Modal Style */
+        .confirm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .confirm-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .confirm-modal-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+        .confirm-modal-overlay.active .confirm-modal-card {
+            transform: scale(1);
+        }
+        .confirm-modal-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .confirm-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .confirm-modal-body {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .confirm-modal-footer {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        .confirm-btn-no {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .confirm-btn-no:hover {
+            background-color: #e2e8f0;
+        }
+        .confirm-btn-yes {
+            background-color: #e11d48;
+            border: 1px solid #e11d48;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .confirm-btn-yes:hover {
+            background-color: #be123c;
+            border-color: #be123c;
+        }
+        .confirm-btn-danger {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .confirm-btn-danger:hover {
+            background-color: #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* Styles for Automatic Variant Generation */
+        .tag-pill {
+            background-color: #f1f5f9;
+            color: #1e3a8a;
+            border-radius: 16px;
+            padding: 4px 10px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tag-pill .remove-tag {
+            cursor: pointer;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+        }
+        .tag-pill .remove-tag:hover {
+            color: #ef4444;
+        }
+        .color-group-header {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .color-group-body {
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            background: #ffffff;
+        }
+        .variant-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .variant-table th {
+            text-align: left;
+            font-size: 13px;
+            color: #334155;
+            font-weight: 700;
+            padding-bottom: 12px;
+        }
+        .variant-table td {
+            padding: 8px 8px 8px 0;
+            vertical-align: middle;
+        }
+        .btn-apply-group {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.2s;
+        }
+        .btn-apply-group:hover {
+            background-color: #1e40af;
+        }
+        .img-by-color-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            width: 140px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .img-by-color-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .img-by-color-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            height: 100px;
+        }
+        .img-by-color-body:hover {
+            background-color: #f8fafc;
+        }
+        .img-preview-box {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Nhúng Sidebar dùng chung -->
+        <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
+
+        <!-- Khu vực nội dung chính bên phải -->
+        <main class="main-content">
+            <!-- Navbar trên cùng -->
+            <header class="navbar">
+                <div class="breadcrumb">
+                    <span>FamiCoats</span> / <a href="${pageContext.request.contextPath}/admin/products" style="color: inherit; text-decoration: none;">Quản lý sản phẩm</a> / <span class="active-crumb"><%= isEdit ? "Chỉnh sửa" : "Thêm mới" %></span>
+                </div>
+                <div class="navbar-right">
+                    <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
+                    <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
+                    <div class="profile-pill">
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
+                </div>
+                </div>
+            </header>
+
+            <!-- Thân trang -->
+            <div class="content-wrapper">
+                <!-- Tiêu đề trang & Nút Quay lại -->
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <h1><%= pageTitleStr %></h1>
+                        <div class="subtitle"><%= isEdit ? "Cập nhật các thông tin thuộc tính và biến thể sản phẩm" : "Khởi tạo sản phẩm mới cùng các thuộc tính và biến thể hàng hóa" %></div>
+                    </div>
+                    <div>
+                        <% if (isEdit) { %>
+                            <a href="javascript:void(0)" onclick="handleEditBack(event)" class="back-btn">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                <span>Quay lại danh sách</span>
+                            </a>
+                        <% } else { %>
+                            <a href="javascript:void(0)" onclick="confirmBackToList(event)" class="back-btn">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                <span>Quay lại danh sách</span>
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+
+                <form action="${pageContext.request.contextPath}/admin/products" method="POST" id="productForm">
+                    <% if (request.getAttribute("errorMessage") != null) { %>
+                        <div style="background-color: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; border: 1px solid #f87171; font-weight: 500;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <%= request.getAttribute("errorMessage") %>
+                        </div>
+                    <% } %>
+                    <% if (isEdit) { %>
+                        <input type="hidden" name="isEdit" value="true">
+                    <% } %>
+                    <!-- 1. Thông tin chung sản phẩm -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            Thông tin chung sản phẩm
+                        </div>
+                        <div class="form-card-body">
+                            <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="code">Mã sản phẩm <span style="color: red;">*</span></label>
+                                <input type="text" id="code" name="code" class="form-input" 
+                                       value="<%= isEdit && product != null && product.getCode() != null ? product.getCode() : (request.getAttribute("nextCode") != null ? request.getAttribute("nextCode") : "") %>" 
+                                       readonly style="background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; color: #475569;" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="name">Tên sản phẩm <span style="color: red;">*</span></label>
+                                <input type="text" id="name" name="name" class="form-input" placeholder="Nhập tên sản phẩm..." value="<%= product != null && product.getName() != null ? product.getName() : "" %>" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="category">Danh mục</label>
+                                <select id="category" name="category" class="form-select" required>
+                                    <option value="">-- Chọn Danh mục --</option>
+                                    <% for (String cat : categories) { %>
+                                        <option value="<%= cat %>" <%= product != null && cat.equalsIgnoreCase(product.getCategory()) ? "selected" : "" %>><%= cat %></option>
+                                    <% } %>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="brand">Thương hiệu</label>
+                                <div class="custom-select-wrapper" id="brand-select-wrapper" style="position: relative; width: 100%;">
+                                    <div class="custom-select-trigger form-select" onclick="toggleBrandSelect(event)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; height: 41.6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
+                                            <span id="brand-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= product != null && product.getBrand() != null && !product.getBrand().isEmpty() ? product.getBrand() : (brands.isEmpty() ? "" : brands.get(0)) %></span>
+                                            <input type="hidden" name="brand" id="brand" value="<%= product != null && product.getBrand() != null && !product.getBrand().isEmpty() ? product.getBrand() : (brands.isEmpty() ? "" : brands.get(0)) %>">
+                                        </div>
+                                        <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#475569" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                    <div class="custom-select-options" id="brand-options" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #767676; z-index: 100; max-height: 250px; overflow-y: auto;">
+                                        <div style="position: sticky; top: 0; background: white; border-bottom: 1px solid #767676; z-index: 2;">
+                                            <input type="text" id="brand-search" placeholder="Tìm kiếm hoặc thêm mới..." style="width: 100%; padding: 4px; border: none; outline: none; font-size: 13px; font-family: inherit;" oninput="filterBrandOptions(this.value)" onclick="event.stopPropagation()">
+                                        </div>
+                                        <div id="brand-list">
+                                            <% for (String br : brands) { %>
+                                                <div class="basic-select-option" data-value="<%= br %>" onclick="selectBrandOption('<%= br.replace("'", "\\'") %>')" style="padding: 4px; font-size: 13px; cursor: pointer;"><%= br %></div>
+                                            <% } %>
+                                        </div>
+                                        <div id="brand-no-result" style="display: none; padding: 4px; font-size: 13px;">
+                                            No results found / <a href="javascript:void(0)" onclick="addNewBrand()" style="color: blue; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Add new</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="origin">Xuất xứ</label>
+                                <div class="custom-select-wrapper" id="origin-select-wrapper" style="position: relative; width: 100%;">
+                                    <div class="custom-select-trigger form-select" onclick="toggleOriginSelect(event)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; height: 41.6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; overflow: hidden;">
+                                            <span id="origin-display" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= product != null && product.getOrigin() != null && !product.getOrigin().isEmpty() ? product.getOrigin() : (origins.isEmpty() ? "" : origins.get(0)) %></span>
+                                            <input type="hidden" name="origin" id="origin" value="<%= product != null && product.getOrigin() != null && !product.getOrigin().isEmpty() ? product.getOrigin() : (origins.isEmpty() ? "" : origins.get(0)) %>">
+                                        </div>
+                                        <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#475569" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease; flex-shrink: 0;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                    <div class="custom-select-options" id="origin-options" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #767676; z-index: 100; max-height: 250px; overflow-y: auto;">
+                                        <div style="position: sticky; top: 0; background: white; border-bottom: 1px solid #767676; z-index: 2;">
+                                            <input type="text" id="origin-search" placeholder="Tìm kiếm hoặc thêm mới..." style="width: 100%; padding: 4px; border: none; outline: none; font-size: 13px; font-family: inherit;" oninput="filterOriginOptions(this.value)" onclick="event.stopPropagation()">
+                                        </div>
+                                        <div id="origin-list">
+                                            <% for (String ori : origins) { %>
+                                                <div class="basic-select-option" data-value="<%= ori %>" onclick="selectOriginOption('<%= ori.replace("'", "\\'") %>')" style="padding: 4px; font-size: 13px; cursor: pointer;"><%= ori %></div>
+                                            <% } %>
+                                        </div>
+                                        <div id="origin-no-result" style="display: none; padding: 4px; font-size: 13px;">
+                                            No results found / <a href="javascript:void(0)" onclick="addNewOrigin()" style="color: blue; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Add new</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label" for="careInstructions">Hướng dẫn bảo quản</label>
+                                <textarea id="careInstructions" name="careInstructions" class="form-textarea" placeholder="Nhập hướng dẫn bảo quản sản phẩm..."><%= product != null && product.getCareInstructions() != null ? product.getCareInstructions() : "" %></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label" for="description">Mô tả sản phẩm</label>
+                                <textarea id="description" name="description" class="form-textarea" placeholder="Nhập mô tả sản phẩm chi tiết..."><%= product != null && product.getDescription() != null ? product.getDescription() : "" %></textarea>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Cấu hình biến thể tự động -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                            Cấu hình biến thể sản phẩm
+                        </div>
+                        <div class="form-card-body">
+                            <div style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 250px; position: relative;">
+                                    <label class="form-label" style="margin-bottom: 8px; display: block;">Màu sắc <span style="color: red;">*</span></label>
+                                    <div class="tag-input-container" id="color-tags-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 42px; align-items: center; background: #fff; cursor: text;" onclick="document.getElementById('color-input').focus()">
+                                        <input type="text" id="color-input" autocomplete="off" placeholder="Tìm và chọn màu sắc" style="border: none; outline: none; flex: 1; min-width: 180px; font-size: 13px;" onfocus="openTagDropdown('color-options')" oninput="filterTagDropdown('color-options', this.value)" onclick="event.stopPropagation()">
+                                    </div>
+                                    <div class="custom-select-options tag-dropdown-menu" id="color-options" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100; max-height: 200px; overflow-y: auto;">
+                                        <% for (String cl : colors) { 
+                                            String dotColor = "#808080";
+                                            String clLower = cl.toLowerCase();
+                                            if (clLower.contains("đen") || clLower.contains("black")) dotColor = "#000000";
+                                            else if (clLower.contains("trắng") || clLower.contains("white")) dotColor = "#FFFFFF";
+                                            else if (clLower.contains("navy") || clLower.contains("xanh dương")) dotColor = "#1B365D";
+                                            else if (clLower.contains("be") || clLower.contains("beige")) dotColor = "#E6D7C3";
+                                            else if (clLower.contains("xám") || clLower.contains("grey")) dotColor = "#808080";
+                                            else if (clLower.contains("đỏ") || clLower.contains("red")) dotColor = "#8B0000";
+                                            else if (clLower.contains("vàng") || clLower.contains("yellow")) dotColor = "#EAB308";
+                                            else if (clLower.contains("xanh lá") || clLower.contains("green")) dotColor = "#22C55E";
+                                        %>
+                                            <div class="tag-option" data-val="<%= cl %>" onclick="selectTagOption('<%= cl.replace("'", "\\'") %>', 'color-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                                <span style="width: 12px; height: 12px; border-radius: 50%; background-color: <%= dotColor %>; <%= "#FFFFFF".equals(dotColor) ? "border: 1px solid #cbd5e1;" : "" %> display: inline-block;"></span><%= cl %>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <div style="flex: 1; min-width: 250px; position: relative;">
+                                    <label class="form-label" style="margin-bottom: 8px; display: block;">Kích cỡ <span style="color: red;">*</span></label>
+                                    <div class="tag-input-container" id="size-tags-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 42px; align-items: center; background: #fff; cursor: text;" onclick="document.getElementById('size-input').focus()">
+                                        <input type="text" id="size-input" autocomplete="off" placeholder="Tìm và chọn kích cỡ" style="border: none; outline: none; flex: 1; min-width: 180px; font-size: 13px;" onfocus="openTagDropdown('size-options')" oninput="filterTagDropdown('size-options', this.value)" onclick="event.stopPropagation()">
+                                    </div>
+                                    <div class="custom-select-options tag-dropdown-menu" id="size-options" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 100; max-height: 200px; overflow-y: auto;">
+                                        <% for (String sz : sizes) { %>
+                                            <div class="tag-option" data-val="<%= sz %>" onclick="selectTagOption('<%= sz.replace("'", "\\'") %>', 'size-input')" style="padding: 8px 12px; font-size: 13px; color: #334155; cursor: pointer;"><%= sz %></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-generate-variants" id="btnGenerateVariants" onclick="generateVariants()" style="width: 100%; padding: 12px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                Tạo biến thể tự động
+                            </button>
+
+                            <!-- Danh sách biến thể đã tạo -->
+                            <div id="generated-variants-container" style="margin-top: 24px;"></div>
+                            
+
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 40px;">
+                        <button type="button" class="btn-cancel" onclick="handleCancelBtn(event)" style="padding: 10px 24px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">
+                            Hủy bỏ
+                        </button>
+                        <button type="button" class="btn-save" onclick="confirmSave()" style="padding: 10px 24px; background-color: #1e3a8a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            Lưu sản phẩm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+<script>
+        let selectedColors = [];
+        let selectedSizes = [];
+        let generatedVariants = {};
+        let colorImages = {};
+        let isFormDirty = false;
+
+        let stylesArray = [
+            <% java.util.List<String> jspStyles = (java.util.List<String>) request.getAttribute("styles");
+               if (jspStyles != null) { 
+                   for (int i=0; i<jspStyles.size(); i++) { %>
+                "<%= jspStyles.get(i).replace("\"", "\\\"").replace("'", "\\'") %>"<%= i < jspStyles.size() - 1 ? "," : "" %>
+            <% } } %>
+        ];
+
+        function validateForm() {
+            var codeElem = document.getElementById("code");
+            var code = codeElem ? codeElem.value : "";
+            var nameElem = document.getElementById("name");
+            var name = nameElem ? nameElem.value : "";
+            
+            if (!code || code.trim() === "") {
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng nhập Mã sản phẩm.", 'error'); else alert("Vui lòng nhập Mã sản phẩm.");
+                return false;
+            }
+            if (!name || name.trim() === "") {
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng nhập Tên sản phẩm.", 'error'); else alert("Vui lòng nhập Tên sản phẩm.");
+                return false;
+            }
+            if (selectedColors.length === 0) {
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng chọn ít nhất một màu sắc!", 'error'); else alert("Vui lòng chọn ít nhất một màu sắc!");
+                return false;
+            }
+            if (selectedSizes.length === 0) {
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng chọn ít nhất một kích cỡ!", 'error'); else alert("Vui lòng chọn ít nhất một kích cỡ!");
+                return false;
+            }
+            var generatedKeys = Object.keys(generatedVariants);
+            if (generatedKeys.length === 0) {
+                if (typeof window.showToast === 'function') window.showToast("Vui lòng bấm 'Tạo biến thể tự động' sau khi chọn màu sắc và kích cỡ để tạo danh sách biến thể!", 'error'); else alert("Vui lòng bấm 'Tạo biến thể tự động' sau khi chọn màu sắc và kích cỡ để tạo danh sách biến thể!");
+                return false;
+            }
+
+            let hasVariantError = false;
+            let errorMsg = "";
+            for (let i = 0; i < generatedKeys.length; i++) {
+                let color = generatedKeys[i];
+                let variants = generatedVariants[color];
+                for (let j = 0; j < variants.length; j++) {
+                    let v = variants[j];
+                    let p = parseFloat(v.price);
+                    let st = parseInt(v.stock);
+                    if (isNaN(p) || p < 0) {
+                        hasVariantError = true;
+                        errorMsg = "Đơn giá của biến thể (Màu: " + color + ", Kích cỡ: " + v.size + ") không hợp lệ!";
+                        break;
+                    }
+                    if (isNaN(st) || st < 0) {
+                        hasVariantError = true;
+                        errorMsg = "Số lượng của biến thể (Màu: " + color + ", Kích cỡ: " + v.size + ") không hợp lệ!";
+                        break;
+                    }
+                }
+                if (hasVariantError) break;
+            }
+            if (hasVariantError) {
+                if (typeof window.showToast === 'function') window.showToast(errorMsg, 'error'); else alert(errorMsg);
+                return false;
+            }
+
+            return true;
+        }
+
+        window.openTagDropdown = function(dropdownId) {
+            document.querySelectorAll('.tag-dropdown-menu').forEach(el => el.style.display = 'none');
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) dropdown.style.display = 'block';
+        };
+
+        window.filterTagDropdown = function(dropdownId, searchText) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            const options = dropdown.querySelectorAll('.tag-option');
+            const lowerSearch = searchText.toLowerCase().trim();
+            options.forEach(opt => {
+                const text = opt.getAttribute('data-val').toLowerCase();
+                if (text.includes(lowerSearch)) {
+                    opt.style.display = 'flex';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+            dropdown.style.display = 'block';
+        };
+
+        window.selectTagOption = function(val, inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = '';
+                let dataArray, containerId, placeholderText;
+                if (inputId === 'color-input') {
+                    dataArray = selectedColors;
+                    containerId = 'color-tags-container';
+                    placeholderText = 'Tìm và chọn màu sắc (ấn Enter để thêm)...';
+                } else {
+                    dataArray = selectedSizes;
+                    containerId = 'size-tags-container';
+                    placeholderText = 'Tìm và chọn kích cỡ (ấn Enter để thêm)...';
+                }
+                if (val && !dataArray.includes(val)) {
+                    dataArray.push(val);
+                    renderTags(containerId, dataArray, inputId, placeholderText);
+                    isFormDirty = true;
+                }
+                input.focus();
+            }
+        };
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.tag-input-container') && !e.target.closest('.tag-dropdown-menu')) {
+                document.querySelectorAll('.tag-dropdown-menu').forEach(el => el.style.display = 'none');
+            }
+        });
+
+        function setupTagInput(inputId, containerId, dataArray, placeholderText) {
+            const input = document.getElementById(inputId);
+            const container = document.getElementById(containerId);
+            if (!input) return;
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = this.value.trim();
+                    if (val && !dataArray.includes(val)) {
+                        dataArray.push(val);
+                        renderTags(containerId, dataArray, inputId, placeholderText);
+                        this.value = '';
+                        isFormDirty = true;
+                    }
+                }
+            });
+            input.addEventListener('blur', function() {
+                const val = this.value.trim();
+                if (val && !dataArray.includes(val)) {
+                    dataArray.push(val);
+                    renderTags(containerId, dataArray, inputId, placeholderText);
+                    this.value = '';
+                    isFormDirty = true;
+                }
+            });
+        }
+
+        function getClientColorHex(colorName) {
+            switch (colorName.toLowerCase()) {
+                case "đen": return "#000000";
+                case "trắng": return "#ffffff";
+                case "be": case "beige": return "#E6D7C3";
+                case "navy": case "xanh navy": return "#1B365D";
+                case "đỏ đô": case "đỏ đậm": return "#8B0000";
+                case "đỏ": return "#EF4444";
+                case "xám": case "ghi": return "#808080";
+                case "xanh dương": case "xanh lam": return "#3B82F6";
+                case "xanh lá": case "xanh lục": return "#10B981";
+                case "vàng": return "#FBBF24";
+                case "cam": return "#F97316";
+                case "hồng": return "#EC4899";
+                case "nâu": return "#78350F";
+                case "kem": return "#FFFDD0";
+                case "tím": return "#8B5CF6";
+                case "xanh rêu": return "#4B5320";
+                default: return "#cbd5e1";
+            }
+        }
+
+        function renderTags(containerId, dataArray, inputId, placeholderText) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            if (!container || !input) return;
+            
+            const oldTags = container.querySelectorAll('.tag-pill');
+            oldTags.forEach(t => t.remove());
+            
+            dataArray.forEach((val, index) => {
+                let colorCircleHtml = '';
+                if (containerId === 'color-tags-container') {
+                    const hex = getClientColorHex(val);
+                    colorCircleHtml = '<span style="width: 10px; height: 10px; border-radius: 50%; background-color: ' + hex + '; border: 1px solid #cbd5e1; display: inline-block;"></span>';
+                } else {
+                    colorCircleHtml = `<span style="width: 6px; height: 6px; border-radius: 50%; background-color: #475569; display: inline-block;"></span>`;
+                }
+
+                const tag = document.createElement('div');
+                tag.className = 'tag-pill';
+                tag.innerHTML = `
+                    \${colorCircleHtml}
+                    \${val} 
+                    <span class="remove-tag" onclick="removeTag('\${containerId}', \${index}, '\${inputId}', '\${placeholderText}'); event.stopPropagation();">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </span>
+                `;
+                container.insertBefore(tag, input);
+            });
+            
+            if (dataArray.length > 0) {
+                input.placeholder = '';
+            } else {
+                input.placeholder = placeholderText;
+            }
+        }
+
+        window.removeTag = function(containerId, index, inputId, placeholderText) {
+            if (containerId === 'color-tags-container') {
+                selectedColors.splice(index, 1);
+                renderTags(containerId, selectedColors, inputId, placeholderText);
+            } else if (containerId === 'size-tags-container') {
+                selectedSizes.splice(index, 1);
+                renderTags(containerId, selectedSizes, inputId, placeholderText);
+            }
+            isFormDirty = true;
+        };
+
+        window.generateVariants = function() {
+            if (selectedColors.length === 0 || selectedSizes.length === 0) {
+                const toast = document.createElement('div');
+                toast.style.position = 'fixed';
+                toast.style.top = '-100px';
+                toast.style.left = '50%';
+                toast.style.transform = 'translateX(-50%)';
+                toast.style.backgroundColor = '#ffffff';
+                toast.style.padding = '12px 16px';
+                toast.style.borderRadius = '8px';
+                toast.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                toast.style.zIndex = '10000';
+                toast.style.transition = 'top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                toast.style.display = 'flex';
+                toast.style.alignItems = 'center';
+                toast.style.gap = '12px';
+                toast.style.width = 'max-content';
+                toast.style.border = '1px solid #f3f4f6';
+                
+                toast.innerHTML = `
+                    <div style="flex-shrink: 0; width: 28px; height: 28px; color: #ef4444;">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 700; color: #111827; font-size: 15px; margin-bottom: 2px;">Thất bại!</span>
+                        <span style="color: #6b7280; font-size: 14px;">Không thành công, bởi vì chưa chọn thuộc tính màu sắc và kích cỡ.</span>
+                    </div>
+                    <button class="close-toast-btn" style="flex-shrink: 0; margin-left: 16px; background: none; border: none; cursor: pointer; color: #9ca3af; padding: 4px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                let hideTimeout;
+                const hideToast = () => {
+                    toast.style.top = '-100px';
+                    setTimeout(() => toast.remove(), 500);
+                };
+                
+                toast.querySelector('.close-toast-btn').addEventListener('click', () => {
+                    clearTimeout(hideTimeout);
+                    hideToast();
+                });
+                
+                // Animation drop down
+                requestAnimationFrame(() => {
+                    setTimeout(() => { toast.style.top = '30px'; }, 10);
+                });
+                
+                // Auto hide and remove
+                hideTimeout = setTimeout(() => {
+                    hideToast();
+                }, 4000);
+                
+                return;
+            }
+            
+            const newGenerated = {};
+            selectedColors.forEach(color => {
+                newGenerated[color] = [];
+                selectedSizes.forEach(size => {
+                    let existing = null;
+                    if (generatedVariants[color]) {
+                        existing = generatedVariants[color].find(v => v.size === size);
+                    }
+                    if (existing) {
+                        newGenerated[color].push(existing);
+                    } else {
+                        newGenerated[color].push({ 
+                            size: size, 
+                            stock: 10, 
+                            importPrice: 0,
+                            price: 0,
+                            style: '',
+                            weight: 0.5,
+                            length: 20,
+                            width: 20,
+                            thickness: 5,
+                            status: 'Còn hàng'
+                        });
+                    }
+                });
+            });
+            
+            generatedVariants = newGenerated;
+            isFormDirty = true;
+            renderGeneratedTable();
+            renderImagesSection();
+        };
+
+        function renderGeneratedTable() {
+            const container = document.getElementById('generated-variants-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            Object.keys(generatedVariants).forEach((color, cIdx) => {
+                const variants = generatedVariants[color];
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.style.marginBottom = '24px';
+                
+                let tbodyHtml = '';
+                variants.forEach((v, vIdx) => {
+                    tbodyHtml += `<tr>`;
+                    if (vIdx === 0) {
+                        const currentImg = colorImages[color];
+                        const isValidCurrentImg = currentImg && currentImg !== 'null' && currentImg.trim() !== '';
+                        const imgSrc = (isValidCurrentImg && (currentImg.startsWith('http://') || currentImg.startsWith('https://'))) 
+                            ? currentImg 
+                            : (isValidCurrentImg ? ('${pageContext.request.contextPath}/assets/img/' + currentImg) : '${pageContext.request.contextPath}/assets/img/anh-default.png');
+                        tbodyHtml += `
+                            <td style="width: 16%; vertical-align: middle; background: #fff;" rowspan="\${variants.length}">
+                                <div style="width: 170px; height: 170px; border: 2px dashed #94a3b8; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; position: relative; margin: 0 auto; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;" onclick="document.getElementById('img-input-\${cIdx}').click()">
+                                    <img id="img-preview-\${cIdx}" src="\${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/assets/img/anh-default.png'">
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.8); color: white; font-size: 12px; font-weight: 600; text-align: center; padding: 8px 0;">📷 Đổi / Thêm ảnh</div>
+                                </div>
+                                <input type="file" id="img-input-\${cIdx}" accept="image/*" style="display: none;" onchange="handleColorImageUpload(this, '\${color}', 'img-preview-\${cIdx}')">
+                            </td>
+                        `;
+                    }
+                    let styleSelectHtml = `<select name="variantStyle" class="form-input style-input-\${cIdx}" style="padding: 6px; font-size: 12px; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff;" onchange="updateVariantData('\${color}', '\${v.size}', 'style', this.value)">`;
+                    styleSelectHtml += `<option value="">-- Chọn kiểu dáng --</option>`;
+                    stylesArray.forEach(style => {
+                        let selected = (v.style === style) ? 'selected' : '';
+                        styleSelectHtml += `<option value="\${style}" \${selected}>\${style}</option>`;
+                    });
+                    styleSelectHtml += `</select>`;
+
+                    tbodyHtml += `
+                            <td style="width: 10%;">
+                                <input type="hidden" name="variantId" value="\${v.id || 0}">
+                                <input type="text" class="form-input" value="\${v.size}" readonly style="background: #f8fafc; color: #475569; font-weight: 600; border-color: #e2e8f0; pointer-events: none; margin-bottom: 4px;">
+                                <input type="hidden" name="variantSize" value="\${v.size}">
+                                <input type="hidden" name="variantColor" value="\${color}">
+                                <input type="hidden" name="variantImage" class="hidden-img-input-\${cIdx}" value="\${colorImages[color] || ''}" data-color="\${color}">
+                            </td>
+                            <td style="width: 13%;">
+                                \${styleSelectHtml}
+                            </td>
+                            <td style="width: 22%;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-size: 11px; color: #64748b; width: 28px;">Dài</span>
+                                        <input type="number" name="variantLength" class="form-input len-input-\${cIdx}" value="\${v.length || 20}" min="0" step="0.1" style="padding: 2px 6px; font-size: 12px; height: 24px; width: 100px;" oninput="if(this.value < 0) this.value = 0;" onchange="updateVariantData('\${color}', '\${v.size}', 'length', this.value)">
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-size: 11px; color: #64748b; width: 28px;">Rộng</span>
+                                        <input type="number" name="variantWidth" class="form-input wid-input-\${cIdx}" value="\${v.width || 20}" min="0" step="0.1" style="padding: 2px 6px; font-size: 12px; height: 24px; width: 100px;" oninput="if(this.value < 0) this.value = 0;" onchange="updateVariantData('\${color}', '\${v.size}', 'width', this.value)">
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-size: 11px; color: #64748b; width: 28px;">Dày</span>
+                                        <input type="number" name="variantThickness" class="form-input thi-input-\${cIdx}" value="\${v.thickness || 5}" min="0" step="0.01" style="padding: 2px 6px; font-size: 12px; height: 24px; width: 100px;" oninput="if(this.value < 0) this.value = 0;" onchange="updateVariantData('\${color}', '\${v.size}', 'thickness', this.value)">
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                        <span style="font-size: 11px; color: #64748b; width: 28px;">Nặng</span>
+                                        <input type="number" name="variantWeight" class="form-input wei-input-\${cIdx}" value="\${v.weight || 0.5}" min="0" step="0.01" style="padding: 2px 6px; font-size: 12px; height: 24px; width: 100px;" oninput="if(this.value < 0) this.value = 0;" onchange="updateVariantData('\${color}', '\${v.size}', 'weight', this.value)">
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="width: 11%;">
+                                <input type="text" name="variantImportPrice" class="form-input import-price-input-\${cIdx}" value="\${(v.importPrice || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'importPrice')">
+                            </td>
+                            <td style="width: 11%;">
+                                <input type="text" name="variantPrice" class="form-input price-input-\${cIdx}" value="\${(v.price || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'price')">
+                            </td>
+                            <td style="width: 10%;">
+                                <input type="text" name="variantStock" class="form-input stock-input-\${cIdx}" value="\${(v.stock || 0).toLocaleString('en-US')}" style="padding: 6px; font-size: 12px; text-align: right;" placeholder="0" oninput="formatNumberInput(this, '\${color}', '\${v.size}', 'stock')">
+                            </td>
+                            <td style="display: none;">
+                                <input type="hidden" name="variantStatus" class="status-input-\${cIdx}" value="\${(parseInt(v.stock) <= 0) ? 'Hết hàng' : 'Còn hàng'}">
+                            </td>
+                            <td style="width: 5%; text-align: center;">
+                                <button type="button" onclick="removeVariantRow('\${color}', '\${v.size}')" style="background: #fee2e2; border: none; color: #ef4444; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                groupDiv.innerHTML = `
+                    <div class="color-group-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 12px; height: 12px; border-radius: 50%; background-color: #1e293b; display: inline-block;"></span>
+                            \${color} <span style="color: #64748b; font-size: 13px; font-weight: 500;">(\${variants.length} kích cỡ)</span>
+                        </div>
+                        <button type="button" class="btn-apply-group" onclick="applyToAllGroups('\${color}')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                            Áp dụng cho tất cả
+                        </button>
+                    </div>
+                    <div class="color-group-body">
+                        <table class="variant-table">
+                            <thead>
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Kích cỡ</th>
+                                    <th>Kiểu dáng</th>
+                                    <th>Thông số (cm, kg)</th>
+                                    <th>Giá nhập</th>
+                                    <th>Giá bán</th>
+                                    <th>Số lượng</th>
+                                    <th style="display: none;">Trạng thái</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                \${tbodyHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.appendChild(groupDiv);
+            });
+        }
+
+        function renderImagesSection() {
+            const section = document.getElementById('images-section');
+            const container = document.getElementById('images-by-color-container');
+            if (!section || !container) return;
+            
+            const colors = Object.keys(generatedVariants);
+            if (colors.length === 0) {
+                section.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+            section.style.display = 'block';
+            container.innerHTML = '';
+            
+            colors.forEach((color, idx) => {
+                const currentImg = colorImages[color];
+                const isValid = currentImg && currentImg !== 'null' && currentImg.trim() !== '';
+                const imgSrc = (isValid && (currentImg.startsWith('http://') || currentImg.startsWith('https://'))) 
+                    ? currentImg 
+                    : (isValid ? ('${pageContext.request.contextPath}/assets/img/' + currentImg) : '');
+                
+                const box = document.createElement('div');
+                box.style = 'width: 120px; text-align: center;';
+                let previewHtml = '';
+                if (imgSrc) {
+                    previewHtml = '<img id="sub-preview-' + idx + '" src="' + imgSrc + '" style="width: 100%; height: 100%; object-fit: cover;">';
+                } else {
+                    previewHtml = '<span style="font-size: 12px; color: #64748b;">' + color + '</span>';
+                }
+                box.innerHTML = `
+                    <div style="width: 120px; height: 120px; border: 2px dashed #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8fafc; cursor: pointer; position: relative;" onclick="document.getElementById('img-input-\${idx}').click()">
+                        ` + previewHtml + `
+                    </div>
+                    <div style="margin-top: 6px; font-size: 13px; font-weight: 600; color: #334155;">\${color}</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+
+        window.handleColorImageUpload = function(input, color, previewId) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    if (preview) preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch('${pageContext.request.contextPath}/admin/upload-cloudinary', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.url) {
+                        colorImages[color] = data.url;
+                        document.querySelectorAll('input[name="variantImage"][data-color="' + color + '"]').forEach(imgInp => {
+                            imgInp.value = data.url;
+                        });
+                        if (generatedVariants[color]) {
+                            generatedVariants[color].forEach(v => {
+                                v.image = data.url;
+                            });
+                        }
+                        const preview = document.getElementById(previewId);
+                        if (preview) preview.src = data.url;
+                        renderImagesSection();
+                    }
+                })
+                .catch(err => console.error("Cloudinary upload error:", err));
+
+                isFormDirty = true;
+            }
+        };
+
+        window.handleVariantImageUpload = function(input, color, size, previewId, cIdx) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    if (preview) preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                const formData = new FormData();
+                formData.append("file", file);
+
+                fetch('${pageContext.request.contextPath}/admin/upload-cloudinary', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.url) {
+                        updateVariantData(color, size, 'image', data.url);
+                        const hiddenInput = input.parentElement.querySelector('input[name="variantImage"]');
+                        if (hiddenInput) {
+                            hiddenInput.value = data.url;
+                        }
+                        const preview = document.getElementById(previewId);
+                        if (preview) preview.src = data.url;
+                    }
+                })
+                .catch(err => console.error("Cloudinary upload error:", err));
+
+                isFormDirty = true;
+            }
+        };
+
+        window.formatNumberInput = function(input, color, size, field) {
+            let rawValue = input.value.replace(/[^0-9]/g, '');
+            if (!rawValue) rawValue = '0';
+            let num = parseInt(rawValue, 10);
+            input.value = num.toLocaleString('en-US');
+            updateVariantData(color, size, field, num);
+
+            // Tự động điền giá bán = giá nhập * 1.5 nếu giá bán đang trống hoặc = 0
+            if (field === 'importPrice') {
+                const tr = input.closest('tr');
+                if (tr) {
+                    const priceInput = tr.querySelector('input[name="variantPrice"]');
+                    if (priceInput) {
+                        let currentPrice = parseInt(priceInput.value.replace(/[^0-9]/g, '') || '0', 10);
+                        if (currentPrice === 0) {
+                            let autoPrice = Math.round(num * 1.5);
+                            priceInput.value = autoPrice.toLocaleString('en-US');
+                            updateVariantData(color, size, 'price', autoPrice);
+                        }
+                    }
+                }
+            }
+        };
+
+        window.updateVariantData = function(color, size, field, value) {
+            if (generatedVariants[color]) {
+                const variant = generatedVariants[color].find(v => v.size === size);
+                if (variant) {
+                    if (['length', 'width', 'thickness', 'weight', 'importPrice', 'price', 'stock'].includes(field)) {
+                        if (parseFloat(value) < 0) value = 0;
+                    }
+                    variant[field] = value;
+                    // Tự động cập nhật trạng thái dựa theo số lượng
+                    if (field === 'stock') {
+                        variant.status = (parseInt(value) <= 0) ? 'Hết hàng' : 'Còn hàng';
+                        // Cập nhật hidden input status trên DOM
+                        const allRows = document.querySelectorAll(`input[name="variantSize"]`);
+                        allRows.forEach(sizeInput => {
+                            if (sizeInput.value === size) {
+                                const tr = sizeInput.closest('tr');
+                                if (tr) {
+                                    const colorInput = tr.querySelector('input[name="variantColor"]');
+                                    if (colorInput && colorInput.value === color) {
+                                        const statusInput = tr.querySelector('input[name="variantStatus"]');
+                                        if (statusInput) statusInput.value = variant.status;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    isFormDirty = true;
+                }
+            }
+        };
+
+        window.removeVariantRow = function(color, size) {
+            if (generatedVariants[color]) {
+                generatedVariants[color] = generatedVariants[color].filter(v => v.size !== size);
+                if (generatedVariants[color].length === 0) {
+                    delete generatedVariants[color];
+                    selectedColors = selectedColors.filter(c => c !== color);
+                    renderTags('color-tags-container', selectedColors, 'color-input', 'Tìm và chọn màu sắc');
+                }
+                isFormDirty = true;
+                renderGeneratedTable();
+                renderImagesSection();
+            }
+        };
+
+        window.applyToAllGroups = function(sourceColor) {
+            const sourceVariants = generatedVariants[sourceColor];
+            if (!sourceVariants) return;
+            
+            sourceVariants.forEach(sourceVar => {
+                const size = sourceVar.size;
+                Object.keys(generatedVariants).forEach(targetColor => {
+                    if (targetColor !== sourceColor) {
+                        const targetVar = generatedVariants[targetColor].find(v => v.size === size);
+                        if (targetVar) {
+                            targetVar.stock = sourceVar.stock;
+                            targetVar.importPrice = sourceVar.importPrice;
+                            targetVar.price = sourceVar.price;
+                            targetVar.style = sourceVar.style;
+                            targetVar.length = sourceVar.length;
+                            targetVar.width = sourceVar.width;
+                            targetVar.thickness = sourceVar.thickness;
+                            targetVar.weight = sourceVar.weight;
+                            targetVar.status = sourceVar.status;
+                        }
+                    }
+                });
+            });
+            
+            isFormDirty = true;
+            renderGeneratedTable();
+        };
+
+        // Các hàm cho combobox Xuất xứ
+        window.openOriginSelect = function() {
+            const wrapper = document.getElementById('origin-select-wrapper');
+            const options = document.getElementById('origin-options');
+            
+            document.querySelectorAll('.custom-select-options').forEach(opt => opt.style.display = 'none');
+            document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+            
+            if (options) options.style.display = 'block';
+            if (wrapper) wrapper.classList.add('open');
+            setTimeout(() => {
+                const searchEl = document.getElementById('origin-search');
+                if (searchEl) searchEl.focus();
+            }, 10);
+        };
+
+        window.toggleOriginSelect = function(event) {
+            event.stopPropagation();
+            const wrapper = document.getElementById('origin-select-wrapper');
+            const options = document.getElementById('origin-options');
+            
+            if (!options || !wrapper) return;
+            if (options.style.display === 'none' || !options.style.display) {
+                openOriginSelect();
+            } else {
+                options.style.display = 'none';
+                wrapper.classList.remove('open');
+            }
+        };
+
+        window.selectOriginOption = function(originName) {
+            const wrapper = document.getElementById('origin-select-wrapper');
+            const options = document.getElementById('origin-options');
+            const inputEl = document.getElementById('origin');
+            const displayEl = document.getElementById('origin-display');
+            
+            if (inputEl) inputEl.value = originName;
+            if (displayEl) displayEl.textContent = originName;
+            
+            if (options) options.style.display = 'none';
+            if (wrapper) wrapper.classList.remove('open');
+            isFormDirty = true;
+        };
+
+        window.filterOriginOptions = function(searchText) {
+            const list = document.getElementById('origin-list');
+            if (!list) return;
+            const items = list.querySelectorAll('.custom-select-option, .basic-select-option');
+            const noResult = document.getElementById('origin-no-result');
+            let hasResult = false;
+            
+            const lowerSearch = searchText.toLowerCase().trim();
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(lowerSearch)) {
+                    item.style.display = 'block';
+                    hasResult = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            if (hasResult) {
+                if (noResult) noResult.style.display = 'none';
+                list.style.display = 'block';
+            } else {
+                if (noResult) noResult.style.display = 'block';
+                list.style.display = 'none';
+            }
+        };
+
+        window.addNewOrigin = function() {
+            const searchInput = document.getElementById('origin-search');
+            if (!searchInput) return;
+            const newVal = searchInput.value.trim();
+            if (newVal) {
+                const list = document.getElementById('origin-list');
+                const newOption = document.createElement('div');
+                newOption.className = 'basic-select-option';
+                newOption.setAttribute('data-value', newVal);
+                newOption.setAttribute('onclick', `selectOriginOption('\${newVal}')`);
+                newOption.style = 'padding: 4px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #e5e7eb;';
+                newOption.textContent = newVal;
+                
+                if (list) list.appendChild(newOption);
+                selectOriginOption(newVal);
+                
+                searchInput.value = '';
+                filterOriginOptions('');
+            }
+        };
+
+        // Các hàm cho combobox Thương hiệu
+        window.openBrandSelect = function() {
+            const wrapper = document.getElementById('brand-select-wrapper');
+            const options = document.getElementById('brand-options');
+            
+            document.querySelectorAll('.custom-select-options').forEach(opt => opt.style.display = 'none');
+            document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+            
+            if (options) options.style.display = 'block';
+            if (wrapper) wrapper.classList.add('open');
+            setTimeout(() => {
+                const searchEl = document.getElementById('brand-search');
+                if (searchEl) searchEl.focus();
+            }, 10);
+        };
+
+        window.toggleBrandSelect = function(event) {
+            event.stopPropagation();
+            const wrapper = document.getElementById('brand-select-wrapper');
+            const options = document.getElementById('brand-options');
+            
+            if (!options || !wrapper) return;
+            if (options.style.display === 'none' || !options.style.display) {
+                openBrandSelect();
+            } else {
+                options.style.display = 'none';
+                wrapper.classList.remove('open');
+            }
+        };
+
+        window.selectBrandOption = function(brandId, brandName) {
+            const wrapper = document.getElementById('brand-select-wrapper');
+            const options = document.getElementById('brand-options');
+            const inputEl = document.getElementById('brand');
+            const displayEl = document.getElementById('brand-display');
+            
+            if (inputEl) inputEl.value = brandId;
+            if (displayEl) displayEl.textContent = brandId;
+            
+            if (options) options.style.display = 'none';
+            if (wrapper) wrapper.classList.remove('open');
+            isFormDirty = true;
+        };
+
+        window.filterBrandOptions = function(searchText) {
+            const list = document.getElementById('brand-list');
+            if (!list) return;
+            const items = list.querySelectorAll('.custom-select-option, .basic-select-option');
+            const noResult = document.getElementById('brand-no-result');
+            let hasResult = false;
+            
+            const lowerSearch = searchText.toLowerCase().trim();
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(lowerSearch)) {
+                    item.style.display = 'block';
+                    hasResult = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            if (hasResult) {
+                if (noResult) noResult.style.display = 'none';
+                list.style.display = 'block';
+            } else {
+                if (noResult) noResult.style.display = 'block';
+                list.style.display = 'none';
+            }
+        };
+
+        window.addNewBrand = function() {
+            const searchInput = document.getElementById('brand-search');
+            if (!searchInput) return;
+            const newVal = searchInput.value.trim();
+            if (newVal) {
+                const list = document.getElementById('brand-list');
+                const newOption = document.createElement('div');
+                newOption.className = 'basic-select-option';
+                newOption.setAttribute('data-value', newVal);
+                newOption.setAttribute('onclick', `selectBrandOption('\${newVal}')`);
+                newOption.style = 'padding: 4px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #e5e7eb;';
+                newOption.textContent = newVal;
+                
+                if (list) list.appendChild(newOption);
+                selectBrandOption(newVal);
+                
+                searchInput.value = '';
+                filterBrandOptions('');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('productForm');
+            if (form) {
+                form.addEventListener('input', function() { isFormDirty = true; });
+                form.addEventListener('change', function() { isFormDirty = true; });
+            }
+            setupTagInput('color-input', 'color-tags-container', selectedColors, 'Tìm và chọn màu sắc');
+            setupTagInput('size-input', 'size-tags-container', selectedSizes, 'Tìm và chọn kích cỡ');
+        });
+
+        // Xử lý nút Quay lại & Hủy bỏ
+        window.confirmBackToList = function(event) {
+            if (event) event.preventDefault();
+            if (isFormDirty) {
+                const modal = document.getElementById('confirmBackModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    setTimeout(() => modal.classList.add('active'), 10);
+                } else {
+                    proceedBackToList();
+                }
+            } else {
+                proceedBackToList();
+            }
+        };
+
+        window.handleEditBack = function(event) {
+            if (event) event.preventDefault();
+            if (isFormDirty) {
+                const modal = document.getElementById('editConfirmBackModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    setTimeout(() => modal.classList.add('active'), 10);
+                } else {
+                    proceedBackToList();
+                }
+            } else {
+                proceedBackToList();
+            }
+        };
+
+        window.closeConfirmModal = function() {
+            const modal = document.getElementById('confirmBackModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 250);
+            }
+        };
+
+        window.closeEditConfirmModal = function() {
+            const modal = document.getElementById('editConfirmBackModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 250);
+            }
+        };
+
+        window.saveAndGoBack = function() {
+            const form = document.getElementById('productForm');
+            if (form) {
+                if (typeof validateForm === 'function' && !validateForm()) {
+                    closeEditConfirmModal();
+                    return;
+                }
+                isFormDirty = false;
+                form.submit();
+            }
+        };
+
+        // Nút Hủy bỏ ở cuối form: Rời đi lập tức không lưu dữ liệu mới
+        window.handleCancelBtn = function(event) {
+            if (event) event.preventDefault();
+            proceedBackToList();
+        };
+
+        window.proceedBackToList = function() {
+            window.location.href = "${pageContext.request.contextPath}/admin/products";
+        };
+</script>
+
+    <!-- Modal Xác nhận quay lại khi Thêm mới -->
+    <div id="confirmBackModal" class="confirm-modal-overlay" style="display: none;">
+        <div class="confirm-modal-card">
+            <div class="confirm-modal-header">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="#e11d48" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <h3 class="confirm-title">Xác nhận quay lại</h3>
+            </div>
+            <div class="confirm-modal-body">
+                Quay lại danh sách sẽ làm mất toàn bộ dữ liệu sản phẩm đang nhập. Bạn có chắc chắn muốn tiếp tục?
+            </div>
+            <div class="confirm-modal-footer">
+                <button type="button" class="confirm-btn-no" onclick="closeConfirmModal()">Ở lại nhập tiếp</button>
+                <button type="button" class="confirm-btn-yes" onclick="proceedBackToList()">Đồng ý (Không lưu)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận quay lại khi Chỉnh sửa (có thay đổi dữ liệu) -->
+    <div id="editConfirmBackModal" class="confirm-modal-overlay" style="display: none;">
+        <div class="confirm-modal-card" style="max-width: 440px;">
+            <div class="confirm-modal-header">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="#eab308" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <h3 class="confirm-title">Lưu thay đổi trước khi rời đi?</h3>
+            </div>
+            <div class="confirm-modal-body" style="text-align: left;">
+                Bạn đã thực hiện một số chỉnh sửa trên sản phẩm này. Bạn có muốn lưu lại dữ liệu mới trước khi quay lại không?
+            </div>
+            <div class="confirm-modal-footer" style="flex-direction: column; gap: 8px;">
+                <button type="button" class="confirm-btn-yes" onclick="saveAndGoBack()" style="width: 100%; padding: 10px; display: block;">Lưu dữ liệu mới</button>
+                <button type="button" class="confirm-btn-danger" onclick="proceedBackToList()" style="width: 100%; padding: 10px; display: block;">Quay lại không lưu</button>
+                <button type="button" class="confirm-btn-no" onclick="closeEditConfirmModal()" style="width: 100%; padding: 10px; display: block; border-color: transparent; background: transparent;">Ở lại chỉnh sửa tiếp</button>
+            </div>
+        </div>
+    </div>
+    
+    <% if (product != null && product.getDetails() != null) { %>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            <% for (project.duan1_sd21301.model.luong.ProductDetail d : product.getDetails()) { %>
+                var c = "<%= d.getColor() != null ? d.getColor().replace("\"", "\\\"") : "" %>";
+                var s = "<%= d.getSize() != null ? d.getSize().replace("\"", "\\\"") : "" %>";
+                
+                if (c && !selectedColors.includes(c)) {
+                    selectedColors.push(c);
+                }
+                if (s && !selectedSizes.includes(s)) {
+                    selectedSizes.push(s);
+                }
+                if (!generatedVariants[c]) {
+                    generatedVariants[c] = [];
+                }
+                generatedVariants[c].push({
+                    id: <%= d.getId() %>,
+                    size: s,
+                    style: "<%= d.getStyle() != null ? d.getStyle().replace("\"", "\\\"") : "" %>",
+                    importPrice: <%= d.getImportPrice() %>,
+                    price: <%= d.getPrice() %>,
+                    stock: <%= d.getStock() %>,
+                    weight: <%= d.getWeight() %>,
+                    length: <%= d.getLength() %>,
+                    width: <%= d.getWidth() %>,
+                    thickness: <%= d.getThickness() %>,
+                    status: "<%= d.getStatus() %>"
+                });
+                
+                <% if (d.getImages() != null && !d.getImages().isEmpty()) { %>
+                    colorImages[c] = "<%= String.join(",", d.getImages()).replace("\"", "\\\"") %>";
+                <% } %>
+            <% } %>
+            
+            if (selectedColors.length > 0) {
+                renderTags("color-tags-container", selectedColors, "color-input", "Tìm và chọn màu sắc");
+            }
+            if (selectedSizes.length > 0) {
+                renderTags("size-tags-container", selectedSizes, "size-input", "Tìm và chọn kích cỡ");
+            }
+            if (selectedColors.length > 0 || selectedSizes.length > 0) {
+                renderGeneratedTable();
+                renderImagesSection();
+            }
+        });
+    </script>
+    <% } %>
+    
+    <script>
+        function confirmSave() {
+            if (!validateForm()) {
+                return;
+            }
+            var isEdit = <%= isEdit %>;
+            if (isEdit) {
+                Swal.fire({
+                    title: 'Xác nhận lưu?',
+                    text: 'Bạn có chắc chắn muốn lưu thông tin này?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3B82F6',
+                    cancelButtonColor: '#94A3B8',
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('productForm').submit();
+                    }
+                });
+            } else {
+                document.getElementById('productForm').submit();
+            }
+        }
+    </script>
+</body>
+</html>

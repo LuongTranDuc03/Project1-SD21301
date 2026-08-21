@@ -1,0 +1,541 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="project.duan1_sd21301.model.phuc.Coupon" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="project.duan1_sd21301.model.huy.Employee" %>
+<%
+    Employee loggedInUser = (Employee) session.getAttribute("loggedInUser");
+    boolean isManager = (loggedInUser != null && loggedInUser.getRoleId() == 1);
+%>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FamiCoats Admin - Quản lý phiếu giảm giá">
+    <title>FamiCoats Admin - Quản lý phiếu giảm giá</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-list.css?v=<%= System.currentTimeMillis() %>">
+</head>
+<body>
+<%-- KHU VỰC LOGIC JSP: Xử lý dữ liệu danh sách phiếu giảm giá, bộ lọc và phân trang --%>
+<%
+    List<Coupon> coupons      = (List<Coupon>) request.getAttribute("coupons");
+    Map<Integer,String> typeLabels  = (Map<Integer,String>) request.getAttribute("discountTypeLabels");
+    Map<Integer,String> statusLabels    = (Map<Integer,String>) request.getAttribute("statusLabels");
+    long   total       = request.getAttribute("total")      != null ? (long) request.getAttribute("total")      : 0;
+    int    pageNo      = request.getAttribute("page")       != null ? (int)  request.getAttribute("page")       : 0;
+    int    size        = request.getAttribute("size")       != null ? (int)  request.getAttribute("size")       : 10;
+    int    totalPages  = request.getAttribute("totalPages") != null ? (int)  request.getAttribute("totalPages") : 1;
+    Integer curType    = (Integer) request.getAttribute("currentDiscountType");
+    Integer curStatus      = (Integer) request.getAttribute("currentStatus");
+    String keyword     = (String)  request.getAttribute("keyword");
+    String fromDate    = (String)  request.getAttribute("fromDate");
+    String toDate      = (String)  request.getAttribute("toDate");
+    String msg         = request.getParameter("msg");
+
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    StringBuilder baseUrlSb = new StringBuilder(request.getContextPath() + "/admin/coupons?");
+    if (curType  != null) baseUrlSb.append("discountType=").append(curType).append("&");
+    if (curStatus    != null) baseUrlSb.append("status=").append(curStatus).append("&");
+    if (keyword  != null && !keyword.isEmpty())
+        baseUrlSb.append("q=").append(java.net.URLEncoder.encode(keyword, "UTF-8")).append("&");
+    if (fromDate != null && !fromDate.isEmpty()) baseUrlSb.append("fromDate=").append(fromDate).append("&");
+    if (toDate != null && !toDate.isEmpty()) baseUrlSb.append("toDate=").append(toDate).append("&");
+    String baseUrl = baseUrlSb.toString();
+%>
+<div class="app-container">
+    <jsp:include page="/WEB-INF/views/layout/sidebar.jsp" />
+
+    <main class="main-content">
+                <header class="navbar">
+            <div class="breadcrumb">
+                <span>FamiCoats</span>
+                <span>/</span>
+                <span class="active-crumb">Quản lý phiếu giảm giá</span>
+            </div>
+            <div class="navbar-right">
+                <jsp:include page="/WEB-INF/views/layout/notification.jsp" />
+                <div class="date-pill"><%= project.duan1_sd21301.util.DateUtil.getCurrentDateString() %></div>
+                <div class="profile-pill">
+                    <span>${sessionScope.currentUserRole != null ? sessionScope.currentUserRole : 'Hệ thống'}</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <h1>Quản lý phiếu giảm giá</h1>
+                    <div class="subtitle">Tổng <%= total %> phiếu giảm giá</div>
+                </div>
+            </div>
+
+<%
+    String errParam  = request.getParameter("err");
+    String msgParam  = msg; // msg đã được lấy từ request.getParameter("msg") ở trên
+%>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        <% if ("created".equals(msgParam)) { %>
+        if (window.showToast) window.showToast('Thêm phiếu giảm giá thành công!', 'success');
+        <% } else if ("updated".equals(msgParam)) { %>
+        if (window.showToast) window.showToast('Cập nhật phiếu giảm giá thành công!', 'success');
+        <% } else if ("expired".equals(errParam)) { %>
+        if (window.showToast) window.showToast('Không thể kích hoạt: Phiếu giảm giá đã hết hạn sử dụng!', 'error');
+        <% } else if ("not_started".equals(errParam)) { %>
+        if (window.showToast) window.showToast('Không thể kích hoạt: Phiếu giảm giá chưa đến thời gian diễn ra!', 'warning');
+        <% } %>
+    });
+</script>
+
+
+            <!-- KHU VỰC TÌM KIẾM VÀ BỘ LỌC: Lọc theo mã, loại, trạng thái và ngày -->
+            <div class="custom-card">
+                <div class="card-header-bar">
+                    <span class="card-header-title">&#8226; Bộ lọc tìm kiếm</span>
+                    <button class="toggle-filter-btn" id="toggleFilterBtn" onclick="toggleFilterCard()">Nhấn để thu gọn</button>
+                </div>
+                <div class="card-body-content" id="filterCardBody">
+                    <style>
+                        @media (max-width: 576px) {
+                            .filter-flex-grid {
+                                flex-direction: column;
+                                align-items: stretch !important;
+                            }
+                        }
+                        select.filter-control {
+                            appearance: none;
+                            -webkit-appearance: none;
+                            -moz-appearance: none;
+                            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+                            background-repeat: no-repeat;
+                            background-position: right 12px center;
+                            background-size: 16px;
+                            padding-right: 36px !important;
+                        }
+                        
+                        /* Action Buttons Styling */
+                        .action-icon-btn {
+                            width: 32px !important;
+                            height: 32px !important;
+                            border-radius: 8px !important;
+                            border: 1px solid #e2e8f0 !important;
+                            background-color: #ffffff !important;
+                            color: #475569 !important;
+                            display: inline-flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            transition: all 0.2s ease !important;
+                            flex-shrink: 0 !important;
+                        }
+                        .action-icon-btn:hover {
+                            background-color: #f1f5f9 !important;
+                            color: #0f172a !important;
+                            border-color: #cbd5e1 !important;
+                            transform: translateY(-1px) !important;
+                        }
+
+                        /* Modern Switch Styling */
+                        .toggle-switch {
+                            position: relative;
+                            display: inline-block;
+                            width: 34px;
+                            height: 18px;
+                            flex-shrink: 0;
+                        }
+                        .toggle-switch input {
+                            opacity: 0;
+                            width: 0;
+                            height: 0;
+                        }
+                        .toggle-slider {
+                            position: absolute;
+                            cursor: pointer;
+                            top: 0; left: 0; right: 0; bottom: 0;
+                            background-color: #cbd5e1;
+                            transition: .2s;
+                            border-radius: 18px;
+                        }
+                        .toggle-slider:before {
+                            position: absolute;
+                            content: "";
+                            height: 12px;
+                            width: 12px;
+                            left: 3px;
+                            bottom: 3px;
+                            background-color: white;
+                            transition: .2s;
+                            border-radius: 50%;
+                            box-shadow: 0 1px 3px rgba(15,23,42,0.25);
+                        }
+                        .toggle-switch input:checked + .toggle-slider {
+                            background-color: #10b981;
+                        }
+                        .toggle-switch input:checked + .toggle-slider:before {
+                            transform: translateX(16px);
+                        }
+                    </style>
+                    <form id="searchForm" method="get" action="${pageContext.request.contextPath}/admin/coupons" class="filter-flex-grid" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 20px;">
+                        
+                        <!-- Tìm kiếm -->
+                        <div class="filter-field" style="min-width: 315px;">
+                            <label for="searchInput">Tìm kiếm</label>
+                            <input type="text" id="searchInput" name="q" class="filter-control" placeholder="Nhập mã / tên..." value="<%= keyword != null ? keyword : "" %>" autocomplete="off">
+                        </div>
+
+
+                        
+                        <!-- Loại giảm giá -->
+                        <div class="filter-field" style="min-width: 155px;">
+                            <label for="filterType">Loại giảm</label>
+                            <select name="discountType" id="filterType" class="filter-control" onchange="this.form.submit()">
+                                <option value="">Tất cả loại giảm</option>
+                                <% if (typeLabels != null) {
+                                    for (Map.Entry<Integer,String> e : typeLabels.entrySet()) { %>
+                                <option value="<%= e.getKey() %>" <%= e.getKey().equals(curType) ? "selected" : "" %>><%= e.getValue() %></option>
+                                <%  }
+                                } %>
+                            </select>
+                        </div>
+
+                        <!-- Từ ngày -->
+                        <div class="filter-field" style="min-width: 175px;">
+                            <label for="fromDateFilter">Từ ngày</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" id="fromDateFilter" name="fromDate" class="filter-control" value="<%= fromDate != null ? fromDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
+                                <% if (fromDate != null && !fromDate.isEmpty()) { %>
+                                <button type="button" onclick="document.getElementById('fromDateFilter').value=''; document.getElementById('searchForm').submit();" style="padding: 0 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #64748b;" title="Xoá ngày">✕</button>
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <!-- Đến ngày -->
+                        <div class="filter-field" style="min-width: 175px;">
+                            <label for="toDateFilter">Đến ngày</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" id="toDateFilter" name="toDate" class="filter-control" value="<%= toDate != null ? toDate : "" %>" onchange="document.getElementById('searchForm').submit()" style="flex: 1;">
+                                <% if (toDate != null && !toDate.isEmpty()) { %>
+                                <button type="button" onclick="document.getElementById('toDateFilter').value=''; document.getElementById('searchForm').submit();" style="padding: 0 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; color: #64748b;" title="Xoá ngày">✕</button>
+                                <% } %>
+                            </div>
+                        </div>
+
+
+                        
+                        <!-- Trạng thái -->
+                        <div class="filter-field">
+                            <label>Trạng thái</label>
+                            <input type="hidden" name="status" id="filterStatus" value="<%= curStatus != null ? curStatus : "" %>">
+                            <div style="display: flex; gap: 16px; align-items: center; height: 38px; padding: 0;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b; height: 100%;">
+                                    <input type="radio" name="statusRadio" value="" onchange="document.getElementById('filterStatus').value=this.value; document.getElementById('searchForm').submit()" <%= curStatus == null ? "checked" : "" %>> Tất cả
+                                </label>
+                                <% if (statusLabels != null) {
+                                    for (Map.Entry<Integer,String> e : statusLabels.entrySet()) { %>
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; color: #1e293b; height: 100%;">
+                                    <input type="radio" name="statusRadio" value="<%= e.getKey() %>" onchange="document.getElementById('filterStatus').value=this.value; document.getElementById('searchForm').submit()" <%= e.getKey().equals(curStatus) ? "checked" : "" %>> <%= e.getValue() %>
+                                </label>
+                                <%  }
+                                } %>
+                            </div>
+                        </div>
+
+                        <!-- Đặt lại -->
+                        <% if ((keyword != null && !keyword.isEmpty()) || curType != null || curStatus != null || (fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty())) { %>
+                        <div class="filter-field" style="flex-shrink: 0;">
+                            <a href="${pageContext.request.contextPath}/admin/coupons" class="btn-reset-filter" id="btnReset" title="Đặt lại toàn bộ bộ lọc" style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; text-decoration: none; height: 38px; box-sizing: border-box;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+                                Đặt lại
+                            </a>
+                        </div>
+                        <% } %>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Thanh nút thao tác -->
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 16px 0;">
+                <a href="${pageContext.request.contextPath}/admin/coupons/export-excel" class="btn-export" style="background-color: #10B981; border: 1px solid #10B981; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Xuất Excel</span>
+                </a>
+                <% if (isManager) { %>
+                <a href="${pageContext.request.contextPath}/admin/coupons/add" class="btn-add" style="background-color: #E11D48; border: 1px solid #E11D48; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; height: 38px;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Thêm phiếu giảm giá</span>
+                </a>
+                <% } %>
+            </div>
+
+            <!-- KHU VỰC BẢNG DỮ LIỆU PHIẾU GIẢM GIÁ: Hiển thị danh sách các mã giảm giá -->
+            <div class="custom-card">
+                <div class="card-header-bar">
+                    <span class="card-header-title">&#8226; Bảng dữ liệu phiếu giảm giá</span>
+                </div>
+                <div class="card-body-content" style="padding: 0;">
+                    <div style="overflow-x: auto; width: 100%;">
+                    <table class="invoice-table" style="width: 100%; min-width: 1000px;">
+                    <thead>
+                    <tr>
+                        <th style="text-align: center; width: 50px;">STT</th>
+                        <th style="text-align: left; width: 120px;">Mã giảm giá</th>
+                        <th style="text-align: left; width: 220px;">Tên chương trình</th>
+                        <th style="text-align: left; width: 120px;">Giá trị giảm</th>
+                        <th style="text-align: left; width: 150px;">Đơn hàng tối thiểu</th>
+                        <th style="text-align: left; width: 120px;">Số lượng</th>
+                        <th style="text-align: left; width: 120px;">Ngày bắt đầu</th>
+                        <th style="text-align: left; width: 120px;">Ngày kết thúc</th>
+                        <th style="text-align: center; width: 140px;">Trạng thái</th>
+                        <th style="text-align: center; width: 100px;">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <%
+                        if (coupons != null && !coupons.isEmpty()) {
+                            int stt = pageNo * size + 1;
+                            for (Coupon c : coupons) {
+                                String typeBadgeCls = (c.getDiscountType() != null && c.getDiscountType() == 0) ? "phan-tram" : "giam-tien";
+                                String typeLabel    = typeLabels != null ? typeLabels.getOrDefault(c.getDiscountType(), "?") : "?";
+
+                                String valueStr;
+                                if (c.getDiscountValue() == null) {
+                                    valueStr = "—";
+                                } else if (c.getDiscountType() != null && c.getDiscountType() == 0) {
+                                    valueStr = String.format("%.0f%%", c.getDiscountValue());
+                                } else {
+                                    valueStr = String.format("%,.0fđ", c.getDiscountValue()).replace(",", ".");
+                                }
+
+                                String minOrder = c.getMinOrderValue() != null
+                                        ? String.format("%,.0fđ", c.getMinOrderValue()).replace(",", ".")
+                                        : "—";
+
+                                int sl  = c.getQuantity()   != null ? c.getQuantity()   : 0;
+                                int dsd = c.getUsedQuantity()  != null ? c.getUsedQuantity()  : 0;
+                                int pct = sl > 0 ? (int)((double)dsd / sl * 100) : 0;
+
+                                String ngayBD = c.getStartDate()  != null ? c.getStartDate().format(dtf)  : "—";
+                                String ngayKT = c.getEndDate() != null ? c.getEndDate().format(dtf) : "—";
+
+                                int tt = c.getStatus() != null ? c.getStatus() : 0;
+                                String ttCls, ttLbl;
+                                switch (tt) {
+                                    case 1:  ttCls = "active";       ttLbl = "Đang kích hoạt";   break;
+                                    case 2:  ttCls = "inactive";     ttLbl = "Hết hạn";          break;
+                                    case 3:  ttCls = "sap-dien-ra";  ttLbl = "Sắp diễn ra";     break;
+                                    default: ttCls = "inactive";     ttLbl = "Chưa kích hoạt";   break;
+                                }
+
+                                boolean isOn = (tt == 1);
+                    %>
+                    <tr>
+                        <td style="color:#64748b; font-size:13px; text-align:center;"><%= stt++ %></td>
+                        <td><span class="product-id-text"><%= c.getCode() != null ? c.getCode() : "" %></span></td>
+                        <td style="font-weight:600;color:#111827;max-width:180px;">
+                            <%= c.getName() != null ? c.getName() : "" %>
+                        </td>
+                        <td style="font-weight:700;color:#E11D48;"><%= valueStr %></td>
+                        <td style="color:#6b7280;"><%= minOrder %></td>
+                        <td>
+                            <div class="qty-wrap">
+                                <div class="qty-text"><%= dsd %>/<%= sl %></div>
+                                <div class="qty-bar">
+                                    <div class="qty-bar-fill" style="width:<%= pct %>%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:#6b7280;"><%= ngayBD %></td>
+                        <td style="color:#6b7280;"><%= ngayKT %></td>
+                        <td><span class="badge-status <%= ttCls %>"><%= ttLbl %></span></td>
+                        <td style="text-align:center;">
+                            <div style="display:flex;gap:4px;justify-content:center;align-items:center;">
+                                <% if (isManager) { %>
+                                <a href="${pageContext.request.contextPath}/admin/coupons/edit?id=<%= c.getId() %>"
+                                   class="action-icon-btn" title="Chỉnh sửa">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </a>
+                              <%--  check time --%>
+                                <% boolean isExpired = (c.getEndDate() != null && c.getEndDate().isBefore(java.time.LocalDateTime.now())); %>
+                                <form method="post" action="${pageContext.request.contextPath}/admin/coupons/toggle-status"
+                                      style="display:inline;" id="toggleForm-<%= c.getId() %>">
+                                    <input type="hidden" name="id"        value="<%= c.getId() %>">
+                                    <input type="hidden" name="status" value="<%= isOn ? 0 : 1 %>">
+                                    <label class="toggle-switch" title="<%= isOn ? "Tắt" : "Bật" %> phiếu">
+                                        <input type="checkbox" <%= isOn ? "checked" : "" %>
+                                               onclick="event.preventDefault(); toggleCouponStatus('<%= c.getId() %>', <%= isExpired %>, this)">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </form>
+                                <% } else { %>
+                                <a href="${pageContext.request.contextPath}/admin/coupons/edit?id=<%= c.getId() %>"
+                                   class="action-icon-btn" title="Xem chi tiết">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </a>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                    <%
+                            }
+                        } else {
+                    %>
+                    <tr class="empty-row"><td colspan="11">Không có dữ liệu phiếu giảm giá.</td></tr>
+                    <%  } %>
+                    </tbody>
+                </table>
+                </div>
+
+            <!-- KHU VỰC PHÂN TRANG: Chuyển trang và hiển thị tổng số kết quả -->
+            <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; margin-top: 10px;">
+                <div id="paginationInfo" style="color: #64748b; font-size: 13px;">
+                    Hiển thị <strong><%= total > 0 ? (pageNo * size + 1) : 0 %>-<%= Math.min((pageNo + 1) * size, (int) total) %></strong>
+                    trong tổng <strong><%= String.format("%,d", total) %></strong> phiếu
+                </div>
+                <div id="paginationContainer" class="pagination-container" style="padding: 0; margin-top: 0;">
+                    <a href="<%= baseUrl %>page=<%= pageNo - 1 %>" class="page-btn <%= pageNo == 0 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+                    <%
+                        int displayTotalPages = Math.max(1, totalPages);
+                        int startP = Math.max(0, pageNo - 2);
+                        int endP   = Math.min(displayTotalPages - 1, pageNo + 2);
+                        if (startP > 0) {
+                    %><a href="<%= baseUrl %>page=0" class="page-btn">1</a>
+                    <% if (startP > 1) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <%  }
+                        for (int i = startP; i <= endP; i++) { %>
+                    <a href="<%= baseUrl %>page=<%= i %>" class="page-btn <%= i == pageNo ? "active" : "" %>"><%= i + 1 %></a>
+                    <%  }
+                        if (endP < displayTotalPages - 1) {
+                            if (endP < displayTotalPages - 2) { %><span style="padding:0 4px;color:#9ca3af">...</span><% } %>
+                    <a href="<%= baseUrl %>page=<%= displayTotalPages - 1 %>" class="page-btn"><%= displayTotalPages %></a>
+                    <%  } %>
+                    <a href="<%= baseUrl %>page=<%= pageNo + 1 %>" class="page-btn <%= pageNo >= displayTotalPages - 1 ? "disabled" : "" %>"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+                </div>
+            </div>
+            </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<%-- KHU VỰC JAVASCRIPT: Xử lý tìm kiếm delay, toast thông báo, toggle form --%>
+<script>
+    // Khởi tạo ngày giờ hiện tại cho UI
+    (function() {
+        var d    = new Date();
+        var days = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+        var dd   = String(d.getDate()).padStart(2,'0');
+        var mm   = String(d.getMonth()+1).padStart(2,'0');
+        var el   = document.getElementById('currentDate');
+        if (el) el.textContent = days[d.getDay()] + ', ' + dd + '/' + mm + '/' + d.getFullYear();
+    })();
+
+    // Xử lý tìm kiếm với delay (debounce)
+    (function () {
+        var input = document.getElementById('searchInput');
+        var form = document.getElementById('searchForm');
+        var timer = null;
+
+        if (input && form) {
+            // Tự động focus lại vào ô tìm kiếm nếu có giá trị, hoặc vừa tìm kiếm với chuỗi rỗng (xoá hết từ khoá)
+            var urlParams = new URLSearchParams(window.location.search);
+            if (input.value.length > 0 || urlParams.has('q')) {
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+
+            input.addEventListener('input', function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () { form.submit(); }, 450);
+            });
+
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    input.value = '';
+                    clearTimeout(timer);
+                    form.submit();
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(timer);
+                    form.submit();
+                }
+            });
+        }
+    })();
+
+    // Xử lý tự động ẩn thông báo thành công sau 3 giây
+    (function () {
+        var banner = document.getElementById('toastSuccess');
+        if (banner) setTimeout(function () {
+            banner.style.transition = 'opacity .4s';
+            banner.style.opacity = '0';
+            setTimeout(function () { banner.remove(); }, 450);
+        }, 3000);
+    })();
+    
+    // Thu gọn/mở rộng card bộ lọc
+    function toggleFilterCard() {
+        const body = document.getElementById('filterCardBody');
+        const btn = document.getElementById('toggleFilterBtn');
+        if (body.classList.contains('collapsed')) {
+            body.classList.remove('collapsed');
+            btn.textContent = 'Nhấn để thu gọn';
+        } else {
+            body.classList.add('collapsed');
+            btn.textContent = 'Nhấn để mở rộng';
+        }
+    }
+
+    // Hiển thị thông báo lỗi bằng toast
+    function showErrorToast(msg) {
+        if (window.showToast) {
+            window.showToast(msg, 'error');
+        } else {
+            alert(msg);
+        }
+    }
+
+    function toggleCouponStatus(couponId, isExpired, checkboxEl) {
+        const isChecked = checkboxEl.checked;
+        const willBeChecked = !isChecked; // Mong muốn thay đổi do đã bị preventDefault chặn
+
+        if (isExpired && willBeChecked) {
+            showErrorToast('Phiếu giảm giá đã hết hạn, vui lòng gia hạn trước khi kích hoạt!');
+            return;
+        }
+
+        const targetStatusText = willBeChecked ? 'hoạt động' : 'vô hiệu hóa';
+
+        Swal.fire({
+            title: 'Xác nhận',
+            text: 'Bạn có muốn thay đổi trạng thái của phiếu giảm giá thành ' + targetStatusText + ' hay không?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3B82F6',
+            cancelButtonColor: '#94A3B8',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                checkboxEl.checked = willBeChecked;
+                // Đợi animation chạy xong (0.2s) rồi mới submit form
+                setTimeout(() => {
+                    document.getElementById('toggleForm-' + couponId).submit();
+                }, 250);
+            }
+        });
+    }
+
+
+</script>
+<jsp:include page="/WEB-INF/views/layout/toast.jsp" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html>
+

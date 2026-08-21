@@ -7,23 +7,15 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     // Cấu hình thông tin kết nối Database
-    // Hướng dẫn: Đổi tên DB, Username và Password phù hợp với máy của bạn.
-    
-    // --- CẤU HÌNH SQL SERVER ---
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDB;encrypt=true;trustServerCertificate=true;";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=FamiCoatsDatabase;encrypt=true;trustServerCertificate=true;loginTimeout=5;";
     private static final String USER = "sa";
-    private static final String PASS = "123456";
-
-    // --- CẤU HÌNH MYSQL (Bỏ comment nếu dùng MySQL) ---
-    // private static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
-    // private static final String URL = "jdbc:mysql://localhost:3306/famicoats_db?useSSL=false&serverTimezone=UTC";
-    // private static final String USER = "root";
-    // private static final String PASS = "root";
+    private static final String PASS = "1234@";// 1234@
 
     static {
         try {
             Class.forName(DRIVER_CLASS);
+            DriverManager.setLoginTimeout(5);
         } catch (ClassNotFoundException e) {
             System.err.println("Không tìm thấy Driver kết nối Database: " + e.getMessage());
         }
@@ -31,6 +23,7 @@ public class DatabaseConnection {
 
     /**
      * Lấy kết nối tới Database.
+     * 
      * @return Connection đối tượng kết nối SQL
      * @throws SQLException nếu xảy ra lỗi kết nối
      */
