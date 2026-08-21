@@ -1,0 +1,343 @@
+:root {
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --border: #e4e7ec;
+  --border-soft: #f0f2f5;
+
+  --ink-900: #111827;
+  --ink-600: #4b5563;
+  --ink-400: #9ca3af;
+  --ink-300: #d1d5db;
+
+  --brand: #1e3a5f;
+  --brand-soft: #eef2f8;
+
+  --green: #16a34a;
+  --green-soft: #dcfce7;
+  --yellow: #ca8a04;
+  --yellow-soft: #fef9c3;
+  --red: #dc2626;
+  --red-soft: #fee2e2;
+  --grey: #6b7280;
+  --grey-soft: #f3f4f6;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+.page-bg {
+  background-color: var(--bg);
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-left h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink-900);
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.header-left .scope-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-600);
+}
+
+.scope-pill .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.scope-pill .dot.blue {
+  background: var(--brand);
+}
+
+.scope-pill .dot.green {
+  background: var(--green);
+}
+
+.scope-pill span.divider {
+  color: var(--ink-300);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filter-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-400);
+  padding-left: 2px;
+}
+
+select.filter-select {
+  appearance: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 7px 32px 7px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink-900);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color 0.15s;
+  min-width: 140px;
+}
+
+select.filter-select:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.card-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-soft);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.result-count {
+  font-size: 13px;
+  color: var(--ink-600);
+}
+
+.result-count strong {
+  color: var(--ink-900);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.inventory-table thead th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--ink-400);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+table.inventory-table thead th.num {
+  text-align: right;
+}
+
+table.inventory-table thead th.center {
+  text-align: center;
+}
+
+table.inventory-table tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background 0.1s;
+}
+
+table.inventory-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+table.inventory-table tbody tr:hover {
+  background: var(--brand-soft);
+}
+
+table.inventory-table tbody tr.row-empty {
+  background: var(--grey-soft);
+  opacity: 0.6;
+}
+
+table.inventory-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+}
+
+.code {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 12px;
+  color: var(--ink-600);
+  background: var(--border-soft);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.product-name {
+  font-weight: 600;
+  color: var(--ink-900);
+  max-width: 280px;
+}
+
+.attr-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  color: var(--ink-600);
+  background: var(--surface);
+  white-space: nowrap;
+}
+
+.nhap-ban-ton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.nbt-cell {
+  padding: 0 10px;
+  text-align: center;
+}
+
+.nbt-cell:first-child {
+  padding-left: 0;
+}
+
+.nbt-cell:last-child {
+  padding-right: 0;
+}
+
+.nbt-divider {
+  color: var(--ink-300);
+  font-size: 16px;
+}
+
+.nbt-val {
+  font-weight: 600;
+  display: block;
+}
+
+.nbt-val.blue {
+  color: var(--brand);
+}
+
+.nbt-val.amber {
+  color: var(--yellow);
+}
+
+.nbt-val.teal {
+  color: #0d9488;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.badge.con-hang {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.badge.sap-het {
+  background: var(--yellow-soft);
+  color: var(--yellow);
+}
+
+.badge.het-hang {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.badge.con-hang .badge-dot {
+  background: var(--green);
+}
+
+.badge.sap-het .badge-dot {
+  background: var(--yellow);
+}
+
+.badge.het-hang .badge-dot {
+  background: var(--red);
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-soft);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-600);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}

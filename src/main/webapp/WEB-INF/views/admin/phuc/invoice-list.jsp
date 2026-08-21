@@ -103,24 +103,7 @@
                     </button>
                 </div>
                 <div class="card-body-content" id="filterCardBody">
-                    <style>
-                        @media (max-width: 576px) {
-                            .filter-flex-grid {
-                                flex-direction: column;
-                                align-items: stretch !important;
-                            }
-                        }
-                        select.filter-control {
-                            appearance: none;
-                            -webkit-appearance: none;
-                            -moz-appearance: none;
-                            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-                            background-repeat: no-repeat;
-                            background-position: right 12px center;
-                            background-size: 16px;
-                            padding-right: 36px !important;
-                        }
-                    </style>
+                    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/invoices/invoice-list.css">
                     <form id="searchForm" method="get"
                           action="${pageContext.request.contextPath}/admin/invoices"
                           class="filter-flex-grid" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 20px;">

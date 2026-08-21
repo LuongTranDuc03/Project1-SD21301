@@ -404,11 +404,7 @@
 
 <!-- Variant Modal -->
 <div class="pos-modal-overlay" id="variantModalOverlay">
-    <style>
-        #variantModalOverlay .pos-modal-body {
-            overflow-y: hidden !important;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin/pos.css">
     <div class="pos-modal">
         <div class="pos-modal-header">
             <h3>Chọn biến thể để thêm vào đơn <span id="totalVariantsCount" style="font-size: 14px; font-weight: normal; color: #64748b; margin-left: 8px;"></span></h3>
@@ -2895,48 +2891,7 @@
     }
 </script>
 
-<style>
-    #posToastContainer {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        pointer-events: none;
-        align-items: center;
-    }
-    .pos-toast {
-        background: #fff;
-        border-radius: 10px;
-        padding: 14px 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: #1e293b;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 280px;
-        max-width: 380px;
-        border-left: 4px solid #10b981;
-        animation: posToastSlideIn 0.3s ease forwards;
-        pointer-events: auto;
-    }
-    .pos-toast.error { border-left-color: #ef4444; }
-    .pos-toast.warning { border-left-color: #f59e0b; }
-    @keyframes posToastSlideIn {
-        from { transform: translateY(-20px); opacity: 0; }
-        to   { transform: translateY(0);   opacity: 1; }
-    }
-    @keyframes posToastFadeOut {
-        from { transform: translateY(0);   opacity: 1; }
-        to   { transform: translateY(-20px); opacity: 0; }
-    }
-</style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin/pos.css">
 <div id="posToastContainer"></div>
 <script>
     function showPosToast(message, type = 'success') {

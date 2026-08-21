@@ -32,47 +32,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/admin.css?v=<%= System.currentTimeMillis() %>">
-    <style>
-        /* Pagination Styling */
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 20px 0;
-            margin-top: 10px;
-        }
-        .page-btn {
-            min-width: 32px;
-            height: 32px;
-            padding: 0 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            background-color: #ffffff;
-            color: #475569;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .page-btn:hover:not(:disabled) {
-            background-color: #f1f5f9;
-            color: #0f172a;
-            border-color: #94a3b8;
-        }
-        .page-btn.active {
-            background-color: #1e3a8a;
-            color: #ffffff;
-            border-color: #1e3a8a;
-        }
-        .page-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/attributes/attribute-list.css">
 </head>
 
 <body>

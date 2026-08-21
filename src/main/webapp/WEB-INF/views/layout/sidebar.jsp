@@ -11,43 +11,7 @@
     }
     String contextPath = request.getContextPath();
 %>
-<style>
-    .has-submenu > .submenu {
-        display: none;
-        list-style: none;
-        padding-left: 40px;
-        margin: 4px 0 0 0;
-    }
-    .has-submenu.submenu-open > .submenu {
-        display: block;
-    }
-    .has-submenu.submenu-open > a > .chevron-icon {
-        transform: rotate(180deg);
-    }
-    .submenu li {
-        margin-bottom: 4px;
-    }
-    .submenu a {
-        display: block;
-        padding: 8px 12px;
-        color: #94a3b8;
-        text-decoration: none;
-        font-size: 13.5px;
-        border: 1px solid transparent;
-        border-radius: 6px;
-        transition: all 0.2s;
-    }
-    .submenu a:hover {
-        color: #ffffff;
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-    body.sidebar-collapsed .submenu {
-        display: none !important;
-    }
-    body.sidebar-collapsed .chevron-icon {
-        display: none !important;
-    }
-</style>
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/layout/sidebar.css">
 <script>
     // Execute immediately to prevent FOUC (Flash of Unstyled Content)
     if (localStorage.getItem("sidebar-collapsed") === "true") {
