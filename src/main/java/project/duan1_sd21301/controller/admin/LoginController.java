@@ -44,9 +44,16 @@ public class LoginController extends HttpServlet {
             return;
         }
 
-        Employee employee = employeeRepository.login(email.trim(), password);
+        Employee employee = employeeRepository.findByEmail(email.trim());
+        boolean isAuthenticated = false;
 
-        if (employee != null) {
+        if (employee != null && employee.getStatus() == 1) { // trang_thai = 1 (hoạt động)
+            if (org.mindrot.jbcrypt.BCrypt.checkpw(password, employee.getPassword())) {
+                isAuthenticated = true;
+            }
+        }
+
+        if (isAuthenticated) {
             HttpSession session = request.getSession();
             session.setAttribute("loggedInUser", employee);
             String roleName = (employee.getRole() != null && employee.getRole().getRoleName() != null)

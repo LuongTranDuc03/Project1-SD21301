@@ -350,7 +350,7 @@ public class CustomerController extends HttpServlet {
                 Customer newC = Customer.builder()
                         .id(nextId).code(code).fullName(hoTen).email(email).phoneNumber(soDienThoai)
                         .dateOfBirth(ngaySinh).gender(gioiTinh).avatar(anhDaiDien).status(trangThai)
-                        .password("123456")
+                        .password(org.mindrot.jbcrypt.BCrypt.hashpw("123456", org.mindrot.jbcrypt.BCrypt.gensalt()))
                         .addresses(addresses).build();
                 for (CustomerAddress a : newC.getAddresses()) a.setCustomer(newC);
                 

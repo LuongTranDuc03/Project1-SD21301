@@ -539,15 +539,15 @@ public class EmployeeController extends HttpServlet {
         String pwd = req.getParameter("password");
         if (isCreate) {
             if (pwd != null && !pwd.trim().isEmpty()) {
-                emp.setPassword(pwd.trim());
+                emp.setPassword(org.mindrot.jbcrypt.BCrypt.hashpw(pwd.trim(), org.mindrot.jbcrypt.BCrypt.gensalt()));
             } else {
-                emp.setPassword("123456");
+                emp.setPassword(org.mindrot.jbcrypt.BCrypt.hashpw("123456", org.mindrot.jbcrypt.BCrypt.gensalt()));
             }
         } else {
             if (pwd == null || pwd.trim().isEmpty()) {
-                emp.setPassword(oldEmp != null ? oldEmp.getPassword() : "123456");
+                emp.setPassword(oldEmp != null ? oldEmp.getPassword() : org.mindrot.jbcrypt.BCrypt.hashpw("123456", org.mindrot.jbcrypt.BCrypt.gensalt()));
             } else {
-                emp.setPassword(pwd.trim());
+                emp.setPassword(org.mindrot.jbcrypt.BCrypt.hashpw(pwd.trim(), org.mindrot.jbcrypt.BCrypt.gensalt()));
             }
         }
 

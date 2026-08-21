@@ -37,7 +37,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         // 2. Nếu trên giao diện Form không nhập mật khẩu, tự động đặt mật khẩu mặc định
         if (emp.getPassword() == null || emp.getPassword().trim().isEmpty()) {
-            emp.setPassword("123456");
+            emp.setPassword(org.mindrot.jbcrypt.BCrypt.hashpw("123456", org.mindrot.jbcrypt.BCrypt.gensalt()));
         }
 
         // 3. Tự sinh mã nhân viên (code) tuần tự

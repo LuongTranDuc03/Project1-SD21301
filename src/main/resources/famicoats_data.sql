@@ -386,3 +386,16 @@ UPDATE chi_tiet_hoa_don
 SET chi_tiet_hoa_don_code = 'CTHD' + RIGHT('0000' + CAST(REPLACE(chi_tiet_hoa_don_code, 'CTHD', '') AS VARCHAR(10)), 4)
 WHERE chi_tiet_hoa_don_code LIKE 'CTHD%';
 GO
+
+--UPADTE mật khẩu dạng mã băm
+USE Famicoats;
+GO
+UPDATE nhan_vien
+SET mat_khau = '$2a$10$Y1rV3D0s79y.Y3P/xJvQc.VXY/893i5w0n.1uYv6iQJ1.01fQ7r/S'
+WHERE mat_khau IS NOT NULL;
+GO
+UPDATE khach_hang
+SET mat_khau = '$2a$10$Y1rV3D0s79y.Y3P/xJvQc.VXY/893i5w0n.1uYv6iQJ1.01fQ7r/S'
+WHERE mat_khau IS NOT NULL;
+GO
+PRINT N'Cập nhật mật khẩu Bcrypt thành công!';
