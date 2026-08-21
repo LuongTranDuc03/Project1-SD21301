@@ -410,16 +410,7 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
     </div>
 </div>
-<script>
-function openConfirmModal(message, formId) {
-    document.getElementById('genericConfirmMessage').innerText = message;
-    var confirmBtn = document.getElementById('genericConfirmBtn');
-    confirmBtn.onclick = function() {
-        document.getElementById(formId).submit();
-    };
-    openModal('genericConfirmModal');
-}
-</script>
+<script src="${pageContext.request.contextPath}/assets/js/invoices/invoice-detail.js"></script>
 
 <%-- KHU VỰC MODAL MÃ QR --%>
 <div class="modal-overlay" id="qrModal">
